@@ -65,7 +65,7 @@ const mockMaintenances: MaintenanceData[] = [
     type: "preventive",
     priority: "medium",
     status: "scheduled",
-    scheduledDate: "2024-02-15T08:00",
+    scheduledDate: "2025-02-15T08:00",
     estimatedCost: 500,
     estimatedDuration: 4,
     description: "Troca de óleo hidráulico e inspeção geral",
@@ -73,7 +73,7 @@ const mockMaintenances: MaintenanceData[] = [
     parts: "Óleo hidráulico 20L, Filtros",
     notes: "Verificar vazamentos",
     photos: [],
-    createdAt: "2024-01-20"
+    createdAt: "2024-12-20"
   },
   {
     id: "2",
@@ -82,7 +82,7 @@ const mockMaintenances: MaintenanceData[] = [
     type: "corrective",
     priority: "high",
     status: "in_progress",
-    scheduledDate: "2024-01-25T14:00",
+    scheduledDate: "2024-12-25T14:00",
     estimatedCost: 1200,
     actualCost: 1150,
     estimatedDuration: 6,
@@ -92,7 +92,7 @@ const mockMaintenances: MaintenanceData[] = [
     parts: "Motor elétrico, correia, rolamentos",
     notes: "Falha no motor principal",
     photos: [],
-    createdAt: "2024-01-24"
+    createdAt: "2024-12-24"
   }
 ];
 
