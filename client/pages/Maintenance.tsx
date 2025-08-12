@@ -392,7 +392,7 @@ export default function Maintenance() {
                         {new Date(maintenance.scheduledDate).toLocaleDateString('pt-BR')}
                       </td>
                       <td className="p-4 text-sm text-muted-foreground">
-                        R$ {maintenance.estimatedCost.toLocaleString()}
+                        € {maintenance.estimatedCost.toLocaleString()}
                       </td>
                       <td className="p-4">
                         <div className="flex gap-2">
