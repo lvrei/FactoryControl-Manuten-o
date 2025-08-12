@@ -493,19 +493,35 @@ export default function Production() {
                       <td className="p-4">
                         <div className="flex gap-2">
                           {order.status === 'pending' && (
-                            <button className="p-1 text-success hover:bg-success/10 rounded">
+                            <button
+                              onClick={() => alert(`Iniciando produção da ordem ${order.orderNumber}`)}
+                              className="p-1 text-success hover:bg-success/10 rounded"
+                              title="Iniciar produção"
+                            >
                               <Play className="h-4 w-4" />
                             </button>
                           )}
                           {order.status === 'in_progress' && (
-                            <button className="p-1 text-warning hover:bg-warning/10 rounded">
+                            <button
+                              onClick={() => alert(`Pausando produção da ordem ${order.orderNumber}`)}
+                              className="p-1 text-warning hover:bg-warning/10 rounded"
+                              title="Pausar produção"
+                            >
                               <Pause className="h-4 w-4" />
                             </button>
                           )}
-                          <button className="p-1 text-muted-foreground hover:text-foreground">
+                          <button
+                            onClick={() => alert(`Editando ordem ${order.orderNumber}`)}
+                            className="p-1 text-muted-foreground hover:text-foreground"
+                            title="Editar ordem"
+                          >
                             <Edit className="h-4 w-4" />
                           </button>
-                          <button className="p-1 text-muted-foreground hover:text-foreground">
+                          <button
+                            onClick={() => alert(`Mais opções para ${order.orderNumber}`)}
+                            className="p-1 text-muted-foreground hover:text-foreground"
+                            title="Mais opções"
+                          >
                             <MoreVertical className="h-4 w-4" />
                           </button>
                         </div>
