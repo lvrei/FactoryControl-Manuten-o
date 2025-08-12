@@ -1083,6 +1083,14 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
           </div>
         </div>
       </div>
+
+      {/* Camera Capture Modal */}
+      <CameraCapture
+        isOpen={showCamera}
+        onClose={() => setShowCamera(false)}
+        onCapture={handleCameraCapture}
+        title={cameraTarget.type === 'main' ? "Foto do Equipamento" : "Foto da Observação"}
+      />
     </div>
   );
 }
