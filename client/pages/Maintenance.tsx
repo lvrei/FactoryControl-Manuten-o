@@ -122,6 +122,7 @@ export default function Maintenance() {
   const [showMachineForm, setShowMachineForm] = useState(false);
   const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
   const [showReports, setShowReports] = useState(false);
+  const [selectedEquipment, setSelectedEquipment] = useState<string>('all');
   const [editingMachine, setEditingMachine] = useState<MachineData | null>(null);
   const [editingMaintenance, setEditingMaintenance] = useState<MaintenanceData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
