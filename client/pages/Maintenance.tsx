@@ -13,7 +13,8 @@ import {
   Edit,
   Trash2,
   Wrench,
-  FileText
+  FileText,
+  Camera
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MachineForm, MachineData } from "@/components/maintenance/MachineForm";
