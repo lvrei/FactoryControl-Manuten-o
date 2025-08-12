@@ -223,6 +223,14 @@ export default function Maintenance() {
             <FileText className="h-4 w-4" />
             Gerar Relatório
           </button>
+          <button
+            type="button"
+            onClick={() => setShowChecklist(true)}
+            className="px-4 py-2 text-sm font-medium text-success-foreground bg-success rounded-lg hover:bg-success/90 flex items-center gap-2"
+          >
+            <Camera className="h-4 w-4" />
+            Checklist DL50
+          </button>
         </div>
       </div>
 
