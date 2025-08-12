@@ -374,7 +374,10 @@ export default function Equipment() {
 
                 <div className="flex items-center gap-4">
                   <div className={cn("flex items-center gap-2 rounded-lg px-3 py-2 border", statusConfig[selectedEquipment.status].bg)}>
-                    <statusConfig[selectedEquipment.status].icon className={cn("h-4 w-4", statusConfig[selectedEquipment.status].color)} />
+                    {(() => {
+                      const StatusIcon = statusConfig[selectedEquipment.status].icon;
+                      return <StatusIcon className={cn("h-4 w-4", statusConfig[selectedEquipment.status].color)} />;
+                    })()}
                     <span className={cn("text-sm font-medium", statusConfig[selectedEquipment.status].color)}>
                       {statusConfig[selectedEquipment.status].label}
                     </span>
