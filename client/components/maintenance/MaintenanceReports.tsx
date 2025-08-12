@@ -319,7 +319,10 @@ export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceRep
             </button>
             <button
               onClick={handleGenerateReport}
-              disabled={!dateRange.start || !dateRange.end}
+              disabled={
+                (dateOption === 'range' && (!dateRange.start || !dateRange.end)) ||
+                (dateOption === 'since' && !sinceDate)
+              }
               className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <Download className="h-4 w-4" />
