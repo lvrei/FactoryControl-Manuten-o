@@ -564,8 +564,12 @@ export default function Maintenance() {
 
       <MaintenanceReports
         isOpen={showReports}
-        onClose={() => setShowReports(false)}
+        onClose={() => {
+          setShowReports(false);
+          setSelectedEquipment('all');
+        }}
         machines={machines.map(m => ({ id: m.id!, name: m.name }))}
+        initialEquipment={selectedEquipment}
       />
     </div>
   );
