@@ -19,7 +19,7 @@ import {
 import { cn } from "@/lib/utils";
 import { MachineForm, MachineData } from "@/components/maintenance/MachineForm";
 import { MaintenanceForm, MaintenanceData } from "@/components/maintenance/MaintenanceForm";
-import { MaintenanceReports } from "@/components/maintenance/MaintenanceReportsFixed";
+import { MaintenanceReports } from "@/components/maintenance/MaintenanceReports";
 
 const mockMachines: MachineData[] = [
   {
