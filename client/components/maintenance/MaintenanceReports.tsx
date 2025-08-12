@@ -1,10 +1,16 @@
 import { useState } from "react";
-import { X, Download, Calendar, Filter, FileText, BarChart3, TrendingUp } from "lucide-react";
+import { X, Download, Calendar, Filter, FileText, BarChart3, TrendingUp, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+interface Machine {
+  id: string;
+  name: string;
+}
 
 interface MaintenanceReportsProps {
   isOpen: boolean;
   onClose: () => void;
+  machines: Machine[];
 }
 
 export function MaintenanceReports({ isOpen, onClose }: MaintenanceReportsProps) {
@@ -154,7 +160,7 @@ export function MaintenanceReports({ isOpen, onClose }: MaintenanceReportsProps)
               </div>
               
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Tipo de Manutenção</label>
+                <label className="block text-sm text-muted-foreground mb-1">Tipo de Manuten��ão</label>
                 <div className="flex gap-4">
                   {['Preventiva', 'Corretiva', 'Preditiva'].map((type) => (
                     <label key={type} className="flex items-center gap-2">
