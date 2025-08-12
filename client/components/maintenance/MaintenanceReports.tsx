@@ -95,7 +95,12 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    console.log('MaintenanceReports não está aberto');
+    return null;
+  }
+
+  console.log('MaintenanceReports renderizando, isOpen:', isOpen);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
