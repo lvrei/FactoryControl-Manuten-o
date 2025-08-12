@@ -54,11 +54,17 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
       description: 'Relatório financeiro de manutenções',
       icon: Download
     },
-    { 
-      value: 'equipment', 
-      label: 'Relatório por Equipamento', 
+    {
+      value: 'equipment',
+      label: 'Relatório por Equipamento',
       description: 'Histórico completo de um equipamento específico',
       icon: Settings
+    },
+    {
+      value: 'checklist',
+      label: 'Checklist DL50',
+      description: 'Checklist de inspeção detalhado modelo DL50',
+      icon: FileText
     }
   ];
 
