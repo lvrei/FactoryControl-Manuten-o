@@ -392,13 +392,25 @@ export default function Planning() {
                       <p className="text-muted-foreground">{selectedPlan.period}</p>
                     </div>
                     <div className="flex gap-2">
-                      <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                      <button
+                        onClick={() => alert(`Editando plano ${selectedPlan.planNumber}`)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+                        title="Editar plano"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                      <button
+                        onClick={() => alert(`Exportando plano ${selectedPlan.planNumber}`)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+                        title="Baixar relatório"
+                      >
                         <Download className="h-4 w-4" />
                       </button>
-                      <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                      <button
+                        onClick={() => alert(`Mais opções para ${selectedPlan.planNumber}`)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+                        title="Mais opções"
+                      >
                         <MoreVertical className="h-4 w-4" />
                       </button>
                     </div>
