@@ -235,13 +235,40 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
       yPosition += 5; // Space between categories
     });
     
+    // Add photo if available
+    if (checklist.photo) {
+      if (yPosition > 220) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      doc.setLineWidth(0.5);
+      doc.line(20, yPosition, 190, yPosition);
+      yPosition += 10;
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('FOTOGRAFIA DO EQUIPAMENTO', 20, yPosition);
+      yPosition += 15;
+
+      try {
+        doc.addImage(checklist.photo, 'JPEG', 20, yPosition, 80, 60);
+        yPosition += 70;
+      } catch (error) {
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Erro ao carregar a fotografia', 20, yPosition);
+        yPosition += 15;
+      }
+    }
+
     // Summary
     const okCount = checklist.items.filter(item => item.status === 'ok').length;
     const nokCount = checklist.items.filter(item => item.status === 'nok').length;
     const naCount = checklist.items.filter(item => item.status === 'na').length;
     const requiredNokCount = checklist.items.filter(item => item.status === 'nok' && item.required).length;
-    
-    if (yPosition > 250) {
+
+    if (yPosition > 220) {
       doc.addPage();
       yPosition = 20;
     }
