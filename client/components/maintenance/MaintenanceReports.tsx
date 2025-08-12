@@ -25,6 +25,14 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
     status: 'all'
   });
 
+  // Update selected equipment and report type when initialEquipment changes
+  useEffect(() => {
+    if (initialEquipment && initialEquipment !== 'all') {
+      setSelectedEquipment(initialEquipment);
+      setReportType('equipment');
+    }
+  }, [initialEquipment]);
+
   const reportTypes = [
     {
       value: 'summary',
