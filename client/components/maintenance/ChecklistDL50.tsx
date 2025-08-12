@@ -291,11 +291,52 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
     // Overall status
     const overallStatus = requiredNokCount === 0 ? 'APROVADO' : 'REPROVADO';
     const statusColor = requiredNokCount === 0 ? 'green' : 'red';
-    
+
     doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     doc.text(`STATUS GERAL: ${overallStatus}`, 20, yPosition + 30);
-    
+    yPosition += 50;
+
+    // Signature section
+    if (yPosition > 220) {
+      doc.addPage();
+      yPosition = 20;
+    }
+
+    doc.setLineWidth(0.5);
+    doc.line(20, yPosition, 190, yPosition);
+    yPosition += 10;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('RESPONSÁVEL PELA INSPEÇÃO', 20, yPosition);
+    yPosition += 15;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Nome: ${checklist.responsibleName}`, 20, yPosition);
+    doc.text(`Cargo: ${checklist.responsibleRole}`, 20, yPosition + 8);
+    doc.text(`Data: ${new Date(checklist.inspectionDate).toLocaleDateString('pt-PT')}`, 20, yPosition + 16);
+
+    yPosition += 30;
+    doc.text('Assinatura:', 20, yPosition);
+    yPosition += 8;
+
+    // Signature box
+    doc.setLineWidth(0.3);
+    doc.rect(20, yPosition, 100, 20);
+
+    // Signature text inside box
+    doc.setFontSize(8);
+    const signatureLines = checklist.responsibleSignature.split('\n');
+    signatureLines.forEach((line, index) => {
+      if (line.trim() && index < 2) { // Maximum 2 lines in signature box
+        doc.text(line.trim(), 22, yPosition + 8 + (index * 6));
+      }
+    });
+
+    yPosition += 30;
+
     // Footer
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(8);
