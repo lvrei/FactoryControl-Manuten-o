@@ -35,6 +35,7 @@ interface ChecklistData {
   responsibleName: string;
   responsibleRole: string;
   responsibleSignature: string;
+  detailedObservations: DetailedObservation[];
 }
 
 interface ChecklistDL50Props {
