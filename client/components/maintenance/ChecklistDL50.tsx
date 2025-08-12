@@ -67,7 +67,7 @@ const defaultChecklistItems: ChecklistItem[] = [
   { id: '16', category: 'Segurança', description: 'Sinalização de segurança', status: 'ok', required: true },
   { id: '17', category: 'Segurança', description: 'EPIs disponíveis', status: 'ok', required: true },
   
-  // Sistema Mec��nico
+  // Sistema Mecânico
   { id: '18', category: 'Sistema Mecânico', description: 'Estado dos rolamentos', status: 'ok', required: true },
   { id: '19', category: 'Sistema Mecânico', description: 'Lubrificação geral', status: 'ok', required: true },
   { id: '20', category: 'Sistema Mecânico', description: 'Alinhamento e fixação', status: 'ok', required: true },
@@ -410,6 +410,111 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
                 onChange={(e) => updateChecklistData('operatingHours', e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
               />
+            </div>
+          </div>
+
+          {/* Photo Upload Section */}
+          <div className="border rounded-lg p-4">
+            <h3 className="font-semibold text-card-foreground mb-4">Fotografia do Equipamento</h3>
+
+            {checklist.photo ? (
+              <div className="space-y-4">
+                <div className="relative inline-block">
+                  <img
+                    src={checklist.photo}
+                    alt="Foto do equipamento"
+                    className="max-w-xs max-h-48 rounded-lg border"
+                  />
+                  <button
+                    onClick={removePhoto}
+                    className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/90"
+                    title="Remover foto"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-1">
+                    Alterar Foto
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                    className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                  />
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">
+                  Adicionar Foto do Equipamento
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Formatos aceitos: JPG, PNG, GIF. Tamanho máximo: 5MB
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Responsible Person Section */}
+          <div className="border rounded-lg p-4">
+            <h3 className="font-semibold text-card-foreground mb-4">Responsável pela Inspeção</h3>
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">
+                  Nome Completo *
+                </label>
+                <input
+                  type="text"
+                  value={checklist.responsibleName}
+                  onChange={(e) => updateChecklistData('responsibleName', e.target.value)}
+                  placeholder="Nome completo do responsável"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-1">
+                  Cargo/Função *
+                </label>
+                <select
+                  value={checklist.responsibleRole}
+                  onChange={(e) => updateChecklistData('responsibleRole', e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+                  required
+                >
+                  <option value="Técnico de Manutenção">Técnico de Manutenção</option>
+                  <option value="Engenheiro de Manutenção">Engenheiro de Manutenção</option>
+                  <option value="Supervisor de Manutenção">Supervisor de Manutenção</option>
+                  <option value="Mecânico Industrial">Mecânico Industrial</option>
+                  <option value="Eletricista Industrial">Eletricista Industrial</option>
+                  <option value="Técnico em Automação">Técnico em Automação</option>
+                  <option value="Outro">Outro</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-card-foreground mb-1">
+                  Assinatura Digital *
+                </label>
+                <textarea
+                  value={checklist.responsibleSignature}
+                  onChange={(e) => updateChecklistData('responsibleSignature', e.target.value)}
+                  placeholder="Digite sua assinatura ou identificação (ex: João Silva - CRM 12345)"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground"
+                  rows={2}
+                  required
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Esta assinatura digital confirma que você é o responsável por esta inspeção.
+                </p>
+              </div>
             </div>
           </div>
 
