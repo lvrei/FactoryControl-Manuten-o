@@ -563,12 +563,14 @@ export default function Maintenance() {
         editingMaintenance={editingMaintenance}
       />
 
-      <TestModal
+      <MaintenanceReports
         isOpen={showReports}
         onClose={() => {
           setShowReports(false);
           setSelectedEquipment('all');
         }}
+        machines={machines.map(m => ({ id: m.id!, name: m.name }))}
+        initialEquipment={selectedEquipment}
       />
     </div>
   );
