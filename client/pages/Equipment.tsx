@@ -544,7 +544,10 @@ export default function Equipment() {
                       </span>
                     </div>
                     <div className="pt-2">
-                      <button className="w-full px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90">
+                      <button
+                        onClick={() => alert(`Agendando manutenção para ${selectedEquipment.name}`)}
+                        className="w-full px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90"
+                      >
                         Agendar Manutenção
                       </button>
                     </div>
