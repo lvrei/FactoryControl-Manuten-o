@@ -366,10 +366,18 @@ export default function Quality() {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-card-foreground">Detalhes da Inspeção</h3>
                     <div className="flex gap-2">
-                      <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                      <button
+                        onClick={() => alert(`Editando inspeção ${selectedInspection.inspectionNumber}`)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+                        title="Editar inspeção"
+                      >
                         <Edit className="h-4 w-4" />
                       </button>
-                      <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                      <button
+                        onClick={() => alert(`Gerando relatório para ${selectedInspection.inspectionNumber}`)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+                        title="Gerar relatório"
+                      >
                         <FileText className="h-4 w-4" />
                       </button>
                     </div>
