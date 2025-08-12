@@ -494,7 +494,10 @@ export default function Alerts() {
                   <div className="space-y-3 text-sm">
                     <div>
                       <div className={cn("flex items-center gap-2 rounded-lg px-3 py-2 border", typeConfig[selectedAlert.type].color)}>
-                        <typeConfig[selectedAlert.type].icon className="h-4 w-4" />
+                        {(() => {
+                          const AlertIcon = typeConfig[selectedAlert.type].icon;
+                          return <AlertIcon className="h-4 w-4" />;
+                        })()}
                         <span className="font-medium">{selectedAlert.title}</span>
                       </div>
                     </div>
