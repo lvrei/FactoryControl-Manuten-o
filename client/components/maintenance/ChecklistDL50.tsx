@@ -67,7 +67,7 @@ const defaultChecklistItems: ChecklistItem[] = [
   { id: '16', category: 'Segurança', description: 'Sinalização de segurança', status: 'ok', required: true },
   { id: '17', category: 'Segurança', description: 'EPIs disponíveis', status: 'ok', required: true },
   
-  // Sistema Mecânico
+  // Sistema Mec��nico
   { id: '18', category: 'Sistema Mecânico', description: 'Estado dos rolamentos', status: 'ok', required: true },
   { id: '19', category: 'Sistema Mecânico', description: 'Lubrificação geral', status: 'ok', required: true },
   { id: '20', category: 'Sistema Mecânico', description: 'Alinhamento e fixação', status: 'ok', required: true },
@@ -104,10 +104,38 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
   const updateChecklistItem = (itemId: string, field: keyof ChecklistItem, value: any) => {
     setChecklist(prev => ({
       ...prev,
-      items: prev.items.map(item => 
+      items: prev.items.map(item =>
         item.id === itemId ? { ...item, [field]: value } : item
       )
     }));
+  };
+
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Por favor, selecione apenas arquivos de imagem.');
+        return;
+      }
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('O arquivo deve ter no máximo 5MB.');
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const photoData = e.target?.result as string;
+        setChecklist(prev => ({ ...prev, photo: photoData }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setChecklist(prev => ({ ...prev, photo: '' }));
   };
 
   const generateChecklistPDF = () => {
