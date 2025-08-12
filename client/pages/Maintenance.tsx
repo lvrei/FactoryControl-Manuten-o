@@ -301,7 +301,10 @@ export default function Maintenance() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex rounded-lg bg-muted p-1">
           <button
-            onClick={() => setActiveTab('machines')}
+            onClick={() => {
+              setActiveTab('machines');
+              setStatusFilter('all');
+            }}
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-md transition-colors",
               activeTab === 'machines'
@@ -312,7 +315,10 @@ export default function Maintenance() {
             Máquinas ({machines.length})
           </button>
           <button
-            onClick={() => setActiveTab('maintenance')}
+            onClick={() => {
+              setActiveTab('maintenance');
+              if (statusFilter === 'overdue') setStatusFilter('all');
+            }}
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-md transition-colors",
               activeTab === 'maintenance'
