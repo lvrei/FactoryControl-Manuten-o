@@ -728,16 +728,31 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
                     <X className="h-4 w-4" />
                   </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-card-foreground mb-1">
-                    Alterar Foto
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                    className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
-                  />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-card-foreground mb-1">
+                      Alterar Foto
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/90"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-1">
+                      Câmera
+                    </label>
+                    <button
+                      type="button"
+                      onClick={openCameraForMain}
+                      className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2 btn-mobile"
+                    >
+                      <Camera className="h-4 w-4" />
+                      Tirar Foto
+                    </button>
+                  </div>
                 </div>
               </div>
             ) : (
