@@ -1,15 +1,17 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { 
-  Factory, 
-  BarChart3, 
-  Settings, 
-  Users, 
-  Package, 
+import {
+  Factory,
+  BarChart3,
+  Settings,
+  Users,
+  Package,
   AlertTriangle,
   Activity,
   Calendar,
-  Bell
+  Bell,
+  Menu,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
