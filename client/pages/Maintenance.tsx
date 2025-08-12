@@ -101,7 +101,7 @@ const mockMaintenances: MaintenanceData[] = [
     type: "preventive",
     priority: "high",
     status: "scheduled",
-    scheduledDate: "2024-12-20T09:00",
+    scheduledDate: "2024-12-28T09:00",
     estimatedCost: 350,
     estimatedDuration: 3,
     description: "Inspeção de segurança obrigatória",
