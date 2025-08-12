@@ -69,7 +69,7 @@ const mockMaintenances: MaintenanceData[] = [
     estimatedCost: 500,
     estimatedDuration: 4,
     description: "Troca de óleo hidráulico e inspeção geral",
-    technician: "João Silva",
+    technician: "Jo��o Silva",
     parts: "Óleo hidráulico 20L, Filtros",
     notes: "Verificar vazamentos",
     photos: [],
@@ -148,10 +148,27 @@ export default function Maintenance() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
-  // Load mock data only once on component mount
+  // Load data from localStorage or use mock data
   useEffect(() => {
-    setMaintenances(mockMaintenances);
+    const savedMaintenances = localStorage.getItem('factorycontrol-maintenances');
+    if (savedMaintenances) {
+      try {
+        setMaintenances(JSON.parse(savedMaintenances));
+      } catch (error) {
+        console.error('Error loading saved maintenances:', error);
+        setMaintenances(mockMaintenances);
+      }
+    } else {
+      setMaintenances(mockMaintenances);
+    }
   }, []);
+
+  // Save maintenances to localStorage whenever it changes
+  useEffect(() => {
+    if (maintenances.length > 0 || localStorage.getItem('factorycontrol-maintenances')) {
+      localStorage.setItem('factorycontrol-maintenances', JSON.stringify(maintenances));
+    }
+  }, [maintenances]);
 
   const handleSaveMachine = (machineData: MachineData) => {
     if (editingMachine) {
