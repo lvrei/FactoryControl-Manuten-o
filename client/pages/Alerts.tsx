@@ -592,16 +592,25 @@ export default function Alerts() {
 
                   <div className="flex gap-2 pt-4">
                     {selectedAlert.status === 'new' && (
-                      <button className="flex-1 px-3 py-2 text-sm font-medium text-warning-foreground bg-warning rounded-lg hover:bg-warning/90">
+                      <button
+                        onClick={() => alert(`Reconhecendo alerta: ${selectedAlert.title}`)}
+                        className="flex-1 px-3 py-2 text-sm font-medium text-warning-foreground bg-warning rounded-lg hover:bg-warning/90"
+                      >
                         Reconhecer
                       </button>
                     )}
                     {selectedAlert.status === 'acknowledged' && (
-                      <button className="flex-1 px-3 py-2 text-sm font-medium text-success-foreground bg-success rounded-lg hover:bg-success/90">
+                      <button
+                        onClick={() => alert(`Resolvendo alerta: ${selectedAlert.title}`)}
+                        className="flex-1 px-3 py-2 text-sm font-medium text-success-foreground bg-success rounded-lg hover:bg-success/90"
+                      >
                         Resolver
                       </button>
                     )}
-                    <button className="px-3 py-2 text-sm font-medium text-muted-foreground border border-input rounded-lg hover:bg-muted">
+                    <button
+                      onClick={() => alert(`Dispensando alerta: ${selectedAlert.title}`)}
+                      className="px-3 py-2 text-sm font-medium text-muted-foreground border border-input rounded-lg hover:bg-muted"
+                    >
                       Dispensar
                     </button>
                   </div>
