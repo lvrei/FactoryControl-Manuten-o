@@ -211,7 +211,7 @@ export default function Maintenance() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <div className="rounded-lg border bg-card p-6">
           <div className="flex items-center justify-between">
             <div>
