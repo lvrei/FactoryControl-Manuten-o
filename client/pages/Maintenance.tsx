@@ -33,14 +33,14 @@ const mockMachines: MachineData[] = [
     location: "Setor A - Linha 1",
     category: "Prensa Hidráulica",
     status: "operational",
-    lastMaintenanceDate: "2024-01-15",
-    nextMaintenanceDate: "2024-02-15",
+    lastMaintenanceDate: "2024-11-15",
+    nextMaintenanceDate: "2025-02-15",
     maintenanceInterval: 30,
     operatingHours: 8760,
     notes: "Máquina em perfeitas condições"
   },
   {
-    id: "2", 
+    id: "2",
     name: "Linha de Montagem A",
     model: "LM-2000",
     manufacturer: "Siemens",
@@ -49,8 +49,8 @@ const mockMachines: MachineData[] = [
     location: "Setor B - Linha 2",
     category: "Linha de Montagem",
     status: "maintenance",
-    lastMaintenanceDate: "2024-01-10",
-    nextMaintenanceDate: "2024-01-25",
+    lastMaintenanceDate: "2024-12-10",
+    nextMaintenanceDate: "2024-12-25",
     maintenanceInterval: 15,
     operatingHours: 12500,
     notes: "Manutenção preventiva em andamento"
@@ -557,7 +557,7 @@ export default function Maintenance() {
                               }
                             }}
                             className="p-1 text-muted-foreground hover:text-destructive"
-                            title="Excluir manuten��ão"
+                            title="Excluir manutenção"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
