@@ -360,13 +360,25 @@ export default function Equipment() {
                     <p className="text-muted-foreground">{selectedEquipment.type} • {selectedEquipment.location}</p>
                   </div>
                   <div className="flex gap-2">
-                    <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                    <button
+                      onClick={() => alert(`Iniciando ${selectedEquipment.name}`)}
+                      className="p-2 text-muted-foreground hover:text-success hover:bg-success/10 rounded-lg"
+                      title="Iniciar equipamento"
+                    >
                       <Play className="h-4 w-4" />
                     </button>
-                    <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                    <button
+                      onClick={() => alert(`Pausando ${selectedEquipment.name}`)}
+                      className="p-2 text-muted-foreground hover:text-warning hover:bg-warning/10 rounded-lg"
+                      title="Pausar equipamento"
+                    >
                       <Pause className="h-4 w-4" />
                     </button>
-                    <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                    <button
+                      onClick={() => alert(`Opções para ${selectedEquipment.name}`)}
+                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+                      title="Mais opções"
+                    >
                       <MoreVertical className="h-4 w-4" />
                     </button>
                   </div>
