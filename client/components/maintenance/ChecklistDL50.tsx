@@ -23,6 +23,10 @@ interface ChecklistData {
   workOrderNumber: string;
   operatingHours: string;
   items: ChecklistItem[];
+  photo?: string;
+  responsibleName: string;
+  responsibleRole: string;
+  responsibleSignature: string;
 }
 
 interface ChecklistDL50Props {
