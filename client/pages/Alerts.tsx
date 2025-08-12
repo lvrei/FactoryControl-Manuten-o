@@ -281,7 +281,10 @@ export default function Alerts() {
         </div>
         
         <div className="flex gap-2">
-          <button className="px-4 py-2 text-sm font-medium text-secondary-foreground bg-secondary rounded-lg hover:bg-secondary/90 flex items-center gap-2">
+          <button
+            onClick={() => alert('Configuração de regras de notificação em desenvolvimento')}
+            className="px-4 py-2 text-sm font-medium text-secondary-foreground bg-secondary rounded-lg hover:bg-secondary/90 flex items-center gap-2"
+          >
             <Settings className="h-4 w-4" />
             Configurar Regras
           </button>
