@@ -332,7 +332,15 @@ export default function Maintenance() {
                           >
                             <Edit className="h-4 w-4" />
                           </button>
-                          <button className="p-1 text-muted-foreground hover:text-destructive">
+                          <button
+                            onClick={() => {
+                              if (confirm(`Tem certeza que deseja excluir a máquina ${machine.name}?`)) {
+                                alert(`Máquina ${machine.name} excluída`)
+                              }
+                            }}
+                            className="p-1 text-muted-foreground hover:text-destructive"
+                            title="Excluir máquina"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
@@ -402,7 +410,15 @@ export default function Maintenance() {
                           >
                             <Edit className="h-4 w-4" />
                           </button>
-                          <button className="p-1 text-muted-foreground hover:text-destructive">
+                          <button
+                            onClick={() => {
+                              if (confirm(`Tem certeza que deseja excluir a manutenção ${maintenance.machineName}?`)) {
+                                alert(`Manutenção ${maintenance.machineName} excluída`)
+                              }
+                            }}
+                            className="p-1 text-muted-foreground hover:text-destructive"
+                            title="Excluir manutenção"
+                          >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
