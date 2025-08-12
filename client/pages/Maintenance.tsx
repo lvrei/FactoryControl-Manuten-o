@@ -439,9 +439,16 @@ export default function Maintenance() {
                 {filteredMaintenances.map((maintenance) => {
                   const priority = priorityConfig[maintenance.priority];
                   const status = maintenanceStatusConfig[maintenance.status];
-                  
+                  const isOverdue = maintenance.status === 'scheduled' && new Date(maintenance.scheduledDate) < new Date();
+
                   return (
-                    <tr key={maintenance.id} className="border-b hover:bg-muted/50">
+                    <tr
+                      key={maintenance.id}
+                      className={cn(
+                        "border-b hover:bg-muted/50",
+                        isOverdue && "border-l-4 border-l-warning bg-warning/5"
+                      )}
+                    >
                       <td className="p-4">
                         <div>
                           <p className="font-medium text-card-foreground">{maintenance.machineName}</p>
