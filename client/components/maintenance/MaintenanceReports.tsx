@@ -13,11 +13,13 @@ interface MaintenanceReportsProps {
   machines: Machine[];
 }
 
-export function MaintenanceReports({ isOpen, onClose }: MaintenanceReportsProps) {
+export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceReportsProps) {
   const [reportType, setReportType] = useState<'summary' | 'detailed' | 'performance' | 'costs'>('summary');
+  const [dateOption, setDateOption] = useState<'all' | 'range' | 'since'>('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [sinceDate, setSinceDate] = useState('');
+  const [selectedEquipment, setSelectedEquipment] = useState<string>('all');
   const [filters, setFilters] = useState({
-    machines: [] as string[],
     types: [] as string[],
     status: 'all'
   });
@@ -160,7 +162,7 @@ export function MaintenanceReports({ isOpen, onClose }: MaintenanceReportsProps)
               </div>
               
               <div>
-                <label className="block text-sm text-muted-foreground mb-1">Tipo de Manuten��ão</label>
+                <label className="block text-sm text-muted-foreground mb-1">Tipo de Manutenção</label>
                 <div className="flex gap-4">
                   {['Preventiva', 'Corretiva', 'Preditiva'].map((type) => (
                     <label key={type} className="flex items-center gap-2">
