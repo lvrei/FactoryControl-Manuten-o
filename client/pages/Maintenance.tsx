@@ -432,6 +432,16 @@ export default function Maintenance() {
                           </button>
                           <button
                             onClick={() => {
+                              setSelectedEquipmentForChecklist(machine);
+                              setShowChecklist(true);
+                            }}
+                            className="p-1 text-muted-foreground hover:text-success"
+                            title="Checklist DL50"
+                          >
+                            <Camera className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => {
                               if (confirm(`Tem certeza que deseja excluir a máquina ${machine.name}?`)) {
                                 alert(`Máquina ${machine.name} excluída`)
                               }
