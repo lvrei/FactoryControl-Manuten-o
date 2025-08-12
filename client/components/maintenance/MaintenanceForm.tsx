@@ -79,6 +79,30 @@ export function MaintenanceForm({
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const validFiles = files.filter(file => file.type.startsWith('image/'));
+
+    if (validFiles.length !== files.length) {
+      alert('Apenas arquivos de imagem são permitidos');
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      photos: [...prev.photos, ...validFiles]
+    }));
+
+    // Reset input
+    event.target.value = '';
+  };
+
+  const removePhoto = (index: number) => {
+    setFormData(prev => ({
+      ...prev,
+      photos: prev.photos.filter((_, i) => i !== index)
+    }));
+  };
+
   if (!isOpen) return null;
 
   return (
