@@ -403,8 +403,19 @@ export default function Maintenance() {
                           <button
                             onClick={() => handleEditMachine(machine)}
                             className="p-1 text-muted-foreground hover:text-foreground"
+                            title="Editar máquina"
                           >
                             <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setSelectedEquipment(machine.id!);
+                              setShowReports(true);
+                            }}
+                            className="p-1 text-muted-foreground hover:text-info"
+                            title="Relatório da máquina"
+                          >
+                            <FileText className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => {
