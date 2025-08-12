@@ -118,6 +118,7 @@ export default function Maintenance() {
   const [activeTab, setActiveTab] = useState<'machines' | 'maintenance'>('machines');
   const [showMachineForm, setShowMachineForm] = useState(false);
   const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
+  const [showReports, setShowReports] = useState(false);
   const [editingMachine, setEditingMachine] = useState<MachineData | null>(null);
   const [editingMaintenance, setEditingMaintenance] = useState<MaintenanceData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
