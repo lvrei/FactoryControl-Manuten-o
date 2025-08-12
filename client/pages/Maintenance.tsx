@@ -104,7 +104,7 @@ const mockMaintenances: MaintenanceData[] = [
     scheduledDate: "2024-12-28T09:00",
     estimatedCost: 350,
     estimatedDuration: 3,
-    description: "Inspeção de segurança obrigatória",
+    description: "Inspeção de seguran��a obrigatória",
     technician: "Carlos Oliveira",
     parts: "Kit de vedações",
     notes: "Inspeção atrasada - prioridade alta",
@@ -282,6 +282,17 @@ export default function Maintenance() {
           >
             <Camera className="h-4 w-4" />
             Checklist DL50
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              localStorage.clear();
+              window.location.reload();
+            }}
+            className="px-4 py-2 text-sm font-medium text-muted-foreground border border-input rounded-lg hover:bg-muted flex items-center gap-2"
+            title="Limpar dados salvos e recarregar"
+          >
+            🔄 Reset
           </button>
         </div>
       </div>
