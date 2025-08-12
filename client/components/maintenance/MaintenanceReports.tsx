@@ -15,7 +15,7 @@ interface MaintenanceReportsProps {
   initialEquipment?: string;
 }
 
-type ReportType = 'summary' | 'detailed' | 'performance' | 'costs' | 'equipment';
+type ReportType = 'summary' | 'detailed' | 'performance' | 'costs' | 'equipment' | 'checklist';
 type DateOption = 'all' | 'range' | 'since';
 
 export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment }: MaintenanceReportsProps) {
