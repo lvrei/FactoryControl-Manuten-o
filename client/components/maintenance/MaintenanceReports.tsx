@@ -137,7 +137,31 @@ export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceRep
             </div>
           </div>
 
-          {/* Date Range */}
+          {/* Equipment Selection */}
+          <div>
+            <label className="block text-sm font-medium text-card-foreground mb-3">
+              Equipamento
+            </label>
+            <select
+              value={selectedEquipment}
+              onChange={(e) => setSelectedEquipment(e.target.value)}
+              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            >
+              <option value="all">Todos os Equipamentos</option>
+              {machines.map((machine) => (
+                <option key={machine.id} value={machine.id}>
+                  {machine.name}
+                </option>
+              ))}
+            </select>
+            {selectedEquipment !== 'all' && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Relatório específico para: {machines.find(m => m.id === selectedEquipment)?.name}
+              </p>
+            )}
+          </div>
+
+          {/* Date Range Options */}
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-card-foreground mb-2">
