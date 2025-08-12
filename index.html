@@ -43,14 +43,14 @@
         window.addEventListener('load', function() {
           navigator.serviceWorker.register('/sw.js')
             .then(function(registration) {
-              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+              console.log('✅ ServiceWorker registered successfully');
 
               // Check for updates
               registration.addEventListener('updatefound', function() {
                 const newWorker = registration.installing;
                 newWorker.addEventListener('statechange', function() {
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    // New version available
+                    console.log('🔄 New version available');
                     if (confirm('Nova versão disponível! Recarregar para atualizar?')) {
                       window.location.reload();
                     }
@@ -59,61 +59,27 @@
               });
             })
             .catch(function(err) {
-              console.log('ServiceWorker registration failed: ', err);
+              console.error('❌ ServiceWorker registration failed:', err);
             });
         });
       }
 
-      // PWA Install Prompt
-      let deferredPrompt;
-      window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
+      // Log PWA capabilities
+      console.log('🔍 PWA Capabilities:');
+      console.log('ServiceWorker support:', 'serviceWorker' in navigator);
+      console.log('Install prompt support:', 'BeforeInstallPromptEvent' in window);
+      console.log('Notification support:', 'Notification' in window);
+      console.log('Camera support:', 'mediaDevices' in navigator);
 
-        // Show install button
-        const installButton = document.createElement('button');
-        installButton.textContent = '📱 Instalar App';
-        installButton.style.cssText = `
-          position: fixed;
-          bottom: 20px;
-          right: 20px;
-          background: #2563eb;
-          color: white;
-          border: none;
-          padding: 12px 16px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-          z-index: 1000;
-          font-family: system-ui, -apple-system, sans-serif;
-        `;
-
-        installButton.addEventListener('click', async () => {
-          if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            console.log(`User response to the install prompt: ${outcome}`);
-            deferredPrompt = null;
-            installButton.remove();
-          }
+      // Check manifest
+      fetch('/manifest.json')
+        .then(response => response.json())
+        .then(manifest => {
+          console.log('✅ Manifest loaded:', manifest.name);
+        })
+        .catch(error => {
+          console.error('❌ Manifest failed to load:', error);
         });
-
-        document.body.appendChild(installButton);
-
-        // Hide button after 10 seconds
-        setTimeout(() => {
-          if (installButton.parentNode) {
-            installButton.remove();
-          }
-        }, 10000);
-      });
-
-      // PWA installed event
-      window.addEventListener('appinstalled', (evt) => {
-        console.log('FactoryControl PWA was installed');
-      });
     </script>
   </body>
 </html>
