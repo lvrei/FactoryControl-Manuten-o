@@ -237,7 +237,7 @@ export function MaintenanceForm({
 
                 <div>
                   <label className="block text-sm font-medium text-card-foreground mb-2">
-                    Custo Real (R$)
+                    Custo Real (€)
                   </label>
                   <input
                     type="number"
