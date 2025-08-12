@@ -125,6 +125,7 @@ export default function Maintenance() {
   const [editingMachine, setEditingMachine] = useState<MachineData | null>(null);
   const [editingMaintenance, setEditingMaintenance] = useState<MaintenanceData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   const handleSaveMachine = (machineData: MachineData) => {
     if (editingMachine) {
