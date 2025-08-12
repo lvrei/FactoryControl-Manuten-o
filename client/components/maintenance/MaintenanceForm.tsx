@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Plus, Calendar, DollarSign, Camera, Upload, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
