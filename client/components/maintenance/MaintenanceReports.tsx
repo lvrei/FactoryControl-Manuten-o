@@ -162,28 +162,85 @@ export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceRep
           </div>
 
           {/* Date Range Options */}
-          <div className="grid gap-4 md:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-card-foreground mb-2">
-                Data Inicial
-              </label>
-              <input
-                type="date"
-                value={dateRange.start}
-                onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-card-foreground mb-2">
-                Data Final
-              </label>
-              <input
-                type="date"
-                value={dateRange.end}
-                onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
+          <div>
+            <label className="block text-sm font-medium text-card-foreground mb-3">
+              Período do Relatório
+            </label>
+
+            {/* Date Option Selector */}
+            <div className="space-y-4">
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="dateOption"
+                    value="all"
+                    checked={dateOption === 'all'}
+                    onChange={(e) => setDateOption(e.target.value as any)}
+                    className="rounded border-input"
+                  />
+                  <span className="text-sm text-card-foreground">Desde sempre</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="dateOption"
+                    value="since"
+                    checked={dateOption === 'since'}
+                    onChange={(e) => setDateOption(e.target.value as any)}
+                    className="rounded border-input"
+                  />
+                  <span className="text-sm text-card-foreground">Desde uma data específica</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="dateOption"
+                    value="range"
+                    checked={dateOption === 'range'}
+                    onChange={(e) => setDateOption(e.target.value as any)}
+                    className="rounded border-input"
+                  />
+                  <span className="text-sm text-card-foreground">Período específico</span>
+                </label>
+              </div>
+
+              {/* Since Date Input */}
+              {dateOption === 'since' && (
+                <div>
+                  <label className="block text-sm text-muted-foreground mb-1">Desde</label>
+                  <input
+                    type="date"
+                    value={sinceDate}
+                    onChange={(e) => setSinceDate(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  />
+                </div>
+              )}
+
+              {/* Date Range Inputs */}
+              {dateOption === 'range' && (
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm text-muted-foreground mb-1">Data Inicial</label>
+                    <input
+                      type="date"
+                      value={dateRange.start}
+                      onChange={(e) => setDateRange(prev => ({ ...prev, start: e.target.value }))}
+                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-muted-foreground mb-1">Data Final</label>
+                    <input
+                      type="date"
+                      value={dateRange.end}
+                      onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
+                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
