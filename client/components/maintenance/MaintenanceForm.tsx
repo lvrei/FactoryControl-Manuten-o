@@ -182,7 +182,7 @@ export function MaintenanceForm({
 
             <div>
               <label className="block text-sm font-medium text-card-foreground mb-2">
-                Custo Estimado (R$)
+                Custo Estimado (€)
               </label>
               <input
                 type="number"
