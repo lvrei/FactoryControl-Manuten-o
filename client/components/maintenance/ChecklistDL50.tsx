@@ -12,6 +12,14 @@ interface ChecklistItem {
   required: boolean;
 }
 
+interface DetailedObservation {
+  id: string;
+  title: string;
+  description: string;
+  photos: string[];
+  category: 'general' | 'safety' | 'maintenance' | 'defect' | 'improvement';
+}
+
 interface ChecklistData {
   equipmentId: string;
   equipmentName: string;
