@@ -93,6 +93,23 @@ const mockMaintenances: MaintenanceData[] = [
     notes: "Falha no motor principal",
     photos: [],
     createdAt: "2024-12-24"
+  },
+  {
+    id: "3",
+    machineId: "1",
+    machineName: "Prensa Hidráulica 01",
+    type: "preventive",
+    priority: "high",
+    status: "scheduled",
+    scheduledDate: "2024-12-20T09:00",
+    estimatedCost: 350,
+    estimatedDuration: 3,
+    description: "Inspeção de segurança obrigatória",
+    technician: "Carlos Oliveira",
+    parts: "Kit de vedações",
+    notes: "Inspeção atrasada - prioridade alta",
+    photos: [],
+    createdAt: "2024-12-15"
   }
 ];
 
