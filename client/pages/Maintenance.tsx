@@ -104,7 +104,7 @@ const mockMaintenances: MaintenanceData[] = [
     scheduledDate: "2024-12-28T09:00",
     estimatedCost: 350,
     estimatedDuration: 3,
-    description: "Inspeção de segurança obrigat��ria",
+    description: "Inspeção de segurança obrigatória",
     technician: "Carlos Oliveira",
     parts: "Kit de vedações",
     notes: "Inspeção atrasada - prioridade alta",
@@ -147,6 +147,11 @@ export default function Maintenance() {
   const [selectedEquipmentForChecklist, setSelectedEquipmentForChecklist] = useState<MachineData | undefined>();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // Load mock data only once on component mount
+  useEffect(() => {
+    setMaintenances(mockMaintenances);
+  }, []);
 
   const handleSaveMachine = (machineData: MachineData) => {
     if (editingMachine) {
