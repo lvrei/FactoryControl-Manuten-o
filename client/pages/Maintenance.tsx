@@ -186,6 +186,12 @@ export default function Maintenance() {
     setShowMaintenanceForm(true);
   };
 
+  const handleDeleteMaintenance = (maintenance: MaintenanceData) => {
+    if (confirm(`Tem certeza que deseja excluir a manutenção "${maintenance.description}" da máquina ${maintenance.machineName}?`)) {
+      setMaintenances(prev => prev.filter(m => m.id !== maintenance.id));
+    }
+  };
+
   const filteredMachines = machines.filter(machine =>
     machine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     machine.category.toLowerCase().includes(searchTerm.toLowerCase())
