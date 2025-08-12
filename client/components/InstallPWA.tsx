@@ -105,20 +105,106 @@ export function InstallPWA() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <button
-        onClick={handleInstallClick}
-        className="flex items-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg hover:bg-primary/90 transition-all transform hover:scale-105 font-medium text-sm btn-mobile"
-        style={{
-          boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
-        }}
-      >
-        <Smartphone className="h-5 w-5" />
-        <span>
-          {isIOS ? 'Adicionar ao Ecrã' : 'Instalar App'}
-        </span>
-      </button>
-    </div>
+    <>
+      <div className="fixed bottom-4 right-4 z-50">
+        <button
+          onClick={handleInstallClick}
+          className="flex items-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg hover:bg-primary/90 transition-all transform hover:scale-105 font-medium text-sm btn-mobile"
+          style={{
+            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+          }}
+        >
+          <Smartphone className="h-5 w-5" />
+          <span>
+            {isIOS ? 'Adicionar ao Ecrã' : 'Instalar App'}
+          </span>
+        </button>
+      </div>
+
+      {/* Instructions Modal */}
+      {showInstructions && (
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6 text-black">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">📱 Instalar FactoryControl</h2>
+              <button
+                onClick={() => setShowInstructions(false)}
+                className="p-1 hover:bg-gray-100 rounded"
+              >
+                <span className="text-xl">×</span>
+              </button>
+            </div>
+
+            {isIOS ? (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">Para instalar no iPhone/iPad:</p>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                    <span className="text-blue-600 font-bold">1.</span>
+                    <div>
+                      <p className="font-medium">Abra no Safari</p>
+                      <p className="text-sm text-gray-600">Não funciona no Chrome iOS</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                    <span className="text-blue-600 font-bold">2.</span>
+                    <div>
+                      <p className="font-medium">Toque no botão Partilhar ⬆️</p>
+                      <p className="text-sm text-gray-600">Na parte inferior do ecrã</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                    <span className="text-blue-600 font-bold">3.</span>
+                    <div>
+                      <p className="font-medium">Selecione "Adicionar ao Ecrã Principal"</p>
+                      <p className="text-sm text-gray-600">Deslize para encontrar a opção</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+                    <span className="text-green-600 font-bold">✅</span>
+                    <div>
+                      <p className="font-medium">Toque em "Adicionar"</p>
+                      <p className="text-sm text-gray-600">A app aparecerá no ecrã principal</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600">Para instalar no Android Chrome:</p>
+                <div className="space-y-3">
+                  <div className="p-3 bg-orange-50 rounded-lg">
+                    <p className="font-medium text-orange-800 mb-2">MÉTODO 1 - Menu Chrome:</p>
+                    <div className="space-y-2 text-sm">
+                      <p>• Toque nos <strong>3 pontos (⋮)</strong> no canto superior direito</p>
+                      <p>• Selecione <strong>"Adicionar ao ecrã principal"</strong></p>
+                      <p>• Toque em <strong>"Adicionar"</strong></p>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="font-medium text-blue-800 mb-2">MÉTODO 2 - Barra de endereços:</p>
+                    <div className="space-y-2 text-sm">
+                      <p>• Procure o ícone <strong>⬇️</strong> na barra de endereços</p>
+                      <p>• Toque nele e siga as instruções</p>
+                    </div>
+                  </div>
+                  <div className="p-3 bg-green-50 rounded-lg">
+                    <p className="font-medium text-green-800">✅ A app funcionará como aplicação nativa!</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => setShowInstructions(false)}
+              className="w-full mt-6 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90"
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
