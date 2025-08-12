@@ -69,7 +69,7 @@ const mockMaintenances: MaintenanceData[] = [
     estimatedCost: 500,
     estimatedDuration: 4,
     description: "Troca de óleo hidráulico e inspeção geral",
-    technician: "Jo��o Silva",
+    technician: "João Silva",
     parts: "Óleo hidráulico 20L, Filtros",
     notes: "Verificar vazamentos",
     photos: [],
@@ -211,6 +211,13 @@ export default function Maintenance() {
   const handleDeleteMaintenance = (maintenance: MaintenanceData) => {
     if (confirm(`Tem certeza que deseja excluir a manutenção "${maintenance.description}" da máquina ${maintenance.machineName}?`)) {
       setMaintenances(prev => prev.filter(m => m.id !== maintenance.id));
+    }
+  };
+
+  const resetAllMaintenances = () => {
+    if (confirm('Tem certeza que deseja restaurar todas as manutenções? Esta ação não pode ser desfeita.')) {
+      localStorage.removeItem('factorycontrol-maintenances');
+      setMaintenances(mockMaintenances);
     }
   };
 
