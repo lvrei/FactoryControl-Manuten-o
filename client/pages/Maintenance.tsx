@@ -389,7 +389,15 @@ export default function Maintenance() {
                       <td className="p-4">
                         <div>
                           <p className="font-medium text-card-foreground">{maintenance.machineName}</p>
-                          <p className="text-sm text-muted-foreground line-clamp-1">{maintenance.description}</p>
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm text-muted-foreground line-clamp-1">{maintenance.description}</p>
+                            {maintenance.photos && maintenance.photos.length > 0 && (
+                              <span className="inline-flex items-center gap-1 px-2 py-1 rounded bg-info/10 text-info text-xs">
+                                <Camera className="h-3 w-3" />
+                                {maintenance.photos.length}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="p-4">
