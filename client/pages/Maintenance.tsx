@@ -198,7 +198,7 @@ export default function Maintenance() {
             Nova Manutenção
           </button>
           <button
-            onClick={() => alert('Gerando relatório de manutenção...')}
+            onClick={() => setShowReports(true)}
             className="px-4 py-2 text-sm font-medium text-accent-foreground bg-accent rounded-lg hover:bg-accent/90 flex items-center gap-2"
           >
             <FileText className="h-4 w-4" />
