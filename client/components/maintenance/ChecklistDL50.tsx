@@ -90,6 +90,8 @@ const defaultChecklistItems: ChecklistItem[] = [
 ];
 
 export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50Props) {
+  const [showCamera, setShowCamera] = useState(false);
+  const [cameraTarget, setCameraTarget] = useState<{type: 'main' | 'observation', id?: string}>({type: 'main'});
   const [checklist, setChecklist] = useState<ChecklistData>({
     equipmentId: equipmentData?.id || '',
     equipmentName: equipmentData?.name || '',
@@ -542,7 +544,7 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
     doc.setFont('helvetica', 'normal');
     doc.text('* Itens obrigatórios', 20, pageHeight - 20);
     doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-PT')} ${new Date().toLocaleTimeString('pt-PT')}`, 20, pageHeight - 10);
-    doc.text('FactoryControl - Sistema de Gestão de Manutenção', 120, pageHeight - 10);
+    doc.text('FactoryControl - Sistema de Gest��o de Manutenção', 120, pageHeight - 10);
     
     // Generate filename
     const timestamp = new Date().toISOString().slice(0, 10);
