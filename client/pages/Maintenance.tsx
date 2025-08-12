@@ -574,11 +574,7 @@ export default function Maintenance() {
                             <Edit className="h-4 w-4" />
                           </button>
                           <button
-                            onClick={() => {
-                              if (confirm(`Tem certeza que deseja excluir a manutenção ${maintenance.machineName}?`)) {
-                                alert(`Manutenção ${maintenance.machineName} excluída`)
-                              }
-                            }}
+                            onClick={() => handleDeleteMaintenance(maintenance)}
                             className="p-1 text-muted-foreground hover:text-destructive"
                             title="Excluir manutenção"
                           >
