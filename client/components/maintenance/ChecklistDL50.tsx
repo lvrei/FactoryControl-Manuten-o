@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Download, Save, Plus, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
+import { X, Download, Save, Plus, CheckCircle, XCircle, AlertTriangle, Camera, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import jsPDF from 'jspdf';
 
@@ -636,7 +636,7 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
                   required
                 >
                   <option value="Técnico de Manutenção">Técnico de Manutenção</option>
-                  <option value="Engenheiro de Manutenção">Engenheiro de Manutenção</option>
+                  <option value="Engenheiro de Manuten��ão">Engenheiro de Manutenção</option>
                   <option value="Supervisor de Manutenção">Supervisor de Manutenção</option>
                   <option value="Mecânico Industrial">Mecânico Industrial</option>
                   <option value="Eletricista Industrial">Eletricista Industrial</option>
@@ -657,7 +657,7 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Esta assinatura digital confirma que você é o responsável por esta inspeção.
+                  Esta assinatura digital confirma que você �� o responsável por esta inspeção.
                 </p>
               </div>
             </div>
