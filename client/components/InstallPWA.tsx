@@ -67,43 +67,65 @@ export function InstallPWA() {
 
   const handleInstallClick = async () => {
     console.log('Install button clicked');
-    
+
     if (deferredPrompt) {
       // Show the install prompt
       try {
+        console.log('Showing native install prompt...');
         await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         console.log(`User response to the install prompt: ${outcome}`);
-        
+
         if (outcome === 'accepted') {
           setShowInstallButton(false);
         }
-        
+
         setDeferredPrompt(null);
       } catch (error) {
         console.error('Error showing install prompt:', error);
+        showManualInstructions();
       }
-    } else if (isIOS) {
-      // Show iOS instructions
-      alert(`Para instalar a FactoryControl:
-      
-1. Toque no botão Partilhar (⬆️) no Safari
-2. Selecione "Adicionar ao Ecrã Principal"
-3. Toque em "Adicionar"
-
-A app aparecerá no seu ecrã principal!`);
     } else {
-      // Manual installation instructions for other browsers
-      alert(`Para instalar a FactoryControl:
+      showManualInstructions();
+    }
+  };
 
-Chrome/Edge:
-• Menu (⋮) → "Instalar FactoryControl"
-• Ou URL bar → ícone de instalação
+  const showManualInstructions = () => {
+    if (isIOS) {
+      // iOS Safari instructions
+      alert(`📱 Para instalar a FactoryControl:
 
-Firefox:
-• Menu → "Instalar esta página como app"
+1. Abra no Safari (não no Chrome)
+2. Toque no botão Partilhar ⬆️ (em baixo)
+3. Selecione "Adicionar ao Ecrã Principal"
+4. Toque em "Adicionar"
 
-A app aparecerá como aplicação nativa!`);
+✅ A app aparecerá no seu ecrã principal!`);
+    } else {
+      // Chrome Android instructions
+      const isChrome = /Chrome/.test(navigator.userAgent);
+      if (isChrome) {
+        alert(`📱 Para instalar a FactoryControl no Chrome:
+
+MÉTODO 1:
+• Toque nos 3 pontos (⋮) no canto superior direito
+• Selecione "Adicionar ao ecrã principal"
+• Toque em "Adicionar"
+
+MÉTODO 2:
+• Na barra de endereços, procure o ícone ⬇️
+• Toque nele e siga as instruções
+
+✅ A app aparecerá como aplicação nativa!`);
+      } else {
+        alert(`📱 Para instalar a FactoryControl:
+
+• Abra no Chrome ou Edge
+• Menu → "Instalar FactoryControl"
+• Ou procure ícone de instalação na URL
+
+✅ A app funcionará como aplicação nativa!`);
+      }
     }
   };
 
