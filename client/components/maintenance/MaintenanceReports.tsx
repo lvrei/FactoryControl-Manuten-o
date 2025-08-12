@@ -11,6 +11,7 @@ interface MaintenanceReportsProps {
   isOpen: boolean;
   onClose: () => void;
   machines: Machine[];
+  initialEquipment?: string;
 }
 
 export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceReportsProps) {
