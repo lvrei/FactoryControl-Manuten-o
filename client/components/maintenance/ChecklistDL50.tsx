@@ -726,6 +726,152 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
             </div>
           ))}
 
+          {/* Detailed Observations Section */}
+          <div className="border rounded-lg">
+            <div className="bg-muted p-4 rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-card-foreground">Observações Detalhadas</h3>
+                <button
+                  onClick={addDetailedObservation}
+                  className="px-3 py-1 text-sm font-medium text-primary-foreground bg-primary rounded hover:bg-primary/90 flex items-center gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  Nova Observação
+                </button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-1">
+                Adicione observações específicas encontradas durante a inspeção com fotografias de evidência.
+              </p>
+            </div>
+            <div className="p-4 space-y-4">
+              {checklist.detailedObservations.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Camera className="h-12 w-12 mx-auto mb-2 text-muted-foreground/50" />
+                  <p>Nenhuma observação adicionada ainda.</p>
+                  <p className="text-sm">Clique em "Nova Observação" para começar.</p>
+                </div>
+              ) : (
+                checklist.detailedObservations.map((observation, index) => (
+                  <div key={observation.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-medium text-card-foreground">Observação {index + 1}</h4>
+                      <button
+                        onClick={() => removeDetailedObservation(observation.id)}
+                        className="p-1 text-muted-foreground hover:text-destructive"
+                        title="Remover observação"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-1">
+                          Título da Observação
+                        </label>
+                        <input
+                          type="text"
+                          value={observation.title}
+                          onChange={(e) => updateDetailedObservation(observation.id, 'title', e.target.value)}
+                          placeholder="Ex: Vazamento detectado na válvula principal"
+                          className="w-full rounded border border-input bg-background px-2 py-1 text-sm text-foreground"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-1">
+                          Categoria
+                        </label>
+                        <select
+                          value={observation.category}
+                          onChange={(e) => updateDetailedObservation(observation.id, 'category', e.target.value)}
+                          className="w-full rounded border border-input bg-background px-2 py-1 text-sm text-foreground"
+                        >
+                          <option value="general">Geral</option>
+                          <option value="safety">Segurança</option>
+                          <option value="maintenance">Manutenção</option>
+                          <option value="defect">Defeito</option>
+                          <option value="improvement">Melhoria</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-card-foreground mb-1">
+                        Descrição Detalhada
+                      </label>
+                      <textarea
+                        value={observation.description}
+                        onChange={(e) => updateDetailedObservation(observation.id, 'description', e.target.value)}
+                        placeholder="Descreva detalhadamente a observação, incluindo localização, gravidade e ações recomendadas..."
+                        className="w-full rounded border border-input bg-background px-2 py-1 text-sm text-foreground"
+                        rows={3}
+                      />
+                    </div>
+
+                    {/* Photos section for each observation */}
+                    <div>
+                      <label className="block text-sm font-medium text-card-foreground mb-2">
+                        Fotografias da Observação
+                      </label>
+
+                      {/* Photo grid */}
+                      {observation.photos.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
+                          {observation.photos.map((photo, photoIndex) => (
+                            <div key={photoIndex} className="relative group">
+                              <img
+                                src={photo}
+                                alt={`Foto ${photoIndex + 1} da observação`}
+                                className="w-full h-20 object-cover rounded border"
+                              />
+                              <button
+                                onClick={() => removePhotoFromObservation(observation.id, photoIndex)}
+                                className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                title="Remover foto"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Add photo button */}
+                      <div>
+                        <input
+                          type="file"
+                          id={`photo-${observation.id}`}
+                          accept="image/*"
+                          multiple
+                          onChange={(e) => {
+                            const files = e.target.files;
+                            if (files) {
+                              Array.from(files).forEach(file => {
+                                addPhotoToObservation(observation.id, file);
+                              });
+                            }
+                            e.target.value = ''; // Reset input
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor={`photo-${observation.id}`}
+                          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-secondary-foreground bg-secondary rounded hover:bg-secondary/90 cursor-pointer"
+                        >
+                          <Camera className="h-4 w-4" />
+                          Adicionar Fotos
+                        </label>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Pode selecionar múltiplas fotos de uma vez. Máximo 5MB por foto.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-4 border-t">
             <button
