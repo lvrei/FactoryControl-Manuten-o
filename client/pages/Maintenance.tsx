@@ -70,6 +70,7 @@ const mockMaintenances: MaintenanceData[] = [
     technician: "João Silva",
     parts: "Óleo hidráulico 20L, Filtros",
     notes: "Verificar vazamentos",
+    photos: [],
     createdAt: "2024-01-20"
   },
   {
@@ -88,6 +89,7 @@ const mockMaintenances: MaintenanceData[] = [
     technician: "Maria Santos",
     parts: "Motor elétrico, correia, rolamentos",
     notes: "Falha no motor principal",
+    photos: [],
     createdAt: "2024-01-24"
   }
 ];
