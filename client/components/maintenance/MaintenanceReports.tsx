@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Download, FileText, BarChart3, TrendingUp, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
+import jsPDF from 'jspdf';
 
 interface Machine {
   id: string;
