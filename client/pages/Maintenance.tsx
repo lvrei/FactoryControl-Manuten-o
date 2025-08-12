@@ -237,6 +237,26 @@ export default function Maintenance() {
         <div className="rounded-lg border bg-card p-6">
           <div className="flex items-center justify-between">
             <div>
+              <p className="text-sm font-medium text-muted-foreground">Por Cumprir</p>
+              <p className="text-2xl font-bold text-warning">
+                {(() => {
+                  const now = new Date();
+                  return maintenances.filter(m =>
+                    m.status === 'scheduled' &&
+                    new Date(m.scheduledDate) < now
+                  ).length + machines.filter(m =>
+                    new Date(m.nextMaintenanceDate) < now
+                  ).length;
+                })()}
+              </p>
+            </div>
+            <AlertTriangle className="h-8 w-8 text-warning" />
+          </div>
+        </div>
+
+        <div className="rounded-lg border bg-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
               <p className="text-sm font-medium text-muted-foreground">Em Manutenção</p>
               <p className="text-2xl font-bold text-card-foreground">
                 {machines.filter(m => m.status === 'maintenance').length}
