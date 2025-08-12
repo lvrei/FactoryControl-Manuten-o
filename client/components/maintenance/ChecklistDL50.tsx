@@ -90,7 +90,11 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
     inspectorName: '',
     workOrderNumber: '',
     operatingHours: '',
-    items: defaultChecklistItems
+    items: defaultChecklistItems,
+    photo: '',
+    responsibleName: '',
+    responsibleRole: 'Técnico de Manutenção',
+    responsibleSignature: ''
   });
 
   const updateChecklistData = (field: keyof ChecklistData, value: any) => {
