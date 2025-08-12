@@ -64,6 +64,7 @@ export function MaintenanceForm({
       technician: '',
       parts: '',
       notes: '',
+      photos: [],
       createdAt: new Date().toISOString().split('T')[0]
     }
   );
