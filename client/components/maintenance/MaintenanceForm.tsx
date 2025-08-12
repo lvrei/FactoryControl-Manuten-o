@@ -321,6 +321,66 @@ export function MaintenanceForm({
 
           <div>
             <label className="block text-sm font-medium text-card-foreground mb-2">
+              Fotos e Anexos
+            </label>
+            <div className="space-y-3">
+              {/* Upload Area */}
+              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                <input
+                  type="file"
+                  id="photo-upload"
+                  multiple
+                  accept="image/*"
+                  onChange={handlePhotoUpload}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="photo-upload"
+                  className="cursor-pointer flex flex-col items-center gap-2"
+                >
+                  <Camera className="h-8 w-8 text-muted-foreground" />
+                  <div>
+                    <p className="text-sm font-medium text-card-foreground">
+                      Clique para adicionar fotos
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      PNG, JPG até 10MB cada
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              {/* Photo Preview */}
+              {formData.photos.length > 0 && (
+                <div className="grid gap-3 md:grid-cols-3">
+                  {formData.photos.map((photo, index) => (
+                    <div key={index} className="relative group">
+                      <div className="aspect-square rounded-lg border bg-muted overflow-hidden">
+                        <img
+                          src={URL.createObjectURL(photo)}
+                          alt={`Foto ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(index)}
+                        className="absolute top-2 right-2 p-1 bg-destructive text-destructive-foreground rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                      <p className="text-xs text-muted-foreground mt-1 truncate">
+                        {photo.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-card-foreground mb-2">
               Observações
             </label>
             <textarea
