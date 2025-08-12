@@ -148,6 +148,73 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
     setChecklist(prev => ({ ...prev, photo: '' }));
   };
 
+  const addDetailedObservation = () => {
+    const newObservation: DetailedObservation = {
+      id: Date.now().toString(),
+      title: '',
+      description: '',
+      photos: [],
+      category: 'general'
+    };
+    setChecklist(prev => ({
+      ...prev,
+      detailedObservations: [...prev.detailedObservations, newObservation]
+    }));
+  };
+
+  const updateDetailedObservation = (id: string, field: keyof DetailedObservation, value: any) => {
+    setChecklist(prev => ({
+      ...prev,
+      detailedObservations: prev.detailedObservations.map(obs =>
+        obs.id === id ? { ...obs, [field]: value } : obs
+      )
+    }));
+  };
+
+  const removeDetailedObservation = (id: string) => {
+    setChecklist(prev => ({
+      ...prev,
+      detailedObservations: prev.detailedObservations.filter(obs => obs.id !== id)
+    }));
+  };
+
+  const addPhotoToObservation = (observationId: string, photoFile: File) => {
+    if (!photoFile.type.startsWith('image/')) {
+      alert('Por favor, selecione apenas arquivos de imagem.');
+      return;
+    }
+
+    if (photoFile.size > 5 * 1024 * 1024) {
+      alert('O arquivo deve ter no máximo 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const photoData = e.target?.result as string;
+      setChecklist(prev => ({
+        ...prev,
+        detailedObservations: prev.detailedObservations.map(obs =>
+          obs.id === observationId
+            ? { ...obs, photos: [...obs.photos, photoData] }
+            : obs
+        )
+      }));
+    };
+    reader.readAsDataURL(photoFile);
+  };
+
+  const removePhotoFromObservation = (observationId: string, photoIndex: number) => {
+    setChecklist(prev => ({
+      ...prev,
+      detailedObservations: prev.detailedObservations.map(obs =>
+        obs.id === observationId
+          ? { ...obs, photos: obs.photos.filter((_, index) => index !== photoIndex) }
+          : obs
+      )
+    }));
+  };
+
   const generateChecklistPDF = () => {
     const doc = new jsPDF();
     
