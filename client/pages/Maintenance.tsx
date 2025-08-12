@@ -213,12 +213,14 @@ export default function Maintenance() {
             Nova Manutenção
           </button>
           <button
-            onClick={() => {
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
               console.log('Botão Gerar Relatório clicado');
               alert('Abrindo modal de relatórios...');
               setShowReports(true);
             }}
-            className="px-4 py-2 text-sm font-medium text-info-foreground bg-info rounded-lg hover:bg-info/90 flex items-center gap-2"
+            className="px-4 py-2 text-sm font-medium text-info-foreground bg-info rounded-lg hover:bg-info/90 flex items-center gap-2 relative z-10 cursor-pointer"
           >
             <FileText className="h-4 w-4" />
             Gerar Relatório
