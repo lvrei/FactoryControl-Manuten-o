@@ -135,7 +135,7 @@ const maintenanceStatusConfig = {
 
 export default function Maintenance() {
   const [machines, setMachines] = useState<MachineData[]>(mockMachines);
-  const [maintenances, setMaintenances] = useState<MaintenanceData[]>(mockMaintenances);
+  const [maintenances, setMaintenances] = useState<MaintenanceData[]>([]);
   const [activeTab, setActiveTab] = useState<'machines' | 'maintenance'>('machines');
   const [showMachineForm, setShowMachineForm] = useState(false);
   const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
