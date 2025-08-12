@@ -170,10 +170,20 @@ export default function Maintenance() {
     machine.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredMaintenances = maintenances.filter(maintenance =>
-    maintenance.machineName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    maintenance.description.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredMaintenances = maintenances.filter(maintenance => {
+    const matchesSearch = maintenance.machineName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         maintenance.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+    let matchesStatus = true;
+    if (statusFilter === 'overdue') {
+      const now = new Date();
+      matchesStatus = maintenance.status === 'scheduled' && new Date(maintenance.scheduledDate) < now;
+    } else if (statusFilter !== 'all') {
+      matchesStatus = maintenance.status === statusFilter;
+    }
+
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="space-y-6">
