@@ -414,7 +414,128 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
 
     yPosition += 30;
 
-    // Footer
+    // Detailed Observations Section
+    if (checklist.detailedObservations.length > 0) {
+      // New page for observations
+      doc.addPage();
+      yPosition = 20;
+
+      doc.setFontSize(16);
+      doc.setFont('helvetica', 'bold');
+      doc.text('OBSERVAÇÕES DETALHADAS', 20, yPosition);
+      yPosition += 20;
+
+      checklist.detailedObservations.forEach((observation, index) => {
+        // Check if we need a new page
+        if (yPosition > 240) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        // Observation header
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${index + 1}. ${observation.title || `Observação ${index + 1}`}`, 20, yPosition);
+        yPosition += 10;
+
+        // Category
+        const categoryLabels = {
+          general: 'Geral',
+          safety: 'Segurança',
+          maintenance: 'Manutenção',
+          defect: 'Defeito',
+          improvement: 'Melhoria'
+        };
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Categoria: ${categoryLabels[observation.category]}`, 25, yPosition);
+        yPosition += 10;
+
+        // Description
+        if (observation.description) {
+          doc.text('Descrição:', 25, yPosition);
+          yPosition += 6;
+
+          // Split long descriptions into multiple lines
+          const maxWidth = 160;
+          const lines = doc.splitTextToSize(observation.description, maxWidth);
+          lines.forEach((line: string) => {
+            if (yPosition > 270) {
+              doc.addPage();
+              yPosition = 20;
+            }
+            doc.text(line, 30, yPosition);
+            yPosition += 5;
+          });
+          yPosition += 5;
+        }
+
+        // Photos
+        if (observation.photos.length > 0) {
+          if (yPosition > 250) {
+            doc.addPage();
+            yPosition = 20;
+          }
+
+          doc.setFont('helvetica', 'bold');
+          doc.text(`Fotografias (${observation.photos.length}):`, 25, yPosition);
+          yPosition += 10;
+
+          // Add photos in grid layout
+          let photosPerRow = 2;
+          let photoWidth = 70;
+          let photoHeight = 50;
+          let currentRow = 0;
+          let currentCol = 0;
+
+          observation.photos.forEach((photo, photoIndex) => {
+            // Check if we need a new page
+            if (yPosition + photoHeight > 270) {
+              doc.addPage();
+              yPosition = 20;
+              currentRow = 0;
+              currentCol = 0;
+            }
+
+            try {
+              const xPos = 30 + (currentCol * (photoWidth + 10));
+              const yPos = yPosition + (currentRow * (photoHeight + 10));
+
+              doc.addImage(photo, 'JPEG', xPos, yPos, photoWidth, photoHeight);
+
+              // Add photo caption
+              doc.setFontSize(8);
+              doc.setFont('helvetica', 'normal');
+              doc.text(`Foto ${photoIndex + 1}`, xPos, yPos + photoHeight + 5);
+
+              currentCol++;
+              if (currentCol >= photosPerRow) {
+                currentCol = 0;
+                currentRow++;
+              }
+            } catch (error) {
+              doc.setFontSize(8);
+              doc.text(`Erro ao carregar foto ${photoIndex + 1}`, 30, yPosition);
+              yPosition += 8;
+            }
+          });
+
+          // Calculate final position after photos
+          const totalRows = Math.ceil(observation.photos.length / photosPerRow);
+          yPosition += (totalRows * (photoHeight + 10)) + 10;
+        }
+
+        // Add separator line between observations
+        if (index < checklist.detailedObservations.length - 1) {
+          doc.setLineWidth(0.3);
+          doc.line(20, yPosition, 190, yPosition);
+          yPosition += 15;
+        }
+      });
+    }
+
+    // Footer on last page
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
@@ -636,7 +757,7 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
                   required
                 >
                   <option value="Técnico de Manutenção">Técnico de Manutenção</option>
-                  <option value="Engenheiro de Manuten��ão">Engenheiro de Manutenção</option>
+                  <option value="Engenheiro de Manutenção">Engenheiro de Manutenção</option>
                   <option value="Supervisor de Manutenção">Supervisor de Manutenção</option>
                   <option value="Mecânico Industrial">Mecânico Industrial</option>
                   <option value="Eletricista Industrial">Eletricista Industrial</option>
@@ -657,7 +778,7 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
                   required
                 />
                 <p className="text-xs text-muted-foreground mt-1">
-                  Esta assinatura digital confirma que você �� o responsável por esta inspeção.
+                  Esta assinatura digital confirma que você é o responsável por esta inspeção.
                 </p>
               </div>
             </div>
