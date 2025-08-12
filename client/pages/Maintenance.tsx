@@ -553,6 +553,7 @@ export default function Maintenance() {
       <MaintenanceReports
         isOpen={showReports}
         onClose={() => setShowReports(false)}
+        machines={machines.map(m => ({ id: m.id!, name: m.name }))}
       />
     </div>
   );
