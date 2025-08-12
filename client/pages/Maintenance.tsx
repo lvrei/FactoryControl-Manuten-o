@@ -463,6 +463,11 @@ export default function Maintenance() {
         machines={machines.map(m => ({ id: m.id!, name: m.name }))}
         editingMaintenance={editingMaintenance}
       />
+
+      <MaintenanceReports
+        isOpen={showReports}
+        onClose={() => setShowReports(false)}
+      />
     </div>
   );
 }
