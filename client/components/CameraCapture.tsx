@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { Camera, X, RotateCcw, Download, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
