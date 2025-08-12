@@ -103,7 +103,8 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
     photo: '',
     responsibleName: '',
     responsibleRole: 'Técnico de Manutenção',
-    responsibleSignature: ''
+    responsibleSignature: '',
+    detailedObservations: []
   });
 
   const updateChecklistData = (field: keyof ChecklistData, value: any) => {
