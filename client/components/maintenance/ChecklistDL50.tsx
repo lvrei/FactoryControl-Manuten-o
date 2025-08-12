@@ -2,6 +2,7 @@ import { useState } from "react";
 import { X, Download, Save, Plus, CheckCircle, XCircle, AlertTriangle, Camera, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import jsPDF from 'jspdf';
+import { CameraCapture } from '../CameraCapture';
 
 interface ChecklistItem {
   id: string;
