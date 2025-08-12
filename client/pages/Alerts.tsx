@@ -482,10 +482,18 @@ export default function Alerts() {
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold text-card-foreground">Detalhes do Alerta</h3>
                     <div className="flex gap-2">
-                      <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                      <button
+                        onClick={() => alert(`Visualizando detalhes do alerta ${selectedAlert.title}`)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+                        title="Ver detalhes"
+                      >
                         <Eye className="h-4 w-4" />
                       </button>
-                      <button className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg">
+                      <button
+                        onClick={() => alert(`Mais opções para alerta ${selectedAlert.title}`)}
+                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
+                        title="Mais opções"
+                      >
                         <MoreVertical className="h-4 w-4" />
                       </button>
                     </div>
