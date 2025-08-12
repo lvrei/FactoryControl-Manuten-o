@@ -1015,33 +1015,45 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
                         </div>
                       )}
 
-                      {/* Add photo button */}
-                      <div>
-                        <input
-                          type="file"
-                          id={`photo-${observation.id}`}
-                          accept="image/*"
-                          multiple
-                          onChange={(e) => {
-                            const files = e.target.files;
-                            if (files) {
-                              Array.from(files).forEach(file => {
-                                addPhotoToObservation(observation.id, file);
-                              });
-                            }
-                            e.target.value = ''; // Reset input
-                          }}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor={`photo-${observation.id}`}
-                          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-secondary-foreground bg-secondary rounded hover:bg-secondary/90 cursor-pointer"
-                        >
-                          <Camera className="h-4 w-4" />
-                          Adicionar Fotos
-                        </label>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          Pode selecionar múltiplas fotos de uma vez. Máximo 5MB por foto.
+                      {/* Add photo buttons */}
+                      <div className="space-y-2">
+                        <div className="flex gap-2">
+                          <div>
+                            <input
+                              type="file"
+                              id={`photo-${observation.id}`}
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => {
+                                const files = e.target.files;
+                                if (files) {
+                                  Array.from(files).forEach(file => {
+                                    addPhotoToObservation(observation.id, file);
+                                  });
+                                }
+                                e.target.value = ''; // Reset input
+                              }}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor={`photo-${observation.id}`}
+                              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-secondary-foreground bg-secondary rounded hover:bg-secondary/90 cursor-pointer btn-mobile"
+                            >
+                              <Camera className="h-4 w-4" />
+                              Galeria
+                            </label>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => openCameraForObservation(observation.id)}
+                            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-primary-foreground bg-primary rounded hover:bg-primary/90 btn-mobile"
+                          >
+                            <Camera className="h-4 w-4" />
+                            Tirar Foto
+                          </button>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Use a câmera para tirar fotos ou selecione da galeria. Máximo 5MB por foto.
                         </p>
                       </div>
                     </div>
