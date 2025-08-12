@@ -58,15 +58,31 @@ export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceRep
   ];
 
   const handleGenerateReport = () => {
+    const selectedMachine = machines.find(m => m.id === selectedEquipment);
+    let dateInfo = '';
+
+    if (dateOption === 'all') {
+      dateInfo = 'Desde sempre';
+    } else if (dateOption === 'since') {
+      dateInfo = `Desde ${new Date(sinceDate).toLocaleDateString('pt-BR')}`;
+    } else {
+      dateInfo = `De ${new Date(dateRange.start).toLocaleDateString('pt-BR')} até ${new Date(dateRange.end).toLocaleDateString('pt-BR')}`;
+    }
+
+    const equipmentInfo = selectedEquipment === 'all' ? 'Todos os equipamentos' : selectedMachine?.name;
+
     const reportData = {
       type: reportType,
+      equipment: selectedEquipment,
+      dateOption,
       dateRange,
+      sinceDate,
       filters,
       timestamp: new Date().toISOString()
     };
-    
+
     // Simulate report generation
-    alert(`Gerando relatório: ${reportTypes.find(r => r.value === reportType)?.label}\nPeríodo: ${dateRange.start} a ${dateRange.end}`);
+    alert(`Gerando relatório PDF:\n• Tipo: ${reportTypes.find(r => r.value === reportType)?.label}\n• Equipamento: ${equipmentInfo}\n• Período: ${dateInfo}`);
     onClose();
   };
 
