@@ -549,13 +549,25 @@ export default function Production() {
                     </span>
                   </div>
                   <div className="flex gap-1">
-                    <button className="p-2 text-muted-foreground hover:text-success hover:bg-success/10 rounded-lg">
+                    <button
+                      onClick={() => alert(`Iniciando ${line.name}`)}
+                      className="p-2 text-muted-foreground hover:text-success hover:bg-success/10 rounded-lg"
+                      title="Iniciar linha"
+                    >
                       <Play className="h-4 w-4" />
                     </button>
-                    <button className="p-2 text-muted-foreground hover:text-warning hover:bg-warning/10 rounded-lg">
+                    <button
+                      onClick={() => alert(`Pausando ${line.name}`)}
+                      className="p-2 text-muted-foreground hover:text-warning hover:bg-warning/10 rounded-lg"
+                      title="Pausar linha"
+                    >
                       <Pause className="h-4 w-4" />
                     </button>
-                    <button className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg">
+                    <button
+                      onClick={() => alert(`Parando ${line.name}`)}
+                      className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg"
+                      title="Parar linha"
+                    >
                       <Square className="h-4 w-4" />
                     </button>
                   </div>
