@@ -593,6 +593,21 @@ export default function Maintenance() {
         machines={machines.map(m => ({ id: m.id!, name: m.name }))}
         initialEquipment={selectedEquipment}
       />
+
+      <ChecklistDL50
+        isOpen={showChecklist}
+        onClose={() => {
+          setShowChecklist(false);
+          setSelectedEquipmentForChecklist(undefined);
+        }}
+        equipmentData={selectedEquipmentForChecklist ? {
+          id: selectedEquipmentForChecklist.id!,
+          name: selectedEquipmentForChecklist.name,
+          model: selectedEquipmentForChecklist.model,
+          serialNumber: selectedEquipmentForChecklist.serialNumber,
+          location: selectedEquipmentForChecklist.location
+        } : undefined}
+      />
     </div>
   );
 }
