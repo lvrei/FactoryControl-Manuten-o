@@ -218,6 +218,32 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
     }));
   };
 
+  const openCameraForMain = () => {
+    setCameraTarget({type: 'main'});
+    setShowCamera(true);
+  };
+
+  const openCameraForObservation = (observationId: string) => {
+    setCameraTarget({type: 'observation', id: observationId});
+    setShowCamera(true);
+  };
+
+  const handleCameraCapture = (imageData: string) => {
+    if (cameraTarget.type === 'main') {
+      setChecklist(prev => ({ ...prev, photo: imageData }));
+    } else if (cameraTarget.type === 'observation' && cameraTarget.id) {
+      setChecklist(prev => ({
+        ...prev,
+        detailedObservations: prev.detailedObservations.map(obs =>
+          obs.id === cameraTarget.id
+            ? { ...obs, photos: [...obs.photos, imageData] }
+            : obs
+        )
+      }));
+    }
+    setShowCamera(false);
+  };
+
   const generateChecklistPDF = () => {
     const doc = new jsPDF();
     
@@ -544,7 +570,7 @@ export function ChecklistDL50({ isOpen, onClose, equipmentData }: ChecklistDL50P
     doc.setFont('helvetica', 'normal');
     doc.text('* Itens obrigatórios', 20, pageHeight - 20);
     doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-PT')} ${new Date().toLocaleTimeString('pt-PT')}`, 20, pageHeight - 10);
-    doc.text('FactoryControl - Sistema de Gest��o de Manutenção', 120, pageHeight - 10);
+    doc.text('FactoryControl - Sistema de Gestão de Manutenção', 120, pageHeight - 10);
     
     // Generate filename
     const timestamp = new Date().toISOString().slice(0, 10);
