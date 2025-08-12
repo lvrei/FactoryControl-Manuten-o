@@ -25,29 +25,35 @@ export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceRep
   });
 
   const reportTypes = [
-    { 
-      value: 'summary', 
-      label: 'Resumo Geral', 
+    {
+      value: 'summary',
+      label: 'Resumo Geral',
       description: 'Visão geral das manutenções realizadas',
       icon: BarChart3
     },
-    { 
-      value: 'detailed', 
-      label: 'Relatório Detalhado', 
+    {
+      value: 'detailed',
+      label: 'Relatório Detalhado',
       description: 'Informações completas de cada manutenção',
       icon: FileText
     },
-    { 
-      value: 'performance', 
-      label: 'Performance de Equipamentos', 
+    {
+      value: 'performance',
+      label: 'Performance de Equipamentos',
       description: 'Análise de eficiência e tempo de inatividade',
       icon: TrendingUp
     },
-    { 
-      value: 'costs', 
-      label: 'Análise de Custos', 
+    {
+      value: 'costs',
+      label: 'Análise de Custos',
       description: 'Relatório financeiro de manutenções',
       icon: Download
+    },
+    {
+      value: 'equipment',
+      label: 'Relatório por Equipamento',
+      description: 'Histórico completo de um equipamento específico',
+      icon: Settings
     }
   ];
 
