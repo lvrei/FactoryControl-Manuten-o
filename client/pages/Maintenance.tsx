@@ -18,6 +18,7 @@ import {
 import { cn } from "@/lib/utils";
 import { MachineForm, MachineData } from "@/components/maintenance/MachineForm";
 import { MaintenanceForm, MaintenanceData } from "@/components/maintenance/MaintenanceForm";
+import { MaintenanceReports } from "@/components/maintenance/MaintenanceReports";
 
 const mockMachines: MachineData[] = [
   {
@@ -304,7 +305,7 @@ export default function Maintenance() {
                   <th className="text-left p-4 font-medium text-muted-foreground">Categoria</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Localização</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Próxima Manuten��ão</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Próxima Manutenção</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Ações</th>
                 </tr>
               </thead>
