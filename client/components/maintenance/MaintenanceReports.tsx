@@ -14,12 +14,12 @@ interface MaintenanceReportsProps {
   initialEquipment?: string;
 }
 
-export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceReportsProps) {
-  const [reportType, setReportType] = useState<'summary' | 'detailed' | 'performance' | 'costs'>('summary');
+export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment }: MaintenanceReportsProps) {
+  const [reportType, setReportType] = useState<'summary' | 'detailed' | 'performance' | 'costs' | 'equipment'>('summary');
   const [dateOption, setDateOption] = useState<'all' | 'range' | 'since'>('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [sinceDate, setSinceDate] = useState('');
-  const [selectedEquipment, setSelectedEquipment] = useState<string>('all');
+  const [selectedEquipment, setSelectedEquipment] = useState<string>(initialEquipment || 'all');
   const [filters, setFilters] = useState({
     types: [] as string[],
     status: 'all'
