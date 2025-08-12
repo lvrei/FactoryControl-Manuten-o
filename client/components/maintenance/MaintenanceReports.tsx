@@ -295,7 +295,12 @@ export function MaintenanceReports({ isOpen, onClose, machines }: MaintenanceRep
             <h4 className="font-medium text-card-foreground mb-2">Prévia do Relatório</h4>
             <div className="text-sm text-muted-foreground space-y-1">
               <p>• Tipo: {reportTypes.find(r => r.value === reportType)?.label}</p>
-              <p>• Período: {dateRange.start || 'Não definido'} até {dateRange.end || 'Não definido'}</p>
+              <p>• Equipamento: {selectedEquipment === 'all' ? 'Todos os equipamentos' : machines.find(m => m.id === selectedEquipment)?.name}</p>
+              <p>• Período: {
+                dateOption === 'all' ? 'Desde sempre' :
+                dateOption === 'since' ? (sinceDate ? `Desde ${new Date(sinceDate).toLocaleDateString('pt-BR')}` : 'Data não definida') :
+                (dateRange.start && dateRange.end ? `${new Date(dateRange.start).toLocaleDateString('pt-BR')} até ${new Date(dateRange.end).toLocaleDateString('pt-BR')}` : 'Período não definido')
+              }</p>
               <p>• Status: {filters.status === 'all' ? 'Todos' : filters.status}</p>
               {filters.types.length > 0 && (
                 <p>• Tipos: {filters.types.join(', ')}</p>
