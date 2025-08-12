@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Download, Calendar, Filter, FileText, BarChart3, TrendingUp, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
