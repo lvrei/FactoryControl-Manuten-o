@@ -238,7 +238,7 @@ export default function Maintenance() {
             <div>
               <p className="text-sm font-medium text-muted-foreground">Custo Estimado</p>
               <p className="text-2xl font-bold text-card-foreground">
-                R$ {maintenances.reduce((sum, m) => sum + m.estimatedCost, 0).toLocaleString()}
+                € {maintenances.reduce((sum, m) => sum + m.estimatedCost, 0).toLocaleString()}
               </p>
             </div>
             <DollarSign className="h-8 w-8 text-muted-foreground" />
