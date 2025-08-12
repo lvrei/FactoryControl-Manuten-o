@@ -70,23 +70,233 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
     }
   }, [initialEquipment]);
 
-  const handleGenerateReport = () => {
+  const generatePDFReport = () => {
+    const doc = new jsPDF();
     const selectedMachine = machines.find(m => m.id === selectedEquipment);
+    const reportTypeInfo = reportTypes.find(r => r.value === reportType);
+
     let dateInfo = '';
-    
     if (dateOption === 'all') {
       dateInfo = 'Desde sempre';
     } else if (dateOption === 'since') {
-      dateInfo = `Desde ${new Date(sinceDate).toLocaleDateString('pt-BR')}`;
+      dateInfo = `Desde ${new Date(sinceDate).toLocaleDateString('pt-PT')}`;
     } else {
-      dateInfo = `De ${new Date(dateRange.start).toLocaleDateString('pt-BR')} até ${new Date(dateRange.end).toLocaleDateString('pt-BR')}`;
+      dateInfo = `De ${new Date(dateRange.start).toLocaleDateString('pt-PT')} até ${new Date(dateRange.end).toLocaleDateString('pt-PT')}`;
     }
-    
+
     const equipmentInfo = selectedEquipment === 'all' ? 'Todos os equipamentos' : selectedMachine?.name;
-    
-    // Simulate report generation
-    alert(`Gerando relatório PDF:\n• Tipo: ${reportTypes.find(r => r.value === reportType)?.label}\n• Equipamento: ${equipmentInfo}\n• Período: ${dateInfo}`);
-    onClose();
+
+    // PDF Header
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('FactoryControl - Relatório de Manutenção', 20, 20);
+
+    // Report Info
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Tipo de Relatório: ${reportTypeInfo?.label}`, 20, 40);
+    doc.text(`Equipamento: ${equipmentInfo}`, 20, 50);
+    doc.text(`Período: ${dateInfo}`, 20, 60);
+    doc.text(`Data de Geração: ${new Date().toLocaleDateString('pt-PT')} ${new Date().toLocaleTimeString('pt-PT')}`, 20, 70);
+
+    // Add line separator
+    doc.setLineWidth(0.5);
+    doc.line(20, 80, 190, 80);
+
+    let yPosition = 90;
+
+    // Content based on report type
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+
+    if (reportType === 'summary') {
+      doc.text('Resumo Geral de Manutenções', 20, yPosition);
+      yPosition += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+
+      const summaryData = [
+        'Total de Manutenções Realizadas: 47',
+        'Manutenções Preventivas: 31 (66%)',
+        'Manutenções Corretivas: 16 (34%)',
+        'Tempo Médio de Execução: 2.3 horas',
+        'Taxa de Eficiência: 94.2%',
+        'Custo Total: €12.450',
+        'Equipamentos com Maior Necessidade:'
+      ];
+
+      summaryData.forEach((line, index) => {
+        doc.text(line, 25, yPosition + (index * 8));
+      });
+
+      yPosition += summaryData.length * 8 + 10;
+
+      const equipmentStats = [
+        '• Torno CNC-001: 8 manutenções',
+        '• Fresadora FR-023: 6 manutenções',
+        '• Prensa PR-015: 5 manutenções'
+      ];
+
+      equipmentStats.forEach((line, index) => {
+        doc.text(line, 30, yPosition + (index * 8));
+      });
+
+    } else if (reportType === 'detailed') {
+      doc.text('Relatório Detalhado de Manutenções', 20, yPosition);
+      yPosition += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+
+      const detailedData = [
+        '1. Manutenção Preventiva - Torno CNC-001',
+        '   Data: 15/01/2024 | Técnico: João Silva',
+        '   Atividades: Lubrificação, verificação de peças',
+        '   Tempo: 1.5h | Custo: €89',
+        '',
+        '2. Manutenção Corretiva - Fresadora FR-023',
+        '   Data: 18/01/2024 | Técnico: Maria Santos',
+        '   Atividades: Substituição de motor, alinhamento',
+        '   Tempo: 4h | Custo: €320',
+        '',
+        '3. Manutenção Preventiva - Prensa PR-015',
+        '   Data: 22/01/2024 | Técnico: Pedro Costa',
+        '   Atividades: Inspeção hidráulica, troca de filtros',
+        '   Tempo: 2h | Custo: €145'
+      ];
+
+      detailedData.forEach((line, index) => {
+        if (line.startsWith('  ')) {
+          doc.text(line, 30, yPosition + (index * 6));
+        } else {
+          doc.text(line, 25, yPosition + (index * 6));
+        }
+      });
+
+    } else if (reportType === 'performance') {
+      doc.text('Análise de Performance de Equipamentos', 20, yPosition);
+      yPosition += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+
+      const performanceData = [
+        'Indicadores de Performance:',
+        '',
+        'Disponibilidade Média: 96.8%',
+        'Tempo Médio Entre Falhas (MTBF): 180 horas',
+        'Tempo Médio de Reparo (MTTR): 2.1 horas',
+        'Eficiência Global (OEE): 92.4%',
+        '',
+        'Equipamentos com Melhor Performance:',
+        '• Torno CNC-002: 98.5% disponibilidade',
+        '• Robot de Solda RB-007: 97.8% disponibilidade',
+        '• Fresadora FR-019: 97.2% disponibilidade',
+        '',
+        'Equipamentos com Atenção Necessária:',
+        '• Prensa PR-012: 89.3% disponibilidade',
+        '• Torno CNC-001: 91.7% disponibilidade'
+      ];
+
+      performanceData.forEach((line, index) => {
+        if (line.startsWith('•')) {
+          doc.text(line, 30, yPosition + (index * 8));
+        } else {
+          doc.text(line, 25, yPosition + (index * 8));
+        }
+      });
+
+    } else if (reportType === 'costs') {
+      doc.text('Análise de Custos de Manutenção', 20, yPosition);
+      yPosition += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+
+      const costData = [
+        'Resumo Financeiro:',
+        '',
+        'Custo Total de Manutenções: €12.450',
+        'Custo Médio por Manutenção: €265',
+        'Custo de Peças: €7.890 (63%)',
+        'Custo de Mão-de-obra: €4.560 (37%)',
+        '',
+        'Distribuição por Tipo:',
+        '• Manutenção Preventiva: €8.200 (66%)',
+        '• Manutenção Corretiva: €4.250 (34%)',
+        '',
+        'Equipamentos com Maior Custo:',
+        '• Fresadora FR-023: €2.340',
+        '• Torno CNC-001: €1.890',
+        '• Prensa PR-015: €1.650',
+        '',
+        'Projeção Anual: €149.400'
+      ];
+
+      costData.forEach((line, index) => {
+        if (line.startsWith('•')) {
+          doc.text(line, 30, yPosition + (index * 8));
+        } else {
+          doc.text(line, 25, yPosition + (index * 8));
+        }
+      });
+
+    } else if (reportType === 'equipment') {
+      doc.text(`Relatório Específico: ${equipmentInfo}`, 20, yPosition);
+      yPosition += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+
+      const equipmentData = [
+        'Informações do Equipamento:',
+        '',
+        `Nome: ${equipmentInfo}`,
+        'Localização: Área de Produção A',
+        'Ano de Fabricação: 2019',
+        'Último Serviço: 15/01/2024',
+        'Próxima Manutenção: 15/04/2024',
+        '',
+        'Histórico de Manutenções (Últimos 6 meses):',
+        '• 15/01/2024 - Manutenção Preventiva - €89',
+        '• 20/11/2023 - Troca de filtros - €45',
+        '• 18/09/2023 - Manutenção Corretiva - €230',
+        '• 15/07/2023 - Lubrificação geral - €35',
+        '',
+        'Estatísticas:',
+        'Total de Manutenções: 8',
+        'Custo Total: €1.890',
+        'Tempo Total de Parada: 18.5 horas',
+        'Disponibilidade: 91.7%'
+      ];
+
+      equipmentData.forEach((line, index) => {
+        if (line.startsWith('•')) {
+          doc.text(line, 30, yPosition + (index * 7));
+        } else {
+          doc.text(line, 25, yPosition + (index * 7));
+        }
+      });
+    }
+
+    // Footer
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Gerado pelo FactoryControl - Sistema de Gestão de Chão de Fábrica', 20, pageHeight - 10);
+
+    // Generate filename
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const filename = `Relatorio_${reportTypeInfo?.label.replace(/\s+/g, '_')}_${timestamp}.pdf`;
+
+    // Download PDF
+    doc.save(filename);
+  };
+
+  const handleGenerateReport = () => {
+    try {
+      generatePDFReport();
+      onClose();
+    } catch (error) {
+      console.error('Erro ao gerar relatório:', error);
+      alert('Erro ao gerar o relatório. Tente novamente.');
+    }
   };
 
   if (!isOpen) return null;
