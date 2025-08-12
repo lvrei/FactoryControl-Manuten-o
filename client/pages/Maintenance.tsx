@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { 
-  Plus, 
-  Search, 
+import {
+  Plus,
+  Search,
   Filter,
   Settings,
   Calendar,
@@ -12,7 +12,8 @@ import {
   XCircle,
   Edit,
   Trash2,
-  Wrench
+  Wrench,
+  FileText
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MachineForm, MachineData } from "@/components/maintenance/MachineForm";
@@ -303,7 +304,7 @@ export default function Maintenance() {
                   <th className="text-left p-4 font-medium text-muted-foreground">Categoria</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Localização</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Próxima Manutenção</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">Próxima Manuten��ão</th>
                   <th className="text-left p-4 font-medium text-muted-foreground">Ações</th>
                 </tr>
               </thead>
