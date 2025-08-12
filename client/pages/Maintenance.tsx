@@ -479,8 +479,15 @@ export default function Maintenance() {
                           {status.label}
                         </span>
                       </td>
-                      <td className="p-4 text-sm text-muted-foreground">
-                        {new Date(maintenance.scheduledDate).toLocaleDateString('pt-BR')}
+                      <td className="p-4">
+                        <div className="flex items-center gap-2">
+                          <span className={cn("text-sm", isOverdue ? "text-warning font-medium" : "text-muted-foreground")}>
+                            {new Date(maintenance.scheduledDate).toLocaleDateString('pt-BR')}
+                          </span>
+                          {isOverdue && (
+                            <AlertTriangle className="h-4 w-4 text-warning" title="Manutenção em atraso" />
+                          )}
+                        </div>
                       </td>
                       <td className="p-4 text-sm text-muted-foreground">
                         € {maintenance.estimatedCost.toLocaleString()}
