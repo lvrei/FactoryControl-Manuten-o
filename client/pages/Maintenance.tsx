@@ -234,7 +234,14 @@ export default function Maintenance() {
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-6">
+        <div
+          className="rounded-lg border bg-card p-6 cursor-pointer hover:bg-muted/50 transition-colors"
+          onClick={() => {
+            setActiveTab('maintenance');
+            setStatusFilter('overdue');
+          }}
+          title="Clique para ver manutenções em atraso"
+        >
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Por Cumprir</p>
