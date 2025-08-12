@@ -51,23 +51,47 @@ export function MaintenanceForm({
   machines, 
   editingMaintenance 
 }: MaintenanceFormProps) {
-  const [formData, setFormData] = useState<MaintenanceData>(
-    editingMaintenance || {
-      machineId: '',
-      type: 'preventive',
-      priority: 'medium',
-      status: 'scheduled',
-      scheduledDate: '',
-      estimatedCost: 0,
-      estimatedDuration: 2,
-      description: '',
-      technician: '',
-      parts: '',
-      notes: '',
-      photos: [],
-      createdAt: new Date().toISOString().split('T')[0]
+  const [formData, setFormData] = useState<MaintenanceData>({
+    machineId: '',
+    type: 'preventive',
+    priority: 'medium',
+    status: 'scheduled',
+    scheduledDate: '',
+    estimatedCost: 0,
+    estimatedDuration: 2,
+    description: '',
+    technician: '',
+    parts: '',
+    notes: '',
+    photos: [],
+    createdAt: new Date().toISOString().split('T')[0]
+  });
+
+  // Update form data when editingMaintenance changes
+  useEffect(() => {
+    if (editingMaintenance) {
+      setFormData({
+        ...editingMaintenance,
+        photos: editingMaintenance.photos || []
+      });
+    } else {
+      setFormData({
+        machineId: '',
+        type: 'preventive',
+        priority: 'medium',
+        status: 'scheduled',
+        scheduledDate: '',
+        estimatedCost: 0,
+        estimatedDuration: 2,
+        description: '',
+        technician: '',
+        parts: '',
+        notes: '',
+        photos: [],
+        createdAt: new Date().toISOString().split('T')[0]
+      });
     }
-  );
+  }, [editingMaintenance]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
