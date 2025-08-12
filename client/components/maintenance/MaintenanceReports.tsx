@@ -279,6 +279,52 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
           doc.text(line, 25, yPosition + (index * 7));
         }
       });
+
+    } else if (reportType === 'checklist') {
+      doc.text('Checklist de Inspeção - Modelo DL50', 20, yPosition);
+      yPosition += 15;
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+
+      doc.text('NOTA: Este é um modelo simplificado. Para checklist completo', 25, yPosition);
+      doc.text('utilize a funcionalidade específica de Checklist DL50.', 25, yPosition + 8);
+      yPosition += 25;
+
+      const checklistCategories = [
+        'Inspeção Pré-Operacional:',
+        '• Estado geral do equipamento',
+        '• Presença de vazamentos visíveis',
+        '• Limpeza geral do equipamento',
+        '• Documentação de operação presente',
+        '',
+        'Sistema Hidráulico:',
+        '• Nível de óleo hidráulico',
+        '• Condição do óleo hidráulico',
+        '• Funcionamento das mangueiras',
+        '• Teste de pressão do sistema',
+        '',
+        'Sistema Elétrico:',
+        '• Estado da bateria',
+        '• Conexões elétricas',
+        '• Funcionamento dos sinalizadores',
+        '',
+        'Segurança:',
+        '• Dispositivos de emergência',
+        '• Proteções e guarda-corpos',
+        '• Sinalização de segurança'
+      ];
+
+      checklistCategories.forEach((line, index) => {
+        if (line.startsWith('•')) {
+          doc.text(line, 30, yPosition + (index * 6));
+        } else if (line.endsWith(':')) {
+          doc.setFont('helvetica', 'bold');
+          doc.text(line, 25, yPosition + (index * 6));
+          doc.setFont('helvetica', 'normal');
+        } else {
+          doc.text(line, 25, yPosition + (index * 6));
+        }
+      });
     }
 
     // Footer
