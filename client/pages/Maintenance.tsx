@@ -272,12 +272,22 @@ export default function Maintenance() {
               <p className="text-2xl font-bold text-warning">
                 {(() => {
                   const now = new Date();
-                  return maintenances.filter(m =>
+                  // Contar apenas manutenções agendadas em atraso
+                  const overdueMaintences = maintenances.filter(m =>
                     m.status === 'scheduled' &&
                     new Date(m.scheduledDate) < now
-                  ).length + machines.filter(m =>
-                    new Date(m.nextMaintenanceDate) < now
                   ).length;
+
+                  // Contar máquinas que precisam de manutenção mas não têm manutenção agendada
+                  const machinesNeedingMaintenance = machines.filter(m => {
+                    const needsMaintenance = new Date(m.nextMaintenanceDate) < now;
+                    const hasScheduledMaintenance = maintenances.some(maintenance =>
+                      maintenance.machineId === m.id && maintenance.status === 'scheduled'
+                    );
+                    return needsMaintenance && !hasScheduledMaintenance;
+                  }).length;
+
+                  return overdueMaintences + machinesNeedingMaintenance;
                 })()}
               </p>
             </div>
@@ -547,7 +557,7 @@ export default function Maintenance() {
                               }
                             }}
                             className="p-1 text-muted-foreground hover:text-destructive"
-                            title="Excluir manutenção"
+                            title="Excluir manuten��ão"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
