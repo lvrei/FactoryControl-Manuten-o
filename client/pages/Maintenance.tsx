@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Plus,
   Search,
@@ -104,7 +104,7 @@ const mockMaintenances: MaintenanceData[] = [
     scheduledDate: "2024-12-28T09:00",
     estimatedCost: 350,
     estimatedDuration: 3,
-    description: "Inspeção de segurança obrigatória",
+    description: "Inspeção de segurança obrigat��ria",
     technician: "Carlos Oliveira",
     parts: "Kit de vedações",
     notes: "Inspeção atrasada - prioridade alta",
