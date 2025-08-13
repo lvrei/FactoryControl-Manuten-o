@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, CheckCircle, XCircle, Smartphone, Monitor, Wifi, WifiOff } from 'lucide-react';
+import { ServiceWorkerTest } from './ServiceWorkerTest';
 
 interface PWACapabilities {
   serviceWorker: boolean;
@@ -415,6 +416,9 @@ export function PWADebug() {
               )}
             </div>
           </div>
+
+          {/* Teste Específico Service Worker */}
+          <ServiceWorkerTest />
 
           {/* Recomendações */}
           <div className="space-y-2">
