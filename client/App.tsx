@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
 import { InstallPWA } from "@/components/InstallPWA";
+import { InstallPWAFallback } from "@/components/InstallPWAFallback";
 import Dashboard from "./pages/Dashboard";
 import Production from "./pages/Production";
 import Equipment from "./pages/Equipment";
@@ -41,8 +42,9 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
 
-        {/* PWA Install Button */}
+        {/* PWA Install Buttons - Primary and Fallback */}
         <InstallPWA />
+        <InstallPWAFallback />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
