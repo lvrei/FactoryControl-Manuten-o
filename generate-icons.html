@@ -1,74 +1,191 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-PT">
 <head>
-    <title>Generate PWA Icons</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Ícones PWA - FactoryControl</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .preview {
+            display: inline-block;
+            margin: 10px;
+            text-align: center;
+        }
+        .preview canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .instructions {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
-    <h1>Generating PWA Icons...</h1>
-    <canvas id="canvas"></canvas>
-    
+    <div class="container">
+        <h1>🏭 Gerador de Ícones PWA - FactoryControl</h1>
+        
+        <div class="instructions">
+            <h3>📋 Instruções:</h3>
+            <ol>
+                <li>Clique no botão abaixo para gerar todos os ícones</li>
+                <li>Os arquivos serão baixados automaticamente</li>
+                <li>Mova os arquivos para a pasta <code>public/</code> do projeto</li>
+                <li>Os ícones serão usados automaticamente pela PWA</li>
+            </ol>
+        </div>
+
+        <button onclick="generateAllIcons()" id="generateBtn">
+            🎨 Gerar Todos os Ícones PWA
+        </button>
+
+        <div id="previews"></div>
+    </div>
+
     <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    
-    const sizes = [16, 32, 72, 96, 128, 144, 152, 192, 384, 512];
-    
-    function generateIcon(size) {
-        canvas.width = size;
-        canvas.height = size;
-        
-        // Background
-        ctx.fillStyle = '#2563eb';
-        ctx.fillRect(0, 0, size, size);
-        
-        // Icon design - gear/factory symbol
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        
-        const center = size / 2;
-        const radius = size * 0.3;
-        
-        // Draw gear-like shape
-        for (let i = 0; i < 8; i++) {
-            const angle = (i * Math.PI * 2) / 8;
-            const x1 = center + Math.cos(angle) * radius;
-            const y1 = center + Math.sin(angle) * radius;
-            const x2 = center + Math.cos(angle) * (radius * 1.2);
-            const y2 = center + Math.sin(angle) * (radius * 1.2);
-            
-            ctx.moveTo(center, center);
-            ctx.lineTo(x2, y2);
-            ctx.lineTo(x1, y1);
-        }
-        ctx.fill();
-        
-        // Inner circle
-        ctx.fillStyle = '#2563eb';
-        ctx.beginPath();
-        ctx.arc(center, center, radius * 0.4, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Text for larger icons
-        if (size >= 128) {
+        function generateIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Background azul do FactoryControl
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(0, 0, size, size);
+
+            // Criar bordas arredondadas
+            const radius = size * 0.1;
+            ctx.globalCompositeOperation = 'destination-in';
+            ctx.beginPath();
+            ctx.moveTo(radius, 0);
+            ctx.lineTo(size - radius, 0);
+            ctx.quadraticCurveTo(size, 0, size, radius);
+            ctx.lineTo(size, size - radius);
+            ctx.quadraticCurveTo(size, size, size - radius, size);
+            ctx.lineTo(radius, size);
+            ctx.quadraticCurveTo(0, size, 0, size - radius);
+            ctx.lineTo(0, radius);
+            ctx.quadraticCurveTo(0, 0, radius, 0);
+            ctx.closePath();
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+
+            // Reaplicar fundo azul
+            ctx.fillStyle = '#2563eb';
+            ctx.fill();
+
+            // Texto "FC" (FactoryControl)
             ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${size * 0.08}px Arial`;
+            ctx.font = `bold ${size * 0.3}px Arial, sans-serif`;
             ctx.textAlign = 'center';
-            ctx.fillText('FC', center, center + (size * 0.03));
+            ctx.textBaseline = 'middle';
+            ctx.fillText('FC', size / 2, size / 2 - size * 0.05);
+
+            // Adicionar símbolo de engrenagem/fábrica
+            if (size >= 96) {
+                ctx.font = `${size * 0.12}px Arial, sans-serif`;
+                ctx.fillText('⚙️', size / 2, size * 0.75);
+            }
+
+            return canvas;
         }
-        
-        // Download
-        const link = document.createElement('a');
-        link.download = `icon-${size}x${size}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
-    }
-    
-    // Generate all sizes
-    sizes.forEach(size => {
-        setTimeout(() => generateIcon(size), size * 10);
-    });
-    
-    document.body.innerHTML += '<p>Icons generated! Check your downloads.</p>';
+
+        function downloadCanvas(canvas, filename) {
+            return new Promise((resolve) => {
+                canvas.toBlob((blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.download = filename;
+                    link.href = url;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    resolve();
+                }, 'image/png');
+            });
+        }
+
+        async function generateAllIcons() {
+            const btn = document.getElementById('generateBtn');
+            const previews = document.getElementById('previews');
+            
+            btn.textContent = '⏳ Gerando ícones...';
+            btn.disabled = true;
+            
+            previews.innerHTML = '<h3>🖼️ Pré-visualização dos Ícones:</h3>';
+
+            // Tamanhos necessários para PWA
+            const sizes = [16, 32, 72, 96, 128, 144, 152, 180, 192, 384, 512];
+            
+            for (const size of sizes) {
+                const canvas = generateIcon(size);
+                
+                // Adicionar à pré-visualização
+                const preview = document.createElement('div');
+                preview.className = 'preview';
+                preview.innerHTML = `
+                    <div>${size}x${size}</div>
+                    ${canvas.outerHTML}
+                `;
+                previews.appendChild(preview);
+                
+                // Download do arquivo
+                await downloadCanvas(canvas, `icon-${size}x${size}.png`);
+                
+                // Pequena pausa para não sobrecarregar
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+
+            btn.textContent = '✅ Ícones Gerados!';
+            btn.style.background = '#059669';
+            
+            setTimeout(() => {
+                btn.textContent = '🎨 Gerar Todos os Ícones PWA';
+                btn.style.background = '#2563eb';
+                btn.disabled = false;
+            }, 3000);
+        }
+
+        // Gerar um ícone de exemplo na carga da página
+        window.addEventListener('load', () => {
+            const exampleCanvas = generateIcon(128);
+            const preview = document.createElement('div');
+            preview.style.textAlign = 'center';
+            preview.style.margin = '20px 0';
+            preview.innerHTML = `
+                <h4>📱 Exemplo do Ícone (128x128):</h4>
+                ${exampleCanvas.outerHTML}
+            `;
+            document.querySelector('.instructions').after(preview);
+        });
     </script>
 </body>
 </html>
