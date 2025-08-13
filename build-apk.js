@@ -95,20 +95,32 @@ function generateAPK() {
 // Gerar APK via linha de comando (alternativa)
 function generateAPKCLI() {
   console.log('🤖 Tentando gerar APK via CLI...');
-  
+
   try {
     const originalDir = process.cwd();
     process.chdir('android');
-    
+
     console.log('🔧 Executando Gradle build...');
-    
-    // Verificar se gradlew existe
-    if (fs.existsSync('./gradlew')) {
-      execSync('./gradlew assembleDebug', { stdio: 'inherit' });
-    } else if (fs.existsSync('./gradlew.bat')) {
-      execSync('gradlew.bat assembleDebug', { stdio: 'inherit' });
+
+    // Detectar sistema operativo
+    const isWindows = process.platform === 'win32';
+
+    if (isWindows) {
+      // Windows usa gradlew.bat
+      if (fs.existsSync('gradlew.bat')) {
+        console.log('🪟 Sistema Windows detectado - usando gradlew.bat');
+        execSync('gradlew.bat assembleDebug', { stdio: 'inherit' });
+      } else {
+        throw new Error('gradlew.bat não encontrado');
+      }
     } else {
-      throw new Error('Gradlew não encontrado');
+      // Linux/Mac usa ./gradlew
+      if (fs.existsSync('gradlew')) {
+        console.log('🐧 Sistema Unix detectado - usando ./gradlew');
+        execSync('./gradlew assembleDebug', { stdio: 'inherit' });
+      } else {
+        throw new Error('./gradlew não encontrado');
+      }
     }
     
     process.chdir(originalDir);
