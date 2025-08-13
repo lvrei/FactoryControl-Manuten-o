@@ -120,13 +120,35 @@ export function SimplePWAInstall() {
                 </div>
               )}
 
+              <div className="p-3 bg-orange-50 border border-orange-200 rounded">
+                <h3 className="font-bold text-orange-800 mb-2">🔧 Problem Service Workers:</h3>
+                <div className="text-sm text-orange-700 space-y-1">
+                  <p><strong>Service Workers não funcionam no seu dispositivo</strong></p>
+                  <p>• Use a versão PWA simplificada</p>
+                  <p>• Acesse: <code className="bg-white px-1 rounded">index-pwa.html</code></p>
+                  <p>• Ou force instalação manual via menu do navegador</p>
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded">
+                <h3 className="font-bold text-blue-800 mb-2">🚀 URL PWA Direta:</h3>
+                <div className="text-sm text-blue-700">
+                  <p>Acesse diretamente:</p>
+                  <code className="bg-white p-2 rounded block mt-1 break-all">
+                    {window.location.origin}/index-pwa.html
+                  </code>
+                  <p className="mt-2">Esta versão não precisa de Service Workers!</p>
+                </div>
+              </div>
+
               <div className="p-3 bg-red-50 border border-red-200 rounded">
-                <h3 className="font-bold text-red-800 mb-2">⚠️ Se não funcionar:</h3>
+                <h3 className="font-bold text-red-800 mb-2">⚠️ Se ainda não funcionar:</h3>
                 <ul className="text-sm text-red-700 space-y-1">
-                  <li>• Atualize o navegador</li>
-                  <li>• Teste em Chrome ou Edge</li>
-                  <li>• Limpe cache e cookies</li>
-                  <li>• Use wifi estável</li>
+                  <li>• Atualize o navegador para versão mais recente</li>
+                  <li>• Teste em Samsung Internet (Android)</li>
+                  <li>• Limpe cache e cookies completamente</li>
+                  <li>• Reinicie o navegador</li>
+                  <li>• Use WiFi estável (não dados móveis)</li>
                 </ul>
               </div>
             </div>
