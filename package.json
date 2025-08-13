@@ -18,7 +18,13 @@
     "start": "node dist/server/node-build.mjs",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "install:capacitor": "npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/camera @capacitor/local-notifications @capacitor/splash-screen --save-dev",
+    "build:apk": "node build-apk.js",
+    "build:apk:studio": "node build-apk.js --studio",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap add android",
+    "cap:open": "npx cap open android"
   },
   "dependencies": {
     "dotenv": "^17.2.0",
@@ -27,6 +33,12 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/camera": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/local-notifications": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
