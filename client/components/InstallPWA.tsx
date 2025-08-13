@@ -142,12 +142,11 @@ export function InstallPWA() {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-50 animate-pulse">
+      <div className="fixed bottom-4 right-4 z-50">
         <button
           onClick={handleInstallClick}
-          className="flex items-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg hover:bg-primary/90 transition-all transform hover:scale-105 font-semibold text-sm btn-mobile relative overflow-hidden"
+          className="pwa-install-btn animate-pwa-pulse flex items-center gap-2 px-4 py-3 text-white rounded-lg transition-all transform hover:scale-105 font-semibold text-sm btn-mobile relative overflow-hidden"
           style={{
-            boxShadow: '0 6px 20px rgba(37, 99, 235, 0.4)',
             minHeight: '48px',
             minWidth: '120px'
           }}
@@ -155,13 +154,13 @@ export function InstallPWA() {
           {/* Efeito de brilho */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-shimmer"></div>
 
-          <Smartphone className="h-6 w-6 drop-shadow-sm" />
-          <span className="drop-shadow-sm">
+          <Smartphone className="h-6 w-6 drop-shadow-sm relative z-10" />
+          <span className="drop-shadow-sm relative z-10">
             {isIOS ? '+ Ecrã Principal' : '📱 Instalar App'}
           </span>
 
           {/* Badge de notificação */}
-          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-bounce"></div>
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-bounce-soft"></div>
         </button>
       </div>
 
@@ -269,7 +268,7 @@ export function InstallPWA() {
                     </div>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
-                    <p className="font-bold text-green-800 text-center text-lg">��� Sucesso!</p>
+                    <p className="font-bold text-green-800 text-center text-lg">🎉 Sucesso!</p>
                     <p className="text-sm text-green-700 text-center mt-2">
                       A app funcionará como aplicação nativa no Android!
                     </p>
