@@ -12,7 +12,7 @@ const path = require('path');
 console.log('🏭 FactoryControl - Gerador de APK');
 console.log('=====================================\n');
 
-// Verificar depend��ncias
+// Verificar dependências
 function checkDependencies() {
   console.log('🔍 Verificando dependências...');
   
@@ -31,12 +31,21 @@ function checkDependencies() {
 // Fazer build da aplicação
 function buildApp() {
   console.log('🔨 Fazendo build da aplicação...');
-  
+
   try {
-    execSync('npm run build', { stdio: 'inherit' });
+    // Build específico para APK
+    execSync('npx vite build --config vite.config.apk.ts', { stdio: 'inherit' });
+    console.log('✅ Build do cliente concluído');
+
+    // Verificar se pasta dist existe
+    if (!fs.existsSync('dist')) {
+      throw new Error('Pasta dist não foi criada');
+    }
+
     console.log('✅ Build concluído\n');
   } catch (error) {
     console.error('❌ Erro no build:', error.message);
+    console.log('💡 Tente: npm run build:client');
     process.exit(1);
   }
 }
