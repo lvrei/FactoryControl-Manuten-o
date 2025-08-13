@@ -1,0 +1,39 @@
+{
+  "appId": "com.factorycontrol.maintenance",
+  "appName": "FactoryControl",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": "debug.keystore",
+      "keystoreAlias": "androiddebugkey"
+    },
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "ios": {
+    "scheme": "FactoryControl"
+  },
+  "plugins": {
+    "Camera": {
+      "permissions": {
+        "camera": "Para capturar fotos nos checklists de manutenção",
+        "photos": "Para anexar fotos aos relatórios"
+      }
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon_config_sample",
+      "iconColor": "#2563eb"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#2563eb",
+      "androidSplashResourceName": "splash",
+      "showSpinner": false
+    }
+  }
+}
