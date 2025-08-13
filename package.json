@@ -29,7 +29,9 @@
     "fix:deps": "node fix-deps.js",
     "build:apk:windows": "build-apk-windows.bat",
     "setup:java": "setup-java-windows.bat",
-    "build:apk:fixed": "build-apk-windows-fixed.bat"
+    "build:apk:fixed": "build-apk-windows-fixed.bat",
+    "create:apk": "node create-apk-simple.js",
+    "create:apk:ps": "powershell -ExecutionPolicy Bypass -File create-apk.ps1"
   },
   "dependencies": {
     "dotenv": "^17.2.0",
