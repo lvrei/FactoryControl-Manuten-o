@@ -39,47 +39,149 @@
 
     <!-- PWA Service Worker Registration -->
     <script>
+      // Enhanced PWA registration with better mobile support
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('/sw.js', {
+            scope: '/'
+          })
             .then(function(registration) {
-              console.log('✅ ServiceWorker registered successfully');
+              console.log('✅ ServiceWorker registered successfully:', registration.scope);
 
-              // Check for updates
+              // Check for updates more aggressively
               registration.addEventListener('updatefound', function() {
                 const newWorker = registration.installing;
+                console.log('🔄 New ServiceWorker installing...');
+
                 newWorker.addEventListener('statechange', function() {
+                  console.log('ServiceWorker state changed to:', newWorker.state);
+
                   if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('🔄 New version available');
-                    if (confirm('Nova versão disponível! Recarregar para atualizar?')) {
-                      window.location.reload();
+                    console.log('🆕 New version available');
+
+                    // Auto-update for mobile devices
+                    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+                    if (isMobile) {
+                      // Auto-reload on mobile for smoother experience
+                      setTimeout(() => {
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        window.location.reload();
+                      }, 1000);
+                    } else {
+                      // Ask permission on desktop
+                      if (confirm('Nova versão disponível! Recarregar para atualizar?')) {
+                        newWorker.postMessage({ type: 'SKIP_WAITING' });
+                        window.location.reload();
+                      }
                     }
                   }
                 });
               });
+
+              // Check for updates periodically (every 30 seconds)
+              setInterval(() => {
+                registration.update();
+              }, 30000);
             })
             .catch(function(err) {
               console.error('❌ ServiceWorker registration failed:', err);
             });
         });
+
+        // Handle service worker messages
+        navigator.serviceWorker.addEventListener('message', event => {
+          if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
+            console.log('📱 Update available message received');
+          }
+        });
       }
 
-      // Log PWA capabilities
-      console.log('🔍 PWA Capabilities:');
-      console.log('ServiceWorker support:', 'serviceWorker' in navigator);
-      console.log('Install prompt support:', 'BeforeInstallPromptEvent' in window);
-      console.log('Notification support:', 'Notification' in window);
-      console.log('Camera support:', 'mediaDevices' in navigator);
+      // Enhanced PWA capabilities logging
+      function checkPWACapabilities() {
+        const capabilities = {
+          serviceWorker: 'serviceWorker' in navigator,
+          installPrompt: 'BeforeInstallPromptEvent' in window,
+          notifications: 'Notification' in window,
+          camera: 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices,
+          geolocation: 'geolocation' in navigator,
+          storage: 'localStorage' in window,
+          standalone: window.matchMedia('(display-mode: standalone)').matches,
+          webAppManifest: document.querySelector('link[rel="manifest"]') !== null,
+          isSecureContext: window.isSecureContext,
+          platform: navigator.platform,
+          userAgent: navigator.userAgent,
+          isOnline: navigator.onLine
+        };
 
-      // Check manifest
-      fetch('/manifest.json')
-        .then(response => response.json())
-        .then(manifest => {
-          console.log('✅ Manifest loaded:', manifest.name);
-        })
-        .catch(error => {
+        console.log('🔍 PWA Capabilities Check:', capabilities);
+
+        // Store capabilities for debugging
+        window.pwaCapabilities = capabilities;
+
+        return capabilities;
+      }
+
+      // Check capabilities after DOM loads
+      setTimeout(checkPWACapabilities, 500);
+
+      // Enhanced manifest check with retry
+      async function checkManifest() {
+        try {
+          const response = await fetch('/manifest.json', {
+            method: 'GET',
+            cache: 'no-cache'
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+
+          const manifest = await response.json();
+          console.log('✅ Manifest loaded successfully:', {
+            name: manifest.name,
+            startUrl: manifest.start_url,
+            display: manifest.display,
+            icons: manifest.icons?.length || 0
+          });
+
+          // Store manifest for debugging
+          window.pwaManifest = manifest;
+
+        } catch (error) {
           console.error('❌ Manifest failed to load:', error);
-        });
+
+          // Retry after 2 seconds
+          setTimeout(checkManifest, 2000);
+        }
+      }
+
+      checkManifest();
+
+      // Listen for online/offline changes
+      window.addEventListener('online', () => {
+        console.log('🌐 App is now ONLINE');
+      });
+
+      window.addEventListener('offline', () => {
+        console.log('📴 App is now OFFLINE');
+      });
+
+      // Enhanced beforeinstallprompt logging
+      window.addEventListener('beforeinstallprompt', (e) => {
+        console.log('🎯 beforeinstallprompt event fired');
+        console.log('Platforms:', e.platforms);
+
+        // Store the event for debugging
+        window.pwaInstallPrompt = e;
+      });
+
+      // Listen for app installed
+      window.addEventListener('appinstalled', () => {
+        console.log('🎉 PWA was installed successfully!');
+      });
+
+      console.log('🚀 PWA initialization complete');
     </script>
   </body>
 </html>
