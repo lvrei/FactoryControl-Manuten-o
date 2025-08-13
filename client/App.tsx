@@ -20,32 +20,47 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="production" element={<Production />} />
-            <Route path="equipment" element={<Equipment />} />
-            <Route path="quality" element={<Quality />} />
-            <Route path="maintenance" element={<Maintenance />} />
-            <Route path="team" element={<Team />} />
-            <Route path="planning" element={<Planning />} />
-            <Route path="alerts" element={<Alerts />} />
-          </Route>
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+// Debug logging
+console.log('🚀 FactoryControl App carregando...');
+console.log('📱 User Agent:', navigator.userAgent);
+console.log('🔒 Secure Context:', window.isSecureContext);
+console.log('🌐 Location:', location.href);
+console.log('🔧 Service Workers disponível:', 'serviceWorker' in navigator);
 
-        {/* PWA Install Button - Simplified for debugging */}
-        <SimplePWAInstall />
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log('✅ App component renderizando...');
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="production" element={<Production />} />
+              <Route path="equipment" element={<Equipment />} />
+              <Route path="quality" element={<Quality />} />
+              <Route path="maintenance" element={<Maintenance />} />
+              <Route path="team" element={<Team />} />
+              <Route path="planning" element={<Planning />} />
+              <Route path="alerts" element={<Alerts />} />
+            </Route>
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+
+          {/* PWA Install Button - Simplified for debugging */}
+          <SimplePWAInstall />
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
+
+console.log('📦 App definido, preparando renderização...');
 
 createRoot(document.getElementById("root")!).render(<App />);
+
+console.log('🎯 App renderizado com sucesso!');
