@@ -320,11 +320,43 @@ export function PWADebug() {
           {/* Service Worker */}
           <div className="space-y-2">
             <h4 className="font-medium">Service Worker</h4>
-            <div className="p-3 bg-muted/50 rounded text-sm">
+            <div className="p-3 bg-muted/50 rounded text-sm space-y-2">
               <div className="flex justify-between">
                 <span>Status:</span>
                 <span className="font-mono">{swStatus}</span>
               </div>
+
+              {/* Teste em tempo real */}
+              <button
+                onClick={async () => {
+                  try {
+                    console.log('🧪 Testando Service Worker...');
+                    if ('serviceWorker' in navigator) {
+                      const registration = await navigator.serviceWorker.register('/sw-test.js');
+                      setSwStatus(`✅ Teste OK: ${registration.scope}`);
+                      console.log('✅ Service Worker teste registrado com sucesso');
+                    } else {
+                      setSwStatus('❌ ServiceWorker não disponível');
+                    }
+                  } catch (error) {
+                    console.error('❌ Erro no teste:', error);
+                    setSwStatus(`❌ Erro: ${error.message}`);
+                  }
+                }}
+                className="w-full p-2 bg-primary text-primary-foreground rounded text-xs hover:bg-primary/90"
+              >
+                🧪 Testar Service Worker Agora
+              </button>
+
+              <button
+                onClick={() => {
+                  // Reload da página para ver logs
+                  window.location.reload();
+                }}
+                className="w-full p-2 bg-secondary text-secondary-foreground rounded text-xs hover:bg-secondary/90"
+              >
+                🔄 Recarregar e Ver Logs
+              </button>
             </div>
           </div>
 
