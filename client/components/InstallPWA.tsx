@@ -89,26 +89,40 @@ export function InstallPWA() {
   }, [deferredPrompt]);
 
   const handleInstallClick = async () => {
-    console.log('Install button clicked');
+    console.log('🔘 Install button clicked');
+    console.log('📱 Device info:', {
+      userAgent: navigator.userAgent,
+      platform: navigator.platform,
+      isStandalone: window.matchMedia('(display-mode: standalone)').matches,
+      hasPrompt: !!deferredPrompt,
+      isIOS,
+      screen: { width: screen.width, height: screen.height }
+    });
 
     if (deferredPrompt) {
-      // Show the install prompt
+      // Show the native install prompt
       try {
-        console.log('Showing native install prompt...');
+        console.log('🚀 Showing native install prompt...');
         await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        console.log(`User response to the install prompt: ${outcome}`);
+        console.log(`👤 User response to install prompt: ${outcome}`);
 
         if (outcome === 'accepted') {
+          console.log('✅ User accepted PWA installation');
           setShowInstallButton(false);
+          localStorage.setItem('pwa-installed', 'true');
+        } else {
+          console.log('❌ User dismissed PWA installation');
         }
 
         setDeferredPrompt(null);
       } catch (error) {
-        console.error('Error showing install prompt:', error);
+        console.error('💥 Error showing install prompt:', error);
+        console.log('🔄 Falling back to manual instructions');
         showManualInstructions();
       }
     } else {
+      console.log('📖 No native prompt available, showing manual instructions');
       showManualInstructions();
     }
   };
@@ -128,18 +142,26 @@ export function InstallPWA() {
 
   return (
     <>
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-4 right-4 z-50 animate-pulse">
         <button
           onClick={handleInstallClick}
-          className="flex items-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg hover:bg-primary/90 transition-all transform hover:scale-105 font-medium text-sm btn-mobile"
+          className="flex items-center gap-2 px-4 py-3 bg-primary text-primary-foreground rounded-lg shadow-lg hover:bg-primary/90 transition-all transform hover:scale-105 font-semibold text-sm btn-mobile relative overflow-hidden"
           style={{
-            boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+            boxShadow: '0 6px 20px rgba(37, 99, 235, 0.4)',
+            minHeight: '48px',
+            minWidth: '120px'
           }}
         >
-          <Smartphone className="h-5 w-5" />
-          <span>
-            {isIOS ? 'Adicionar ao Ecrã' : 'Instalar App'}
+          {/* Efeito de brilho */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 animate-shimmer"></div>
+
+          <Smartphone className="h-6 w-6 drop-shadow-sm" />
+          <span className="drop-shadow-sm">
+            {isIOS ? '+ Ecrã Principal' : '📱 Instalar App'}
           </span>
+
+          {/* Badge de notificação */}
+          <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-bounce"></div>
         </button>
       </div>
 
@@ -247,7 +269,7 @@ export function InstallPWA() {
                     </div>
                   </div>
                   <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
-                    <p className="font-bold text-green-800 text-center text-lg">🎉 Sucesso!</p>
+                    <p className="font-bold text-green-800 text-center text-lg">��� Sucesso!</p>
                     <p className="text-sm text-green-700 text-center mt-2">
                       A app funcionará como aplicação nativa no Android!
                     </p>
