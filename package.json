@@ -24,7 +24,8 @@
     "build:apk:studio": "node build-apk.js --studio",
     "cap:sync": "npx cap sync",
     "cap:android": "npx cap add android",
-    "cap:open": "npx cap open android"
+    "cap:open": "npx cap open android",
+    "check:apk": "node check-apk.js"
   },
   "dependencies": {
     "dotenv": "^17.2.0",

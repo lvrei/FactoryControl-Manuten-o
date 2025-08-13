@@ -5,9 +5,9 @@
  * Converte a aplicação web em app Android nativa
  */
 
-const { execSync } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 console.log('🏭 FactoryControl - Gerador de APK');
 console.log('=====================================\n');
@@ -23,7 +23,7 @@ function checkDependencies() {
     console.log('❌ Capacitor não encontrado');
     console.log('📦 Instalando Capacitor...');
     
-    execSync('npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/camera @capacitor/local-notifications @capacitor/splash-screen --save', { stdio: 'inherit' });
+    execSync('npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/camera @capacitor/local-notifications @capacitor/splash-screen --save-dev', { stdio: 'inherit' });
     console.log('✅ Capacitor instalado com sucesso\n');
   }
 }
@@ -31,17 +31,17 @@ function checkDependencies() {
 // Fazer build da aplicação
 function buildApp() {
   console.log('🔨 Fazendo build da aplicação...');
-
+  
   try {
     // Build específico para APK
     execSync('npx vite build --config vite.config.apk.ts', { stdio: 'inherit' });
     console.log('✅ Build do cliente concluído');
-
+    
     // Verificar se pasta dist existe
     if (!fs.existsSync('dist')) {
       throw new Error('Pasta dist não foi criada');
     }
-
+    
     console.log('✅ Build concluído\n');
   } catch (error) {
     console.error('❌ Erro no build:', error.message);
@@ -56,12 +56,14 @@ function initCapacitor() {
   
   try {
     if (!fs.existsSync('android')) {
+      console.log('📱 Adicionando plataforma Android...');
       execSync('npx cap add android', { stdio: 'inherit' });
       console.log('✅ Plataforma Android adicionada');
     } else {
       console.log('✅ Plataforma Android já existe');
     }
     
+    console.log('🔄 Sincronizando ficheiros...');
     execSync('npx cap sync', { stdio: 'inherit' });
     console.log('✅ Sincronização concluída\n');
   } catch (error) {
@@ -95,13 +97,36 @@ function generateAPKCLI() {
   console.log('🤖 Tentando gerar APK via CLI...');
   
   try {
+    const originalDir = process.cwd();
     process.chdir('android');
-    execSync('./gradlew assembleDebug', { stdio: 'inherit' });
+    
+    console.log('🔧 Executando Gradle build...');
+    
+    // Verificar se gradlew existe
+    if (fs.existsSync('./gradlew')) {
+      execSync('./gradlew assembleDebug', { stdio: 'inherit' });
+    } else if (fs.existsSync('./gradlew.bat')) {
+      execSync('gradlew.bat assembleDebug', { stdio: 'inherit' });
+    } else {
+      throw new Error('Gradlew não encontrado');
+    }
+    
+    process.chdir(originalDir);
+    
     console.log('\n🎉 APK GERADO COM SUCESSO!');
     console.log('📁 Localização: android/app/build/outputs/apk/debug/app-debug.apk');
     console.log('📱 Pode instalar este ficheiro no telemóvel Android');
+    
+    // Verificar se APK foi criado
+    const apkPath = 'android/app/build/outputs/apk/debug/app-debug.apk';
+    if (fs.existsSync(apkPath)) {
+      const stats = fs.statSync(apkPath);
+      console.log(`📊 Tamanho do APK: ${(stats.size / 1024 / 1024).toFixed(2)} MB`);
+    }
+    
   } catch (error) {
-    console.log('❌ Erro na geração CLI, use Android Studio');
+    console.log('❌ Erro na geração CLI:', error.message);
+    console.log('🔄 Fallback para Android Studio...');
     generateAPK();
   }
 }
@@ -128,8 +153,4 @@ async function main() {
 }
 
 // Executar se chamado diretamente
-if (require.main === module) {
-  main();
-}
-
-module.exports = { main };
+main().catch(console.error);
