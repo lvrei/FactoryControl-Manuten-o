@@ -31,7 +31,8 @@
     "setup:java": "setup-java-windows.bat",
     "build:apk:fixed": "build-apk-windows-fixed.bat",
     "create:apk": "node create-apk-simple.js",
-    "create:apk:ps": "powershell -ExecutionPolicy Bypass -File create-apk.ps1"
+    "create:apk:ps": "powershell -ExecutionPolicy Bypass -File create-apk.ps1",
+    "create:apk:cmd": "create-apk-simple.bat"
   },
   "dependencies": {
     "dotenv": "^17.2.0",
