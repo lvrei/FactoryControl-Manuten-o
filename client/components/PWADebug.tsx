@@ -40,8 +40,33 @@ export function PWADebug() {
   }, []);
 
   const checkPWACapabilities = () => {
+    // Teste detalhado de Service Worker
+    const testServiceWorker = () => {
+      try {
+        if (!('serviceWorker' in navigator)) {
+          console.log('❌ ServiceWorker não existe no navigator');
+          return false;
+        }
+
+        console.log('✅ ServiceWorker existe no navigator');
+        console.log('Navigator.serviceWorker:', navigator.serviceWorker);
+
+        // Testar métodos específicos
+        const hasRegister = typeof navigator.serviceWorker.register === 'function';
+        const hasGetRegistration = typeof navigator.serviceWorker.getRegistration === 'function';
+
+        console.log('Has register method:', hasRegister);
+        console.log('Has getRegistration method:', hasGetRegistration);
+
+        return hasRegister && hasGetRegistration;
+      } catch (error) {
+        console.error('❌ Erro ao testar ServiceWorker:', error);
+        return false;
+      }
+    };
+
     const caps: PWACapabilities = {
-      serviceWorker: 'serviceWorker' in navigator,
+      serviceWorker: testServiceWorker(),
       installPrompt: 'BeforeInstallPromptEvent' in window,
       notifications: 'Notification' in window,
       camera: 'mediaDevices' in navigator && 'getUserMedia' in (navigator.mediaDevices || {}),
@@ -54,9 +79,23 @@ export function PWADebug() {
       platform: navigator.platform,
       userAgent: navigator.userAgent
     };
-    
+
     setCapabilities(caps);
-    console.log('🔍 PWA Capabilities:', caps);
+    console.log('🔍 PWA Capabilities (detailed):', caps);
+
+    // Log adicional para debug
+    console.log('🌐 Location:', {
+      protocol: location.protocol,
+      hostname: location.hostname,
+      port: location.port,
+      href: location.href
+    });
+
+    console.log('🔒 Security context:', {
+      isSecureContext: window.isSecureContext,
+      origin: location.origin,
+      protocol: location.protocol
+    });
   };
 
   const checkManifest = async () => {
