@@ -27,7 +27,9 @@
     "cap:open": "npx cap open android",
     "check:apk": "node check-apk.js",
     "fix:deps": "node fix-deps.js",
-    "build:apk:windows": "build-apk-windows.bat"
+    "build:apk:windows": "build-apk-windows.bat",
+    "setup:java": "setup-java-windows.bat",
+    "build:apk:fixed": "build-apk-windows-fixed.bat"
   },
   "dependencies": {
     "dotenv": "^17.2.0",
