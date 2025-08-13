@@ -34,7 +34,8 @@
     "create:apk:ps": "powershell -ExecutionPolicy Bypass -File create-apk.ps1",
     "create:apk:cmd": "create-apk-simple.bat",
     "fix:android": "fix-android-studio.bat",
-    "build:online": "prepare-online-build.bat"
+    "build:online": "prepare-online-build.bat",
+    "create:zip": "create-phonegap-zip.bat"
   },
   "dependencies": {
     "dotenv": "^17.2.0",

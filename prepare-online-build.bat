@@ -6,10 +6,24 @@ echo.
 
 echo 1. Verificando estrutura do projeto...
 if not exist "cordova-app" (
-    echo Erro: Pasta cordova-app nao encontrada
-    echo Execute primeiro os passos anteriores
-    pause
-    exit /b 1
+    echo Pasta cordova-app nao encontrada, criando automaticamente...
+    echo.
+    echo Instalando Cordova globalmente...
+    npm install -g cordova
+    echo.
+    echo Fazendo build da aplicacao...
+    call npm run build:client
+    echo.
+    echo Criando projeto Cordova...
+    cordova create cordova-app com.factorycontrol.maintenance FactoryControl
+    echo.
+    echo Copiando ficheiros...
+    cd cordova-app
+    rmdir /s /q www
+    xcopy ..\dist\spa www\ /e /i /h
+    cd ..
+    echo ✓ Projeto Cordova criado com sucesso
+    echo.
 )
 
 cd cordova-app
