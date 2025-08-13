@@ -39,12 +39,29 @@
 
     <!-- PWA Service Worker Registration -->
     <script>
+      // Test Service Worker support first
+      console.log('🔍 Testing Service Worker support...');
+      console.log('ServiceWorker in navigator:', 'serviceWorker' in navigator);
+      console.log('Navigator:', navigator);
+      console.log('Location:', location);
+
       // Enhanced PWA registration with better mobile support
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js', {
+          // Try registering a simple test Service Worker first
+          navigator.serviceWorker.register('/sw-test.js', {
             scope: '/'
           })
+            .then(function(registration) {
+              console.log('✅ Test ServiceWorker registered:', registration.scope);
+
+              // If test works, register the main one
+              return navigator.serviceWorker.register('/sw.js', {
+                scope: '/'
+              });
+            })
+            .then(function(registration) {
+              console.log('✅ Main ServiceWorker registered:', registration.scope);
             .then(function(registration) {
               console.log('✅ ServiceWorker registered successfully:', registration.scope);
 
