@@ -49,8 +49,17 @@ if (!apkFound) {
 
 // Verificar estrutura do projeto
 console.log('\n🔍 Estrutura do projeto:');
-const dirs = ['android', 'dist', 'node_modules/@capacitor'];
+const dirs = ['android', 'dist', 'dist/spa', 'node_modules/@capacitor'];
 dirs.forEach(dir => {
   const exists = fs.existsSync(dir);
   console.log(`${exists ? '✅' : '❌'} ${dir}`);
 });
+
+// Verificar se index.html existe no local correto
+if (fs.existsSync('dist/spa/index.html')) {
+  console.log('✅ index.html encontrado em dist/spa/');
+} else if (fs.existsSync('dist/index.html')) {
+  console.log('⚠️ index.html encontrado em dist/ (pode precisar de configuração)');
+} else {
+  console.log('❌ index.html não encontrado - execute npm run build:client');
+}

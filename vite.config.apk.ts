@@ -11,7 +11,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist',
+    outDir: 'dist/spa',
     sourcemap: false,
     minify: 'esbuild',
     rollupOptions: {

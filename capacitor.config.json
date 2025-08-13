@@ -1,7 +1,7 @@
 {
   "appId": "com.factorycontrol.maintenance",
   "appName": "FactoryControl",
-  "webDir": "dist",
+  "webDir": "dist/spa",
   "server": {
     "url": "http://localhost:3000",
     "cleartext": true
