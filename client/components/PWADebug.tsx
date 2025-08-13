@@ -237,23 +237,43 @@ export function PWADebug() {
                   <span>Plataforma:</span>
                   <span className="font-mono text-xs">{capabilities.platform}</span>
                 </div>
+                <div className="flex justify-between">
+                  <span>User Agent:</span>
+                  <span className="font-mono text-xs truncate max-w-32" title={capabilities.userAgent}>
+                    {capabilities.userAgent.substring(0, 30)}...
+                  </span>
+                </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h4 className="font-medium">Conectividade</h4>
-              <div className="flex items-center gap-2">
-                {capabilities.isOnline ? (
-                  <>
-                    <Wifi className="h-4 w-4 text-green-500" />
-                    <span className="text-green-600">Online</span>
-                  </>
-                ) : (
-                  <>
-                    <WifiOff className="h-4 w-4 text-red-500" />
-                    <span className="text-red-600">Offline</span>
-                  </>
-                )}
+              <h4 className="font-medium">Servidor</h4>
+              <div className="text-sm space-y-1">
+                <div className="flex justify-between">
+                  <span>Protocolo:</span>
+                  <span className="font-mono">{location.protocol}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Host:</span>
+                  <span className="font-mono text-xs">{location.hostname}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Porta:</span>
+                  <span className="font-mono">{location.port || (location.protocol === 'https:' ? '443' : '80')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {capabilities.isOnline ? (
+                    <>
+                      <Wifi className="h-4 w-4 text-green-500" />
+                      <span className="text-green-600">Online</span>
+                    </>
+                  ) : (
+                    <>
+                      <WifiOff className="h-4 w-4 text-red-500" />
+                      <span className="text-red-600">Offline</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </div>
