@@ -21,17 +21,32 @@ export function InstallPWA() {
     // Check if running in standalone mode (already installed)
     const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone ||
-      document.referrer.includes('android-app://');
-    
+      document.referrer.includes('android-app://') ||
+      window.location.search.includes('source=pwa');
+
     setIsStandalone(isInStandaloneMode);
 
     // Check if iOS
     const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
     setIsIOS(iOS);
 
+    // Enhanced detection for mobile browsers
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isChrome = /Chrome/.test(navigator.userAgent);
+    const isSafari = /Safari/.test(navigator.userAgent) && !isChrome;
+
+    console.log('PWA Detection:', {
+      isStandalone: isInStandaloneMode,
+      iOS,
+      isMobile,
+      isChrome,
+      isSafari,
+      userAgent: navigator.userAgent
+    });
+
     // Listen for beforeinstallprompt event
     const handleBeforeInstallPrompt = (e: Event) => {
-      console.log('beforeinstallprompt event fired');
+      console.log('✅ beforeinstallprompt event fired');
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShowInstallButton(true);
@@ -39,30 +54,37 @@ export function InstallPWA() {
 
     // Listen for app installed event
     const handleAppInstalled = () => {
-      console.log('PWA was installed');
+      console.log('✅ PWA was installed');
       setShowInstallButton(false);
       setDeferredPrompt(null);
+      localStorage.setItem('pwa-installed', 'true');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     window.addEventListener('appinstalled', handleAppInstalled);
 
-    // Show install button for iOS or if no install prompt is available
-    if (iOS && !isInStandaloneMode) {
+    // Always show install button on mobile if not standalone
+    if (!isInStandaloneMode && isMobile) {
       setShowInstallButton(true);
     }
 
-    // Show install button after a delay if no prompt is detected
-    const timer = setTimeout(() => {
-      if (!deferredPrompt && !isInStandaloneMode && !iOS) {
+    // Check if already shown install prompt
+    const hasShownPrompt = localStorage.getItem('pwa-prompt-shown');
+    const isInstalled = localStorage.getItem('pwa-installed');
+
+    if (!isInstalled && !hasShownPrompt && !isInStandaloneMode) {
+      // Show install button after a shorter delay
+      const timer = setTimeout(() => {
         setShowInstallButton(true);
-      }
-    }, 3000);
+        localStorage.setItem('pwa-prompt-shown', 'true');
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
       window.removeEventListener('appinstalled', handleAppInstalled);
-      clearTimeout(timer);
     };
   }, [deferredPrompt]);
 
@@ -137,60 +159,104 @@ export function InstallPWA() {
 
             {isIOS ? (
               <div className="space-y-4">
-                <p className="text-sm text-gray-600">Para instalar no iPhone/iPad:</p>
+                <div className="text-center p-4 bg-blue-100 rounded-lg">
+                  <h3 className="font-bold text-lg text-blue-800 mb-2">📱 iOS (iPhone/iPad)</h3>
+                  <p className="text-sm text-blue-700">Instalar como aplicação nativa</p>
+                </div>
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <span className="text-blue-600 font-bold">1.</span>
+                  <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                    <span className="text-blue-600 font-bold text-lg">1.</span>
                     <div>
-                      <p className="font-medium">Abra no Safari</p>
-                      <p className="text-sm text-gray-600">Não funciona no Chrome iOS</p>
+                      <p className="font-semibold text-blue-800">Abra no Safari</p>
+                      <p className="text-sm text-blue-600">⚠️ NÃO funciona no Chrome/Firefox iOS</p>
+                      <p className="text-xs text-blue-500 mt-1">Copie o link para o Safari se necessário</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <span className="text-blue-600 font-bold">2.</span>
+                  <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                    <span className="text-blue-600 font-bold text-lg">2.</span>
                     <div>
-                      <p className="font-medium">Toque no botão Partilhar ⬆️</p>
-                      <p className="text-sm text-gray-600">Na parte inferior do ecrã</p>
+                      <p className="font-semibold text-blue-800">Toque no botão Partilhar</p>
+                      <p className="text-sm text-blue-600">📤 Ícone na parte inferior do Safari</p>
+                      <div className="mt-2 p-2 bg-blue-100 rounded text-center">
+                        <span className="text-2xl">⬆️</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                    <span className="text-blue-600 font-bold">3.</span>
+                  <div className="flex items-start gap-3 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                    <span className="text-blue-600 font-bold text-lg">3.</span>
                     <div>
-                      <p className="font-medium">Selecione "Adicionar ao Ecrã Principal"</p>
-                      <p className="text-sm text-gray-600">Deslize para encontrar a opção</p>
+                      <p className="font-semibold text-blue-800">"Adicionar ao Ecrã Principal"</p>
+                      <p className="text-sm text-blue-600">Deslize para baixo na lista de opções</p>
+                      <div className="mt-2 p-2 bg-blue-100 rounded text-center">
+                        <span className="text-xl">➕🏠</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                    <span className="text-green-600 font-bold">✅</span>
+                  <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                    <span className="text-green-600 font-bold text-lg">✅</span>
                     <div>
-                      <p className="font-medium">Toque em "Adicionar"</p>
-                      <p className="text-sm text-gray-600">A app aparecerá no ecrã principal</p>
+                      <p className="font-semibold text-green-800">Confirme "Adicionar"</p>
+                      <p className="text-sm text-green-600">A app aparecerá no ecrã principal como app nativa!</p>
                     </div>
                   </div>
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-gray-600">Para instalar no Android Chrome:</p>
+                <div className="text-center p-4 bg-green-100 rounded-lg">
+                  <h3 className="font-bold text-lg text-green-800 mb-2">🤖 Android Chrome</h3>
+                  <p className="text-sm text-green-700">Múltiplas formas de instalar</p>
+                </div>
                 <div className="space-y-3">
-                  <div className="p-3 bg-orange-50 rounded-lg">
-                    <p className="font-medium text-orange-800 mb-2">MÉTODO 1 - Menu Chrome:</p>
+                  <div className="p-4 bg-orange-50 rounded-lg border-l-4 border-orange-400">
+                    <p className="font-bold text-orange-800 mb-3 text-lg">🔹 MÉTODO 1 - Menu Chrome</p>
                     <div className="space-y-2 text-sm">
-                      <p>• Toque nos <strong>3 pontos (⋮)</strong> no canto superior direito</p>
-                      <p>• Selecione <strong>"Adicionar ao ecrã principal"</strong></p>
-                      <p>• Toque em <strong>"Adicionar"</strong></p>
+                      <p className="flex items-center gap-2">
+                        <span className="bg-orange-200 px-2 py-1 rounded font-mono">⋮</span>
+                        Toque nos <strong>3 pontos verticais</strong> (canto superior direito)
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="bg-orange-200 px-2 py-1 rounded">📱</span>
+                        Procure <strong>"Instalar app"</strong> ou <strong>"Adicionar ao ecrã principal"</strong>
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="bg-orange-200 px-2 py-1 rounded">✅</span>
+                        Toque em <strong>"Instalar"</strong> ou <strong>"Adicionar"</strong>
+                      </p>
                     </div>
                   </div>
-                  <div className="p-3 bg-blue-50 rounded-lg">
-                    <p className="font-medium text-blue-800 mb-2">MÉTODO 2 - Barra de endereços:</p>
+                  <div className="p-4 bg-blue-50 rounded-lg border-l-4 border-blue-400">
+                    <p className="font-bold text-blue-800 mb-3 text-lg">🔹 MÉTODO 2 - Banner Automático</p>
                     <div className="space-y-2 text-sm">
-                      <p>• Procure o ícone <strong>⬇️</strong> na barra de endereços</p>
-                      <p>• Toque nele e siga as instruções</p>
+                      <p className="flex items-center gap-2">
+                        <span className="bg-blue-200 px-2 py-1 rounded">⬇️</span>
+                        Procure <strong>banner/ícone de instalação</strong> na barra de endereços
+                      </p>
+                      <p className="flex items-center gap-2">
+                        <span className="bg-blue-200 px-2 py-1 rounded">📲</span>
+                        Pode aparecer automaticamente em alguns segundos
+                      </p>
                     </div>
                   </div>
-                  <div className="p-3 bg-green-50 rounded-lg">
-                    <p className="font-medium text-green-800">✅ A app funcionará como aplicação nativa!</p>
+                  <div className="p-4 bg-purple-50 rounded-lg border-l-4 border-purple-400">
+                    <p className="font-bold text-purple-800 mb-3 text-lg">🔹 MÉTODO 3 - Configurações Chrome</p>
+                    <div className="space-y-2 text-sm">
+                      <p>• Abra as <strong>Configurações do Chrome</strong></p>
+                      <p>• Procure por <strong>"Sites"</strong> ou <strong>"Aplicações web"</strong></p>
+                      <p>• Adicione manualmente este site</p>
+                    </div>
                   </div>
+                  <div className="p-4 bg-green-50 rounded-lg border-l-4 border-green-400">
+                    <p className="font-bold text-green-800 text-center text-lg">🎉 Sucesso!</p>
+                    <p className="text-sm text-green-700 text-center mt-2">
+                      A app funcionará como aplicação nativa no Android!
+                    </p>
+                  </div>
+                </div>
+                <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <p className="text-sm text-yellow-800">
+                    <strong>💡 Dica:</strong> Se nenhum método funcionar, tente atualizar o Chrome ou reiniciar o navegador.
+                  </p>
                 </div>
               </div>
             )}

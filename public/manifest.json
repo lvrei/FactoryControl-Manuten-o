@@ -2,51 +2,70 @@
   "name": "FactoryControl - Gestão de Manutenção",
   "short_name": "FactoryControl",
   "description": "Sistema completo de gestão de manutenção industrial com checklists DL50",
-  "start_url": "/?source=pwa",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "scope": "/",
   "lang": "pt-PT",
   "categories": ["productivity", "business"],
-  "screenshots": [
-    {
-      "src": "/screenshots/mobile-1.png",
-      "sizes": "640x1136",
-      "type": "image/png",
-      "form_factor": "narrow"
-    },
-    {
-      "src": "/screenshots/desktop-1.png", 
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide"
-    }
-  ],
+  "id": "/",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "https://via.placeholder.com/192x192/2563eb/ffffff?text=FC",
       "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/2563eb/ffffff?text=FC",
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/152x152/2563eb/ffffff?text=FC",
+      "sizes": "152x152",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
+      "src": "https://via.placeholder.com/180x180/2563eb/ffffff?text=FC",
+      "sizes": "180x180",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
+      "src": "https://via.placeholder.com/144x144/2563eb/ffffff?text=FC",
+      "sizes": "144x144",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any"
     }
   ],
-  "features": [
-    "cross-origin-isolated"
+  "shortcuts": [
+    {
+      "name": "Manutenção",
+      "short_name": "Manutenção",
+      "description": "Acesso direto à gestão de manutenção",
+      "url": "/maintenance",
+      "icons": [{ "src": "https://via.placeholder.com/96x96/2563eb/ffffff?text=M", "sizes": "96x96" }]
+    },
+    {
+      "name": "Checklist DL50",
+      "short_name": "DL50",
+      "description": "Checklist de inspeção DL50",
+      "url": "/maintenance?tab=dl50",
+      "icons": [{ "src": "https://via.placeholder.com/96x96/2563eb/ffffff?text=✓", "sizes": "96x96" }]
+    }
   ],
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred",
   "related_applications": [],
   "prefer_related_applications": false
 }
