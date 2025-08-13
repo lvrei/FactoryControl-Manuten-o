@@ -14,6 +14,7 @@ import {
   X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PWADebug } from "./PWADebug";
 
 interface LayoutProps {
   children?: ReactNode;
@@ -142,6 +143,11 @@ export function Layout({ children }: LayoutProps) {
         {/* Main Content */}
         <main className="flex-1 p-4 md:p-6 pb-20 md:pb-6">
           {children || <Outlet />}
+
+          {/* PWA Debug Component - only in development */}
+          <div className="mt-8 pt-4 border-t border-muted">
+            <PWADebug />
+          </div>
         </main>
       </div>
 
