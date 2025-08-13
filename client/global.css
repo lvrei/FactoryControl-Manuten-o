@@ -121,6 +121,70 @@
   }
 }
 
+/* PWA Install Button Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%) skewX(-12deg); }
+  100% { transform: translateX(200%) skewX(-12deg); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+@keyframes bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-bounce-soft {
+  animation: bounce-soft 2s infinite;
+}
+
+/* PWA Installation Button Styles */
+.pwa-install-btn {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow:
+    0 6px 20px rgba(37, 99, 235, 0.4),
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.pwa-install-btn:hover {
+  background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 25px rgba(37, 99, 235, 0.5),
+    0 4px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Mobile-specific PWA styles */
+@media (max-width: 768px) {
+  .pwa-install-btn {
+    font-size: 14px;
+    padding: 12px 16px;
+    min-height: 44px; /* iOS touch target size */
+  }
+}
+
+/* Pulse animation for PWA button */
+@keyframes pwa-pulse {
+  0% {
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  }
+  50% {
+    box-shadow: 0 6px 25px rgba(37, 99, 235, 0.6);
+  }
+  100% {
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+  }
+}
+
+.animate-pwa-pulse {
+  animation: pwa-pulse 2s infinite;
+}
+
 /* Dark mode support for PWA */
 @media (prefers-color-scheme: dark) {
   :root {
