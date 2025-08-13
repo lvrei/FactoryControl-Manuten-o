@@ -13,7 +13,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    minify: 'terser',
+    minify: 'esbuild',
     rollupOptions: {
       input: {
         main: path.resolve(__dirname, 'index.html')

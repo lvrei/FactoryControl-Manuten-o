@@ -19,13 +19,14 @@
     "test": "vitest --run",
     "format.fix": "prettier --write .",
     "typecheck": "tsc",
-    "install:capacitor": "npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/camera @capacitor/local-notifications @capacitor/splash-screen --save-dev",
+    "install:capacitor": "npm install @capacitor/core @capacitor/cli @capacitor/android @capacitor/camera @capacitor/local-notifications @capacitor/splash-screen terser --save-dev",
     "build:apk": "node build-apk.js",
     "build:apk:studio": "node build-apk.js --studio",
     "cap:sync": "npx cap sync",
     "cap:android": "npx cap add android",
     "cap:open": "npx cap open android",
-    "check:apk": "node check-apk.js"
+    "check:apk": "node check-apk.js",
+    "fix:deps": "node fix-deps.js"
   },
   "dependencies": {
     "dotenv": "^17.2.0",
