@@ -32,7 +32,9 @@
     "build:apk:fixed": "build-apk-windows-fixed.bat",
     "create:apk": "node create-apk-simple.js",
     "create:apk:ps": "powershell -ExecutionPolicy Bypass -File create-apk.ps1",
-    "create:apk:cmd": "create-apk-simple.bat"
+    "create:apk:cmd": "create-apk-simple.bat",
+    "fix:android": "fix-android-studio.bat",
+    "build:online": "prepare-online-build.bat"
   },
   "dependencies": {
     "dotenv": "^17.2.0",
