@@ -789,6 +789,202 @@ export default function Equipment() {
           </div>
         </div>
       )}
+
+      {/* File Manager Modal */}
+      {showFileManager && selectedEquipmentForFiles && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">
+                  Ficheiros - {selectedEquipmentForFiles.name}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowFileManager(false);
+                    setSelectedEquipmentForFiles(null);
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Cover Photo Section */}
+              <div className="mb-6">
+                <h4 className="text-md font-medium mb-3">Foto de Capa</h4>
+                <div className="flex items-center gap-4">
+                  {selectedEquipmentForFiles.coverPhoto ? (
+                    <div className="relative">
+                      <img
+                        src={selectedEquipmentForFiles.coverPhoto}
+                        alt="Foto de capa"
+                        className="w-20 h-20 object-cover rounded-lg border"
+                      />
+                      <button
+                        onClick={() => {
+                          const updated = equipment.map(eq =>
+                            eq.id === selectedEquipmentForFiles.id
+                              ? { ...eq, coverPhoto: undefined }
+                              : eq
+                          );
+                          setEquipment(updated);
+                          setSelectedEquipmentForFiles(prev => prev ? { ...prev, coverPhoto: undefined } : null);
+                          saveEquipmentDetails(updated);
+                        }}
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-xs"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-20 h-20 border-2 border-dashed border-muted rounded-lg flex items-center justify-center">
+                      <Image className="h-8 w-8 text-muted-foreground" />
+                    </div>
+                  )}
+
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            await setCoverPhoto(selectedEquipmentForFiles.id, file);
+                            const updated = equipment.find(eq => eq.id === selectedEquipmentForFiles.id);
+                            if (updated) setSelectedEquipmentForFiles(updated);
+                          } catch (error) {
+                            alert('Erro ao definir foto de capa');
+                          }
+                        }
+                      }}
+                      className="hidden"
+                      id="coverPhoto"
+                    />
+                    <label
+                      htmlFor="coverPhoto"
+                      className="px-3 py-2 text-sm font-medium border rounded-lg hover:bg-muted cursor-pointer flex items-center gap-2"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {selectedEquipmentForFiles.coverPhoto ? 'Alterar Foto' : 'Adicionar Foto'}
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* Files Section */}
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-md font-medium">Documentos</h4>
+                  <div>
+                    <input
+                      type="file"
+                      multiple
+                      onChange={async (e) => {
+                        const files = Array.from(e.target.files || []);
+                        for (const file of files) {
+                          try {
+                            await addFileToEquipment(selectedEquipmentForFiles.id, file, 'manual');
+                          } catch (error) {
+                            alert(`Erro ao fazer upload de ${file.name}`);
+                          }
+                        }
+                        const updated = equipment.find(eq => eq.id === selectedEquipmentForFiles.id);
+                        if (updated) setSelectedEquipmentForFiles(updated);
+                      }}
+                      className="hidden"
+                      id="fileUpload"
+                    />
+                    <label
+                      htmlFor="fileUpload"
+                      className="px-3 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 cursor-pointer flex items-center gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Adicionar Ficheiros
+                    </label>
+                  </div>
+                </div>
+
+                {/* Files List */}
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {(selectedEquipmentForFiles.files || []).length === 0 ? (
+                    <div className="text-center py-4 text-muted-foreground">
+                      <File className="h-8 w-8 mx-auto mb-2" />
+                      <p className="text-sm">Nenhum ficheiro adicionado</p>
+                    </div>
+                  ) : (
+                    selectedEquipmentForFiles.files.map((file) => (
+                      <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <File className="h-4 w-4 text-muted-foreground" />
+                          <div>
+                            <p className="text-sm font-medium">{file.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploadedAt).toLocaleDateString('pt-BR')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              // Open file in new tab
+                              window.open(file.url, '_blank');
+                            }}
+                            className="p-1 text-muted-foreground hover:text-foreground"
+                            title="Ver ficheiro"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              // Download file
+                              const link = document.createElement('a');
+                              link.href = file.url;
+                              link.download = file.name;
+                              link.click();
+                            }}
+                            className="p-1 text-muted-foreground hover:text-foreground"
+                            title="Descarregar"
+                          >
+                            <Download className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm('Remover este ficheiro?')) {
+                                removeFile(selectedEquipmentForFiles.id, file.id);
+                                const updated = equipment.find(eq => eq.id === selectedEquipmentForFiles.id);
+                                if (updated) setSelectedEquipmentForFiles(updated);
+                              }
+                            }}
+                            className="p-1 text-muted-foreground hover:text-destructive"
+                            title="Remover"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowFileManager(false);
+                    setSelectedEquipmentForFiles(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-muted"
+                >
+                  Fechar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
