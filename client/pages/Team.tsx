@@ -266,8 +266,91 @@ export default function Team() {
   const absentEmployees = employees.filter(e => e.status === 'absent').length;
   const trainingEmployees = employees.filter(e => e.status === 'training').length;
 
-  const avgProductivity = employees.reduce((sum, e) => sum + e.productivityScore, 0) / employees.length;
-  const avgAttendance = employees.reduce((sum, e) => sum + e.attendanceRate, 0) / employees.length;
+  const avgProductivity = employeesList.reduce((sum, e) => sum + e.productivityScore, 0) / employeesList.length;
+  const avgAttendance = employeesList.reduce((sum, e) => sum + e.attendanceRate, 0) / employeesList.length;
+
+  // Funções CRUD para funcionários
+  const handleAddEmployee = () => {
+    if (!newEmployee.name || !newEmployee.position) {
+      alert('Preencha pelo menos nome e cargo');
+      return;
+    }
+
+    const employee: Employee = {
+      id: Date.now().toString(),
+      name: newEmployee.name,
+      position: newEmployee.position,
+      department: newEmployee.department,
+      shift: newEmployee.shift,
+      status: 'active',
+      email: newEmployee.email,
+      phone: newEmployee.phone,
+      hireDate: new Date().toISOString().split('T')[0],
+      skills: newEmployee.skills.split(',').map(s => s.trim()).filter(s => s),
+      certifications: [],
+      currentAssignment: newEmployee.currentAssignment,
+      supervisor: newEmployee.supervisor,
+      productivityScore: 85,
+      attendanceRate: 95
+    };
+
+    setEmployeesList(prev => [...prev, employee]);
+    setNewEmployee({
+      name: '', position: '', department: 'production', shift: 'morning',
+      email: '', phone: '', skills: '', supervisor: '', currentAssignment: ''
+    });
+    setShowAddEmployee(false);
+  };
+
+  const handleEditEmployee = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setNewEmployee({
+      name: employee.name,
+      position: employee.position,
+      department: employee.department,
+      shift: employee.shift,
+      email: employee.email,
+      phone: employee.phone,
+      skills: employee.skills.join(', '),
+      supervisor: employee.supervisor,
+      currentAssignment: employee.currentAssignment
+    });
+    setShowAddEmployee(true);
+  };
+
+  const handleUpdateEmployee = () => {
+    if (!editingEmployee) return;
+
+    const updatedEmployee: Employee = {
+      ...editingEmployee,
+      name: newEmployee.name,
+      position: newEmployee.position,
+      department: newEmployee.department,
+      shift: newEmployee.shift,
+      email: newEmployee.email,
+      phone: newEmployee.phone,
+      skills: newEmployee.skills.split(',').map(s => s.trim()).filter(s => s),
+      supervisor: newEmployee.supervisor,
+      currentAssignment: newEmployee.currentAssignment
+    };
+
+    setEmployeesList(prev => prev.map(emp =>
+      emp.id === editingEmployee.id ? updatedEmployee : emp
+    ));
+
+    setEditingEmployee(null);
+    setNewEmployee({
+      name: '', position: '', department: 'production', shift: 'morning',
+      email: '', phone: '', skills: '', supervisor: '', currentAssignment: ''
+    });
+    setShowAddEmployee(false);
+  };
+
+  const handleDeleteEmployee = (id: string) => {
+    if (confirm('Tem certeza que deseja remover este funcionário?')) {
+      setEmployeesList(prev => prev.filter(emp => emp.id !== id));
+    }
+  };
 
   return (
     <div className="space-y-6">
