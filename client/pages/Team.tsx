@@ -796,7 +796,8 @@ export default function Team() {
                     setNewEmployee({
                       name: '', position: '', department: 'Corte BZM', shift: 'morning',
                       email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
-                      machineOperatingLicense: '', certifications: ''
+                      machineOperatingLicense: '', certifications: '',
+                      hasSystemAccess: false, username: '', role: 'operator', accessLevel: 'limited', password: ''
                     });
                   }}
                   className="text-muted-foreground hover:text-foreground"
@@ -1040,7 +1041,8 @@ export default function Team() {
                     setNewEmployee({
                       name: '', position: '', department: 'Corte BZM', shift: 'morning',
                       email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
-                      machineOperatingLicense: '', certifications: ''
+                      machineOperatingLicense: '', certifications: '',
+                      hasSystemAccess: false, username: '', role: 'operator', accessLevel: 'limited', password: ''
                     });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-muted"
