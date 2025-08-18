@@ -190,11 +190,6 @@ export interface FoamBlock {
   comments: string;
   receivedDate: string;
   receivedBy: string;
-  supplierInfo?: {
-    supplier: string;
-    batchNumber?: string;
-    certificate?: string;
-  };
   reservedFor?: string; // ID da ordem de produção que reservou o bloco
   consumedDate?: string;
   consumedBy?: string;
