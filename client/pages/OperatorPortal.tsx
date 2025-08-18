@@ -48,6 +48,8 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
   const [showChat, setShowChat] = useState(false);
   const [newMessage, setNewMessage] = useState('');
   const [completionQuantity, setCompletionQuantity] = useState<{ [key: string]: number }>({});
+  const [showPrintPreview, setShowPrintPreview] = useState(false);
+  const [currentLabel, setCurrentLabel] = useState<PrintLabel | null>(null);
 
   useEffect(() => {
     loadData();
