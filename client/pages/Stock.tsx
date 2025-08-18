@@ -162,8 +162,7 @@ export default function Stock() {
         qualityStatus: 'pending',
         nonConformities: newBlock.nonConformities.split(',').map(s => s.trim()).filter(s => s),
         comments: newBlock.comments,
-        receivedBy: newBlock.receivedBy,
-        supplierInfo: newBlock.supplierInfo.supplier ? newBlock.supplierInfo : undefined
+        receivedBy: newBlock.receivedBy
       });
 
       await loadData();
@@ -446,7 +445,7 @@ export default function Stock() {
                                 </span>
                               </div>
                               <p className="text-sm text-muted-foreground mb-1">
-                                {block.foamType.name} • {block.productionNumber}
+                                {block.foamType.name} �� {block.productionNumber}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {block.dimensions.length} × {block.dimensions.width} × {block.dimensions.height} mm
