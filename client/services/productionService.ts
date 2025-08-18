@@ -267,14 +267,36 @@ class ProductionService {
   async getMachines(): Promise<Machine[]> {
     // Buscar máquinas salvas no localStorage se existirem
     const data = this.getStoredData();
+    let machines: Machine[];
+
     if (data.machines && data.machines.length > 0) {
-      return data.machines;
+      machines = [...data.machines];
+    } else {
+      // Se não existir, usar as máquinas padrão e salvar
+      machines = [...this.mockMachines];
+      data.machines = machines;
+      this.saveData(data);
     }
 
-    // Se não existir, usar as máquinas padrão e salvar
-    data.machines = [...this.mockMachines];
-    this.saveData(data);
-    return data.machines;
+    // Check for maintenance status updates from maintenance service
+    const machineStatusKey = 'factoryControl_machineStatus';
+    try {
+      const statusUpdates = JSON.parse(localStorage.getItem(machineStatusKey) || '{}');
+
+      machines = machines.map(machine => {
+        if (statusUpdates[machine.id]) {
+          return {
+            ...machine,
+            status: statusUpdates[machine.id].status
+          };
+        }
+        return machine;
+      });
+    } catch (error) {
+      console.error('Error loading machine status updates:', error);
+    }
+
+    return machines;
   }
 
   async createMachine(machine: Omit<Machine, 'id' | 'currentOperator'>): Promise<Machine> {
