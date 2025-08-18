@@ -187,10 +187,15 @@ export default function Alerts() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const totalAlerts = alerts.length;
-  const newAlerts = alerts.filter(a => a.status === 'new').length;
-  const criticalAlerts = alerts.filter(a => a.type === 'critical').length;
-  const acknowledgedAlerts = alerts.filter(a => a.status === 'acknowledged').length;
+  const totalAlerts = alerts.length + maintenanceAlerts.length;
+  const newAlerts = alerts.filter(a => a.status === 'new').length + maintenanceAlerts.filter(a => a.status === 'active').length;
+  const criticalAlerts = alerts.filter(a => a.type === 'critical').length + maintenanceAlerts.filter(a => a.urgencyLevel === 'critical').length;
+  const acknowledgedAlerts = alerts.filter(a => a.status === 'acknowledged').length + maintenanceAlerts.filter(a => a.status === 'acknowledged').length;
+
+  // Maintenance specific stats
+  const activeMachineDowntime = machineDowntime.filter(d => d.status === 'ongoing').length;
+  const pendingMaintenanceRequests = maintenanceRequests.filter(r => r.status === 'pending').length;
+  const criticalMaintenanceRequests = maintenanceRequests.filter(r => r.urgencyLevel === 'critical' && r.status !== 'completed').length;
 
   return (
     <div className="space-y-6">
@@ -628,7 +633,7 @@ export default function Alerts() {
           {/* Category Distribution */}
           <div className="grid gap-6 md:grid-cols-2">
             <div className="rounded-lg border bg-card p-6">
-              <h3 className="text-lg font-semibold text-card-foreground mb-4">Distribuiç��o por Categoria</h3>
+              <h3 className="text-lg font-semibold text-card-foreground mb-4">Distribuição por Categoria</h3>
               <div className="space-y-3">
                 {Object.entries(categoryConfig).map(([key, config]) => {
                   const count = alerts.filter(a => a.category === key).length;
