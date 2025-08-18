@@ -337,91 +337,11 @@ export default function Maintenance() {
       </div>
 
       {/* Content */}
-      {activeTab === 'machines' ? (
-        <div className="rounded-lg border bg-card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="border-b bg-muted/50">
-                <tr>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Máquina</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Categoria</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Localização</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Próxima Manutenção</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredMachines.map((machine) => {
-                  const status = statusConfig[machine.status];
-                  const StatusIcon = status.icon;
-                  
-                  return (
-                    <tr key={machine.id} className="border-b hover:bg-muted/50">
-                      <td className="p-4">
-                        <div>
-                          <p className="font-medium text-card-foreground">{machine.name}</p>
-                          <p className="text-sm text-muted-foreground">{machine.manufacturer} {machine.model}</p>
-                        </div>
-                      </td>
-                      <td className="p-4 text-sm text-muted-foreground">{machine.category}</td>
-                      <td className="p-4">
-                        <div className={cn("inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-medium", status.bg)}>
-                          <StatusIcon className={cn("h-3 w-3", status.color)} />
-                          <span className={status.color}>{status.label}</span>
-                        </div>
-                      </td>
-                      <td className="p-4 text-sm text-muted-foreground">{machine.location}</td>
-                      <td className="p-4 text-sm text-muted-foreground">
-                        {new Date(machine.nextMaintenanceDate).toLocaleDateString('pt-BR')}
-                      </td>
-                      <td className="p-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleEditMachine(machine)}
-                            className="p-1 text-muted-foreground hover:text-foreground"
-                            title="Editar máquina"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedEquipment(machine.id!);
-                              setShowReports(true);
-                            }}
-                            className="p-1 text-muted-foreground hover:text-info"
-                            title="Relatório da máquina"
-                          >
-                            <FileText className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedEquipmentForChecklist(machine);
-                              setShowChecklist(true);
-                            }}
-                            className="p-1 text-muted-foreground hover:text-success"
-                            title="Checklist DL50"
-                          >
-                            <Camera className="h-4 w-4" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (confirm(`Tem certeza que deseja excluir a máquina ${machine.name}?`)) {
-                                alert(`Máquina ${machine.name} excluída`)
-                              }
-                            }}
-                            className="p-1 text-muted-foreground hover:text-destructive"
-                            title="Excluir máquina"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">Carregando dados de manutenção...</p>
           </div>
         </div>
       ) : (
