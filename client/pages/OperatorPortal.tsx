@@ -19,12 +19,18 @@ import {
   Settings,
   Printer,
   Eye,
-  Download
+  Download,
+  Wrench,
+  Zap,
+  Gauge,
+  AlertCircle
 } from 'lucide-react';
-import { Machine, OperatorWorkItem, OperatorSession, ChatMessage, PrintLabel } from '@/types/production';
+import { Machine, OperatorWorkItem, OperatorSession, ChatMessage, PrintLabel, MaintenanceRequest } from '@/types/production';
 import { productionService } from '@/services/productionService';
 import { labelService } from '@/services/labelService';
 import { authService } from '@/services/authService';
+import { maintenanceService } from '@/services/maintenanceService';
+import { MessageNotificationContainer } from '@/components/MessageNotification';
 import { cn } from '@/lib/utils';
 
 interface OperatorPortalProps {
@@ -62,6 +68,20 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
   const [completionQuantity, setCompletionQuantity] = useState<{ [key: string]: number }>({});
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [currentLabel, setCurrentLabel] = useState<PrintLabel | null>(null);
+
+  // Maintenance request state
+  const [showMaintenanceRequest, setShowMaintenanceRequest] = useState(false);
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    urgencyLevel: 'medium' as 'low' | 'medium' | 'high' | 'critical',
+    category: 'mechanical' as 'mechanical' | 'electrical' | 'software' | 'preventive' | 'emergency' | 'other',
+    title: '',
+    description: '',
+    reportedIssues: [] as string[]
+  });
+
+  // Message notifications state
+  const [messageNotifications, setMessageNotifications] = useState<(ChatMessage & { id: string })[]>([]);
+  const [lastMessageCount, setLastMessageCount] = useState(0);
 
   useEffect(() => {
     loadData();
@@ -105,12 +125,22 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       const chatInterval = setInterval(async () => {
         const updatedMessages = await productionService.getChatMessages(selectedMachine);
 
-        // Marcar como lidas as mensagens novas do backend
+        // Check for new messages for notifications
         const newBackendMessages = updatedMessages.filter(msg =>
           msg.from === 'backend' && !msg.isRead &&
           !messages.find(oldMsg => oldMsg.id === msg.id)
         );
 
+        // Show notifications for new messages
+        if (newBackendMessages.length > 0) {
+          const notifications = newBackendMessages.map(msg => ({
+            ...msg,
+            id: `notification_${msg.id}_${Date.now()}`
+          }));
+          setMessageNotifications(prev => [...prev, ...notifications]);
+        }
+
+        // Mark new messages as read
         for (const msg of newBackendMessages) {
           await productionService.markMessageAsRead(msg.id);
         }
