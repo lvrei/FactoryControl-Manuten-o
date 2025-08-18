@@ -919,7 +919,7 @@ export default function Stock() {
                   onClick={handleAddBlock}
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
                 >
-                  Registrar Bloco
+                  {editingBlock ? 'Atualizar Bloco' : 'Registrar Bloco'}
                 </button>
               </div>
             </div>
