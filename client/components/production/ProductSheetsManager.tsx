@@ -159,6 +159,61 @@ export function ProductSheetsManager({ onClose }: ProductSheetsManagerProps) {
     }));
   };
 
+  // Funções para tipos de espuma
+  const handleAddFoamType = async () => {
+    if (!newFoamType.name || !newFoamType.density || !newFoamType.pricePerM3) {
+      alert('Preencha pelo menos nome, densidade e preço');
+      return;
+    }
+
+    try {
+      if (editingFoamType) {
+        await productionService.updateFoamType(editingFoamType.id, newFoamType);
+      } else {
+        await productionService.createFoamType(newFoamType);
+      }
+
+      // Recarregar tipos de espuma
+      const updatedFoamTypes = await productionService.getFoamTypes();
+      setFoamTypes(updatedFoamTypes);
+
+      setNewFoamType({
+        name: '', density: 0, hardness: '', color: '', specifications: '', pricePerM3: 0
+      });
+      setShowFoamTypeForm(false);
+      setEditingFoamType(null);
+    } catch (error) {
+      console.error('Erro ao salvar tipo de espuma:', error);
+      alert('Erro ao salvar tipo de espuma');
+    }
+  };
+
+  const handleEditFoamType = (foamType: FoamType) => {
+    setEditingFoamType(foamType);
+    setNewFoamType({
+      name: foamType.name,
+      density: foamType.density,
+      hardness: foamType.hardness,
+      color: foamType.color,
+      specifications: foamType.specifications,
+      pricePerM3: foamType.pricePerM3
+    });
+    setShowFoamTypeForm(true);
+  };
+
+  const handleDeleteFoamType = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este tipo de espuma?')) return;
+
+    try {
+      await productionService.deleteFoamType(id);
+      const updatedFoamTypes = await productionService.getFoamTypes();
+      setFoamTypes(updatedFoamTypes);
+    } catch (error) {
+      console.error('Erro ao excluir tipo de espuma:', error);
+      alert('Erro ao excluir tipo de espuma');
+    }
+  };
+
   const filteredSheets = productSheets.filter(sheet =>
     sheet.internalReference.toLowerCase().includes(searchTerm.toLowerCase()) ||
     sheet.foamType.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
