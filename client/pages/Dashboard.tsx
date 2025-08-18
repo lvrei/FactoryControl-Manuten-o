@@ -32,12 +32,16 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [orders, machinesData] = await Promise.all([
+      const [orders, machinesData, downtime, requests] = await Promise.all([
         productionService.getProductionOrders(),
-        productionService.getMachines()
+        productionService.getMachines(),
+        maintenanceService.getMachineDowntime(),
+        maintenanceService.getMaintenanceRequests()
       ]);
       setProductionOrders(orders);
       setMachines(machinesData);
+      setMachineDowntime(downtime);
+      setMaintenanceRequests(requests);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
