@@ -1,17 +1,21 @@
 import { useState, useEffect } from 'react';
-import { 
-  Factory, 
-  TrendingUp, 
-  AlertTriangle, 
-  CheckCircle, 
+import {
+  Factory,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
   Clock,
   Users,
   Package,
   Settings,
-  Activity
+  Activity,
+  Wrench,
+  Timer,
+  AlertCircle
 } from "lucide-react";
 import { productionService } from '@/services/productionService';
-import { ProductionOrder, Machine } from '@/types/production';
+import { maintenanceService } from '@/services/maintenanceService';
+import { ProductionOrder, Machine, MachineDowntime, MaintenanceRequest } from '@/types/production';
 
 export default function Dashboard() {
   const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>([]);
