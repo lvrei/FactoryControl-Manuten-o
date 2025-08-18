@@ -257,13 +257,68 @@ class ProductionService {
 
   // Máquinas
   async getMachines(): Promise<Machine[]> {
-    return this.mockMachines;
+    // Buscar máquinas salvas no localStorage se existirem
+    const data = this.getStoredData();
+    if (data.machines && data.machines.length > 0) {
+      return data.machines;
+    }
+
+    // Se não existir, usar as máquinas padrão e salvar
+    data.machines = [...this.mockMachines];
+    this.saveData(data);
+    return data.machines;
+  }
+
+  async createMachine(machine: Omit<Machine, 'id' | 'currentOperator'>): Promise<Machine> {
+    const data = this.getStoredData();
+    const newMachine: Machine = {
+      ...machine,
+      id: Date.now().toString(),
+      currentOperator: undefined
+    };
+
+    if (!data.machines) {
+      data.machines = [...this.mockMachines];
+    }
+
+    data.machines.push(newMachine);
+    this.saveData(data);
+    return newMachine;
+  }
+
+  async updateMachine(id: string, updates: Partial<Machine>): Promise<Machine> {
+    const data = this.getStoredData();
+    if (!data.machines) {
+      data.machines = [...this.mockMachines];
+    }
+
+    const machineIndex = data.machines.findIndex((machine: Machine) => machine.id === id);
+    if (machineIndex === -1) {
+      throw new Error('Máquina não encontrada');
+    }
+
+    data.machines[machineIndex] = { ...data.machines[machineIndex], ...updates };
+    this.saveData(data);
+    return data.machines[machineIndex];
+  }
+
+  async deleteMachine(id: string): Promise<void> {
+    const data = this.getStoredData();
+    if (!data.machines) return;
+
+    data.machines = data.machines.filter((machine: Machine) => machine.id !== id);
+    this.saveData(data);
   }
 
   async updateMachineStatus(machineId: string, status: Machine['status'], operatorId?: string): Promise<Machine> {
-    const machine = this.mockMachines.find(m => m.id === machineId);
+    const data = this.getStoredData();
+    if (!data.machines) {
+      data.machines = [...this.mockMachines];
+    }
+
+    const machine = data.machines.find((m: Machine) => m.id === machineId);
     if (!machine) {
-      throw new Error('Máquina não encontrada');
+      throw new Error('M��quina não encontrada');
     }
 
     machine.status = status;
@@ -273,6 +328,7 @@ class ProductionService {
       machine.currentOperator = undefined;
     }
 
+    this.saveData(data);
     return machine;
   }
 
