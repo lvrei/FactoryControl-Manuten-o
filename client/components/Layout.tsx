@@ -38,6 +38,13 @@ const navigation = [
 
 export function Layout({ children }: LayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [userSession, setUserSession] = useState<LoginSession | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const session = authService.getCurrentUser();
+    setUserSession(session);
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
