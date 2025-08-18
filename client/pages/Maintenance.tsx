@@ -474,9 +474,9 @@ export default function Maintenance() {
         equipmentData={selectedEquipmentForChecklist ? {
           id: selectedEquipmentForChecklist.id!,
           name: selectedEquipmentForChecklist.name,
-          model: selectedEquipmentForChecklist.model,
-          serialNumber: selectedEquipmentForChecklist.serialNumber,
-          location: selectedEquipmentForChecklist.location
+          model: 'N/A',
+          serialNumber: 'N/A',
+          location: 'Ver em Equipamentos'
         } : undefined}
       />
     </div>
