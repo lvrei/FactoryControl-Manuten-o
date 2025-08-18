@@ -82,6 +82,14 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       // Carregar mensagens para a máquina
       const machineMessages = await productionService.getChatMessages(selectedMachine);
       setMessages(machineMessages);
+
+      // Auto-refresh das mensagens a cada 2 segundos
+      const chatInterval = setInterval(async () => {
+        const updatedMessages = await productionService.getChatMessages(selectedMachine);
+        setMessages(updatedMessages);
+      }, 2000);
+
+      return () => clearInterval(chatInterval);
     } catch (error) {
       console.error('Erro ao carregar itens de trabalho:', error);
     }
