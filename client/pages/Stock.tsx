@@ -151,23 +151,41 @@ export default function Stock() {
         return;
       }
 
-      await productionService.createFoamBlock({
-        productionNumber: newBlock.productionNumber,
-        foamType,
-        blockNumber: newBlock.blockNumber,
-        warehouse: newBlock.warehouse,
-        dimensions: newBlock.dimensions,
-        weight: newBlock.weight,
-        productionDate: newBlock.productionDate,
-        status: 'available',
-        qualityStatus: 'pending',
-        nonConformities: newBlock.nonConformities.split(',').map(s => s.trim()).filter(s => s),
-        comments: newBlock.comments,
-        receivedBy: newBlock.receivedBy
-      });
+      if (editingBlock) {
+        // Editar bloco existente
+        await productionService.updateFoamBlock(editingBlock.id, {
+          productionNumber: newBlock.productionNumber,
+          foamType,
+          blockNumber: newBlock.blockNumber,
+          warehouse: newBlock.warehouse,
+          dimensions: newBlock.dimensions,
+          weight: newBlock.weight,
+          productionDate: newBlock.productionDate,
+          nonConformities: newBlock.nonConformities.split(',').map(s => s.trim()).filter(s => s),
+          comments: newBlock.comments,
+          receivedBy: newBlock.receivedBy
+        });
+      } else {
+        // Criar novo bloco
+        await productionService.createFoamBlock({
+          productionNumber: newBlock.productionNumber,
+          foamType,
+          blockNumber: newBlock.blockNumber,
+          warehouse: newBlock.warehouse,
+          dimensions: newBlock.dimensions,
+          weight: newBlock.weight,
+          productionDate: newBlock.productionDate,
+          status: 'available',
+          qualityStatus: 'pending',
+          nonConformities: newBlock.nonConformities.split(',').map(s => s.trim()).filter(s => s),
+          comments: newBlock.comments,
+          receivedBy: newBlock.receivedBy
+        });
+      }
 
       await loadData();
       setShowAddBlock(false);
+      setEditingBlock(null);
       setNewBlock({
         productionNumber: '',
         foamTypeId: '',
@@ -178,13 +196,29 @@ export default function Stock() {
         productionDate: new Date().toISOString().split('T')[0],
         nonConformities: '',
         comments: '',
-        receivedBy: '',
-
+        receivedBy: ''
       });
     } catch (error) {
-      console.error('Erro ao adicionar bloco:', error);
-      alert('Erro ao adicionar bloco');
+      console.error('Erro ao salvar bloco:', error);
+      alert('Erro ao salvar bloco');
     }
+  };
+
+  const handleEditBlock = (block: FoamBlock) => {
+    setEditingBlock(block);
+    setNewBlock({
+      productionNumber: block.productionNumber,
+      foamTypeId: block.foamType.id,
+      blockNumber: block.blockNumber,
+      warehouse: block.warehouse,
+      dimensions: block.dimensions,
+      weight: block.weight,
+      productionDate: block.productionDate,
+      nonConformities: block.nonConformities.join(', '),
+      comments: block.comments,
+      receivedBy: block.receivedBy
+    });
+    setShowAddBlock(true);
   };
 
   const handleDeleteBlock = async (blockId: string) => {
