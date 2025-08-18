@@ -168,3 +168,72 @@ export interface ProductionFilters {
   };
   foamType?: string;
 }
+
+// Interfaces para gestão de stock de blocos de espuma
+export interface FoamBlock {
+  id: string;
+  productionNumber: string;
+  foamType: FoamType;
+  dimensions: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  volume: number; // em m³
+  weight?: number; // em kg
+  productionDate: string;
+  blockNumber: string;
+  warehouse: 'BZM' | 'LOOPER';
+  status: 'available' | 'reserved' | 'in_production' | 'consumed';
+  qualityStatus: 'pending' | 'approved' | 'rejected';
+  nonConformities: string[];
+  comments: string;
+  receivedDate: string;
+  receivedBy: string;
+  supplierInfo?: {
+    supplier: string;
+    batchNumber?: string;
+    certificate?: string;
+  };
+  reservedFor?: string; // ID da ordem de produção que reservou o bloco
+  consumedDate?: string;
+  consumedBy?: string;
+  photos?: string[];
+}
+
+export interface StockMovement {
+  id: string;
+  blockId: string;
+  type: 'entry' | 'exit' | 'transfer' | 'reservation' | 'consumption';
+  fromWarehouse?: 'BZM' | 'LOOPER';
+  toWarehouse?: 'BZM' | 'LOOPER';
+  quantity: number;
+  timestamp: string;
+  operator: string;
+  reason: string;
+  productionOrderId?: string;
+  notes?: string;
+}
+
+export interface WarehouseLocation {
+  id: string;
+  warehouse: 'BZM' | 'LOOPER';
+  zone: string;
+  position: string;
+  maxCapacity: number;
+  currentOccupancy: number;
+  blockIds: string[];
+}
+
+export interface StockFilters {
+  warehouse?: 'BZM' | 'LOOPER' | 'all';
+  foamType?: string;
+  status?: string;
+  qualityStatus?: string;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+  productionNumber?: string;
+  blockNumber?: string;
+}
