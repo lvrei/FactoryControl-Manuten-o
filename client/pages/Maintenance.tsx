@@ -63,19 +63,34 @@ export default function Maintenance() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [loading, setLoading] = useState(true);
 
-  // Load data from localStorage or use mock data
+  // Load data from localStorage and equipment from productionService
   useEffect(() => {
-    const savedMaintenances = localStorage.getItem('factorycontrol-maintenances');
-    if (savedMaintenances) {
+    const loadData = async () => {
       try {
-        setMaintenances(JSON.parse(savedMaintenances));
+        // Load machines from production service
+        const equipmentData = await productionService.getMachines();
+        setMachines(equipmentData);
+
+        // Load maintenances from localStorage
+        const savedMaintenances = localStorage.getItem('factorycontrol-maintenances');
+        if (savedMaintenances) {
+          try {
+            setMaintenances(JSON.parse(savedMaintenances));
+          } catch (error) {
+            console.error('Error loading saved maintenances:', error);
+            setMaintenances(mockMaintenances);
+          }
+        } else {
+          setMaintenances(mockMaintenances);
+        }
       } catch (error) {
-        console.error('Error loading saved maintenances:', error);
-        setMaintenances(mockMaintenances);
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
       }
-    } else {
-      setMaintenances(mockMaintenances);
-    }
+    };
+
+    loadData();
   }, []);
 
   // Save maintenances to localStorage whenever it changes
