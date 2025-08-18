@@ -178,7 +178,34 @@ export default function Alerts() {
     }
   };
 
-  const filteredAlerts = alerts.filter(alert => {
+  // Convert maintenance alerts to standard Alert format for display
+  const convertedMaintenanceAlerts: Alert[] = maintenanceAlerts.map(alert => ({
+    id: alert.id,
+    title: alert.title,
+    description: alert.description,
+    type: alert.urgencyLevel === 'critical' ? 'critical' :
+          alert.urgencyLevel === 'high' ? 'warning' : 'info',
+    category: 'maintenance',
+    source: alert.machineName,
+    timestamp: alert.createdAt,
+    status: alert.status === 'active' ? 'new' :
+            alert.status === 'acknowledged' ? 'acknowledged' : 'resolved',
+    priority: alert.urgencyLevel === 'critical' ? 'critical' :
+              alert.urgencyLevel === 'high' ? 'high' :
+              alert.urgencyLevel === 'medium' ? 'medium' : 'low',
+    impact: alert.urgencyLevel === 'critical' ? 'critical' :
+            alert.urgencyLevel === 'high' ? 'high' :
+            alert.urgencyLevel === 'medium' ? 'medium' : 'low',
+    details: {
+      equipment: alert.machineName,
+      location: 'Fábrica'
+    }
+  }));
+
+  // Combine all alerts for filtering and display
+  const allAlerts = [...alerts, ...convertedMaintenanceAlerts];
+
+  const filteredAlerts = allAlerts.filter(alert => {
     const matchesSearch = alert.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          alert.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          alert.source.toLowerCase().includes(searchTerm.toLowerCase());
