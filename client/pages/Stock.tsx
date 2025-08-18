@@ -178,7 +178,7 @@ export default function Stock() {
         nonConformities: '',
         comments: '',
         receivedBy: '',
-        supplierInfo: { supplier: '', batchNumber: '', certificate: '' }
+
       });
     } catch (error) {
       console.error('Erro ao adicionar bloco:', error);
@@ -445,7 +445,7 @@ export default function Stock() {
                                 </span>
                               </div>
                               <p className="text-sm text-muted-foreground mb-1">
-                                {block.foamType.name} �� {block.productionNumber}
+                                {block.foamType.name} • {block.productionNumber}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {block.dimensions.length} × {block.dimensions.width} × {block.dimensions.height} mm
@@ -659,7 +659,7 @@ export default function Stock() {
                       nonConformities: '',
                       comments: '',
                       receivedBy: '',
-                      supplierInfo: { supplier: '', batchNumber: '', certificate: '' }
+              
                     });
                   }}
                   className="text-muted-foreground hover:text-foreground"
@@ -918,7 +918,7 @@ export default function Stock() {
                       nonConformities: '',
                       comments: '',
                       receivedBy: '',
-                      supplierInfo: { supplier: '', batchNumber: '', certificate: '' }
+              
                     });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-muted"
