@@ -21,8 +21,9 @@ import {
   Eye,
   Download
 } from 'lucide-react';
-import { Machine, OperatorWorkItem, OperatorSession, ChatMessage } from '@/types/production';
+import { Machine, OperatorWorkItem, OperatorSession, ChatMessage, PrintLabel } from '@/types/production';
 import { productionService } from '@/services/productionService';
+import { labelService } from '@/services/labelService';
 import { cn } from '@/lib/utils';
 
 interface OperatorPortalProps {
