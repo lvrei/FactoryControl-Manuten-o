@@ -42,6 +42,17 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     id: '',
     name: ''
   });
+
+  // Get user from session
+  useEffect(() => {
+    const session = authService.getCurrentUser();
+    if (session) {
+      setOperatorData({
+        id: session.userId,
+        name: session.username
+      });
+    }
+  }, []);
   
   const [selectedMachine, setSelectedMachine] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState('');
