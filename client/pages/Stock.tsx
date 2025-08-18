@@ -88,12 +88,7 @@ export default function Stock() {
     productionDate: new Date().toISOString().split('T')[0],
     nonConformities: '',
     comments: '',
-    receivedBy: '',
-    supplierInfo: {
-      supplier: '',
-      batchNumber: '',
-      certificate: ''
-    }
+    receivedBy: ''
   });
 
   useEffect(() => {
