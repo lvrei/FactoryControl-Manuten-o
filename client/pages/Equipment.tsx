@@ -36,6 +36,8 @@ interface EquipmentDetails extends Machine {
   nextMaintenance?: string;
   operatingHours: number;
   notes?: string;
+  coverPhoto?: string;
+  files: MachineFile[];
 }
 
 export default function Equipment() {
