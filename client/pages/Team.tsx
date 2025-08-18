@@ -157,7 +157,13 @@ export default function Team() {
     supervisor: '',
     currentAssignment: '',
     machineOperatingLicense: '',
-    certifications: ''
+    certifications: '',
+    // System access fields
+    hasSystemAccess: false,
+    username: '',
+    role: 'operator' as 'admin' | 'supervisor' | 'operator' | 'quality' | 'maintenance',
+    accessLevel: 'limited' as 'full' | 'limited' | 'readonly',
+    password: ''
   });
 
   const filteredEmployees = employeesList.filter(employee => {
