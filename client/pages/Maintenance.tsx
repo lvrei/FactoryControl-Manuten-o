@@ -164,7 +164,7 @@ export default function Maintenance() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">Gestão de Manutenção</h1>
           <p className="text-muted-foreground">
-            Controle de máquinas e programação de manutenções
+            Programação de manutenções para equipamentos registados
           </p>
         </div>
         
