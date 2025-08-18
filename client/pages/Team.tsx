@@ -253,7 +253,7 @@ export default function Team() {
     currentAssignment: ''
   });
 
-  const filteredEmployees = employees.filter(employee => {
+  const filteredEmployees = employeesList.filter(employee => {
     const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          employee.department.toLowerCase().includes(searchTerm.toLowerCase());
@@ -261,8 +261,8 @@ export default function Team() {
     return matchesSearch && matchesStatus;
   });
 
-  const totalEmployees = employees.length;
-  const activeEmployees = employees.filter(e => e.status === 'active').length;
+  const totalEmployees = employeesList.length;
+  const activeEmployees = employeesList.filter(e => e.status === 'active').length;
   const absentEmployees = employees.filter(e => e.status === 'absent').length;
   const trainingEmployees = employees.filter(e => e.status === 'training').length;
 
