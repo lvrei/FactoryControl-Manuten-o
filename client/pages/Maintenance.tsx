@@ -443,15 +443,6 @@ export default function Maintenance() {
       )}
 
       {/* Forms */}
-      <MachineForm
-        isOpen={showMachineForm}
-        onClose={() => {
-          setShowMachineForm(false);
-          setEditingMachine(null);
-        }}
-        onSave={handleSaveMachine}
-        editingMachine={editingMachine}
-      />
 
       <MaintenanceForm
         isOpen={showMaintenanceForm}
