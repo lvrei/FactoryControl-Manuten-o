@@ -41,7 +41,8 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Layout />}>
               <Route index element={<Dashboard />} />
-              <Route path="production" element={<Production />} />
+              <Route path="production" element={<ProductionNew />} />
+              <Route path="production-old" element={<Production />} />
               <Route path="equipment" element={<Equipment />} />
               <Route path="quality" element={<Quality />} />
               <Route path="maintenance" element={<Maintenance />} />
@@ -49,6 +50,7 @@ const App = () => {
               <Route path="planning" element={<Planning />} />
               <Route path="alerts" element={<Alerts />} />
             </Route>
+            <Route path="operator" element={<OperatorPortal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
