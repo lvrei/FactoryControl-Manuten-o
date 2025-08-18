@@ -281,13 +281,66 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       });
 
       setNewMessage('');
-      
+
       // Recarregar mensagens
       const machineMessages = await productionService.getChatMessages(currentSession.machineId);
       setMessages(machineMessages);
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
     }
+  };
+
+  const submitMaintenanceRequest = async () => {
+    if (!currentSession || !maintenanceForm.title.trim() || !maintenanceForm.description.trim()) {
+      alert('Preencha o título e descrição da solicitação');
+      return;
+    }
+
+    try {
+      const machine = machines.find(m => m.id === currentSession.machineId);
+
+      await maintenanceService.createMaintenanceRequest({
+        machineId: currentSession.machineId,
+        machineName: machine?.name || 'Máquina não identificada',
+        operatorId: currentSession.operatorId,
+        operatorName: currentSession.operatorName,
+        urgencyLevel: maintenanceForm.urgencyLevel,
+        category: maintenanceForm.category,
+        title: maintenanceForm.title,
+        description: maintenanceForm.description,
+        reportedIssues: maintenanceForm.reportedIssues
+      });
+
+      alert(`Solicitação de manutenção criada com sucesso!${maintenanceForm.urgencyLevel === 'critical' ? '\n\nAVISO: Devido à urgência crítica, a máquina foi automaticamente marcada como em manutenção.' : ''}`);
+
+      // Reset form
+      setMaintenanceForm({
+        urgencyLevel: 'medium',
+        category: 'mechanical',
+        title: '',
+        description: '',
+        reportedIssues: []
+      });
+      setShowMaintenanceRequest(false);
+
+      // If critical, immediately update machine status display
+      if (maintenanceForm.urgencyLevel === 'critical') {
+        await loadData(); // Refresh machine status
+      }
+
+    } catch (error) {
+      console.error('Erro ao criar solicitação de manutenção:', error);
+      alert('Erro ao criar solicitação de manutenção');
+    }
+  };
+
+  const handleDismissNotification = (notificationId: string) => {
+    setMessageNotifications(prev => prev.filter(n => n.id !== notificationId));
+  };
+
+  const handleViewChat = () => {
+    setShowChat(true);
+    setMessageNotifications([]); // Clear notifications when viewing chat
   };
 
   const filteredWorkItems = workItems.filter(item => {
