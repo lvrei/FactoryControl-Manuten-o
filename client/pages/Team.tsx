@@ -237,6 +237,21 @@ export default function Team() {
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showAddEmployee, setShowAddEmployee] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [employeesList, setEmployeesList] = useState<Employee[]>(employees);
+
+  const [newEmployee, setNewEmployee] = useState({
+    name: '',
+    position: '',
+    department: 'production',
+    shift: 'morning' as 'morning' | 'afternoon' | 'night',
+    email: '',
+    phone: '',
+    skills: '',
+    supervisor: '',
+    currentAssignment: ''
+  });
 
   const filteredEmployees = employees.filter(employee => {
     const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
