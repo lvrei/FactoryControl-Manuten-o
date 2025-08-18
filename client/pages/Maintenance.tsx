@@ -104,7 +104,7 @@ const mockMaintenances: MaintenanceData[] = [
     scheduledDate: "2024-12-28T09:00",
     estimatedCost: 350,
     estimatedDuration: 3,
-    description: "Inspeção de seguran��a obrigatória",
+    description: "Inspeção de segurança obrigatória",
     technician: "Carlos Oliveira",
     parts: "Kit de vedações",
     notes: "Inspeção atrasada - prioridade alta",
@@ -598,7 +598,7 @@ export default function Maintenance() {
                             {new Date(maintenance.scheduledDate).toLocaleDateString('pt-BR')}
                           </span>
                           {isOverdue && (
-                            <AlertTriangle className="h-4 w-4 text-warning" title="Manutenção em atraso" />
+                            <AlertTriangle className="h-4 w-4 text-warning" />
                           )}
                         </div>
                       </td>
