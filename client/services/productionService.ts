@@ -203,17 +203,56 @@ class ProductionService {
 
   // Tipos de Espuma
   async getFoamTypes(): Promise<FoamType[]> {
-    return this.mockFoamTypes;
+    // Buscar tipos salvos no localStorage se existirem
+    const data = this.getStoredData();
+    if (data.foamTypes && data.foamTypes.length > 0) {
+      return data.foamTypes;
+    }
+
+    // Se não existir, usar os tipos padrão e salvar
+    data.foamTypes = [...this.mockFoamTypes];
+    this.saveData(data);
+    return data.foamTypes;
   }
 
   async createFoamType(foamType: Omit<FoamType, 'id'>): Promise<FoamType> {
+    const data = this.getStoredData();
     const newFoamType: FoamType = {
       ...foamType,
       id: Date.now().toString()
     };
-    
-    this.mockFoamTypes.push(newFoamType);
+
+    if (!data.foamTypes) {
+      data.foamTypes = [...this.mockFoamTypes];
+    }
+
+    data.foamTypes.push(newFoamType);
+    this.saveData(data);
     return newFoamType;
+  }
+
+  async updateFoamType(id: string, updates: Partial<FoamType>): Promise<FoamType> {
+    const data = this.getStoredData();
+    if (!data.foamTypes) {
+      data.foamTypes = [...this.mockFoamTypes];
+    }
+
+    const foamIndex = data.foamTypes.findIndex((foam: FoamType) => foam.id === id);
+    if (foamIndex === -1) {
+      throw new Error('Tipo de espuma não encontrado');
+    }
+
+    data.foamTypes[foamIndex] = { ...data.foamTypes[foamIndex], ...updates };
+    this.saveData(data);
+    return data.foamTypes[foamIndex];
+  }
+
+  async deleteFoamType(id: string): Promise<void> {
+    const data = this.getStoredData();
+    if (!data.foamTypes) return;
+
+    data.foamTypes = data.foamTypes.filter((foam: FoamType) => foam.id !== id);
+    this.saveData(data);
   }
 
   // Máquinas
