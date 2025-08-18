@@ -1,4 +1,5 @@
 import { MaintenanceRequest, MaintenanceAlert, MachineDowntime } from '@/types/production';
+import { productionService } from './productionService';
 
 class MaintenanceService {
   private maintenanceRequestsKey = 'factoryControl_maintenanceRequests';
