@@ -388,17 +388,30 @@ class ProductionService {
   async endOperatorSession(sessionId: string): Promise<void> {
     const data = this.getStoredData();
     const sessionIndex = data.operatorSessions.findIndex((session: OperatorSession) => session.id === sessionId);
-    
+
     if (sessionIndex !== -1) {
       data.operatorSessions[sessionIndex].isActive = false;
       data.operatorSessions[sessionIndex].endTime = new Date().toISOString();
-      
+
       // Atualizar status da máquina para disponível
       const session = data.operatorSessions[sessionIndex];
       await this.updateMachineStatus(session.machineId, 'available');
-      
+
       this.saveData(data);
     }
+  }
+
+  async getOperatorSessions(activeOnly = false): Promise<OperatorSession[]> {
+    const data = this.getStoredData();
+    const sessions = data.operatorSessions || [];
+
+    if (activeOnly) {
+      return sessions.filter((session: OperatorSession) => session.isActive);
+    }
+
+    return sessions.sort((a: OperatorSession, b: OperatorSession) =>
+      new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    );
   }
 }
 
