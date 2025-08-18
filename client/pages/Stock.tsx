@@ -683,6 +683,7 @@ export default function Stock() {
                 <button
                   onClick={() => {
                     setShowAddBlock(false);
+                    setEditingBlock(null);
                     setNewBlock({
                       productionNumber: '',
                       foamTypeId: '',
@@ -895,6 +896,7 @@ export default function Stock() {
                 <button
                   onClick={() => {
                     setShowAddBlock(false);
+                    setEditingBlock(null);
                     setNewBlock({
                       productionNumber: '',
                       foamTypeId: '',
