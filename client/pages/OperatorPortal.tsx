@@ -47,7 +47,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 30000); // Atualizar a cada 30 segundos
+    const interval = setInterval(loadData, 5000); // Atualizar a cada 5 segundos
     return () => clearInterval(interval);
   }, []);
 
