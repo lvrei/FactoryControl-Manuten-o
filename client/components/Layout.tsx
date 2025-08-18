@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PWADebug } from "./PWADebug";
+import { authService } from "@/services/authService";
+import { LoginSession } from "@/types/production";
 
 interface LayoutProps {
   children?: ReactNode;
