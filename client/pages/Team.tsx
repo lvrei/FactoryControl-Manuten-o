@@ -25,6 +25,8 @@ import {
   Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { authService } from "@/services/authService";
+import { User } from "@/types/production";
 
 interface Employee {
   id: string;
