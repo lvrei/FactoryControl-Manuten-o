@@ -54,6 +54,9 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
   useEffect(() => {
     if (selectedMachine) {
       loadWorkItems();
+      // Auto-refresh mais frequente para work items
+      const interval = setInterval(loadWorkItems, 3000); // A cada 3 segundos
+      return () => clearInterval(interval);
     }
   }, [selectedMachine]);
 
