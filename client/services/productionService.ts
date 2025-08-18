@@ -93,7 +93,9 @@ class ProductionService {
       productionOrders: [],
       productSheets: [],
       chatMessages: [],
-      operatorSessions: []
+      operatorSessions: [],
+      foamBlocks: [],
+      stockMovements: []
     };
   }
 
