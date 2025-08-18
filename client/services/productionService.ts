@@ -307,9 +307,11 @@ class ProductionService {
             remainingQuantity: operation.quantity - operation.completedQuantity,
             machineId: operation.machineId,
             machineName: machine.name,
+            machineType: machine.type,
             priority: line.priority,
             expectedDeliveryDate: order.expectedDeliveryDate,
-            estimatedTime: operation.estimatedTime
+            estimatedTime: operation.estimatedTime,
+            observations: operation.observations
           });
         });
       });
