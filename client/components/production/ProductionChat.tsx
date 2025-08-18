@@ -363,20 +363,37 @@ export function useChatNotifications(machineId?: string, operatorId?: string) {
     const checkMessages = async () => {
       try {
         const messages = await productionService.getChatMessages(machineId, operatorId);
-        const unread = messages.filter(msg => !msg.isRead);
+        const unread = messages.filter(msg => !msg.isRead && msg.from !== 'operator');
         setUnreadCount(unread.length);
-        
+
         if (messages.length > 0) {
-          setLatestMessage(messages[messages.length - 1]);
+          const latest = messages[messages.length - 1];
+          setLatestMessage(latest);
+
+          // Notificação visual se for nova mensagem
+          if (latest.from === 'backend' && !latest.isRead) {
+            // Criar notificação visual
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Nova mensagem do escritório', {
+                body: latest.message,
+                icon: '/icons/icon-192x192.png'
+              });
+            }
+          }
         }
       } catch (error) {
         console.error('Erro ao verificar mensagens:', error);
       }
     };
 
+    // Pedir permissão para notificações
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
     checkMessages();
-    const interval = setInterval(checkMessages, 10000); // Verificar a cada 10 segundos
-    
+    const interval = setInterval(checkMessages, 2000); // Verificar a cada 2 segundos
+
     return () => clearInterval(interval);
   }, [machineId, operatorId]);
 
