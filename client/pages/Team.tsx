@@ -19,7 +19,10 @@ import {
   UserX,
   BookOpen,
   Shield,
-  TrendingUp
+  TrendingUp,
+  BrainCircuit,
+  ClipboardList,
+  Building2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,7 +32,7 @@ interface Employee {
   position: string;
   department: string;
   shift: 'morning' | 'afternoon' | 'night';
-  status: 'active' | 'absent' | 'vacation' | 'training';
+  status: 'present' | 'absent' | 'vacation' | 'training';
   email: string;
   phone: string;
   hireDate: string;
@@ -39,6 +42,9 @@ interface Employee {
   supervisor: string;
   productivityScore: number;
   attendanceRate: number;
+  machineOperatingLicense: string[];
+  trainingHours: number;
+  lastPresenceUpdate?: string;
 }
 
 interface ShiftSchedule {
@@ -71,152 +77,21 @@ interface Training {
   instructor: string;
   participants: string[];
   location: string;
+  foamCuttingRelated: boolean;
 }
 
-const employees: Employee[] = [
-  {
-    id: "1",
-    name: "João Silva",
-    position: "Operador de Máquina",
-    department: "Produção",
-    shift: "morning",
-    status: "active",
-    email: "joao.silva@empresa.com",
-    phone: "(11) 99999-0001",
-    hireDate: "2020-03-15",
-    skills: ["Prensa Hidráulica", "CNC", "Soldagem"],
-    certifications: ["NR-12", "Operador CNC"],
-    currentAssignment: "Linha 1 - Prensa",
-    supervisor: "Carlos Mendes",
-    productivityScore: 92,
-    attendanceRate: 98
-  },
-  {
-    id: "2",
-    name: "Maria Santos",
-    position: "Técnica de Qualidade",
-    department: "Qualidade",
-    shift: "afternoon",
-    status: "active",
-    email: "maria.santos@empresa.com",
-    phone: "(11) 99999-0002", 
-    hireDate: "2019-07-22",
-    skills: ["Inspeção", "Metrologia", "ISO 9001"],
-    certifications: ["Inspetor de Qualidade", "Auditor Interno"],
-    currentAssignment: "Laboratório de Qualidade",
-    supervisor: "Ana Silva",
-    productivityScore: 96,
-    attendanceRate: 99
-  },
-  {
-    id: "3",
-    name: "Pedro Costa",
-    position: "Mecânico de Manutenção",
-    department: "Manutenção",
-    shift: "night",
-    status: "training",
-    email: "pedro.costa@empresa.com",
-    phone: "(11) 99999-0003",
-    hireDate: "2021-01-10",
-    skills: ["Manutenção Mecânica", "Pneumática", "Hidráulica"],
-    certifications: ["NR-10", "Mecânico Industrial"],
-    currentAssignment: "Manutenção Preventiva",
-    supervisor: "Roberto Santos",
-    productivityScore: 88,
-    attendanceRate: 95
-  },
-  {
-    id: "4",
-    name: "Ana Oliveira",
-    position: "Supervisora de Produção",
-    department: "Produção",
-    shift: "morning",
-    status: "active",
-    email: "ana.oliveira@empresa.com",
-    phone: "(11) 99999-0004",
-    hireDate: "2018-05-03",
-    skills: ["Liderança", "Planejamento", "Lean Manufacturing"],
-    certifications: ["Supervisor de Produção", "Green Belt"],
-    currentAssignment: "Supervisão Geral",
-    supervisor: "Diretor de Produção",
-    productivityScore: 94,
-    attendanceRate: 97
-  }
-];
+// Dados limpos apenas para indústria de corte de espuma
+const employees: Employee[] = [];
 
-const shiftSchedules: ShiftSchedule[] = [
-  {
-    id: "1",
-    shift: "morning",
-    date: "2024-01-23",
-    startTime: "06:00",
-    endTime: "14:00",
-    requiredStaff: 12,
-    assignedStaff: 11,
-    supervisor: "Ana Oliveira",
-    assignments: [
-      { employeeId: "1", employeeName: "João Silva", position: "Operador", station: "Linha 1", status: "present" },
-      { employeeId: "4", employeeName: "Ana Oliveira", position: "Supervisora", station: "Supervisão", status: "present" }
-    ]
-  },
-  {
-    id: "2",
-    shift: "afternoon",
-    date: "2024-01-23",
-    startTime: "14:00",
-    endTime: "22:00",
-    requiredStaff: 10,
-    assignedStaff: 9,
-    supervisor: "Carlos Mendes",
-    assignments: [
-      { employeeId: "2", employeeName: "Maria Santos", position: "Técnica", station: "Qualidade", status: "present" }
-    ]
-  },
-  {
-    id: "3",
-    shift: "night",
-    date: "2024-01-23",
-    startTime: "22:00",
-    endTime: "06:00",
-    requiredStaff: 8,
-    assignedStaff: 8,
-    supervisor: "Roberto Santos",
-    assignments: [
-      { employeeId: "3", employeeName: "Pedro Costa", position: "Mecânico", station: "Manutenção", status: "present" }
-    ]
-  }
-];
+const shiftSchedules: ShiftSchedule[] = [];
 
-const trainings: Training[] = [
-  {
-    id: "1",
-    title: "Segurança em Máquinas - NR-12",
-    type: "safety",
-    status: "scheduled",
-    startDate: "2024-01-25T08:00",
-    duration: 8,
-    instructor: "José Segurança",
-    participants: ["1", "3"],
-    location: "Sala de Treinamento A"
-  },
-  {
-    id: "2",
-    title: "Lean Manufacturing Básico",
-    type: "technical",
-    status: "in_progress",
-    startDate: "2024-01-22T14:00",
-    duration: 16,
-    instructor: "Consultora Externa",
-    participants: ["4"],
-    location: "Auditório"
-  }
-];
+const trainings: Training[] = [];
 
 const statusConfig = {
-  active: { color: "text-success bg-success/10", label: "Ativo", icon: CheckCircle },
+  present: { color: "text-success bg-success/10", label: "Presente", icon: CheckCircle },
   absent: { color: "text-destructive bg-destructive/10", label: "Ausente", icon: UserX },
   vacation: { color: "text-info bg-info/10", label: "Férias", icon: Calendar },
-  training: { color: "text-warning bg-warning/10", label: "Treinamento", icon: BookOpen }
+  training: { color: "text-warning bg-warning/10", label: "Formação", icon: BookOpen }
 };
 
 const shiftConfig = {
@@ -232,8 +107,30 @@ const trainingTypeConfig = {
   compliance: { label: "Compliance", color: "text-warning bg-warning/10" }
 };
 
+const foamCuttingPositions = [
+  'Operador BZM',
+  'Operador Carrossel',
+  'Operador Pré-CNC',
+  'Operador CNC',
+  'Técnico de Qualidade de Espuma',
+  'Supervisor de Produção',
+  'Responsável de Stock',
+  'Técnico de Manutenção de Máquinas de Corte'
+];
+
+const foamCuttingDepartments = [
+  'Corte BZM',
+  'Carrossel',
+  'Pré-CNC',
+  'CNC',
+  'Qualidade',
+  'Stock/Armazém',
+  'Supervisão',
+  'Manutenção'
+];
+
 export default function Team() {
-  const [activeTab, setActiveTab] = useState<'employees' | 'schedule' | 'training'>('employees');
+  const [activeTab, setActiveTab] = useState<'employees' | 'schedule' | 'training' | 'presence'>('employees');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -244,13 +141,15 @@ export default function Team() {
   const [newEmployee, setNewEmployee] = useState({
     name: '',
     position: '',
-    department: 'production',
+    department: 'Corte BZM',
     shift: 'morning' as 'morning' | 'afternoon' | 'night',
     email: '',
     phone: '',
     skills: '',
     supervisor: '',
-    currentAssignment: ''
+    currentAssignment: '',
+    machineOperatingLicense: '',
+    certifications: ''
   });
 
   const filteredEmployees = employeesList.filter(employee => {
@@ -262,12 +161,12 @@ export default function Team() {
   });
 
   const totalEmployees = employeesList.length;
-  const activeEmployees = employeesList.filter(e => e.status === 'active').length;
-  const absentEmployees = employees.filter(e => e.status === 'absent').length;
-  const trainingEmployees = employees.filter(e => e.status === 'training').length;
+  const presentEmployees = employeesList.filter(e => e.status === 'present').length;
+  const absentEmployees = employeesList.filter(e => e.status === 'absent').length;
+  const trainingEmployees = employeesList.filter(e => e.status === 'training').length;
 
-  const avgProductivity = employeesList.reduce((sum, e) => sum + e.productivityScore, 0) / employeesList.length;
-  const avgAttendance = employeesList.reduce((sum, e) => sum + e.attendanceRate, 0) / employeesList.length;
+  const avgProductivity = employeesList.length > 0 ? employeesList.reduce((sum, e) => sum + e.productivityScore, 0) / employeesList.length : 0;
+  const avgAttendance = employeesList.length > 0 ? employeesList.reduce((sum, e) => sum + e.attendanceRate, 0) / employeesList.length : 0;
 
   // Funções CRUD para funcionários
   const handleAddEmployee = () => {
@@ -282,22 +181,26 @@ export default function Team() {
       position: newEmployee.position,
       department: newEmployee.department,
       shift: newEmployee.shift,
-      status: 'active',
+      status: 'absent',
       email: newEmployee.email,
       phone: newEmployee.phone,
       hireDate: new Date().toISOString().split('T')[0],
       skills: newEmployee.skills.split(',').map(s => s.trim()).filter(s => s),
-      certifications: [],
+      certifications: newEmployee.certifications.split(',').map(s => s.trim()).filter(s => s),
+      machineOperatingLicense: newEmployee.machineOperatingLicense.split(',').map(s => s.trim()).filter(s => s),
       currentAssignment: newEmployee.currentAssignment,
       supervisor: newEmployee.supervisor,
       productivityScore: 85,
-      attendanceRate: 95
+      attendanceRate: 95,
+      trainingHours: 0,
+      lastPresenceUpdate: new Date().toISOString()
     };
 
     setEmployeesList(prev => [...prev, employee]);
     setNewEmployee({
-      name: '', position: '', department: 'production', shift: 'morning',
-      email: '', phone: '', skills: '', supervisor: '', currentAssignment: ''
+      name: '', position: '', department: 'Corte BZM', shift: 'morning',
+      email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
+      machineOperatingLicense: '', certifications: ''
     });
     setShowAddEmployee(false);
   };
@@ -313,7 +216,9 @@ export default function Team() {
       phone: employee.phone,
       skills: employee.skills.join(', '),
       supervisor: employee.supervisor,
-      currentAssignment: employee.currentAssignment
+      currentAssignment: employee.currentAssignment,
+      machineOperatingLicense: employee.machineOperatingLicense.join(', '),
+      certifications: employee.certifications.join(', ')
     });
     setShowAddEmployee(true);
   };
@@ -330,6 +235,8 @@ export default function Team() {
       email: newEmployee.email,
       phone: newEmployee.phone,
       skills: newEmployee.skills.split(',').map(s => s.trim()).filter(s => s),
+      certifications: newEmployee.certifications.split(',').map(s => s.trim()).filter(s => s),
+      machineOperatingLicense: newEmployee.machineOperatingLicense.split(',').map(s => s.trim()).filter(s => s),
       supervisor: newEmployee.supervisor,
       currentAssignment: newEmployee.currentAssignment
     };
@@ -340,8 +247,9 @@ export default function Team() {
 
     setEditingEmployee(null);
     setNewEmployee({
-      name: '', position: '', department: 'production', shift: 'morning',
-      email: '', phone: '', skills: '', supervisor: '', currentAssignment: ''
+      name: '', position: '', department: 'Corte BZM', shift: 'morning',
+      email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
+      machineOperatingLicense: '', certifications: ''
     });
     setShowAddEmployee(false);
   };
@@ -352,14 +260,22 @@ export default function Team() {
     }
   };
 
+  const markPresence = (employeeId: string, status: 'present' | 'absent') => {
+    setEmployeesList(prev => prev.map(emp =>
+      emp.id === employeeId 
+        ? { ...emp, status, lastPresenceUpdate: new Date().toISOString() }
+        : emp
+    ));
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestão de Equipe</h1>
+          <h1 className="text-3xl font-bold text-foreground">Gestão de Equipa</h1>
           <p className="text-muted-foreground">
-            Controle de funcionários, turnos e treinamentos
+            Controle de funcionários, turnos e formações - Indústria de Corte de Espuma
           </p>
         </div>
         
@@ -387,8 +303,8 @@ export default function Team() {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Ativos</p>
-              <p className="text-2xl font-bold text-success">{activeEmployees}</p>
+              <p className="text-sm font-medium text-muted-foreground">Presentes</p>
+              <p className="text-2xl font-bold text-success">{presentEmployees}</p>
             </div>
             <UserCheck className="h-6 w-6 text-success" />
           </div>
@@ -407,7 +323,7 @@ export default function Team() {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Treinamento</p>
+              <p className="text-sm font-medium text-muted-foreground">Formação</p>
               <p className="text-2xl font-bold text-warning">{trainingEmployees}</p>
             </div>
             <BookOpen className="h-6 w-6 text-warning" />
@@ -446,7 +362,18 @@ export default function Team() {
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          Funcionários ({employees.length})
+          Funcionários ({employeesList.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('presence')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            activeTab === 'presence'
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Controle de Presença
         </button>
         <button
           onClick={() => setActiveTab('schedule')}
@@ -468,7 +395,7 @@ export default function Team() {
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          Treinamentos ({trainings.length})
+          Formações ({trainings.length})
         </button>
       </div>
 
@@ -501,55 +428,71 @@ export default function Team() {
                     className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   >
                     <option value="all">Todos</option>
-                    <option value="active">Ativo</option>
+                    <option value="present">Presente</option>
                     <option value="absent">Ausente</option>
                     <option value="vacation">Férias</option>
-                    <option value="training">Treinamento</option>
+                    <option value="training">Formação</option>
                   </select>
                 </div>
               </div>
               
               <div className="max-h-96 overflow-y-auto">
-                {filteredEmployees.map((employee) => {
-                  const config = statusConfig[employee.status];
-                  const StatusIcon = config.icon;
-                  
-                  return (
-                    <div
-                      key={employee.id}
-                      onClick={() => setSelectedEmployee(employee)}
-                      className={cn(
-                        "border-b p-4 cursor-pointer hover:bg-muted/50 transition-colors",
-                        selectedEmployee?.id === employee.id && "bg-muted/50"
-                      )}
+                {filteredEmployees.length === 0 ? (
+                  <div className="p-8 text-center">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-card-foreground mb-2">Nenhum Funcionário Cadastrado</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Adicione funcionários para começar a gerir a sua equipa de corte de espuma
+                    </p>
+                    <button
+                      onClick={() => setShowAddEmployee(true)}
+                      className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <User className="h-5 w-5 text-primary" />
+                      Adicionar Primeiro Funcionário
+                    </button>
+                  </div>
+                ) : (
+                  filteredEmployees.map((employee) => {
+                    const config = statusConfig[employee.status];
+                    const StatusIcon = config.icon;
+                    
+                    return (
+                      <div
+                        key={employee.id}
+                        onClick={() => setSelectedEmployee(employee)}
+                        className={cn(
+                          "border-b p-4 cursor-pointer hover:bg-muted/50 transition-colors",
+                          selectedEmployee?.id === employee.id && "bg-muted/50"
+                        )}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <User className="h-5 w-5 text-primary" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-card-foreground">{employee.name}</p>
+                              <p className="text-sm text-muted-foreground">{employee.position}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-card-foreground">{employee.name}</p>
-                            <p className="text-sm text-muted-foreground">{employee.position}</p>
+                          <div className={cn("flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", config.color)}>
+                            <StatusIcon className="h-3 w-3" />
+                            {config.label}
                           </div>
                         </div>
-                        <div className={cn("flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", config.color)}>
-                          <StatusIcon className="h-3 w-3" />
-                          {config.label}
+                        
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {employee.department} • {shiftConfig[employee.shift].label}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {employee.currentAssignment || 'Não atribuído'}
+                          </span>
                         </div>
                       </div>
-                      
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">
-                          {employee.department} • {shiftConfig[employee.shift].label}
-                        </span>
-                        <span className="text-muted-foreground">
-                          {employee.currentAssignment}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </div>
           </div>
@@ -591,15 +534,15 @@ export default function Team() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{selectedEmployee.email}</span>
+                        <span className="text-muted-foreground">{selectedEmployee.email || 'Não informado'}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{selectedEmployee.phone}</span>
+                        <span className="text-muted-foreground">{selectedEmployee.phone || 'Não informado'}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{selectedEmployee.currentAssignment}</span>
+                        <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-muted-foreground">{selectedEmployee.currentAssignment || 'Não atribuído'}</span>
                       </div>
                     </div>
 
@@ -614,7 +557,7 @@ export default function Team() {
                       </div>
                       <div className="flex justify-between mb-2">
                         <span className="text-muted-foreground">Supervisor:</span>
-                        <span className="font-medium text-card-foreground">{selectedEmployee.supervisor}</span>
+                        <span className="font-medium text-card-foreground">{selectedEmployee.supervisor || 'Não definido'}</span>
                       </div>
                       <div className="flex justify-between mb-2">
                         <span className="text-muted-foreground">Admissão:</span>
@@ -663,23 +606,41 @@ export default function Team() {
                     <div>
                       <p className="text-sm font-medium text-muted-foreground mb-2">Habilidades:</p>
                       <div className="flex flex-wrap gap-1">
-                        {selectedEmployee.skills.map((skill, index) => (
+                        {selectedEmployee.skills.length > 0 ? selectedEmployee.skills.map((skill, index) => (
                           <span key={index} className="px-2 py-1 text-xs bg-info/10 text-info rounded">
                             {skill}
                           </span>
-                        ))}
+                        )) : (
+                          <span className="text-xs text-muted-foreground">Nenhuma habilidade registrada</span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">Licenças de Máquinas:</p>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedEmployee.machineOperatingLicense.length > 0 ? selectedEmployee.machineOperatingLicense.map((license, index) => (
+                          <span key={index} className="px-2 py-1 text-xs bg-warning/10 text-warning rounded flex items-center gap-1">
+                            <Shield className="h-3 w-3" />
+                            {license}
+                          </span>
+                        )) : (
+                          <span className="text-xs text-muted-foreground">Nenhuma licença registrada</span>
+                        )}
                       </div>
                     </div>
 
                     <div>
                       <p className="text-sm font-medium text-muted-foreground mb-2">Certificações:</p>
                       <div className="flex flex-wrap gap-1">
-                        {selectedEmployee.certifications.map((cert, index) => (
+                        {selectedEmployee.certifications.length > 0 ? selectedEmployee.certifications.map((cert, index) => (
                           <span key={index} className="px-2 py-1 text-xs bg-success/10 text-success rounded flex items-center gap-1">
                             <Award className="h-3 w-3" />
                             {cert}
                           </span>
-                        ))}
+                        )) : (
+                          <span className="text-xs text-muted-foreground">Nenhuma certificação registrada</span>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -696,128 +657,84 @@ export default function Team() {
             )}
           </div>
         </div>
+      ) : activeTab === 'presence' ? (
+        <div className="rounded-lg border bg-card p-6">
+          <h3 className="text-lg font-semibold text-card-foreground mb-4">Controle de Presença</h3>
+          <p className="text-muted-foreground mb-6">
+            Marque a presença dos funcionários para hoje ({new Date().toLocaleDateString('pt-BR')})
+          </p>
+          
+          {employeesList.length === 0 ? (
+            <div className="text-center py-8">
+              <ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <p className="text-muted-foreground">
+                Nenhum funcionário cadastrado para controle de presença
+              </p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {employeesList.map((employee) => (
+                <div key={employee.id} className="border rounded-lg p-4">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-card-foreground">{employee.name}</p>
+                      <p className="text-sm text-muted-foreground">{employee.position}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => markPresence(employee.id, 'present')}
+                      className={cn(
+                        "flex-1 px-3 py-2 text-sm rounded-lg transition-colors",
+                        employee.status === 'present'
+                          ? "bg-success text-success-foreground"
+                          : "border border-success text-success hover:bg-success/10"
+                      )}
+                    >
+                      <CheckCircle className="h-4 w-4 inline mr-1" />
+                      Presente
+                    </button>
+                    <button
+                      onClick={() => markPresence(employee.id, 'absent')}
+                      className={cn(
+                        "flex-1 px-3 py-2 text-sm rounded-lg transition-colors",
+                        employee.status === 'absent'
+                          ? "bg-destructive text-destructive-foreground"
+                          : "border border-destructive text-destructive hover:bg-destructive/10"
+                      )}
+                    >
+                      <UserX className="h-4 w-4 inline mr-1" />
+                      Ausente
+                    </button>
+                  </div>
+                  
+                  {employee.lastPresenceUpdate && (
+                    <p className="text-xs text-muted-foreground mt-2">
+                      Última atualização: {new Date(employee.lastPresenceUpdate).toLocaleTimeString('pt-BR')}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       ) : activeTab === 'schedule' ? (
-        <div className="space-y-6">
-          {shiftSchedules.map((schedule) => {
-            const shiftInfo = shiftConfig[schedule.shift];
-            const staffingRate = (schedule.assignedStaff / schedule.requiredStaff) * 100;
-            
-            return (
-              <div key={schedule.id} className="rounded-lg border bg-card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-card-foreground">
-                      Turno da {shiftInfo.label} - {new Date(schedule.date).toLocaleDateString('pt-BR')}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      {shiftInfo.time} • Supervisor: {schedule.supervisor}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium text-card-foreground">
-                      {schedule.assignedStaff}/{schedule.requiredStaff} funcionários
-                    </p>
-                    <div className={cn(
-                      "text-xs",
-                      staffingRate >= 100 ? "text-success" : staffingRate >= 80 ? "text-warning" : "text-destructive"
-                    )}>
-                      {staffingRate.toFixed(0)}% da capacidade
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {schedule.assignments.map((assignment, index) => (
-                    <div key={index} className="p-3 rounded-lg border bg-muted/50">
-                      <div className="flex items-center justify-between mb-2">
-                        <p className="font-medium text-card-foreground">{assignment.employeeName}</p>
-                        <span className={cn(
-                          "text-xs px-2 py-1 rounded",
-                          assignment.status === 'present' ? "bg-success/10 text-success" :
-                          assignment.status === 'late' ? "bg-warning/10 text-warning" :
-                          assignment.status === 'absent' ? "bg-destructive/10 text-destructive" :
-                          "bg-muted text-muted-foreground"
-                        )}>
-                          {assignment.status === 'present' ? 'Presente' :
-                           assignment.status === 'late' ? 'Atrasado' :
-                           assignment.status === 'absent' ? 'Ausente' : 'Agendado'}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{assignment.position}</p>
-                      <p className="text-sm text-muted-foreground">{assignment.station}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
+        <div className="rounded-lg border bg-card p-6">
+          <h3 className="text-lg font-semibold text-card-foreground mb-4">Gestão de Escalas</h3>
+          <p className="text-muted-foreground text-center py-8">
+            Sistema de escalas em desenvolvimento. Funcionalidade será implementada com base nas necessidades específicas de turnos da fábrica de corte de espuma.
+          </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {trainings.map((training) => {
-            const typeConfig = trainingTypeConfig[training.type];
-            
-            return (
-              <div key={training.id} className="rounded-lg border bg-card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 className="text-lg font-semibold text-card-foreground">{training.title}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Instrutor: {training.instructor} • Local: {training.location}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className={cn("inline-flex rounded-full px-3 py-1 text-xs font-medium", typeConfig.color)}>
-                      {typeConfig.label}
-                    </span>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {training.duration}h de duração
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(training.startDate).toLocaleDateString('pt-BR')}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm text-muted-foreground">
-                        {training.participants.length} participantes
-                      </span>
-                    </div>
-                  </div>
-                  <span className={cn(
-                    "px-2 py-1 text-xs rounded",
-                    training.status === 'completed' ? "bg-success/10 text-success" :
-                    training.status === 'in_progress' ? "bg-warning/10 text-warning" :
-                    "bg-info/10 text-info"
-                  )}>
-                    {training.status === 'completed' ? 'Concluído' :
-                     training.status === 'in_progress' ? 'Em Andamento' : 'Agendado'}
-                  </span>
-                </div>
-
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground mb-2">Participantes:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {training.participants.map((participantId) => {
-                      const participant = employees.find(e => e.id === participantId);
-                      return participant ? (
-                        <span key={participantId} className="px-2 py-1 text-xs bg-muted text-card-foreground rounded">
-                          {participant.name}
-                        </span>
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+        <div className="rounded-lg border bg-card p-6">
+          <h3 className="text-lg font-semibold text-card-foreground mb-4">Gestão de Formações</h3>
+          <p className="text-muted-foreground text-center py-8">
+            Sistema de formações em desenvolvimento. Incluirá formações específicas para operação de máquinas de corte de espuma, segurança e qualidade.
+          </p>
         </div>
       )}
 
@@ -835,8 +752,9 @@ export default function Team() {
                     setShowAddEmployee(false);
                     setEditingEmployee(null);
                     setNewEmployee({
-                      name: '', position: '', department: 'production', shift: 'morning',
-                      email: '', phone: '', skills: '', supervisor: '', currentAssignment: ''
+                      name: '', position: '', department: 'Corte BZM', shift: 'morning',
+                      email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
+                      machineOperatingLicense: '', certifications: ''
                     });
                   }}
                   className="text-muted-foreground hover:text-foreground"
@@ -861,14 +779,17 @@ export default function Team() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Cargo *</label>
-                    <input
-                      type="text"
+                    <select
                       value={newEmployee.position}
                       onChange={(e) => setNewEmployee(prev => ({ ...prev, position: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-lg bg-background"
-                      placeholder="Ex: Operador de Máquina"
                       required
-                    />
+                    >
+                      <option value="">Selecione o cargo</option>
+                      {foamCuttingPositions.map(position => (
+                        <option key={position} value={position}>{position}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -880,11 +801,9 @@ export default function Team() {
                       onChange={(e) => setNewEmployee(prev => ({ ...prev, department: e.target.value }))}
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                     >
-                      <option value="production">Produção</option>
-                      <option value="quality">Qualidade</option>
-                      <option value="maintenance">Manutenção</option>
-                      <option value="administration">Administração</option>
-                      <option value="logistics">Logística</option>
+                      {foamCuttingDepartments.map(dept => (
+                        <option key={dept} value={dept}>{dept}</option>
+                      ))}
                     </select>
                   </div>
 
@@ -927,13 +846,35 @@ export default function Team() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Competências</label>
+                  <label className="block text-sm font-medium mb-2">Competências Técnicas</label>
                   <input
                     type="text"
                     value={newEmployee.skills}
                     onChange={(e) => setNewEmployee(prev => ({ ...prev, skills: e.target.value }))}
                     className="w-full px-3 py-2 border rounded-lg bg-background"
-                    placeholder="Ex: Soldadura, CNC, Qualidade (separar por vírgulas)"
+                    placeholder="Ex: Operação BZM, Controle de qualidade (separar por vírgulas)"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Licenças de Operação de Máquinas</label>
+                  <input
+                    type="text"
+                    value={newEmployee.machineOperatingLicense}
+                    onChange={(e) => setNewEmployee(prev => ({ ...prev, machineOperatingLicense: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="Ex: BZM-01, Carrossel-01 (separar por vírgulas)"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Certificações</label>
+                  <input
+                    type="text"
+                    value={newEmployee.certifications}
+                    onChange={(e) => setNewEmployee(prev => ({ ...prev, certifications: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="Ex: NR-12, Operador de Máquinas (separar por vírgulas)"
                   />
                 </div>
 
@@ -968,8 +909,9 @@ export default function Team() {
                     setShowAddEmployee(false);
                     setEditingEmployee(null);
                     setNewEmployee({
-                      name: '', position: '', department: 'production', shift: 'morning',
-                      email: '', phone: '', skills: '', supervisor: '', currentAssignment: ''
+                      name: '', position: '', department: 'Corte BZM', shift: 'morning',
+                      email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
+                      machineOperatingLicense: '', certifications: ''
                     });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-muted"
