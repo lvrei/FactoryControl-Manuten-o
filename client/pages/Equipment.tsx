@@ -18,7 +18,7 @@ import {
   Ruler
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Machine } from "@/types/production";
+import { Machine, MachineFile } from "@/types/production";
 import { productionService } from "@/services/productionService";
 
 interface EquipmentDetails extends Machine {
