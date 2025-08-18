@@ -304,3 +304,70 @@ export interface EnhancedMachine extends Machine {
   installationDate?: string;
   notes?: string;
 }
+
+// Maintenance Request System
+export interface MaintenanceRequest {
+  id: string;
+  machineId: string;
+  machineName: string;
+  operatorId: string;
+  operatorName: string;
+  urgencyLevel: 'low' | 'medium' | 'high' | 'critical';
+  category: 'mechanical' | 'electrical' | 'software' | 'preventive' | 'emergency' | 'other';
+  title: string;
+  description: string;
+  reportedIssues: string[];
+  attachments?: string[];
+  photos?: string[];
+  status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
+  priority: number; // 1-10 based on urgency level
+  estimatedDowntime?: number; // in minutes
+  actualDowntime?: number;
+  requestedAt: string;
+  assignedTo?: string;
+  assignedAt?: string;
+  startedAt?: string;
+  completedAt?: string;
+  technicianNotes?: string;
+  solution?: string;
+  partsUsed?: string[];
+  cost?: number;
+  followUpRequired: boolean;
+  nextMaintenanceDate?: string;
+}
+
+export interface MaintenanceAlert {
+  id: string;
+  type: 'maintenance_request' | 'machine_down' | 'critical_failure' | 'overdue_maintenance';
+  machineId: string;
+  machineName: string;
+  title: string;
+  description: string;
+  urgencyLevel: 'low' | 'medium' | 'high' | 'critical';
+  status: 'active' | 'acknowledged' | 'resolved';
+  createdAt: string;
+  acknowledgedAt?: string;
+  resolvedAt?: string;
+  acknowledgedBy?: string;
+  resolvedBy?: string;
+  maintenanceRequestId?: string;
+  downtimeStarted?: string;
+  estimatedDuration?: number;
+}
+
+export interface MachineDowntime {
+  id: string;
+  machineId: string;
+  machineName: string;
+  reason: 'maintenance' | 'breakdown' | 'planned_maintenance' | 'quality_issue' | 'other';
+  startTime: string;
+  endTime?: string;
+  duration?: number; // in minutes
+  status: 'ongoing' | 'completed';
+  reportedBy: string;
+  resolvedBy?: string;
+  description: string;
+  maintenanceRequestId?: string;
+  impact: 'low' | 'medium' | 'high' | 'critical';
+  affectedOrders?: string[];
+}
