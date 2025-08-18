@@ -65,6 +65,8 @@ interface NotificationRule {
 // Dados limpos - sem alertas fictícios de máquinas inexistentes
 const alerts: Alert[] = [];
 
+// Maintenance data will be loaded dynamically
+
 const notificationRules: NotificationRule[] = [
   {
     id: "1",
