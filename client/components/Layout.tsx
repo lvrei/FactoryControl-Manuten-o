@@ -1,5 +1,5 @@
-import { ReactNode, useState } from "react";
-import { NavLink, Outlet } from "react-router-dom";
+import { ReactNode, useState, useEffect } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   Factory,
   BarChart3,
