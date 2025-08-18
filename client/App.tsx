@@ -10,6 +10,8 @@ import { Layout } from "@/components/Layout";
 import { SimplePWAInstall } from "@/components/SimplePWAInstall";
 import Dashboard from "./pages/Dashboard";
 import Production from "./pages/Production";
+import ProductionNew from "./pages/ProductionNew";
+import OperatorPortal from "./pages/OperatorPortal";
 import Equipment from "./pages/Equipment";
 import Quality from "./pages/Quality";
 import Maintenance from "./pages/Maintenance";
