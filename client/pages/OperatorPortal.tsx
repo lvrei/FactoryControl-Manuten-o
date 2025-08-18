@@ -24,6 +24,7 @@ import {
 import { Machine, OperatorWorkItem, OperatorSession, ChatMessage, PrintLabel } from '@/types/production';
 import { productionService } from '@/services/productionService';
 import { labelService } from '@/services/labelService';
+import { authService } from '@/services/authService';
 import { cn } from '@/lib/utils';
 
 interface OperatorPortalProps {
