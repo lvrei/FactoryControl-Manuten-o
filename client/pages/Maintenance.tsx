@@ -100,15 +100,7 @@ export default function Maintenance() {
     }
   }, [maintenances]);
 
-  const handleSaveMachine = (machineData: MachineData) => {
-    if (editingMachine) {
-      setMachines(prev => prev.map(m => m.id === editingMachine.id ? { ...machineData, id: editingMachine.id } : m));
-      setEditingMachine(null);
-    } else {
-      const newMachine = { ...machineData, id: Date.now().toString() };
-      setMachines(prev => [...prev, newMachine]);
-    }
-  };
+  // Machine management is handled in Equipment page
 
   const handleSaveMaintenance = (maintenanceData: MaintenanceData) => {
     const machine = machines.find(m => m.id === maintenanceData.machineId);
