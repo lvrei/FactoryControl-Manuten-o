@@ -1,16 +1,17 @@
-import { 
-  Factory, 
-  TrendingUp, 
-  AlertTriangle, 
-  CheckCircle, 
+import { useState, useEffect } from 'react';
+import {
+  Factory,
+  TrendingUp,
+  AlertTriangle,
+  CheckCircle,
   Clock,
   Users,
   Package,
-  Zap
+  Settings,
+  Activity
 } from "lucide-react";
-import { MetricsCard } from "@/components/dashboard/MetricsCard";
-import { EquipmentStatus } from "@/components/dashboard/EquipmentStatus";
-import { ProductionChart } from "@/components/dashboard/ProductionChart";
+import { productionService } from '@/services/productionService';
+import { ProductionOrder, Machine } from '@/types/production';
 
 export default function Dashboard() {
   return (
