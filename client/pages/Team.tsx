@@ -563,18 +563,18 @@ export default function Team() {
                     <h3 className="text-lg font-semibold text-card-foreground">Detalhes do Funcionário</h3>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => alert(`Editando dados de ${selectedEmployee.name}`)}
+                        onClick={() => handleEditEmployee(selectedEmployee)}
                         className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
                         title="Editar funcionário"
                       >
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => alert(`Mais opções para ${selectedEmployee.name}`)}
-                        className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
-                        title="Mais opções"
+                        onClick={() => handleDeleteEmployee(selectedEmployee.id)}
+                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg"
+                        title="Excluir funcionário"
                       >
-                        <MoreVertical className="h-4 w-4" />
+                        <UserX className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
