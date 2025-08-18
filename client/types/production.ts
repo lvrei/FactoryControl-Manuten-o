@@ -59,6 +59,7 @@ export interface CuttingOperation {
   actualTime?: number;
   status: 'pending' | 'in_progress' | 'completed';
   operatorNotes?: string;
+  observations?: string; // Observações para o operador
 }
 
 export interface ProductionOrderLine {
