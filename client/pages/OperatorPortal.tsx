@@ -83,11 +83,22 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       const machineMessages = await productionService.getChatMessages(selectedMachine);
       setMessages(machineMessages);
 
-      // Auto-refresh das mensagens a cada 2 segundos
+      // Auto-refresh das mensagens a cada 3 segundos
       const chatInterval = setInterval(async () => {
         const updatedMessages = await productionService.getChatMessages(selectedMachine);
+
+        // Marcar como lidas as mensagens novas do backend
+        const newBackendMessages = updatedMessages.filter(msg =>
+          msg.from === 'backend' && !msg.isRead &&
+          !messages.find(oldMsg => oldMsg.id === msg.id)
+        );
+
+        for (const msg of newBackendMessages) {
+          await productionService.markMessageAsRead(msg.id);
+        }
+
         setMessages(updatedMessages);
-      }, 2000);
+      }, 3000);
 
       return () => clearInterval(chatInterval);
     } catch (error) {
