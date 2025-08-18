@@ -50,19 +50,18 @@ const maintenanceStatusConfig = {
 };
 
 export default function Maintenance() {
-  const [machines, setMachines] = useState<MachineData[]>(mockMachines);
+  const [machines, setMachines] = useState<Machine[]>([]);
   const [maintenances, setMaintenances] = useState<MaintenanceData[]>([]);
-  const [activeTab, setActiveTab] = useState<'machines' | 'maintenance'>('machines');
-  const [showMachineForm, setShowMachineForm] = useState(false);
+  const [activeTab, setActiveTab] = useState<'machines' | 'maintenance'>('maintenance');
   const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
   const [showReports, setShowReports] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState<string>('all');
-  const [editingMachine, setEditingMachine] = useState<MachineData | null>(null);
   const [editingMaintenance, setEditingMaintenance] = useState<MaintenanceData | null>(null);
-  const [selectedEquipmentForChecklist, setSelectedEquipmentForChecklist] = useState<MachineData | undefined>();
+  const [selectedEquipmentForChecklist, setSelectedEquipmentForChecklist] = useState<Machine | undefined>();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
 
   // Load data from localStorage or use mock data
   useEffect(() => {
