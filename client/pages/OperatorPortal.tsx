@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { 
-  User, 
-  Factory, 
-  Play, 
-  Square, 
-  CheckCircle, 
-  Clock, 
-  Package, 
+import {
+  User,
+  Factory,
+  Play,
+  Square,
+  CheckCircle,
+  Clock,
+  Package,
   Search,
   Filter,
   MessageCircle,
@@ -16,7 +16,10 @@ import {
   Calendar,
   ChevronRight,
   ArrowRight,
-  Settings
+  Settings,
+  Printer,
+  Eye,
+  Download
 } from 'lucide-react';
 import { Machine, OperatorWorkItem, OperatorSession, ChatMessage } from '@/types/production';
 import { productionService } from '@/services/productionService';
