@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import { 
-  Factory, 
+import {
+  Factory,
   Plus,
   Edit,
   Trash2,
-  Settings, 
-  AlertTriangle, 
+  Settings,
+  AlertTriangle,
   CheckCircle,
   Clock,
   Search,
@@ -15,7 +15,12 @@ import {
   Square,
   Wrench,
   Gauge,
-  Ruler
+  Ruler,
+  Upload,
+  Image,
+  File,
+  Download,
+  Eye
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Machine, MachineFile } from "@/types/production";
