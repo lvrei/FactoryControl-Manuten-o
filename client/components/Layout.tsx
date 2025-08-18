@@ -11,7 +11,8 @@ import {
   Calendar,
   Bell,
   Menu,
-  X
+  X,
+  Warehouse
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PWADebug } from "./PWADebug";
