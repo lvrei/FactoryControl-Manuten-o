@@ -31,7 +31,7 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
     orderNumber: '',
     customer: { id: '', name: '', contact: '' },
     expectedDeliveryDate: '',
-    priority: 'medium' as const,
+    priority: 'medium' as 'low' | 'medium' | 'high' | 'urgent',
     notes: ''
   });
 
