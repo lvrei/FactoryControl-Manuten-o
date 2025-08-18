@@ -117,7 +117,8 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
       quantity: line.quantity,
       completedQuantity: 0,
       estimatedTime: 60,
-      status: 'pending'
+      status: 'pending',
+      observations: ''
     };
 
     updateLine(lineId, {
