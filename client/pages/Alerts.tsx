@@ -276,6 +276,17 @@ export default function Alerts() {
           Alertas ({alerts.length})
         </button>
         <button
+          onClick={() => setActiveTab('maintenance')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            activeTab === 'maintenance'
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Manutenção ({pendingMaintenanceRequests})
+        </button>
+        <button
           onClick={() => setActiveTab('analytics')}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
