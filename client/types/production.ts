@@ -232,3 +232,75 @@ export interface StockFilters {
   productionNumber?: string;
   blockNumber?: string;
 }
+
+// Authentication and User Management
+export interface User {
+  id: string;
+  username: string;
+  name: string;
+  email: string;
+  password: string; // In production, this should be hashed
+  role: 'admin' | 'supervisor' | 'operator' | 'quality' | 'maintenance';
+  accessLevel: 'full' | 'limited' | 'readonly';
+  isActive: boolean;
+  lastLogin?: string;
+  assignedMachines?: string[]; // IDs of machines the operator can use
+}
+
+export interface LoginSession {
+  id: string;
+  userId: string;
+  username: string;
+  role: string;
+  accessLevel: string;
+  loginTime: string;
+  lastActivity: string;
+  isActive: boolean;
+}
+
+// Print Label for Zebra ZPL
+export interface PrintLabel {
+  id: string;
+  orderId: string;
+  lineId: string;
+  operationId: string;
+  barcodeId: string; // Unique internal ID for barcode
+  customerName: string;
+  orderNumber: string;
+  foamType: string;
+  quantity: number;
+  dimensions: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  operatorName: string;
+  machineId: string;
+  machineName: string;
+  completionDate: string;
+  printedBy: string;
+  printedAt: string;
+}
+
+// Enhanced Machine interface with files
+export interface MachineFile {
+  id: string;
+  name: string;
+  type: 'photo' | 'manual' | 'certificate' | 'maintenance' | 'other';
+  url: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  size: number;
+}
+
+// Update Machine interface to include files
+export interface EnhancedMachine extends Machine {
+  coverPhoto?: string;
+  files: MachineFile[];
+  location?: string;
+  manufacturer?: string;
+  model?: string;
+  serialNumber?: string;
+  installationDate?: string;
+  notes?: string;
+}
