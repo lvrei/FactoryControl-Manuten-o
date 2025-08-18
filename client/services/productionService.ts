@@ -1,13 +1,16 @@
-import { 
-  ProductionOrder, 
-  ProductionOrderLine, 
-  ProductSheet, 
-  FoamType, 
-  Machine, 
+import {
+  ProductionOrder,
+  ProductionOrderLine,
+  ProductSheet,
+  FoamType,
+  Machine,
   OperatorWorkItem,
   ChatMessage,
   OperatorSession,
-  ProductionFilters 
+  ProductionFilters,
+  FoamBlock,
+  StockMovement,
+  StockFilters
 } from '@/types/production';
 
 // Simulação de dados - em produção seria conectado a um backend real
