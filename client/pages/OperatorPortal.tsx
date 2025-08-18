@@ -437,7 +437,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                       </div>
                       
                       {new Date(item.expectedDeliveryDate) < new Date() && (
-                        <AlertTriangle className="h-5 w-5 text-red-500" title="Atrasado" />
+                        <AlertTriangle className="h-5 w-5 text-red-500" />
                       )}
                     </div>
 
