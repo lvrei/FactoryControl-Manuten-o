@@ -120,10 +120,7 @@ export default function Maintenance() {
     }
   };
 
-  const handleEditMachine = (machine: MachineData) => {
-    setEditingMachine(machine);
-    setShowMachineForm(true);
-  };
+  // Machine editing is handled in Equipment page
 
   const handleEditMaintenance = (maintenance: MaintenanceData) => {
     setEditingMaintenance(maintenance);
