@@ -155,6 +155,29 @@ export default function Alerts() {
   const [machineDowntime, setMachineDowntime] = useState<MachineDowntime[]>([]);
   const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    loadMaintenanceData();
+    const interval = setInterval(loadMaintenanceData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadMaintenanceData = async () => {
+    try {
+      const [requests, alerts, downtime] = await Promise.all([
+        maintenanceService.getMaintenanceRequests(),
+        maintenanceService.getMaintenanceAlerts(),
+        maintenanceService.getMachineDowntime()
+      ]);
+      setMaintenanceRequests(requests);
+      setMaintenanceAlerts(alerts);
+      setMachineDowntime(downtime);
+    } catch (error) {
+      console.error('Erro ao carregar dados de manutenção:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const filteredAlerts = alerts.filter(alert => {
     const matchesSearch = alert.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          alert.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
