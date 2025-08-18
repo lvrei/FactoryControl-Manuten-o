@@ -21,6 +21,8 @@ import { cn } from "@/lib/utils";
 import { MaintenanceForm, MaintenanceData } from "@/components/maintenance/MaintenanceForm";
 import { MaintenanceReports } from "@/components/maintenance/MaintenanceReports";
 import { ChecklistDL50 } from "@/components/maintenance/ChecklistDL50";
+import { Machine } from "@/types/production";
+import { productionService } from "@/services/productionService";
 
 // Dados limpos - apenas máquinas reais de corte de espuma
 const mockMachines: MachineData[] = [];
