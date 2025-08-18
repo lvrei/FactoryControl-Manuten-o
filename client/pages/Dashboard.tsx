@@ -52,11 +52,17 @@ export default function Dashboard() {
   // Cálculos baseados em dados reais
   const totalOrders = productionOrders.length;
   const activeOrders = productionOrders.filter(o => o.status === 'in_progress').length;
-  const completedToday = productionOrders.filter(o => 
-    o.status === 'completed' && 
+  const completedToday = productionOrders.filter(o =>
+    o.status === 'completed' &&
     new Date(o.updatedAt).toDateString() === new Date().toDateString()
   ).length;
   const urgentOrders = productionOrders.filter(o => o.priority === 'urgent').length;
+
+  // Maintenance calculations
+  const activeMachineDowntime = machineDowntime.filter(d => d.status === 'ongoing');
+  const machinesInMaintenance = machines.filter(m => m.status === 'maintenance').length;
+  const pendingMaintenanceRequests = maintenanceRequests.filter(r => r.status === 'pending').length;
+  const criticalMaintenanceRequests = maintenanceRequests.filter(r => r.urgencyLevel === 'critical' && r.status !== 'completed').length;
 
   const activeMachines = machines.filter(m => m.status === 'busy').length;
   const totalMachines = machines.length;
