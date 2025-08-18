@@ -459,14 +459,27 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                           {item.inputDimensions.length} × {item.inputDimensions.width} × {item.inputDimensions.height}
                         </div>
                       </div>
-                      
+
                       <div>
-                        <div className="text-sm font-medium mb-1">Dimensões de Saída (mm)</div>
+                        <div className="text-sm font-medium mb-1">
+                          {item.machineType === 'CAROUSEL' || item.machineType === 'PRE_CNC' || item.machineType === 'CNC'
+                            ? 'Medidas Finais (mm)'
+                            : 'Dimensões de Saída (mm)'
+                          }
+                        </div>
                         <div className="text-sm text-muted-foreground">
                           {item.outputDimensions.length} × {item.outputDimensions.width} × {item.outputDimensions.height}
                         </div>
                       </div>
                     </div>
+
+                    {/* Observações */}
+                    {item.observations && (
+                      <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="text-sm font-medium text-yellow-800 mb-1">📋 Observações:</div>
+                        <div className="text-sm text-yellow-700">{item.observations}</div>
+                      </div>
+                    )}
 
                     <div className="flex items-center justify-between pt-3 border-t">
                       <div className="flex items-center gap-4">
