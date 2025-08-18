@@ -391,6 +391,39 @@ class ProductionService {
     return newMessage;
   }
 
+  async markMessageAsRead(messageId: string): Promise<void> {
+    const data = this.getStoredData();
+    if (!data.chatMessages) return;
+
+    const messageIndex = data.chatMessages.findIndex((msg: ChatMessage) => msg.id === messageId);
+    if (messageIndex !== -1) {
+      data.chatMessages[messageIndex].isRead = true;
+      this.saveData(data);
+    }
+  }
+
+  async markAllMessagesAsRead(machineId?: string, operatorId?: string): Promise<void> {
+    const data = this.getStoredData();
+    if (!data.chatMessages) return;
+
+    let updated = false;
+    data.chatMessages = data.chatMessages.map((msg: ChatMessage) => {
+      const shouldMark = (!machineId || msg.machineId === machineId) &&
+                        (!operatorId || msg.operatorId === operatorId) &&
+                        !msg.isRead;
+
+      if (shouldMark) {
+        updated = true;
+        return { ...msg, isRead: true };
+      }
+      return msg;
+    });
+
+    if (updated) {
+      this.saveData(data);
+    }
+  }
+
   // Sessões de operadores
   async startOperatorSession(operatorId: string, operatorName: string, machineId: string): Promise<OperatorSession> {
     const data = this.getStoredData();
