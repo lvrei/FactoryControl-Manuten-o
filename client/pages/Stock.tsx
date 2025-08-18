@@ -520,7 +520,7 @@ export default function Stock() {
                     <h3 className="text-lg font-semibold text-card-foreground">Detalhes do Bloco</h3>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => alert('Funcionalidade de edição em desenvolvimento')}
+                        onClick={() => handleEditBlock(selectedBlock)}
                         className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
                         title="Editar bloco"
                       >
