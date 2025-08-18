@@ -87,7 +87,7 @@ export interface ProductionOrder {
   customer: {
     id: string;
     name: string;
-    contact?: string;
+    contact: string;
   };
   expectedDeliveryDate: string;
   lines: ProductionOrderLine[];
