@@ -814,53 +814,6 @@ export default function Stock() {
                   </div>
                 </div>
 
-                {/* Informações do Fornecedor */}
-                <div className="space-y-4">
-                  <h4 className="text-lg font-medium">Informações do Fornecedor</h4>
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Fornecedor</label>
-                      <input
-                        type="text"
-                        value={newBlock.supplierInfo.supplier}
-                        onChange={(e) => setNewBlock(prev => ({ 
-                          ...prev, 
-                          supplierInfo: { ...prev.supplierInfo, supplier: e.target.value }
-                        }))}
-                        className="w-full px-3 py-2 border rounded-lg bg-background"
-                        placeholder="Nome do fornecedor"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Nº do Lote</label>
-                      <input
-                        type="text"
-                        value={newBlock.supplierInfo.batchNumber}
-                        onChange={(e) => setNewBlock(prev => ({ 
-                          ...prev, 
-                          supplierInfo: { ...prev.supplierInfo, batchNumber: e.target.value }
-                        }))}
-                        className="w-full px-3 py-2 border rounded-lg bg-background"
-                        placeholder="Número do lote"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Certificado</label>
-                      <input
-                        type="text"
-                        value={newBlock.supplierInfo.certificate}
-                        onChange={(e) => setNewBlock(prev => ({ 
-                          ...prev, 
-                          supplierInfo: { ...prev.supplierInfo, certificate: e.target.value }
-                        }))}
-                        className="w-full px-3 py-2 border rounded-lg bg-background"
-                        placeholder="Número do certificado"
-                      />
-                    </div>
-                  </div>
-                </div>
 
                 {/* Controle de Qualidade */}
                 <div className="space-y-4">
