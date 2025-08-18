@@ -15,6 +15,33 @@ import { ProductionChart } from "@/components/dashboard/ProductionChart";
 export default function Dashboard() {
   return (
     <div className="space-y-6">
+      {/* Banner do Novo Sistema */}
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg p-6 text-white">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-xl font-bold mb-2">🚀 Novo Sistema de Produção Disponível!</h2>
+            <p className="text-blue-100 mb-3">
+              Sistema completo para indústria de corte de espuma com gestão de OPs, chat, e portal do operador.
+            </p>
+            <div className="flex gap-3">
+              <a
+                href="/production"
+                className="bg-white text-blue-600 px-4 py-2 rounded-lg font-medium hover:bg-blue-50 transition-colors"
+              >
+                🏢 Gestão de Produção
+              </a>
+              <a
+                href="/operator"
+                className="bg-blue-400 text-white px-4 py-2 rounded-lg font-medium hover:bg-blue-300 transition-colors"
+              >
+                👷 Portal do Operador
+              </a>
+            </div>
+          </div>
+          <div className="text-6xl opacity-30">🏭</div>
+        </div>
+      </div>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold text-foreground">Dashboard de Produção</h1>
