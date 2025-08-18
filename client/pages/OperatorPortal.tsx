@@ -26,7 +26,7 @@ interface OperatorPortalProps {
   onClose?: () => void;
 }
 
-export function OperatorPortal({ onClose }: OperatorPortalProps) {
+function OperatorPortal({ onClose }: OperatorPortalProps) {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [workItems, setWorkItems] = useState<OperatorWorkItem[]>([]);
   const [currentSession, setCurrentSession] = useState<OperatorSession | null>(null);
