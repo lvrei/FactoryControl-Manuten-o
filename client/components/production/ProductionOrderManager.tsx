@@ -402,11 +402,24 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-1">Quantidade</label>
+                          <label className="block text-sm font-medium mb-1">Quantidade de Blocos</label>
                           <input
                             type="number"
                             value={line.quantity}
-                            onChange={(e) => updateLine(line.id, { quantity: Number(e.target.value) })}
+                            onChange={(e) => {
+                              const newQuantity = Number(e.target.value);
+                              updateLine(line.id, { quantity: newQuantity });
+
+                              // Atualizar quantidade na operação BZM automaticamente
+                              const updatedOperations = line.cuttingOperations.map(op => {
+                                const machine = machines.find(m => m.id === op.machineId);
+                                if (machine?.type === 'BZM') {
+                                  return { ...op, quantity: newQuantity };
+                                }
+                                return op;
+                              });
+                              updateLine(line.id, { cuttingOperations: updatedOperations });
+                            }}
                             className="w-full px-3 py-2 border rounded bg-background text-sm"
                             min="1"
                           />
