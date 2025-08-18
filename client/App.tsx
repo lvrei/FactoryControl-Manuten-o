@@ -21,6 +21,7 @@ import Maintenance from "./pages/Maintenance";
 import Team from "./pages/Team";
 import Planning from "./pages/Planning";
 import Alerts from "./pages/Alerts";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
