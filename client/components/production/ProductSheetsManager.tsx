@@ -26,6 +26,17 @@ export function ProductSheetsManager({ onClose }: ProductSheetsManagerProps) {
   const [showForm, setShowForm] = useState(false);
   const [editingSheet, setEditingSheet] = useState<ProductSheet | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showFoamTypeForm, setShowFoamTypeForm] = useState(false);
+  const [editingFoamType, setEditingFoamType] = useState<FoamType | null>(null);
+
+  const [newFoamType, setNewFoamType] = useState({
+    name: '',
+    density: 0,
+    hardness: '',
+    color: '',
+    specifications: '',
+    pricePerM3: 0
+  });
 
   const [formData, setFormData] = useState({
     internalReference: '',
@@ -454,7 +465,7 @@ export function ProductSheetsManager({ onClose }: ProductSheetsManagerProps) {
               <div>
                 <span className="text-muted-foreground">Dimensões: </span>
                 <span className="text-card-foreground">
-                  {sheet.standardDimensions.length} × {sheet.standardDimensions.width} �� {sheet.standardDimensions.height} mm
+                  {sheet.standardDimensions.length} × {sheet.standardDimensions.width} × {sheet.standardDimensions.height} mm
                 </span>
               </div>
               
