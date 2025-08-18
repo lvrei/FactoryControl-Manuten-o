@@ -125,9 +125,11 @@ export interface OperatorWorkItem {
   remainingQuantity: number;
   machineId: string;
   machineName: string;
+  machineType: string;
   priority: number;
   expectedDeliveryDate: string;
   estimatedTime: number;
+  observations?: string;
 }
 
 export interface ChatMessage {
