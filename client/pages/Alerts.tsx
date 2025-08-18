@@ -25,6 +25,8 @@ import {
   TrendingDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { maintenanceService } from '@/services/maintenanceService';
+import { MaintenanceRequest, MaintenanceAlert, MachineDowntime } from '@/types/production';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
 interface Alert {
