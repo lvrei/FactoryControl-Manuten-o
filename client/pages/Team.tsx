@@ -943,6 +943,93 @@ export default function Team() {
                     />
                   </div>
                 </div>
+
+                {/* System Access */}
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <input
+                      type="checkbox"
+                      id="systemAccess"
+                      checked={newEmployee.hasSystemAccess}
+                      onChange={(e) => setNewEmployee(prev => ({ ...prev, hasSystemAccess: e.target.checked }))}
+                      className="rounded border-input"
+                    />
+                    <label htmlFor="systemAccess" className="text-sm font-medium">
+                      Dar acesso ao sistema FactoryControl
+                    </label>
+                  </div>
+
+                  {newEmployee.hasSystemAccess && (
+                    <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+                      <h5 className="font-medium text-foreground">Credenciais de Acesso</h5>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Nome de Utilizador *</label>
+                          <input
+                            type="text"
+                            value={newEmployee.username}
+                            onChange={(e) => setNewEmployee(prev => ({ ...prev, username: e.target.value }))}
+                            className="w-full px-3 py-2 border rounded-lg bg-background"
+                            placeholder="Ex: joao.silva"
+                            required={newEmployee.hasSystemAccess}
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Palavra-passe *</label>
+                          <input
+                            type="password"
+                            value={newEmployee.password}
+                            onChange={(e) => setNewEmployee(prev => ({ ...prev, password: e.target.value }))}
+                            className="w-full px-3 py-2 border rounded-lg bg-background"
+                            placeholder="Palavra-passe segura"
+                            required={newEmployee.hasSystemAccess}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Perfil de Acesso</label>
+                          <select
+                            value={newEmployee.role}
+                            onChange={(e) => setNewEmployee(prev => ({ ...prev, role: e.target.value as any }))}
+                            className="w-full px-3 py-2 border rounded-lg bg-background"
+                          >
+                            <option value="operator">Operador</option>
+                            <option value="quality">Qualidade</option>
+                            <option value="maintenance">Manutenção</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="admin">Administrador</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Nível de Acesso</label>
+                          <select
+                            value={newEmployee.accessLevel}
+                            onChange={(e) => setNewEmployee(prev => ({ ...prev, accessLevel: e.target.value as any }))}
+                            className="w-full px-3 py-2 border rounded-lg bg-background"
+                          >
+                            <option value="readonly">Apenas Leitura</option>
+                            <option value="limited">Limitado</option>
+                            <option value="full">Completo</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p><strong>Perfis:</strong></p>
+                        <p>• <strong>Operador:</strong> Portal operador, visualização básica</p>
+                        <p>• <strong>Qualidade:</strong> Controle de qualidade + operador</p>
+                        <p>• <strong>Manutenção:</strong> Gestão de manutenção + anteriores</p>
+                        <p>• <strong>Supervisor:</strong> Gestão completa exceto admin</p>
+                        <p>• <strong>Administrador:</strong> Acesso total ao sistema</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end gap-3 pt-6 border-t mt-6">
