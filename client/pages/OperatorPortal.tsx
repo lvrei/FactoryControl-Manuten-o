@@ -875,6 +875,138 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
           </div>
         </div>
       )}
+
+      {/* Maintenance Request Modal */}
+      {showMaintenanceRequest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold flex items-center gap-2">
+                  <Wrench className="h-5 w-5 text-orange-500" />
+                  Solicitar Manutenção
+                </h3>
+                <button
+                  onClick={() => setShowMaintenanceRequest(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                {/* Urgency Level */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nível de Urgência</label>
+                  <select
+                    value={maintenanceForm.urgencyLevel}
+                    onChange={(e) => setMaintenanceForm(prev => ({
+                      ...prev,
+                      urgencyLevel: e.target.value as any
+                    }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                  >
+                    <option value="low">🟢 Baixa - Manutenção preventiva</option>
+                    <option value="medium">🟡 Média - Problema não crítico</option>
+                    <option value="high">🟠 Alta - Problema afeta produção</option>
+                    <option value="critical">🔴 Crítica - Máquina parada</option>
+                  </select>
+                  {maintenanceForm.urgencyLevel === 'critical' && (
+                    <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                      <AlertCircle className="h-4 w-4" />
+                      ATENÇÃO: A máquina será automaticamente marcada como parada
+                    </p>
+                  )}
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Categoria</label>
+                  <select
+                    value={maintenanceForm.category}
+                    onChange={(e) => setMaintenanceForm(prev => ({
+                      ...prev,
+                      category: e.target.value as any
+                    }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                  >
+                    <option value="mechanical">🔧 Mecânico</option>
+                    <option value="electrical">⚡ Elétrico</option>
+                    <option value="software">💻 Software</option>
+                    <option value="preventive">🛡️ Preventiva</option>
+                    <option value="emergency">🚨 Emergência</option>
+                    <option value="other">❓ Outro</option>
+                  </select>
+                </div>
+
+                {/* Title */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Título da Solicitação</label>
+                  <input
+                    type="text"
+                    value={maintenanceForm.title}
+                    onChange={(e) => setMaintenanceForm(prev => ({
+                      ...prev,
+                      title: e.target.value
+                    }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="Ex: Ruído estranho no motor principal"
+                  />
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">Descrição Detalhada</label>
+                  <textarea
+                    value={maintenanceForm.description}
+                    onChange={(e) => setMaintenanceForm(prev => ({
+                      ...prev,
+                      description: e.target.value
+                    }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background h-24"
+                    placeholder="Descreva o problema em detalhes: o que aconteceu, quando começou, sintomas observados, etc."
+                  />
+                </div>
+
+                {/* Machine Info */}
+                <div className="p-3 bg-muted rounded-lg">
+                  <h4 className="font-medium mb-2">Informações da Máquina</h4>
+                  <div className="text-sm space-y-1">
+                    <div>Máquina: {machines.find(m => m.id === currentSession?.machineId)?.name}</div>
+                    <div>Operador: {currentSession?.operatorName}</div>
+                    <div>Data/Hora: {new Date().toLocaleString('pt-BR')}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 justify-end mt-6">
+                <button
+                  onClick={() => setShowMaintenanceRequest(false)}
+                  className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-muted"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={submitMaintenanceRequest}
+                  disabled={!maintenanceForm.title.trim() || !maintenanceForm.description.trim()}
+                  className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <Wrench className="h-4 w-4" />
+                  Enviar Solicitação
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Message Notifications */}
+      <MessageNotificationContainer
+        notifications={messageNotifications}
+        onDismiss={handleDismissNotification}
+        onViewChat={handleViewChat}
+      />
     </div>
   );
 }
