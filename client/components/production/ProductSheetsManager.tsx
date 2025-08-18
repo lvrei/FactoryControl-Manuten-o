@@ -36,7 +36,8 @@ export function ProductSheetsManager({ onClose }: ProductSheetsManagerProps) {
     hardness: '',
     color: '',
     specifications: '',
-    pricePerM3: 0
+    pricePerM3: 0,
+    stockColor: '#f8f9fa'
   });
 
   const [formData, setFormData] = useState({
