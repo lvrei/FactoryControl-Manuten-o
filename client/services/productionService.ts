@@ -332,6 +332,28 @@ class ProductionService {
     return data.machines[machineIndex];
   }
 
+  async updateMachineStatus(id: string, status: 'available' | 'busy' | 'maintenance' | 'offline'): Promise<void> {
+    const data = this.getStoredData();
+    if (!data.machines) {
+      data.machines = [...this.mockMachines];
+    }
+
+    const machineIndex = data.machines.findIndex((machine: Machine) => machine.id === id);
+    if (machineIndex !== -1) {
+      data.machines[machineIndex].status = status;
+      this.saveData(data);
+    }
+
+    // Also update the maintenance service status tracking
+    const machineStatusKey = 'factoryControl_machineStatus';
+    const statusUpdates = JSON.parse(localStorage.getItem(machineStatusKey) || '{}');
+    statusUpdates[id] = {
+      status,
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem(machineStatusKey, JSON.stringify(statusUpdates));
+  }
+
   async deleteMachine(id: string): Promise<void> {
     const data = this.getStoredData();
     if (!data.machines) return;
