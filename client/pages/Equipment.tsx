@@ -1,571 +1,704 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
-  Activity, 
-  TrendingUp, 
-  TrendingDown, 
+  Factory, 
+  Plus,
+  Edit,
+  Trash2,
   Settings, 
   AlertTriangle, 
   CheckCircle,
   Clock,
-  Zap,
-  Thermometer,
-  Gauge,
   Search,
-  Filter,
-  MoreVertical,
+  X,
   Play,
   Pause,
-  Square
+  Square,
+  Wrench,
+  Gauge,
+  Ruler
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Machine } from "@/types/production";
+import { productionService } from "@/services/productionService";
 
-interface Equipment {
-  id: string;
-  name: string;
-  type: string;
+interface EquipmentDetails extends Machine {
   location: string;
-  status: 'running' | 'stopped' | 'maintenance' | 'warning';
-  efficiency: number;
-  temperature: number;
-  pressure: number;
-  vibration: number;
-  power: number;
-  speed: number;
-  uptime: number;
-  lastMaintenance: string;
-  nextMaintenance: string;
-  operator: string;
-  shift: string;
+  manufacturer: string;
+  model: string;
+  serialNumber: string;
+  installationDate: string;
+  lastMaintenance?: string;
+  nextMaintenance?: string;
+  operatingHours: number;
+  notes?: string;
 }
 
-const equipmentData: Equipment[] = [
-  {
-    id: "1",
-    name: "Prensa Hidráulica 01",
-    type: "Prensa",
-    location: "Setor A - Linha 1",
-    status: "running",
-    efficiency: 94,
-    temperature: 68,
-    pressure: 150,
-    vibration: 2.1,
-    power: 45.8,
-    speed: 1200,
-    uptime: 97.8,
-    lastMaintenance: "2024-01-15",
-    nextMaintenance: "2024-02-15",
-    operator: "João Silva",
-    shift: "Manhã"
-  },
-  {
-    id: "2",
-    name: "Linha de Montagem A",
-    type: "Esteira",
-    location: "Setor B - Linha 2",
-    status: "running",
-    efficiency: 87,
-    temperature: 45,
-    pressure: 0,
-    vibration: 1.5,
-    power: 12.3,
-    speed: 850,
-    uptime: 89.2,
-    lastMaintenance: "2024-01-10",
-    nextMaintenance: "2024-01-25",
-    operator: "Maria Santos",
-    shift: "Manhã"
-  },
-  {
-    id: "3",
-    name: "Forno Industrial 02",
-    type: "Forno",
-    location: "Setor C - Tratamento",
-    status: "warning",
-    efficiency: 72,
-    temperature: 890,
-    pressure: 0,
-    vibration: 0.8,
-    power: 125.7,
-    speed: 0,
-    uptime: 75.5,
-    lastMaintenance: "2024-01-08",
-    nextMaintenance: "2024-01-30",
-    operator: "Pedro Costa",
-    shift: "Tarde"
-  },
-  {
-    id: "4",
-    name: "Robô Soldador 03",
-    type: "Robô",
-    location: "Setor D - Solda",
-    status: "stopped",
-    efficiency: 0,
-    temperature: 35,
-    pressure: 80,
-    vibration: 0.2,
-    power: 0,
-    speed: 0,
-    uptime: 0,
-    lastMaintenance: "2024-01-20",
-    nextMaintenance: "2024-02-05",
-    operator: "Ana Oliveira",
-    shift: "Tarde"
-  },
-  {
-    id: "5",
-    name: "Compressor Principal",
-    type: "Compressor",
-    location: "Setor E - Utilidades",
-    status: "running",
-    efficiency: 91,
-    temperature: 78,
-    pressure: 200,
-    vibration: 3.2,
-    power: 67.4,
-    speed: 1800,
-    uptime: 94.1,
-    lastMaintenance: "2024-01-12",
-    nextMaintenance: "2024-02-12",
-    operator: "Carlos Lima",
-    shift: "Noite"
-  },
-  {
-    id: "6",
-    name: "Sistema de Pintura",
-    type: "Cabine",
-    location: "Setor F - Acabamento",
-    status: "maintenance",
-    efficiency: 0,
-    temperature: 22,
-    pressure: 45,
-    vibration: 0,
-    power: 0,
-    speed: 0,
-    uptime: 0,
-    lastMaintenance: "2024-01-22",
-    nextMaintenance: "2024-01-25",
-    operator: "Lucia Ferreira",
-    shift: "Manhã"
-  }
-];
-
-const statusConfig = {
-  running: { 
-    icon: CheckCircle, 
-    color: "text-success", 
-    bg: "bg-success/10 border-success/20", 
-    label: "Operando",
-    dot: "bg-success"
-  },
-  warning: { 
-    icon: AlertTriangle, 
-    color: "text-warning", 
-    bg: "bg-warning/10 border-warning/20", 
-    label: "Atenção",
-    dot: "bg-warning"
-  },
-  maintenance: { 
-    icon: Clock, 
-    color: "text-info", 
-    bg: "bg-info/10 border-info/20", 
-    label: "Manutenção",
-    dot: "bg-info"
-  },
-  stopped: { 
-    icon: Square, 
-    color: "text-destructive", 
-    bg: "bg-destructive/10 border-destructive/20", 
-    label: "Parado",
-    dot: "bg-destructive"
-  }
-};
-
 export default function Equipment() {
-  const [selectedEquipment, setSelectedEquipment] = useState<Equipment | null>(equipmentData[0]);
+  const [equipment, setEquipment] = useState<EquipmentDetails[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showForm, setShowForm] = useState(false);
+  const [editingEquipment, setEditingEquipment] = useState<EquipmentDetails | null>(null);
 
-  const filteredEquipment = equipmentData.filter(equipment => {
-    const matchesSearch = equipment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         equipment.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         equipment.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || equipment.status === statusFilter;
+  const [formData, setFormData] = useState({
+    name: '',
+    type: 'BZM' as 'BZM' | 'CAROUSEL' | 'PRE_CNC' | 'CNC',
+    status: 'available' as 'available' | 'busy' | 'maintenance' | 'offline',
+    location: '',
+    manufacturer: '',
+    model: '',
+    serialNumber: '',
+    maxDimensions: { length: 0, width: 0, height: 0 },
+    cuttingPrecision: 0,
+    installationDate: '',
+    nextMaintenance: '',
+    notes: ''
+  });
+
+  useEffect(() => {
+    loadEquipment();
+  }, []);
+
+  const loadEquipment = async () => {
+    try {
+      setLoading(true);
+      // Buscar máquinas do sistema de produção
+      const machines = await productionService.getMachines();
+      
+      // Converter para formato estendido com dados salvos no localStorage
+      const savedEquipment = localStorage.getItem('factoryControl_equipment');
+      const equipmentDetails = savedEquipment ? JSON.parse(savedEquipment) : [];
+
+      const equipmentList: EquipmentDetails[] = machines.map(machine => {
+        const existingDetails = equipmentDetails.find((eq: any) => eq.id === machine.id);
+        return {
+          ...machine,
+          location: existingDetails?.location || getDefaultLocation(machine.type),
+          manufacturer: existingDetails?.manufacturer || 'Fabricante Padrão',
+          model: existingDetails?.model || machine.type + '-Model',
+          serialNumber: existingDetails?.serialNumber || `SN-${machine.id}`,
+          installationDate: existingDetails?.installationDate || '2023-01-01',
+          lastMaintenance: existingDetails?.lastMaintenance,
+          nextMaintenance: existingDetails?.nextMaintenance,
+          operatingHours: existingDetails?.operatingHours || 0,
+          notes: existingDetails?.notes || ''
+        };
+      });
+
+      setEquipment(equipmentList);
+    } catch (error) {
+      console.error('Erro ao carregar equipamentos:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getDefaultLocation = (type: string): string => {
+    switch (type) {
+      case 'BZM': return 'Setor A - Corte Inicial';
+      case 'CAROUSEL': return 'Setor B - Coxins';
+      case 'PRE_CNC': return 'Setor C - Pré-processamento';
+      case 'CNC': return 'Setor D - Acabamento';
+      default: return 'Setor Geral';
+    }
+  };
+
+  const saveEquipmentDetails = (equipmentList: EquipmentDetails[]) => {
+    const detailsToSave = equipmentList.map(eq => ({
+      id: eq.id,
+      location: eq.location,
+      manufacturer: eq.manufacturer,
+      model: eq.model,
+      serialNumber: eq.serialNumber,
+      installationDate: eq.installationDate,
+      lastMaintenance: eq.lastMaintenance,
+      nextMaintenance: eq.nextMaintenance,
+      operatingHours: eq.operatingHours,
+      notes: eq.notes
+    }));
+    localStorage.setItem('factoryControl_equipment', JSON.stringify(detailsToSave));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.type) {
+      alert('Preencha pelo menos nome e tipo');
+      return;
+    }
+
+    try {
+      if (editingEquipment) {
+        // Atualizar equipamento existente
+        const updatedEquipment: EquipmentDetails = {
+          ...editingEquipment,
+          name: formData.name,
+          type: formData.type,
+          status: formData.status,
+          location: formData.location,
+          manufacturer: formData.manufacturer,
+          model: formData.model,
+          serialNumber: formData.serialNumber,
+          maxDimensions: formData.maxDimensions,
+          cuttingPrecision: formData.cuttingPrecision,
+          installationDate: formData.installationDate,
+          nextMaintenance: formData.nextMaintenance,
+          notes: formData.notes
+        };
+
+        // Atualizar no sistema de produção
+        await productionService.updateMachine(editingEquipment.id, {
+          name: formData.name,
+          type: formData.type,
+          status: formData.status,
+          maxDimensions: formData.maxDimensions,
+          cuttingPrecision: formData.cuttingPrecision
+        });
+
+        const updatedList = equipment.map(eq => 
+          eq.id === editingEquipment.id ? updatedEquipment : eq
+        );
+        setEquipment(updatedList);
+        saveEquipmentDetails(updatedList);
+      } else {
+        // Criar novo equipamento
+        const newMachine = await productionService.createMachine({
+          name: formData.name,
+          type: formData.type,
+          status: formData.status,
+          maxDimensions: formData.maxDimensions,
+          cuttingPrecision: formData.cuttingPrecision
+        });
+
+        const newEquipment: EquipmentDetails = {
+          ...newMachine,
+          location: formData.location,
+          manufacturer: formData.manufacturer,
+          model: formData.model,
+          serialNumber: formData.serialNumber,
+          installationDate: formData.installationDate,
+          nextMaintenance: formData.nextMaintenance,
+          operatingHours: 0,
+          notes: formData.notes
+        };
+
+        const updatedList = [...equipment, newEquipment];
+        setEquipment(updatedList);
+        saveEquipmentDetails(updatedList);
+      }
+
+      resetForm();
+      setShowForm(false);
+    } catch (error) {
+      console.error('Erro ao salvar equipamento:', error);
+      alert('Erro ao salvar equipamento');
+    }
+  };
+
+  const handleEdit = (eq: EquipmentDetails) => {
+    setEditingEquipment(eq);
+    setFormData({
+      name: eq.name,
+      type: eq.type,
+      status: eq.status,
+      location: eq.location,
+      manufacturer: eq.manufacturer,
+      model: eq.model,
+      serialNumber: eq.serialNumber,
+      maxDimensions: eq.maxDimensions,
+      cuttingPrecision: eq.cuttingPrecision,
+      installationDate: eq.installationDate,
+      nextMaintenance: eq.nextMaintenance || '',
+      notes: eq.notes || ''
+    });
+    setShowForm(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Tem certeza que deseja excluir este equipamento?')) return;
+    
+    try {
+      await productionService.deleteMachine(id);
+      const updatedList = equipment.filter(eq => eq.id !== id);
+      setEquipment(updatedList);
+      saveEquipmentDetails(updatedList);
+    } catch (error) {
+      console.error('Erro ao excluir equipamento:', error);
+      alert('Erro ao excluir equipamento');
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: '', type: 'BZM', status: 'available', location: '', manufacturer: '',
+      model: '', serialNumber: '', maxDimensions: { length: 0, width: 0, height: 0 },
+      cuttingPrecision: 0, installationDate: '', nextMaintenance: '', notes: ''
+    });
+    setEditingEquipment(null);
+  };
+
+  const filteredEquipment = equipment.filter(eq => {
+    const matchesSearch = eq.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         eq.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         eq.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || eq.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const runningCount = equipmentData.filter(e => e.status === 'running').length;
-  const maintenanceCount = equipmentData.filter(e => e.status === 'maintenance').length;
-  const stoppedCount = equipmentData.filter(e => e.status === 'stopped').length;
-  const warningCount = equipmentData.filter(e => e.status === 'warning').length;
+  const statusConfig = {
+    available: { color: "text-green-600 bg-green-50", label: "Disponível", icon: CheckCircle },
+    busy: { color: "text-yellow-600 bg-yellow-50", label: "Em Uso", icon: Clock },
+    maintenance: { color: "text-red-600 bg-red-50", label: "Manutenção", icon: Wrench },
+    offline: { color: "text-gray-600 bg-gray-50", label: "Offline", icon: AlertTriangle }
+  };
 
-  const avgEfficiency = equipmentData.reduce((sum, e) => sum + e.efficiency, 0) / equipmentData.length;
-  const avgUptime = equipmentData.reduce((sum, e) => sum + e.uptime, 0) / equipmentData.length;
+  const typeConfig = {
+    BZM: { label: "BZM - Corte Inicial", icon: "🔪" },
+    CAROUSEL: { label: "Carrossel - Coxins", icon: "🔄" },
+    PRE_CNC: { label: "Pré-CNC", icon: "⚙️" },
+    CNC: { label: "CNC - Acabamento", icon: "🎯" }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-muted-foreground">Carregando equipamentos...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">Gestão de Equipamentos</h1>
-        <p className="text-muted-foreground">
-          Monitoramento em tempo real de máquinas e equipamentos
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Gestão de Equipamentos</h1>
+          <p className="text-muted-foreground">
+            Máquinas de corte de espuma da fábrica
+          </p>
+        </div>
+        
+        <button
+          onClick={() => setShowForm(true)}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Novo Equipamento
+        </button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-6">
-        <div className="rounded-lg border bg-card p-4">
+      {/* Stats */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold text-card-foreground">{equipmentData.length}</p>
+              <p className="text-2xl font-bold text-card-foreground">{equipment.length}</p>
             </div>
-            <Settings className="h-6 w-6 text-muted-foreground" />
+            <Factory className="h-6 w-6 text-muted-foreground" />
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-4">
+        <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Operando</p>
-              <p className="text-2xl font-bold text-success">{runningCount}</p>
+              <p className="text-sm font-medium text-muted-foreground">Disponível</p>
+              <p className="text-2xl font-bold text-green-600">
+                {equipment.filter(eq => eq.status === 'available').length}
+              </p>
             </div>
-            <CheckCircle className="h-6 w-6 text-success" />
+            <CheckCircle className="h-6 w-6 text-green-600" />
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-4">
+        <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Atenção</p>
-              <p className="text-2xl font-bold text-warning">{warningCount}</p>
+              <p className="text-sm font-medium text-muted-foreground">Em Uso</p>
+              <p className="text-2xl font-bold text-yellow-600">
+                {equipment.filter(eq => eq.status === 'busy').length}
+              </p>
             </div>
-            <AlertTriangle className="h-6 w-6 text-warning" />
+            <Clock className="h-6 w-6 text-yellow-600" />
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-4">
+        <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Manutenção</p>
-              <p className="text-2xl font-bold text-info">{maintenanceCount}</p>
+              <p className="text-2xl font-bold text-red-600">
+                {equipment.filter(eq => eq.status === 'maintenance').length}
+              </p>
             </div>
-            <Clock className="h-6 w-6 text-info" />
-          </div>
-        </div>
-
-        <div className="rounded-lg border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Parados</p>
-              <p className="text-2xl font-bold text-destructive">{stoppedCount}</p>
-            </div>
-            <Square className="h-6 w-6 text-destructive" />
-          </div>
-        </div>
-
-        <div className="rounded-lg border bg-card p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Eficiência</p>
-              <p className="text-2xl font-bold text-card-foreground">{avgEfficiency.toFixed(1)}%</p>
-            </div>
-            <TrendingUp className="h-6 w-6 text-success" />
+            <Wrench className="h-6 w-6 text-red-600" />
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Equipment List */}
-        <div className="lg:col-span-1">
-          <div className="rounded-lg border bg-card">
-            <div className="border-b p-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-card-foreground">Equipamentos</h3>
-                <div className="flex gap-2">
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Buscar equipamentos..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background"
+          />
+        </div>
+        
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 border rounded-lg bg-background min-w-[150px]"
+        >
+          <option value="all">Todos os status</option>
+          <option value="available">Disponível</option>
+          <option value="busy">Em Uso</option>
+          <option value="maintenance">Manutenção</option>
+          <option value="offline">Offline</option>
+        </select>
+      </div>
+
+      {/* Equipment Grid */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {filteredEquipment.map((eq) => {
+          const StatusIcon = statusConfig[eq.status].icon;
+          
+          return (
+            <div key={eq.id} className="bg-card border rounded-lg p-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg">{typeConfig[eq.type].icon}</span>
+                    <h3 className="text-lg font-semibold text-card-foreground">{eq.name}</h3>
+                  </div>
+                  <p className="text-sm text-muted-foreground">{typeConfig[eq.type].label}</p>
+                  <p className="text-xs text-muted-foreground">{eq.location}</p>
+                </div>
+                
+                <div className="flex gap-1">
                   <button
-                    onClick={() => alert('Filtros avançados em desenvolvimento')}
-                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
-                    title="Filtros avançados"
+                    onClick={() => handleEdit(eq)}
+                    className="p-1 text-muted-foreground hover:text-foreground"
+                    title="Editar"
                   >
-                    <Filter className="h-4 w-4" />
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(eq.id)}
+                    className="p-1 text-muted-foreground hover:text-destructive"
+                    title="Excluir"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Buscar equipamento..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                  />
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Status:</span>
+                  <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", statusConfig[eq.status].color)}>
+                    <StatusIcon className="h-3 w-3" />
+                    {statusConfig[eq.status].label}
+                  </span>
                 </div>
-                
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  <option value="all">Todos os status</option>
-                  <option value="running">Operando</option>
-                  <option value="warning">Atenção</option>
-                  <option value="maintenance">Manutenção</option>
-                  <option value="stopped">Parados</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="max-h-96 overflow-y-auto">
-              {filteredEquipment.map((equipment) => {
-                const config = statusConfig[equipment.status];
-                const StatusIcon = config.icon;
-                
-                return (
-                  <div
-                    key={equipment.id}
-                    onClick={() => setSelectedEquipment(equipment)}
-                    className={cn(
-                      "border-b p-4 cursor-pointer hover:bg-muted/50 transition-colors",
-                      selectedEquipment?.id === equipment.id && "bg-muted/50"
-                    )}
-                  >
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Dimensões max:</span>
+                  <span className="text-sm font-medium">
+                    {eq.maxDimensions.length/1000}×{eq.maxDimensions.width/1000}×{eq.maxDimensions.height/1000}m
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Precisão:</span>
+                  <span className="text-sm font-medium">{eq.cuttingPrecision}mm</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Fabricante:</span>
+                  <span className="text-sm font-medium">{eq.manufacturer}</span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Modelo:</span>
+                  <span className="text-sm font-medium">{eq.model}</span>
+                </div>
+
+                {eq.nextMaintenance && (
+                  <div className="pt-2 border-t">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className={cn("w-3 h-3 rounded-full", config.dot)}></div>
-                        <div>
-                          <p className="font-medium text-card-foreground">{equipment.name}</p>
-                          <p className="text-sm text-muted-foreground">{equipment.location}</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium text-card-foreground">{equipment.efficiency}%</p>
-                        <p className="text-xs text-muted-foreground">Eficiência</p>
-                      </div>
+                      <span className="text-xs text-muted-foreground">Próxima manutenção:</span>
+                      <span className="text-xs font-medium">
+                        {new Date(eq.nextMaintenance).toLocaleDateString('pt-BR')}
+                      </span>
                     </div>
                   </div>
-                );
-              })}
+                )}
+
+                {eq.currentOperator && (
+                  <div className="pt-2 border-t">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Operador atual:</span>
+                      <span className="text-xs font-medium text-primary">{eq.currentOperator}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {filteredEquipment.length === 0 && (
+        <div className="text-center py-12">
+          <Factory className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
+          <h3 className="text-lg font-medium text-card-foreground mb-2">
+            {searchTerm || statusFilter !== 'all'
+              ? 'Nenhum equipamento encontrado'
+              : 'Nenhum equipamento cadastrado'
+            }
+          </h3>
+          <p className="text-muted-foreground">
+            {searchTerm || statusFilter !== 'all'
+              ? 'Tente ajustar os filtros de busca'
+              : 'Comece adicionando o primeiro equipamento'
+            }
+          </p>
+        </div>
+      )}
+
+      {/* Form Modal */}
+      {showForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">
+                  {editingEquipment ? 'Editar Equipamento' : 'Novo Equipamento'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowForm(false);
+                    resetForm();
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Nome do Equipamento *</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Ex: BZM-02, Carrossel-03"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Tipo *</label>
+                    <select
+                      value={formData.type}
+                      onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      required
+                    >
+                      <option value="BZM">BZM - Corte Inicial</option>
+                      <option value="CAROUSEL">Carrossel - Coxins</option>
+                      <option value="PRE_CNC">Pré-CNC</option>
+                      <option value="CNC">CNC - Acabamento</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Status</label>
+                    <select
+                      value={formData.status}
+                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                    >
+                      <option value="available">Disponível</option>
+                      <option value="busy">Em Uso</option>
+                      <option value="maintenance">Manutenção</option>
+                      <option value="offline">Offline</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Localização</label>
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Ex: Setor A - Linha 1"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Fabricante</label>
+                    <input
+                      type="text"
+                      value={formData.manufacturer}
+                      onChange={(e) => setFormData(prev => ({ ...prev, manufacturer: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Nome do fabricante"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Modelo</label>
+                    <input
+                      type="text"
+                      value={formData.model}
+                      onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Modelo do equipamento"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Número de Série</label>
+                    <input
+                      type="text"
+                      value={formData.serialNumber}
+                      onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="SN-123456"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Precisão de Corte (mm)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={formData.cuttingPrecision}
+                      onChange={(e) => setFormData(prev => ({ ...prev, cuttingPrecision: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Ex: 0.5"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Dimensões Máximas (mm)</label>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Comprimento</label>
+                      <input
+                        type="number"
+                        value={formData.maxDimensions.length}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          maxDimensions: { ...prev.maxDimensions, length: Number(e.target.value) }
+                        }))}
+                        className="w-full px-3 py-2 border rounded-lg bg-background"
+                        placeholder="40000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Largura</label>
+                      <input
+                        type="number"
+                        value={formData.maxDimensions.width}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          maxDimensions: { ...prev.maxDimensions, width: Number(e.target.value) }
+                        }))}
+                        className="w-full px-3 py-2 border rounded-lg bg-background"
+                        placeholder="2000"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs text-muted-foreground mb-1">Altura</label>
+                      <input
+                        type="number"
+                        value={formData.maxDimensions.height}
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
+                          maxDimensions: { ...prev.maxDimensions, height: Number(e.target.value) }
+                        }))}
+                        className="w-full px-3 py-2 border rounded-lg bg-background"
+                        placeholder="2000"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Data de Instalação</label>
+                    <input
+                      type="date"
+                      value={formData.installationDate}
+                      onChange={(e) => setFormData(prev => ({ ...prev, installationDate: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Próxima Manutenção</label>
+                    <input
+                      type="date"
+                      value={formData.nextMaintenance}
+                      onChange={(e) => setFormData(prev => ({ ...prev, nextMaintenance: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Observações</label>
+                  <textarea
+                    value={formData.notes}
+                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    rows={3}
+                    placeholder="Observações adicionais sobre o equipamento..."
+                  />
+                </div>
+
+                <div className="flex justify-end gap-3 pt-6 border-t">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      resetForm();
+                    }}
+                    className="px-4 py-2 border rounded-lg hover:bg-muted"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                  >
+                    {editingEquipment ? 'Atualizar' : 'Adicionar'} Equipamento
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>
-
-        {/* Equipment Details */}
-        <div className="lg:col-span-2">
-          {selectedEquipment ? (
-            <div className="space-y-6">
-              {/* Equipment Header */}
-              <div className="rounded-lg border bg-card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-2xl font-bold text-card-foreground">{selectedEquipment.name}</h2>
-                    <p className="text-muted-foreground">{selectedEquipment.type} • {selectedEquipment.location}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => alert(`Iniciando ${selectedEquipment.name}`)}
-                      className="p-2 text-muted-foreground hover:text-success hover:bg-success/10 rounded-lg"
-                      title="Iniciar equipamento"
-                    >
-                      <Play className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => alert(`Pausando ${selectedEquipment.name}`)}
-                      className="p-2 text-muted-foreground hover:text-warning hover:bg-warning/10 rounded-lg"
-                      title="Pausar equipamento"
-                    >
-                      <Pause className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => alert(`Opções para ${selectedEquipment.name}`)}
-                      className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg"
-                      title="Mais opções"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className={cn("flex items-center gap-2 rounded-lg px-3 py-2 border", statusConfig[selectedEquipment.status].bg)}>
-                    {(() => {
-                      const StatusIcon = statusConfig[selectedEquipment.status].icon;
-                      return <StatusIcon className={cn("h-4 w-4", statusConfig[selectedEquipment.status].color)} />;
-                    })()}
-                    <span className={cn("text-sm font-medium", statusConfig[selectedEquipment.status].color)}>
-                      {statusConfig[selectedEquipment.status].label}
-                    </span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Operador: <span className="font-medium text-card-foreground">{selectedEquipment.operator}</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    Turno: <span className="font-medium text-card-foreground">{selectedEquipment.shift}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Metrics Grid */}
-              <div className="grid gap-4 md:grid-cols-3">
-                <div className="rounded-lg border bg-card p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Eficiência</p>
-                      <p className="text-2xl font-bold text-card-foreground">{selectedEquipment.efficiency}%</p>
-                      <div className="flex items-center gap-1 mt-1">
-                        {selectedEquipment.efficiency > 90 ? (
-                          <TrendingUp className="h-3 w-3 text-success" />
-                        ) : (
-                          <TrendingDown className="h-3 w-3 text-destructive" />
-                        )}
-                        <span className="text-xs text-muted-foreground">vs último mês</span>
-                      </div>
-                    </div>
-                    <Activity className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                </div>
-
-                <div className="rounded-lg border bg-card p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Uptime</p>
-                      <p className="text-2xl font-bold text-card-foreground">{selectedEquipment.uptime}%</p>
-                      <div className="w-full bg-muted rounded-full h-2 mt-2">
-                        <div 
-                          className="bg-success h-2 rounded-full transition-all" 
-                          style={{ width: `${selectedEquipment.uptime}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    <Clock className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                </div>
-
-                <div className="rounded-lg border bg-card p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-muted-foreground">Potência</p>
-                      <p className="text-2xl font-bold text-card-foreground">{selectedEquipment.power} kW</p>
-                      <p className="text-xs text-muted-foreground mt-1">Consumo atual</p>
-                    </div>
-                    <Zap className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Sensor Data */}
-              <div className="grid gap-4 md:grid-cols-2">
-                <div className="rounded-lg border bg-card p-6">
-                  <h3 className="text-lg font-semibold text-card-foreground mb-4">Sensores</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Thermometer className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-sm font-medium text-card-foreground">Temperatura</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-lg font-bold text-card-foreground">{selectedEquipment.temperature}°C</span>
-                        <div className={cn(
-                          "text-xs",
-                          selectedEquipment.temperature > 100 ? "text-destructive" : 
-                          selectedEquipment.temperature > 80 ? "text-warning" : "text-success"
-                        )}>
-                          {selectedEquipment.temperature > 100 ? "Alto" : 
-                           selectedEquipment.temperature > 80 ? "Elevado" : "Normal"}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Gauge className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-sm font-medium text-card-foreground">Pressão</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-lg font-bold text-card-foreground">{selectedEquipment.pressure} PSI</span>
-                        <div className="text-xs text-success">Normal</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Activity className="h-5 w-5 text-muted-foreground" />
-                        <span className="text-sm font-medium text-card-foreground">Vibração</span>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-lg font-bold text-card-foreground">{selectedEquipment.vibration} mm/s</span>
-                        <div className={cn(
-                          "text-xs",
-                          selectedEquipment.vibration > 3 ? "text-destructive" : 
-                          selectedEquipment.vibration > 2 ? "text-warning" : "text-success"
-                        )}>
-                          {selectedEquipment.vibration > 3 ? "Alto" : 
-                           selectedEquipment.vibration > 2 ? "Elevado" : "Normal"}
-                        </div>
-                      </div>
-                    </div>
-
-                    {selectedEquipment.speed > 0 && (
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <TrendingUp className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-sm font-medium text-card-foreground">Velocidade</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="text-lg font-bold text-card-foreground">{selectedEquipment.speed} RPM</span>
-                          <div className="text-xs text-success">Normal</div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="rounded-lg border bg-card p-6">
-                  <h3 className="text-lg font-semibold text-card-foreground mb-4">Manutenção</h3>
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-muted-foreground">Última Manutenção</span>
-                      <span className="text-sm text-card-foreground">
-                        {new Date(selectedEquipment.lastMaintenance).toLocaleDateString('pt-BR')}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-muted-foreground">Próxima Manutenção</span>
-                      <span className="text-sm text-card-foreground">
-                        {new Date(selectedEquipment.nextMaintenance).toLocaleDateString('pt-BR')}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-muted-foreground">Dias Restantes</span>
-                      <span className="text-sm font-medium text-warning">
-                        {Math.ceil((new Date(selectedEquipment.nextMaintenance).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))} dias
-                      </span>
-                    </div>
-                    <div className="pt-2">
-                      <button
-                        onClick={() => alert(`Agendando manutenção para ${selectedEquipment.name}`)}
-                        className="w-full px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90"
-                      >
-                        Agendar Manutenção
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border bg-card p-8 text-center">
-              <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-card-foreground mb-2">Selecione um Equipamento</h3>
-              <p className="text-muted-foreground">
-                Escolha um equipamento da lista para ver os detalhes de monitoramento
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
