@@ -238,6 +238,13 @@ export function ProductSheetsManager({ onClose }: ProductSheetsManagerProps) {
         </div>
         <div className="flex gap-2">
           <button
+            onClick={() => setShowFoamTypeForm(true)}
+            className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Tipos de Espuma
+          </button>
+          <button
             onClick={() => setShowForm(true)}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
           >
