@@ -149,7 +149,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
   const completeWorkItem = async (workItem: OperatorWorkItem) => {
     const quantity = completionQuantity[workItem.id] || workItem.remainingQuantity;
-    
+
     if (quantity <= 0 || quantity > workItem.remainingQuantity) {
       alert('Quantidade inválida');
       return;
@@ -161,17 +161,68 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
         quantity,
         `Concluído por ${operatorData.name} na máquina ${workItem.machineName}`
       );
-      
+
       // Resetar quantidade de conclusão
       setCompletionQuantity(prev => ({ ...prev, [workItem.id]: 0 }));
-      
+
       // Recarregar lista de trabalho
       await loadWorkItems();
-      
-      alert(`${quantity} unidades concluídas com sucesso!`);
+
+      // Offer to print label
+      const shouldPrint = confirm(`${quantity} unidades concluídas! Deseja imprimir etiqueta?`);
+      if (shouldPrint) {
+        await createPrintLabel(workItem, quantity);
+      }
     } catch (error) {
       console.error('Erro ao concluir item:', error);
       alert('Erro ao concluir item');
+    }
+  };
+
+  const createPrintLabel = async (workItem: OperatorWorkItem, quantity: number) => {
+    try {
+      const machine = machines.find(m => m.id === selectedMachine);
+
+      const labelData = {
+        orderId: workItem.orderId,
+        lineId: workItem.lineId,
+        operationId: workItem.operationId,
+        customerName: workItem.customer,
+        orderNumber: workItem.orderNumber,
+        foamType: workItem.foamType,
+        quantity: quantity,
+        dimensions: workItem.outputDimensions,
+        operatorName: operatorData.name,
+        machineId: selectedMachine,
+        machineName: machine?.name || 'Máquina não identificada',
+        completionDate: new Date().toISOString(),
+        printedBy: operatorData.name
+      };
+
+      const label = await labelService.createLabel(labelData);
+      setCurrentLabel(label);
+      setShowPrintPreview(true);
+    } catch (error) {
+      console.error('Erro ao criar etiqueta:', error);
+      alert('Erro ao criar etiqueta');
+    }
+  };
+
+  const handlePrintLabel = async () => {
+    if (!currentLabel) return;
+
+    try {
+      const result = await labelService.printLabel(currentLabel);
+      if (result.success) {
+        alert('Etiqueta enviada para impressão/download!');
+        setShowPrintPreview(false);
+        setCurrentLabel(null);
+      } else {
+        alert('Erro ao imprimir etiqueta');
+      }
+    } catch (error) {
+      console.error('Erro ao imprimir:', error);
+      alert('Erro ao imprimir etiqueta');
     }
   };
 
