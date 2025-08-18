@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   AlertTriangle, 
   Bell, 
@@ -628,7 +628,7 @@ export default function Alerts() {
           {/* Category Distribution */}
           <div className="grid gap-6 md:grid-cols-2">
             <div className="rounded-lg border bg-card p-6">
-              <h3 className="text-lg font-semibold text-card-foreground mb-4">Distribuição por Categoria</h3>
+              <h3 className="text-lg font-semibold text-card-foreground mb-4">Distribuiç��o por Categoria</h3>
               <div className="space-y-3">
                 {Object.entries(categoryConfig).map(([key, config]) => {
                   const count = alerts.filter(a => a.category === key).length;
