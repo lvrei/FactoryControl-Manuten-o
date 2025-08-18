@@ -24,11 +24,12 @@ interface LayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "🆕 Produção", href: "/production", icon: Factory, isNew: true },
-  { name: "�� Portal Operador", href: "/operator", icon: Users, isOperator: true },
+  { name: "🔄 Portal Operador", href: "/operator", icon: Users, isOperator: true },
+  { name: "Stock", href: "/stock", icon: Warehouse },
   { name: "Equipamentos", href: "/equipment", icon: Activity },
   { name: "Qualidade", href: "/quality", icon: Package },
   { name: "Manutenção", href: "/maintenance", icon: Settings },
-  { name: "Equipe", href: "/team", icon: Users },
+  { name: "Equipa", href: "/team", icon: Users },
   { name: "Planejamento", href: "/planning", icon: Calendar },
   { name: "Alertas", href: "/alerts", icon: AlertTriangle },
 ];
