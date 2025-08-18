@@ -13,6 +13,7 @@ import Production from "./pages/Production";
 import ProductionNew from "./pages/ProductionNew";
 import OperatorPortal from "./pages/OperatorPortal";
 import TestProduction from "./pages/TestProduction";
+import Stock from "./pages/Stock";
 import Equipment from "./pages/Equipment";
 import Quality from "./pages/Quality";
 import Maintenance from "./pages/Maintenance";
