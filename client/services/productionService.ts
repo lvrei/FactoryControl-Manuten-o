@@ -26,7 +26,8 @@ class ProductionService {
       hardness: 'Macia',
       color: 'Branca',
       specifications: 'Espuma de poliuretano flexível D20 - uso geral',
-      pricePerM3: 45.00
+      pricePerM3: 45.00,
+      stockColor: '#f8f9fa'
     },
     {
       id: '2',
@@ -35,7 +36,8 @@ class ProductionService {
       hardness: 'Média',
       color: 'Amarela',
       specifications: 'Espuma de poliuretano flexível D28 - móveis',
-      pricePerM3: 65.00
+      pricePerM3: 65.00,
+      stockColor: '#fff3cd'
     },
     {
       id: '3',
@@ -44,7 +46,8 @@ class ProductionService {
       hardness: 'Dura',
       color: 'Azul',
       specifications: 'Espuma de poliuretano flexível D35 - colchões',
-      pricePerM3: 85.00
+      pricePerM3: 85.00,
+      stockColor: '#d1ecf1'
     }
   ];
 
