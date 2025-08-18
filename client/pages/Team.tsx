@@ -183,40 +183,68 @@ export default function Team() {
   const avgAttendance = employeesList.length > 0 ? employeesList.reduce((sum, e) => sum + e.attendanceRate, 0) / employeesList.length : 0;
 
   // Funções CRUD para funcionários
-  const handleAddEmployee = () => {
+  const handleAddEmployee = async () => {
     if (!newEmployee.name || !newEmployee.position) {
       alert('Preencha pelo menos nome e cargo');
       return;
     }
 
-    const employee: Employee = {
-      id: Date.now().toString(),
-      name: newEmployee.name,
-      position: newEmployee.position,
-      department: newEmployee.department,
-      shift: newEmployee.shift,
-      status: 'absent',
-      email: newEmployee.email,
-      phone: newEmployee.phone,
-      hireDate: new Date().toISOString().split('T')[0],
-      skills: newEmployee.skills.split(',').map(s => s.trim()).filter(s => s),
-      certifications: newEmployee.certifications.split(',').map(s => s.trim()).filter(s => s),
-      machineOperatingLicense: newEmployee.machineOperatingLicense.split(',').map(s => s.trim()).filter(s => s),
-      currentAssignment: newEmployee.currentAssignment,
-      supervisor: newEmployee.supervisor,
-      productivityScore: 85,
-      attendanceRate: 95,
-      trainingHours: 0,
-      lastPresenceUpdate: new Date().toISOString()
-    };
+    if (newEmployee.hasSystemAccess && (!newEmployee.username || !newEmployee.password)) {
+      alert('Para acesso ao sistema, preencha utilizador e palavra-passe');
+      return;
+    }
 
-    setEmployeesList(prev => [...prev, employee]);
-    setNewEmployee({
-      name: '', position: '', department: 'Corte BZM', shift: 'morning',
-      email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
-      machineOperatingLicense: '', certifications: ''
-    });
-    setShowAddEmployee(false);
+    try {
+      const employee: Employee = {
+        id: Date.now().toString(),
+        name: newEmployee.name,
+        position: newEmployee.position,
+        department: newEmployee.department,
+        shift: newEmployee.shift,
+        status: 'absent',
+        email: newEmployee.email,
+        phone: newEmployee.phone,
+        hireDate: new Date().toISOString().split('T')[0],
+        skills: newEmployee.skills.split(',').map(s => s.trim()).filter(s => s),
+        certifications: newEmployee.certifications.split(',').map(s => s.trim()).filter(s => s),
+        machineOperatingLicense: newEmployee.machineOperatingLicense.split(',').map(s => s.trim()).filter(s => s),
+        currentAssignment: newEmployee.currentAssignment,
+        supervisor: newEmployee.supervisor,
+        productivityScore: 85,
+        attendanceRate: 95,
+        trainingHours: 0,
+        lastPresenceUpdate: new Date().toISOString(),
+        hasSystemAccess: newEmployee.hasSystemAccess,
+        username: newEmployee.username,
+        role: newEmployee.role,
+        accessLevel: newEmployee.accessLevel
+      };
+
+      // Create system user if access is granted
+      if (newEmployee.hasSystemAccess && newEmployee.username && newEmployee.password) {
+        await authService.createUser({
+          username: newEmployee.username,
+          name: newEmployee.name,
+          email: newEmployee.email,
+          password: newEmployee.password,
+          role: newEmployee.role,
+          accessLevel: newEmployee.accessLevel,
+          isActive: true
+        });
+      }
+
+      setEmployeesList(prev => [...prev, employee]);
+      setNewEmployee({
+        name: '', position: '', department: 'Corte BZM', shift: 'morning',
+        email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
+        machineOperatingLicense: '', certifications: '',
+        hasSystemAccess: false, username: '', role: 'operator', accessLevel: 'limited', password: ''
+      });
+      setShowAddEmployee(false);
+    } catch (error) {
+      console.error('Erro ao criar funcionário:', error);
+      alert('Erro ao criar funcionário: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
+    }
   };
 
   const handleEditEmployee = (employee: Employee) => {
