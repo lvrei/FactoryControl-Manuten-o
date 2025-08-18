@@ -22,96 +22,10 @@ import { MaintenanceForm, MaintenanceData } from "@/components/maintenance/Maint
 import { MaintenanceReports } from "@/components/maintenance/MaintenanceReports";
 import { ChecklistDL50 } from "@/components/maintenance/ChecklistDL50";
 
-const mockMachines: MachineData[] = [
-  {
-    id: "1",
-    name: "Prensa Hidráulica 01",
-    model: "HP-500X",
-    manufacturer: "Bosch",
-    serialNumber: "BSC123456789",
-    installationDate: "2020-01-15",
-    location: "Setor A - Linha 1",
-    category: "Prensa Hidráulica",
-    status: "operational",
-    lastMaintenanceDate: "2024-11-15",
-    nextMaintenanceDate: "2025-02-15",
-    maintenanceInterval: 30,
-    operatingHours: 8760,
-    notes: "Máquina em perfeitas condições"
-  },
-  {
-    id: "2",
-    name: "Linha de Montagem A",
-    model: "LM-2000",
-    manufacturer: "Siemens",
-    serialNumber: "SIE987654321",
-    installationDate: "2019-03-20",
-    location: "Setor B - Linha 2",
-    category: "Linha de Montagem",
-    status: "maintenance",
-    lastMaintenanceDate: "2024-12-10",
-    nextMaintenanceDate: "2024-12-25",
-    maintenanceInterval: 15,
-    operatingHours: 12500,
-    notes: "Manutenção preventiva em andamento"
-  }
-];
+// Dados limpos - apenas máquinas reais de corte de espuma
+const mockMachines: MachineData[] = [];
 
-const mockMaintenances: MaintenanceData[] = [
-  {
-    id: "1",
-    machineId: "1",
-    machineName: "Prensa Hidráulica 01",
-    type: "preventive",
-    priority: "medium",
-    status: "scheduled",
-    scheduledDate: "2025-02-15T08:00",
-    estimatedCost: 500,
-    estimatedDuration: 4,
-    description: "Troca de óleo hidráulico e inspeção geral",
-    technician: "João Silva",
-    parts: "Óleo hidráulico 20L, Filtros",
-    notes: "Verificar vazamentos",
-    photos: [],
-    createdAt: "2024-12-20"
-  },
-  {
-    id: "2",
-    machineId: "2",
-    machineName: "Linha de Montagem A",
-    type: "corrective",
-    priority: "high",
-    status: "in_progress",
-    scheduledDate: "2024-12-25T14:00",
-    estimatedCost: 1200,
-    actualCost: 1150,
-    estimatedDuration: 6,
-    actualDuration: 5.5,
-    description: "Reparo do sistema de esteira transportadora",
-    technician: "Maria Santos",
-    parts: "Motor elétrico, correia, rolamentos",
-    notes: "Falha no motor principal",
-    photos: [],
-    createdAt: "2024-12-24"
-  },
-  {
-    id: "3",
-    machineId: "1",
-    machineName: "Prensa Hidráulica 01",
-    type: "preventive",
-    priority: "high",
-    status: "scheduled",
-    scheduledDate: "2024-12-28T09:00",
-    estimatedCost: 350,
-    estimatedDuration: 3,
-    description: "Inspeção de segurança obrigatória",
-    technician: "Carlos Oliveira",
-    parts: "Kit de vedações",
-    notes: "Inspeção atrasada - prioridade alta",
-    photos: [],
-    createdAt: "2024-12-15"
-  }
-];
+const mockMaintenances: MaintenanceData[] = [];
 
 const statusConfig = {
   operational: { icon: CheckCircle, color: "text-success", bg: "bg-success/10", label: "Operacional" },
