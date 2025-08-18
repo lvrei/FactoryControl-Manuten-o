@@ -143,11 +143,17 @@ const categoryConfig = {
 const COLORS = ['hsl(var(--destructive))', 'hsl(var(--warning))', 'hsl(var(--info))'];
 
 export default function Alerts() {
-  const [activeTab, setActiveTab] = useState<'alerts' | 'rules' | 'analytics'>('alerts');
+  const [activeTab, setActiveTab] = useState<'alerts' | 'rules' | 'analytics' | 'maintenance'>('alerts');
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+
+  // Maintenance data state
+  const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
+  const [maintenanceAlerts, setMaintenanceAlerts] = useState<MaintenanceAlert[]>([]);
+  const [machineDowntime, setMachineDowntime] = useState<MachineDowntime[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const filteredAlerts = alerts.filter(alert => {
     const matchesSearch = alert.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
