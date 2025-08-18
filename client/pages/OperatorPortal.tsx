@@ -585,3 +585,5 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     </div>
   );
 }
+
+export default OperatorPortal;
