@@ -402,7 +402,7 @@ export function useChatNotifications(machineId?: string, operatorId?: string) {
     }
 
     checkMessages();
-    const interval = setInterval(checkMessages, 2000); // Verificar a cada 2 segundos
+    const interval = setInterval(checkMessages, 3000); // Verificar a cada 3 segundos
 
     return () => clearInterval(interval);
   }, [machineId, operatorId]);
