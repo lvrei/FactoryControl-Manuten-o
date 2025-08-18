@@ -42,11 +42,6 @@ interface NewBlockForm {
   nonConformities: string;
   comments: string;
   receivedBy: string;
-  supplierInfo: {
-    supplier: string;
-    batchNumber: string;
-    certificate: string;
-  };
 }
 
 const warehouseConfig = {
