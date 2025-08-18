@@ -8,6 +8,7 @@ export interface FoamType {
   color: string;
   specifications: string;
   pricePerM3: number;
+  stockColor?: string; // Cor para identificação visual no stock
 }
 
 export interface ProductSheet {
