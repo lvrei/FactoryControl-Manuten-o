@@ -679,7 +679,7 @@ export default function Stock() {
           <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold">Registrar Novo Bloco</h3>
+                <h3 className="text-xl font-semibold">{editingBlock ? 'Editar Bloco' : 'Registrar Novo Bloco'}</h3>
                 <button
                   onClick={() => {
                     setShowAddBlock(false);
