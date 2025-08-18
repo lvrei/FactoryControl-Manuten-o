@@ -300,7 +300,7 @@ export default function Alerts() {
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          Alertas ({alerts.length})
+          Alertas ({allAlerts.length})
         </button>
         <button
           onClick={() => setActiveTab('maintenance')}
