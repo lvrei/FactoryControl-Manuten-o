@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Edit, 
-  Trash2, 
-  FileText, 
-  Camera, 
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  FileText,
+  Camera,
   Upload,
   Download,
   Eye,
-  X
+  X,
+  Settings
 } from 'lucide-react';
 import { ProductSheet, FoamType } from '@/types/production';
 import { productionService } from '@/services/productionService';
