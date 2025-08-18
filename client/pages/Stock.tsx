@@ -67,6 +67,7 @@ export default function Stock() {
   const [foamTypes, setFoamTypes] = useState<FoamType[]>([]);
   const [selectedBlock, setSelectedBlock] = useState<FoamBlock | null>(null);
   const [showAddBlock, setShowAddBlock] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<FoamBlock | null>(null);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<StockFilters>({
     warehouse: 'all',
