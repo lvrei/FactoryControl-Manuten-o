@@ -92,6 +92,24 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
       status: 'pending',
       priority: 5
     };
+
+    // Adicionar automaticamente operação BZM
+    const bzmMachine = machines.find(m => m.type === 'BZM');
+    if (bzmMachine) {
+      const bzmOperation: CuttingOperation = {
+        id: Date.now().toString() + '-bzm',
+        machineId: bzmMachine.id,
+        inputDimensions: newLine.initialDimensions,
+        outputDimensions: newLine.finalDimensions,
+        quantity: newLine.quantity,
+        completedQuantity: 0,
+        estimatedTime: 30,
+        status: 'pending',
+        observations: 'Corte inicial do bloco de espuma'
+      };
+      newLine.cuttingOperations = [bzmOperation];
+    }
+
     setLines(prev => [...prev, newLine]);
   };
 
