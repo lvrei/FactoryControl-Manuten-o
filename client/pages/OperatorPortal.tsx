@@ -522,6 +522,14 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
           
           <div className="flex gap-2">
             <button
+              onClick={() => setShowMaintenanceRequest(true)}
+              className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 flex items-center gap-2"
+            >
+              <Wrench className="h-4 w-4" />
+              Solicitar Manutenção
+            </button>
+
+            <button
               onClick={() => setShowChat(!showChat)}
               className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2 relative"
             >
@@ -533,7 +541,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                 </span>
               )}
             </button>
-            
+
             <button
               onClick={endSession}
               className="px-4 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 flex items-center gap-2"
