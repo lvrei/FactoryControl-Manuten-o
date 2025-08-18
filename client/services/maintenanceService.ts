@@ -193,17 +193,6 @@ class MaintenanceService {
     }
   }
 
-  private async updateMachineStatus(machineId: string, status: 'available' | 'busy' | 'maintenance' | 'offline'): Promise<void> {
-    // This would typically update the machine status through the production service
-    // For now, we'll store it separately or integrate with the existing machine management
-    const machineStatusKey = 'factoryControl_machineStatus';
-    const statusUpdates = JSON.parse(localStorage.getItem(machineStatusKey) || '{}');
-    statusUpdates[machineId] = {
-      status,
-      updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem(machineStatusKey, JSON.stringify(statusUpdates));
-  }
 
   private generateId(): string {
     return `MAINT_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
