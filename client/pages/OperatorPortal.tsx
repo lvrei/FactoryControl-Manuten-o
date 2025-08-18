@@ -484,11 +484,16 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                     <div className="flex items-center justify-between pt-3 border-t">
                       <div className="flex items-center gap-4">
                         <div className="text-sm">
-                          <span className="font-medium">Restante: </span>
+                          <span className="font-medium">
+                            {item.machineType === 'CAROUSEL' || item.machineType === 'PRE_CNC'
+                              ? 'Coxins Restantes: '
+                              : 'Restante: '
+                            }
+                          </span>
                           <span className="text-lg font-bold text-primary">{item.remainingQuantity}</span>
                           <span className="text-muted-foreground"> / {item.quantity}</span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                           <span className="text-sm text-muted-foreground">Concluir:</span>
                           <input
@@ -503,7 +508,12 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                             className="w-20 px-2 py-1 border rounded text-sm"
                             placeholder={item.remainingQuantity.toString()}
                           />
-                          <span className="text-sm text-muted-foreground">unidades</span>
+                          <span className="text-sm text-muted-foreground">
+                            {item.machineType === 'CAROUSEL' || item.machineType === 'PRE_CNC'
+                              ? 'coxins'
+                              : 'unidades'
+                            }
+                          </span>
                         </div>
                       </div>
                       
