@@ -97,20 +97,20 @@ const notificationRules: NotificationRule[] = [
 ];
 
 const alertStats = [
-  { type: 'Críticos', count: 2, change: +1, color: 'hsl(var(--destructive))' },
-  { type: 'Avisos', count: 4, change: -2, color: 'hsl(var(--warning))' },
-  { type: 'Resolvidos', count: 8, change: +3, color: 'hsl(var(--success))' },
-  { type: 'Novos', count: 1, change: 0, color: 'hsl(var(--info))' }
+  { type: 'Críticos', count: 0, change: 0, color: 'hsl(var(--destructive))' },
+  { type: 'Avisos', count: 0, change: 0, color: 'hsl(var(--warning))' },
+  { type: 'Resolvidos', count: 0, change: 0, color: 'hsl(var(--success))' },
+  { type: 'Novos', count: 0, change: 0, color: 'hsl(var(--info))' }
 ];
 
 const alertTrend = [
-  { day: 'Seg', critical: 3, warning: 5, info: 2 },
-  { day: 'Ter', critical: 1, warning: 8, info: 4 },
-  { day: 'Qua', critical: 2, warning: 6, info: 3 },
-  { day: 'Qui', critical: 4, warning: 7, info: 1 },
-  { day: 'Sex', critical: 2, warning: 4, info: 5 },
-  { day: 'Sab', critical: 1, warning: 3, info: 2 },
-  { day: 'Dom', critical: 0, warning: 2, info: 1 }
+  { day: 'Seg', critical: 0, warning: 0, info: 0 },
+  { day: 'Ter', critical: 0, warning: 0, info: 0 },
+  { day: 'Qua', critical: 0, warning: 0, info: 0 },
+  { day: 'Qui', critical: 0, warning: 0, info: 0 },
+  { day: 'Sex', critical: 0, warning: 0, info: 0 },
+  { day: 'Sab', critical: 0, warning: 0, info: 0 },
+  { day: 'Dom', critical: 0, warning: 0, info: 0 }
 ];
 
 const typeConfig = {
