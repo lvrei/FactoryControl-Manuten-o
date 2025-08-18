@@ -501,48 +501,111 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
                                   </button>
                                 </div>
 
-                                <div className="grid gap-3 md:grid-cols-4">
-                                  <div>
-                                    <label className="block text-xs font-medium mb-1">Máquina</label>
-                                    <select
-                                      value={operation.machineId}
-                                      onChange={(e) => updateOperation(line.id, operation.id, { machineId: e.target.value })}
-                                      className="w-full px-2 py-1 border rounded bg-background text-sm"
-                                    >
-                                      {machines.map(machine => (
-                                        <option key={machine.id} value={machine.id}>
-                                          {machine.name} ({machine.type})
-                                        </option>
-                                      ))}
-                                    </select>
-                                  </div>
-
-                                  <div>
-                                    <label className="block text-xs font-medium mb-1">Quantidade</label>
-                                    <input
-                                      type="number"
-                                      value={operation.quantity}
-                                      onChange={(e) => updateOperation(line.id, operation.id, { quantity: Number(e.target.value) })}
-                                      className="w-full px-2 py-1 border rounded bg-background text-sm"
-                                      min="1"
-                                    />
-                                  </div>
-
-                                  <div>
-                                    <label className="block text-xs font-medium mb-1">Tempo Estimado (min)</label>
-                                    <input
-                                      type="number"
-                                      value={operation.estimatedTime}
-                                      onChange={(e) => updateOperation(line.id, operation.id, { estimatedTime: Number(e.target.value) })}
-                                      className="w-full px-2 py-1 border rounded bg-background text-sm"
-                                      min="1"
-                                    />
-                                  </div>
-
-                                  <div className="flex items-end">
-                                    <div className="text-xs text-muted-foreground">
-                                      Máquina: {machines.find(m => m.id === operation.machineId)?.name}
+                                <div className="space-y-3">
+                                  <div className="grid gap-3 md:grid-cols-3">
+                                    <div>
+                                      <label className="block text-xs font-medium mb-1">Máquina</label>
+                                      <select
+                                        value={operation.machineId}
+                                        onChange={(e) => updateOperation(line.id, operation.id, { machineId: e.target.value })}
+                                        className="w-full px-2 py-1 border rounded bg-background text-sm"
+                                      >
+                                        {machines.map(machine => (
+                                          <option key={machine.id} value={machine.id}>
+                                            {machine.name} ({machine.type})
+                                          </option>
+                                        ))}
+                                      </select>
                                     </div>
+
+                                    <div>
+                                      <label className="block text-xs font-medium mb-1">
+                                        {(() => {
+                                          const machine = machines.find(m => m.id === operation.machineId);
+                                          if (machine?.type === 'CAROUSEL' || machine?.type === 'PRE_CNC') {
+                                            return 'Quantidade de Coxins';
+                                          } else if (machine?.type === 'CNC') {
+                                            return 'Quantidade';
+                                          } else {
+                                            return 'Quantidade';
+                                          }
+                                        })()}
+                                      </label>
+                                      <input
+                                        type="number"
+                                        value={operation.quantity}
+                                        onChange={(e) => updateOperation(line.id, operation.id, { quantity: Number(e.target.value) })}
+                                        className="w-full px-2 py-1 border rounded bg-background text-sm"
+                                        min="1"
+                                      />
+                                    </div>
+
+                                    <div>
+                                      <label className="block text-xs font-medium mb-1">Tempo Estimado (min)</label>
+                                      <input
+                                        type="number"
+                                        value={operation.estimatedTime}
+                                        onChange={(e) => updateOperation(line.id, operation.id, { estimatedTime: Number(e.target.value) })}
+                                        className="w-full px-2 py-1 border rounded bg-background text-sm"
+                                        min="1"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {/* Medidas Finais - só mostrar para Carrossel, Pré-CNC e CNC */}
+                                  {(() => {
+                                    const machine = machines.find(m => m.id === operation.machineId);
+                                    if (machine?.type === 'CAROUSEL' || machine?.type === 'PRE_CNC' || machine?.type === 'CNC') {
+                                      return (
+                                        <div>
+                                          <label className="block text-xs font-medium mb-2">
+                                            Medidas Finais (mm) - Comprimento × Largura × Espessura
+                                          </label>
+                                          <div className="grid grid-cols-3 gap-2">
+                                            <input
+                                              type="number"
+                                              placeholder="Comprimento"
+                                              value={operation.outputDimensions.length}
+                                              onChange={(e) => updateOperation(line.id, operation.id, {
+                                                outputDimensions: { ...operation.outputDimensions, length: Number(e.target.value) }
+                                              })}
+                                              className="px-2 py-1 border rounded bg-background text-xs"
+                                            />
+                                            <input
+                                              type="number"
+                                              placeholder="Largura"
+                                              value={operation.outputDimensions.width}
+                                              onChange={(e) => updateOperation(line.id, operation.id, {
+                                                outputDimensions: { ...operation.outputDimensions, width: Number(e.target.value) }
+                                              })}
+                                              className="px-2 py-1 border rounded bg-background text-xs"
+                                            />
+                                            <input
+                                              type="number"
+                                              placeholder="Espessura"
+                                              value={operation.outputDimensions.height}
+                                              onChange={(e) => updateOperation(line.id, operation.id, {
+                                                outputDimensions: { ...operation.outputDimensions, height: Number(e.target.value) }
+                                              })}
+                                              className="px-2 py-1 border rounded bg-background text-xs"
+                                            />
+                                          </div>
+                                        </div>
+                                      );
+                                    }
+                                    return null;
+                                  })()}
+
+                                  {/* Observações */}
+                                  <div>
+                                    <label className="block text-xs font-medium mb-1">Observações para o Operador</label>
+                                    <textarea
+                                      value={operation.observations || ''}
+                                      onChange={(e) => updateOperation(line.id, operation.id, { observations: e.target.value })}
+                                      className="w-full px-2 py-1 border rounded bg-background text-xs"
+                                      rows={2}
+                                      placeholder="Instruções específicas para esta operação..."
+                                    />
                                   </div>
                                 </div>
                               </div>
