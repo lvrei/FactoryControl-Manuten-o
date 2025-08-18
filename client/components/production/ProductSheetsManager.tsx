@@ -574,6 +574,182 @@ export function ProductSheetsManager({ onClose }: ProductSheetsManagerProps) {
           </p>
         </div>
       )}
+
+      {/* Modal de Gestão de Tipos de Espuma */}
+      {showFoamTypeForm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">
+                  {editingFoamType ? 'Editar Tipo de Espuma' : 'Gestão de Tipos de Espuma'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowFoamTypeForm(false);
+                    setEditingFoamType(null);
+                    setNewFoamType({
+                      name: '', density: 0, hardness: '', color: '', specifications: '', pricePerM3: 0
+                    });
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Lista de Tipos Existentes */}
+              <div className="mb-6">
+                <h4 className="text-lg font-medium mb-4">Tipos de Espuma Existentes</h4>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {foamTypes.map(foamType => (
+                    <div key={foamType.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <h5 className="font-semibold">{foamType.name}</h5>
+                          <p className="text-sm text-muted-foreground">
+                            D{foamType.density} - {foamType.color} - {foamType.hardness}
+                          </p>
+                        </div>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => handleEditFoamType(foamType)}
+                            className="p-1 text-muted-foreground hover:text-foreground"
+                          >
+                            <Edit className="h-3 w-3" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteFoamType(foamType.id)}
+                            className="p-1 text-muted-foreground hover:text-destructive"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </button>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground">
+                        <div>Preço: €{foamType.pricePerM3.toFixed(2)}/m³</div>
+                        <div>{foamType.specifications}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <hr className="my-6" />
+
+              {/* Formulário de Novo/Editar Tipo */}
+              <div>
+                <h4 className="text-lg font-medium mb-4">
+                  {editingFoamType ? 'Editar Tipo' : 'Adicionar Novo Tipo'}
+                </h4>
+
+                <div className="space-y-4">
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Nome do Tipo *</label>
+                      <input
+                        type="text"
+                        value={newFoamType.name}
+                        onChange={(e) => setNewFoamType(prev => ({ ...prev, name: e.target.value }))}
+                        className="w-full px-3 py-2 border rounded-lg bg-background"
+                        placeholder="Ex: Espuma D25"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Densidade *</label>
+                      <input
+                        type="number"
+                        value={newFoamType.density}
+                        onChange={(e) => setNewFoamType(prev => ({ ...prev, density: Number(e.target.value) }))}
+                        className="w-full px-3 py-2 border rounded-lg bg-background"
+                        placeholder="Ex: 25"
+                        min="1"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Dureza</label>
+                      <select
+                        value={newFoamType.hardness}
+                        onChange={(e) => setNewFoamType(prev => ({ ...prev, hardness: e.target.value }))}
+                        className="w-full px-3 py-2 border rounded-lg bg-background"
+                      >
+                        <option value="">Selecionar dureza</option>
+                        <option value="Muito Macia">Muito Macia</option>
+                        <option value="Macia">Macia</option>
+                        <option value="Média">Média</option>
+                        <option value="Dura">Dura</option>
+                        <option value="Extra Dura">Extra Dura</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium mb-2">Cor</label>
+                      <input
+                        type="text"
+                        value={newFoamType.color}
+                        onChange={(e) => setNewFoamType(prev => ({ ...prev, color: e.target.value }))}
+                        className="w-full px-3 py-2 border rounded-lg bg-background"
+                        placeholder="Ex: Branca, Amarela, Azul"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Preço por m³ (€) *</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newFoamType.pricePerM3}
+                      onChange={(e) => setNewFoamType(prev => ({ ...prev, pricePerM3: Number(e.target.value) }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Ex: 45.00"
+                      min="0"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Especificações</label>
+                    <textarea
+                      value={newFoamType.specifications}
+                      onChange={(e) => setNewFoamType(prev => ({ ...prev, specifications: e.target.value }))}
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      rows={3}
+                      placeholder="Descrição técnica detalhada..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-4 border-t mt-6">
+                  <button
+                    onClick={() => {
+                      setEditingFoamType(null);
+                      setNewFoamType({
+                        name: '', density: 0, hardness: '', color: '', specifications: '', pricePerM3: 0
+                      });
+                    }}
+                    className="px-4 py-2 border rounded-lg hover:bg-muted"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleAddFoamType}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                  >
+                    {editingFoamType ? 'Atualizar' : 'Adicionar'} Tipo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
