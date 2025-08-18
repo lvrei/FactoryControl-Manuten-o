@@ -295,37 +295,16 @@ export default function Maintenance() {
         </div>
       </div>
 
-      {/* Tabs and Search */}
+      {/* Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex rounded-lg bg-muted p-1">
-          <button
-            onClick={() => {
-              setActiveTab('machines');
-              setStatusFilter('all');
-            }}
-            className={cn(
-              "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-              activeTab === 'machines'
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Máquinas ({machines.length})
-          </button>
-          <button
-            onClick={() => {
-              setActiveTab('maintenance');
-              if (statusFilter === 'overdue') setStatusFilter('all');
-            }}
-            className={cn(
-              "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-              activeTab === 'maintenance'
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            Manutenções ({maintenances.length})
-          </button>
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-semibold text-foreground">
+            Manutenções Programadas ({maintenances.length})
+          </h2>
+          <span className="text-sm text-muted-foreground">
+            Equipamentos disponíveis: {machines.length} •
+            Gerir equipamentos em <a href="/equipment" className="text-primary hover:underline">Equipamentos</a>
+          </span>
         </div>
 
         <div className="flex gap-2">
