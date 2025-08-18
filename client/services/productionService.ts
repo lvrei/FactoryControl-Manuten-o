@@ -552,6 +552,276 @@ class ProductionService {
       new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
     );
   }
+
+  // =================== GESTÃO DE STOCK DE BLOCOS ===================
+
+  async getFoamBlocks(filters?: StockFilters): Promise<FoamBlock[]> {
+    const data = this.getStoredData();
+    let blocks = data.foamBlocks || [];
+
+    if (filters) {
+      if (filters.warehouse && filters.warehouse !== 'all') {
+        blocks = blocks.filter((block: FoamBlock) => block.warehouse === filters.warehouse);
+      }
+      if (filters.foamType) {
+        blocks = blocks.filter((block: FoamBlock) => block.foamType.id === filters.foamType);
+      }
+      if (filters.status) {
+        blocks = blocks.filter((block: FoamBlock) => block.status === filters.status);
+      }
+      if (filters.qualityStatus) {
+        blocks = blocks.filter((block: FoamBlock) => block.qualityStatus === filters.qualityStatus);
+      }
+      if (filters.productionNumber) {
+        blocks = blocks.filter((block: FoamBlock) =>
+          block.productionNumber.toLowerCase().includes(filters.productionNumber!.toLowerCase())
+        );
+      }
+      if (filters.blockNumber) {
+        blocks = blocks.filter((block: FoamBlock) =>
+          block.blockNumber.toLowerCase().includes(filters.blockNumber!.toLowerCase())
+        );
+      }
+      if (filters.dateRange) {
+        const start = new Date(filters.dateRange.start);
+        const end = new Date(filters.dateRange.end);
+        blocks = blocks.filter((block: FoamBlock) => {
+          const blockDate = new Date(block.receivedDate);
+          return blockDate >= start && blockDate <= end;
+        });
+      }
+    }
+
+    return blocks.sort((a: FoamBlock, b: FoamBlock) =>
+      new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime()
+    );
+  }
+
+  async createFoamBlock(block: Omit<FoamBlock, 'id' | 'receivedDate' | 'volume'>): Promise<FoamBlock> {
+    const data = this.getStoredData();
+    const volume = (block.dimensions.length * block.dimensions.width * block.dimensions.height) / 1000000; // convert mm³ to m³
+
+    const newBlock: FoamBlock = {
+      ...block,
+      id: Date.now().toString(),
+      receivedDate: new Date().toISOString(),
+      volume: Number(volume.toFixed(3))
+    };
+
+    data.foamBlocks = [...(data.foamBlocks || []), newBlock];
+
+    // Create stock movement
+    const movement: StockMovement = {
+      id: Date.now().toString(),
+      blockId: newBlock.id,
+      type: 'entry',
+      toWarehouse: block.warehouse,
+      quantity: 1,
+      timestamp: new Date().toISOString(),
+      operator: block.receivedBy,
+      reason: 'Entrada de novo bloco no stock',
+      notes: `Bloco ${block.blockNumber} - ${block.foamType.name}`
+    };
+
+    data.stockMovements = [...(data.stockMovements || []), movement];
+    this.saveData(data);
+    return newBlock;
+  }
+
+  async updateFoamBlock(id: string, updates: Partial<FoamBlock>): Promise<FoamBlock> {
+    const data = this.getStoredData();
+    const blockIndex = data.foamBlocks.findIndex((block: FoamBlock) => block.id === id);
+
+    if (blockIndex === -1) {
+      throw new Error('Bloco não encontrado');
+    }
+
+    const oldBlock = data.foamBlocks[blockIndex];
+    data.foamBlocks[blockIndex] = {
+      ...oldBlock,
+      ...updates
+    };
+
+    // Create movement if warehouse changed
+    if (updates.warehouse && updates.warehouse !== oldBlock.warehouse) {
+      const movement: StockMovement = {
+        id: Date.now().toString(),
+        blockId: id,
+        type: 'transfer',
+        fromWarehouse: oldBlock.warehouse,
+        toWarehouse: updates.warehouse,
+        quantity: 1,
+        timestamp: new Date().toISOString(),
+        operator: 'Sistema',
+        reason: 'Transferência entre armazéns'
+      };
+
+      data.stockMovements = [...(data.stockMovements || []), movement];
+    }
+
+    this.saveData(data);
+    return data.foamBlocks[blockIndex];
+  }
+
+  async deleteFoamBlock(id: string): Promise<void> {
+    const data = this.getStoredData();
+    const block = data.foamBlocks.find((b: FoamBlock) => b.id === id);
+
+    if (block) {
+      // Create exit movement
+      const movement: StockMovement = {
+        id: Date.now().toString(),
+        blockId: id,
+        type: 'exit',
+        fromWarehouse: block.warehouse,
+        quantity: 1,
+        timestamp: new Date().toISOString(),
+        operator: 'Sistema',
+        reason: 'Remoção do bloco do stock'
+      };
+
+      data.stockMovements = [...(data.stockMovements || []), movement];
+    }
+
+    data.foamBlocks = data.foamBlocks.filter((block: FoamBlock) => block.id !== id);
+    this.saveData(data);
+  }
+
+  async getStockMovements(blockId?: string): Promise<StockMovement[]> {
+    const data = this.getStoredData();
+    let movements = data.stockMovements || [];
+
+    if (blockId) {
+      movements = movements.filter((movement: StockMovement) => movement.blockId === blockId);
+    }
+
+    return movements.sort((a: StockMovement, b: StockMovement) =>
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  }
+
+  async getStockSummary(): Promise<{
+    totalBlocks: number;
+    totalVolume: number;
+    byWarehouse: { warehouse: string; blocks: number; volume: number }[];
+    byFoamType: { foamType: string; blocks: number; volume: number }[];
+    byStatus: { status: string; blocks: number }[];
+  }> {
+    const blocks = await this.getFoamBlocks();
+
+    const summary = {
+      totalBlocks: blocks.length,
+      totalVolume: blocks.reduce((sum, block) => sum + block.volume, 0),
+      byWarehouse: [] as { warehouse: string; blocks: number; volume: number }[],
+      byFoamType: [] as { foamType: string; blocks: number; volume: number }[],
+      byStatus: [] as { status: string; blocks: number }[]
+    };
+
+    // By warehouse
+    const warehouseStats = blocks.reduce((acc, block) => {
+      if (!acc[block.warehouse]) {
+        acc[block.warehouse] = { blocks: 0, volume: 0 };
+      }
+      acc[block.warehouse].blocks++;
+      acc[block.warehouse].volume += block.volume;
+      return acc;
+    }, {} as Record<string, { blocks: number; volume: number }>);
+
+    summary.byWarehouse = Object.entries(warehouseStats).map(([warehouse, stats]) => ({
+      warehouse,
+      ...stats
+    }));
+
+    // By foam type
+    const foamTypeStats = blocks.reduce((acc, block) => {
+      const typeName = block.foamType.name;
+      if (!acc[typeName]) {
+        acc[typeName] = { blocks: 0, volume: 0 };
+      }
+      acc[typeName].blocks++;
+      acc[typeName].volume += block.volume;
+      return acc;
+    }, {} as Record<string, { blocks: number; volume: number }>);
+
+    summary.byFoamType = Object.entries(foamTypeStats).map(([foamType, stats]) => ({
+      foamType,
+      ...stats
+    }));
+
+    // By status
+    const statusStats = blocks.reduce((acc, block) => {
+      if (!acc[block.status]) {
+        acc[block.status] = 0;
+      }
+      acc[block.status]++;
+      return acc;
+    }, {} as Record<string, number>);
+
+    summary.byStatus = Object.entries(statusStats).map(([status, blocks]) => ({
+      status,
+      blocks
+    }));
+
+    return summary;
+  }
+
+  async reserveBlock(blockId: string, productionOrderId: string, operator: string): Promise<void> {
+    const data = this.getStoredData();
+    const blockIndex = data.foamBlocks.findIndex((block: FoamBlock) => block.id === blockId);
+
+    if (blockIndex === -1) {
+      throw new Error('Bloco não encontrado');
+    }
+
+    if (data.foamBlocks[blockIndex].status !== 'available') {
+      throw new Error('Bloco não está disponível para reserva');
+    }
+
+    data.foamBlocks[blockIndex].status = 'reserved';
+    data.foamBlocks[blockIndex].reservedFor = productionOrderId;
+
+    const movement: StockMovement = {
+      id: Date.now().toString(),
+      blockId,
+      type: 'reservation',
+      quantity: 1,
+      timestamp: new Date().toISOString(),
+      operator,
+      reason: 'Reserva para ordem de produção',
+      productionOrderId
+    };
+
+    data.stockMovements = [...(data.stockMovements || []), movement];
+    this.saveData(data);
+  }
+
+  async consumeBlock(blockId: string, operator: string, productionOrderId?: string): Promise<void> {
+    const data = this.getStoredData();
+    const blockIndex = data.foamBlocks.findIndex((block: FoamBlock) => block.id === blockId);
+
+    if (blockIndex === -1) {
+      throw new Error('Bloco não encontrado');
+    }
+
+    data.foamBlocks[blockIndex].status = 'consumed';
+    data.foamBlocks[blockIndex].consumedDate = new Date().toISOString();
+    data.foamBlocks[blockIndex].consumedBy = operator;
+
+    const movement: StockMovement = {
+      id: Date.now().toString(),
+      blockId,
+      type: 'consumption',
+      fromWarehouse: data.foamBlocks[blockIndex].warehouse,
+      quantity: 1,
+      timestamp: new Date().toISOString(),
+      operator,
+      reason: 'Consumo para produção',
+      productionOrderId
+    };
+
+    data.stockMovements = [...(data.stockMovements || []), movement];
+    this.saveData(data);
+  }
 }
 
 export const productionService = new ProductionService();
