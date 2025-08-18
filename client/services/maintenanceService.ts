@@ -48,7 +48,7 @@ class MaintenanceService {
       });
 
       // Update machine status to maintenance
-      await this.updateMachineStatus(requestData.machineId, 'maintenance');
+      await productionService.updateMachineStatus(requestData.machineId, 'maintenance');
     }
 
     return newRequest;
