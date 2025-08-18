@@ -599,3 +599,5 @@ function ProductionNew() {
     </div>
   );
 }
+
+export default ProductionNew;
