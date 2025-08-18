@@ -47,6 +47,8 @@ export default function Equipment() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingEquipment, setEditingEquipment] = useState<EquipmentDetails | null>(null);
+  const [showFileManager, setShowFileManager] = useState(false);
+  const [selectedEquipmentForFiles, setSelectedEquipmentForFiles] = useState<EquipmentDetails | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
