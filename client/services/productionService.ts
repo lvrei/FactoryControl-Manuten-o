@@ -243,7 +243,8 @@ class ProductionService {
     const workItems: OperatorWorkItem[] = [];
 
     orders.forEach(order => {
-      if (order.status === 'completed' || order.status === 'cancelled') return;
+      // Só mostrar OPs que estão em andamento (foram iniciadas)
+      if (order.status !== 'in_progress') return;
 
       order.lines.forEach(line => {
         line.cuttingOperations.forEach(operation => {
