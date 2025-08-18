@@ -462,6 +462,16 @@ export default function Equipment() {
                 
                 <div className="flex gap-1">
                   <button
+                    onClick={() => {
+                      setSelectedEquipmentForFiles(eq);
+                      setShowFileManager(true);
+                    }}
+                    className="p-1 text-muted-foreground hover:text-info"
+                    title="Gerir Ficheiros"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => handleEdit(eq)}
                     className="p-1 text-muted-foreground hover:text-foreground"
                     title="Editar"
