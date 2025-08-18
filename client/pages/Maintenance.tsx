@@ -140,10 +140,7 @@ export default function Maintenance() {
     }
   };
 
-  const filteredMachines = machines.filter(machine =>
-    machine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    machine.category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Machines are now managed in Equipment page
 
   const filteredMaintenances = maintenances.filter(maintenance => {
     const matchesSearch = maintenance.machineName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
