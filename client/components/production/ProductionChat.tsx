@@ -73,6 +73,16 @@ export function ProductionChat({ isBackend = false, machineId, operatorId, onClo
         selectedOperator || undefined
       );
       setMessages(chatMessages);
+
+      // Marcar como lidas as mensagens que não são nossas
+      const unreadMessages = chatMessages.filter(msg =>
+        !msg.isRead &&
+        ((isBackend && msg.from === 'operator') || (!isBackend && msg.from === 'backend'))
+      );
+
+      for (const msg of unreadMessages) {
+        await productionService.markMessageAsRead(msg.id);
+      }
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
     }
