@@ -78,11 +78,25 @@ export function Layout({ children }: LayoutProps) {
             </button>
 
             <div className="hidden sm:flex items-center gap-3 rounded-lg bg-muted p-2">
-              <div className="h-8 w-8 rounded-full bg-primary"></div>
-              <div className="text-sm">
-                <p className="font-medium text-foreground">Operador</p>
-                <p className="text-xs text-muted-foreground">Turno A</p>
+              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+                {userSession?.username?.charAt(0).toUpperCase() || 'U'}
               </div>
+              <div className="text-sm">
+                <p className="font-medium text-foreground">{userSession?.username || 'Utilizador'}</p>
+                <p className="text-xs text-muted-foreground">{userSession?.role || 'Sem sessão'}</p>
+              </div>
+              <button
+                onClick={async () => {
+                  if (confirm('Terminar sessão?')) {
+                    await authService.logout();
+                    navigate('/login');
+                  }
+                }}
+                className="ml-2 p-1 text-muted-foreground hover:text-foreground"
+                title="Terminar sessão"
+              >
+                ⏻
+              </button>
             </div>
           </div>
         </div>
