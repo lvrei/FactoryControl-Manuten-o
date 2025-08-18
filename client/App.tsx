@@ -43,7 +43,15 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Layout />}>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
+
+            {/* Protected Backend Routes */}
+            <Route path="/" element={
+              <ProtectedRoute requiredRole="operator">
+                <Layout />
+              </ProtectedRoute>
+            }>
               <Route index element={<Dashboard />} />
               <Route path="production" element={<ProductionNew />} />
               <Route path="production-old" element={<Production />} />
@@ -52,11 +60,22 @@ const App = () => {
               <Route path="equipment" element={<Equipment />} />
               <Route path="quality" element={<Quality />} />
               <Route path="maintenance" element={<Maintenance />} />
-              <Route path="team" element={<Team />} />
+              <Route path="team" element={
+                <ProtectedRoute requiredRole="supervisor">
+                  <Team />
+                </ProtectedRoute>
+              } />
               <Route path="planning" element={<Planning />} />
               <Route path="alerts" element={<Alerts />} />
             </Route>
-            <Route path="operator" element={<OperatorPortal />} />
+
+            {/* Protected Operator Route */}
+            <Route path="operator" element={
+              <ProtectedRoute requiredRole="operator">
+                <OperatorPortal />
+              </ProtectedRoute>
+            } />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
