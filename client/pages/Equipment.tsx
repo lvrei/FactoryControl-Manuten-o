@@ -62,7 +62,9 @@ export default function Equipment() {
     cuttingPrecision: 0,
     installationDate: '',
     nextMaintenance: '',
-    notes: ''
+    notes: '',
+    coverPhoto: '',
+    files: []
   });
 
   useEffect(() => {
