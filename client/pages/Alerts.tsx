@@ -214,10 +214,10 @@ export default function Alerts() {
     return matchesSearch && matchesStatus && matchesType;
   });
 
-  const totalAlerts = alerts.length + maintenanceAlerts.length;
-  const newAlerts = alerts.filter(a => a.status === 'new').length + maintenanceAlerts.filter(a => a.status === 'active').length;
-  const criticalAlerts = alerts.filter(a => a.type === 'critical').length + maintenanceAlerts.filter(a => a.urgencyLevel === 'critical').length;
-  const acknowledgedAlerts = alerts.filter(a => a.status === 'acknowledged').length + maintenanceAlerts.filter(a => a.status === 'acknowledged').length;
+  const totalAlerts = allAlerts.length;
+  const newAlerts = allAlerts.filter(a => a.status === 'new').length;
+  const criticalAlerts = allAlerts.filter(a => a.type === 'critical').length;
+  const acknowledgedAlerts = allAlerts.filter(a => a.status === 'acknowledged').length;
 
   // Maintenance specific stats
   const activeMachineDowntime = machineDowntime.filter(d => d.status === 'ongoing').length;
