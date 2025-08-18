@@ -47,6 +47,12 @@ interface Employee {
   machineOperatingLicense: string[];
   trainingHours: number;
   lastPresenceUpdate?: string;
+  // User access fields
+  username?: string;
+  role?: 'admin' | 'supervisor' | 'operator' | 'quality' | 'maintenance';
+  accessLevel?: 'full' | 'limited' | 'readonly';
+  password?: string;
+  hasSystemAccess?: boolean;
 }
 
 interface ShiftSchedule {
