@@ -177,6 +177,30 @@ class ProductionService {
     return newSheet;
   }
 
+  async updateProductSheet(id: string, updates: Partial<ProductSheet>): Promise<ProductSheet> {
+    const data = this.getStoredData();
+    const sheetIndex = data.productSheets.findIndex((sheet: ProductSheet) => sheet.id === id);
+
+    if (sheetIndex === -1) {
+      throw new Error('Ficha técnica não encontrada');
+    }
+
+    data.productSheets[sheetIndex] = {
+      ...data.productSheets[sheetIndex],
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+
+    this.saveData(data);
+    return data.productSheets[sheetIndex];
+  }
+
+  async deleteProductSheet(id: string): Promise<void> {
+    const data = this.getStoredData();
+    data.productSheets = data.productSheets.filter((sheet: ProductSheet) => sheet.id !== id);
+    this.saveData(data);
+  }
+
   // Tipos de Espuma
   async getFoamTypes(): Promise<FoamType[]> {
     return this.mockFoamTypes;
