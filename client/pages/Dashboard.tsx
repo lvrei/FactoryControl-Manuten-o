@@ -258,6 +258,137 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Machine Downtime and Maintenance Status */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Machines in Maintenance */}
+        <div className="rounded-lg border bg-card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <Wrench className="h-5 w-5 text-orange-500" />
+              Máquinas em Manutenção
+            </h3>
+            <span className={`text-sm px-2 py-1 rounded-full ${
+              machinesInMaintenance > 0 ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
+            }`}>
+              {machinesInMaintenance} máquinas
+            </span>
+          </div>
+
+          {activeMachineDowntime.length === 0 ? (
+            <div className="text-center py-8">
+              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Todas as máquinas operacionais</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {activeMachineDowntime.map((downtime) => {
+                const startTime = new Date(downtime.startTime);
+                const now = new Date();
+                const durationMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+                const hours = Math.floor(durationMinutes / 60);
+                const minutes = durationMinutes % 60;
+
+                return (
+                  <div key={downtime.id} className="border rounded-lg p-3 bg-orange-50">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-sm">{downtime.machineName}</h4>
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        downtime.impact === 'critical' ? 'bg-red-100 text-red-800' :
+                        downtime.impact === 'high' ? 'bg-orange-100 text-orange-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {downtime.impact === 'critical' ? 'Crítico' :
+                         downtime.impact === 'high' ? 'Alto' :
+                         downtime.impact === 'medium' ? 'Médio' : 'Baixo'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground mb-2">{downtime.description}</p>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-muted-foreground">
+                        Parada: {hours}h {minutes}min
+                      </span>
+                      <span className="text-muted-foreground">
+                        {startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Maintenance Requests */}
+        <div className="rounded-lg border bg-card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-500" />
+              Solicitações de Manutenção
+            </h3>
+            <span className={`text-sm px-2 py-1 rounded-full ${
+              pendingMaintenanceRequests > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
+            }`}>
+              {pendingMaintenanceRequests} pendentes
+            </span>
+          </div>
+
+          <div className="grid gap-3 mb-4">
+            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-red-500" />
+                <span className="text-sm font-medium">Críticas</span>
+              </div>
+              <span className="text-lg font-bold text-red-600">{criticalMaintenanceRequests}</span>
+            </div>
+
+            <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <Timer className="h-4 w-4 text-yellow-500" />
+                <span className="text-sm font-medium">Pendentes</span>
+              </div>
+              <span className="text-lg font-bold text-yellow-600">{pendingMaintenanceRequests}</span>
+            </div>
+          </div>
+
+          {maintenanceRequests.filter(r => r.status === 'pending').slice(0, 3).map((request) => {
+            const requestTime = new Date(request.requestedAt);
+            const now = new Date();
+            const ageMinutes = Math.floor((now.getTime() - requestTime.getTime()) / (1000 * 60));
+            const ageHours = Math.floor(ageMinutes / 60);
+
+            return (
+              <div key={request.id} className="border rounded-lg p-3 mb-2 bg-muted/20">
+                <div className="flex items-center justify-between mb-1">
+                  <h4 className="font-medium text-sm">{request.title}</h4>
+                  <span className={`text-xs px-2 py-1 rounded-full ${
+                    request.urgencyLevel === 'critical' ? 'bg-red-100 text-red-800' :
+                    request.urgencyLevel === 'high' ? 'bg-orange-100 text-orange-800' :
+                    request.urgencyLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {request.urgencyLevel === 'critical' ? 'Crítica' :
+                     request.urgencyLevel === 'high' ? 'Alta' :
+                     request.urgencyLevel === 'medium' ? 'Média' : 'Baixa'}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mb-1">{request.machineName}</p>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Por: {request.operatorName}</span>
+                  <span>Há {ageHours > 0 ? `${ageHours}h` : `${ageMinutes}min`}</span>
+                </div>
+              </div>
+            );
+          })}
+
+          {maintenanceRequests.filter(r => r.status === 'pending').length === 0 && (
+            <div className="text-center py-4">
+              <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+              <p className="text-sm text-muted-foreground">Nenhuma solicitação pendente</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
