@@ -228,7 +228,7 @@ export default function Equipment() {
 
   const handleDelete = async (id: string) => {
     if (!confirm('Tem certeza que deseja excluir este equipamento?')) return;
-    
+
     try {
       await productionService.deleteMachine(id);
       const updatedList = equipment.filter(eq => eq.id !== id);
@@ -238,6 +238,75 @@ export default function Equipment() {
       console.error('Erro ao excluir equipamento:', error);
       alert('Erro ao excluir equipamento');
     }
+  };
+
+  const handleFileUpload = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        resolve(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const addFileToEquipment = async (equipmentId: string, file: File, type: 'photo' | 'manual' | 'certificate' | 'maintenance' | 'other') => {
+    try {
+      const url = await handleFileUpload(file);
+
+      const newFile: MachineFile = {
+        id: Date.now().toString(),
+        name: file.name,
+        type,
+        url,
+        uploadedBy: 'Utilizador Atual',
+        uploadedAt: new Date().toISOString(),
+        size: file.size
+      };
+
+      const updatedEquipment = equipment.map(eq =>
+        eq.id === equipmentId
+          ? { ...eq, files: [...(eq.files || []), newFile] }
+          : eq
+      );
+
+      setEquipment(updatedEquipment);
+      saveEquipmentDetails(updatedEquipment);
+
+      return newFile;
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      throw error;
+    }
+  };
+
+  const setCoverPhoto = async (equipmentId: string, file: File) => {
+    try {
+      const url = await handleFileUpload(file);
+
+      const updatedEquipment = equipment.map(eq =>
+        eq.id === equipmentId
+          ? { ...eq, coverPhoto: url }
+          : eq
+      );
+
+      setEquipment(updatedEquipment);
+      saveEquipmentDetails(updatedEquipment);
+    } catch (error) {
+      console.error('Erro ao definir foto de capa:', error);
+      throw error;
+    }
+  };
+
+  const removeFile = (equipmentId: string, fileId: string) => {
+    const updatedEquipment = equipment.map(eq =>
+      eq.id === equipmentId
+        ? { ...eq, files: eq.files?.filter(f => f.id !== fileId) || [] }
+        : eq
+    );
+
+    setEquipment(updatedEquipment);
+    saveEquipmentDetails(updatedEquipment);
   };
 
   const resetForm = () => {
