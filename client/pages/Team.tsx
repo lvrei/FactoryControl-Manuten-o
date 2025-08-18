@@ -26,7 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/authService";
-import { User } from "@/types/production";
+import { User as UserType } from "@/types/production";
 
 interface Employee {
   id: string;
@@ -1025,7 +1025,7 @@ export default function Team() {
                         <p>• <strong>Operador:</strong> Portal operador, visualização básica</p>
                         <p>• <strong>Qualidade:</strong> Controle de qualidade + operador</p>
                         <p>• <strong>Manutenção:</strong> Gestão de manutenção + anteriores</p>
-                        <p>• <strong>Supervisor:</strong> Gestão completa exceto admin</p>
+                        <p>• <strong>Supervisor:</strong> Gest��o completa exceto admin</p>
                         <p>• <strong>Administrador:</strong> Acesso total ao sistema</p>
                       </div>
                     </div>
