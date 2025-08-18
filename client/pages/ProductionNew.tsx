@@ -28,7 +28,7 @@ import { ProductSheetsManager } from '@/components/production/ProductSheetsManag
 import { ProductionChat, useChatNotifications } from '@/components/production/ProductionChat';
 import { cn } from '@/lib/utils';
 
-export default function ProductionNew() {
+function ProductionNew() {
   const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
   const [operatorSessions, setOperatorSessions] = useState<OperatorSession[]>([]);
