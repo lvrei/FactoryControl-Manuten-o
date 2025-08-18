@@ -17,7 +17,7 @@ import {
   Camera
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MachineForm, MachineData } from "@/components/maintenance/MachineForm";
+// import { MachineForm, MachineData } from "@/components/maintenance/MachineForm";
 import { MaintenanceForm, MaintenanceData } from "@/components/maintenance/MaintenanceForm";
 import { MaintenanceReports } from "@/components/maintenance/MaintenanceReports";
 import { ChecklistDL50 } from "@/components/maintenance/ChecklistDL50";
