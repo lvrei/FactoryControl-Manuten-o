@@ -20,6 +20,8 @@ import { ProductionOrder, Machine, MachineDowntime, MaintenanceRequest } from '@
 export default function Dashboard() {
   const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
+  const [machineDowntime, setMachineDowntime] = useState<MachineDowntime[]>([]);
+  const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
