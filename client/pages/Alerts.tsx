@@ -569,6 +569,211 @@ export default function Alerts() {
             )}
           </div>
         </div>
+      ) : activeTab === 'maintenance' ? (
+        <div className="space-y-6">
+          {/* Maintenance Overview */}
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Solicitações Pendentes</p>
+                  <p className="text-2xl font-bold text-destructive">{pendingMaintenanceRequests}</p>
+                </div>
+                <AlertTriangle className="h-6 w-6 text-destructive" />
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Críticas</p>
+                  <p className="text-2xl font-bold text-red-600">{criticalMaintenanceRequests}</p>
+                </div>
+                <AlertCircle className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Máquinas Paradas</p>
+                  <p className="text-2xl font-bold text-orange-600">{activeMachineDowntime}</p>
+                </div>
+                <Factory className="h-6 w-6 text-orange-600" />
+              </div>
+            </div>
+
+            <div className="rounded-lg border bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">Em Progresso</p>
+                  <p className="text-2xl font-bold text-blue-600">{maintenanceRequests.filter(r => r.status === 'in_progress').length}</p>
+                </div>
+                <Settings className="h-6 w-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Maintenance Requests and Machine Downtime */}
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Active Maintenance Requests */}
+            <div className="rounded-lg border bg-card p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Wrench className="h-5 w-5 text-orange-500" />
+                Solicitações de Manutenção
+              </h3>
+
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {maintenanceRequests.filter(r => r.status !== 'completed').length === 0 ? (
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Nenhuma solicitação ativa</p>
+                  </div>
+                ) : (
+                  maintenanceRequests
+                    .filter(r => r.status !== 'completed')
+                    .sort((a, b) => b.priority - a.priority)
+                    .map((request) => {
+                      const requestTime = new Date(request.requestedAt);
+                      const now = new Date();
+                      const ageMinutes = Math.floor((now.getTime() - requestTime.getTime()) / (1000 * 60));
+                      const ageHours = Math.floor(ageMinutes / 60);
+                      const ageDays = Math.floor(ageHours / 24);
+
+                      return (
+                        <div key={request.id} className="border rounded-lg p-4 bg-muted/20">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{request.title}</h4>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              request.urgencyLevel === 'critical' ? 'bg-red-100 text-red-800' :
+                              request.urgencyLevel === 'high' ? 'bg-orange-100 text-orange-800' :
+                              request.urgencyLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {request.urgencyLevel === 'critical' ? 'Crítica' :
+                               request.urgencyLevel === 'high' ? 'Alta' :
+                               request.urgencyLevel === 'medium' ? 'Média' : 'Baixa'}
+                            </span>
+                          </div>
+
+                          <p className="text-sm text-muted-foreground mb-2">{request.description}</p>
+
+                          <div className="flex items-center justify-between text-sm">
+                            <div className="space-y-1">
+                              <div>Máquina: {request.machineName}</div>
+                              <div>Operador: {request.operatorName}</div>
+                            </div>
+                            <div className="text-right space-y-1">
+                              <div className={`px-2 py-1 rounded text-xs ${
+                                request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                request.status === 'assigned' ? 'bg-blue-100 text-blue-800' :
+                                request.status === 'in_progress' ? 'bg-purple-100 text-purple-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {request.status === 'pending' ? 'Pendente' :
+                                 request.status === 'assigned' ? 'Atribuída' :
+                                 request.status === 'in_progress' ? 'Em Progresso' : 'Cancelada'}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                Há {ageDays > 0 ? `${ageDays}d` : ageHours > 0 ? `${ageHours}h` : `${ageMinutes}min`}
+                              </div>
+                            </div>
+                          </div>
+
+                          {request.assignedTo && (
+                            <div className="mt-2 text-sm text-muted-foreground">
+                              Técnico: {request.assignedTo}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                )}
+              </div>
+            </div>
+
+            {/* Active Machine Downtime */}
+            <div className="rounded-lg border bg-card p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                Máquinas Paradas
+              </h3>
+
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {machineDowntime.filter(d => d.status === 'ongoing').length === 0 ? (
+                  <div className="text-center py-8">
+                    <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Todas as máquinas operacionais</p>
+                  </div>
+                ) : (
+                  machineDowntime
+                    .filter(d => d.status === 'ongoing')
+                    .sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
+                    .map((downtime) => {
+                      const startTime = new Date(downtime.startTime);
+                      const now = new Date();
+                      const durationMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+                      const hours = Math.floor(durationMinutes / 60);
+                      const minutes = durationMinutes % 60;
+                      const days = Math.floor(hours / 24);
+                      const remainingHours = hours % 24;
+
+                      return (
+                        <div key={downtime.id} className="border rounded-lg p-4 bg-red-50">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{downtime.machineName}</h4>
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              downtime.impact === 'critical' ? 'bg-red-100 text-red-800' :
+                              downtime.impact === 'high' ? 'bg-orange-100 text-orange-800' :
+                              downtime.impact === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {downtime.impact === 'critical' ? 'Crítico' :
+                               downtime.impact === 'high' ? 'Alto' :
+                               downtime.impact === 'medium' ? 'Médio' : 'Baixo'}
+                            </span>
+                          </div>
+
+                          <p className="text-sm text-muted-foreground mb-2">{downtime.description}</p>
+
+                          <div className="flex items-center justify-between text-sm">
+                            <div>
+                              <div className="font-medium text-red-600">
+                                Parada: {days > 0 ? `${days}d ` : ''}{remainingHours}h {minutes}min
+                              </div>
+                              <div className="text-muted-foreground">
+                                Desde: {startTime.toLocaleString('pt-BR')}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-muted-foreground">Por: {downtime.reportedBy}</div>
+                              <div className={`px-2 py-1 rounded text-xs mt-1 ${
+                                downtime.reason === 'breakdown' ? 'bg-red-100 text-red-800' :
+                                downtime.reason === 'maintenance' ? 'bg-blue-100 text-blue-800' :
+                                downtime.reason === 'planned_maintenance' ? 'bg-green-100 text-green-800' :
+                                'bg-gray-100 text-gray-800'
+                              }`}>
+                                {downtime.reason === 'breakdown' ? 'Avaria' :
+                                 downtime.reason === 'maintenance' ? 'Manutenção' :
+                                 downtime.reason === 'planned_maintenance' ? 'Manutenção Planeada' :
+                                 downtime.reason === 'quality_issue' ? 'Qualidade' : 'Outro'}
+                              </div>
+                            </div>
+                          </div>
+
+                          {downtime.affectedOrders && downtime.affectedOrders.length > 0 && (
+                            <div className="mt-2 text-sm text-muted-foreground">
+                              OPs afetadas: {downtime.affectedOrders.join(', ')}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       ) : activeTab === 'analytics' ? (
         <div className="space-y-6">
           {/* Alert Trend */}
