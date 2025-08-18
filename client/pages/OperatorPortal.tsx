@@ -684,6 +684,94 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
           </div>
         </div>
       </div>
+
+      {/* Print Preview Modal */}
+      {showPrintPreview && currentLabel && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-semibold">Pré-visualização da Etiqueta</h3>
+                <button
+                  onClick={() => {
+                    setShowPrintPreview(false);
+                    setCurrentLabel(null);
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Label Preview */}
+              <div className="mb-6 p-4 border-2 border-dashed border-muted rounded-lg">
+                <div dangerouslySetInnerHTML={{
+                  __html: labelService.generatePreviewHTML(currentLabel)
+                }} />
+              </div>
+
+              {/* Label Info */}
+              <div className="space-y-3 text-sm mb-6">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Código de Barras:</span>
+                  <span className="font-mono font-medium">{currentLabel.barcodeId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Cliente:</span>
+                  <span className="font-medium">{currentLabel.customerName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">OP:</span>
+                  <span className="font-medium">{currentLabel.orderNumber}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Quantidade:</span>
+                  <span className="font-medium">{currentLabel.quantity} unidades</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Máquina:</span>
+                  <span className="font-medium">{currentLabel.machineName}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Operador:</span>
+                  <span className="font-medium">{currentLabel.operatorName}</span>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => {
+                    const zplCode = labelService.generateZPLCode(currentLabel);
+                    navigator.clipboard.writeText(zplCode);
+                    alert('Código ZPL copiado para área de transferência');
+                  }}
+                  className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-muted flex items-center gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  Ver ZPL
+                </button>
+                <button
+                  onClick={() => {
+                    setShowPrintPreview(false);
+                    setCurrentLabel(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-muted"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handlePrintLabel}
+                  className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+                >
+                  <Printer className="h-4 w-4" />
+                  Imprimir/Download
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
