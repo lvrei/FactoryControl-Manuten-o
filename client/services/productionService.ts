@@ -352,6 +352,16 @@ class ProductionService {
       updatedAt: new Date().toISOString()
     };
     localStorage.setItem(machineStatusKey, JSON.stringify(statusUpdates));
+
+    // Update the main machine data as well
+    const data = this.getStoredData();
+    if (data.machines) {
+      const machineIndex = data.machines.findIndex((machine: Machine) => machine.id === id);
+      if (machineIndex !== -1) {
+        data.machines[machineIndex].status = status;
+        this.saveData(data);
+      }
+    }
   }
 
   async deleteMachine(id: string): Promise<void> {
