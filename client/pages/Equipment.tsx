@@ -23,6 +23,7 @@ import {
   Eye
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useNavigate } from 'react-router-dom';
 import { Machine, MachineFile } from "@/types/production";
 import { productionService } from "@/services/productionService";
 
