@@ -339,11 +339,20 @@ export default function Maintenance() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <h2 className="text-lg font-semibold text-foreground">
-            Manutenções Programadas ({maintenances.length})
+            {activeTab === 'maintenance' && `Manutenções Programadas (${maintenances.length})`}
+            {activeTab === 'history' && `Histórico de Intervenções (${interventionHistory.length})`}
+            {activeTab === 'reports' && 'Relatórios e Análises'}
           </h2>
           <span className="text-sm text-muted-foreground">
-            Equipamentos disponíveis: {machines.length} •
-            Gerir equipamentos em <a href="/equipment" className="text-primary hover:underline">Equipamentos</a>
+            {activeTab === 'maintenance' && (
+              <>Equipamentos disponíveis: {machines.length} • Gerir equipamentos em <a href="/equipment" className="text-primary hover:underline">Equipamentos</a></>
+            )}
+            {activeTab === 'history' && (
+              <>Todas as intervenções realizadas • Total de registos: {interventionHistory.length}</>
+            )}
+            {activeTab === 'reports' && (
+              <>Análises detalhadas e geração de relatórios completos</>
+            )}
           </span>
         </div>
 
