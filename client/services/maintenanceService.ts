@@ -58,6 +58,11 @@ class MaintenanceService {
     return this.getStoredMaintenanceRequests();
   }
 
+  async getMaintenanceRequestsByMachine(machineId: string): Promise<MaintenanceRequest[]> {
+    const requests = this.getStoredMaintenanceRequests();
+    return requests.filter(r => r.machineId === machineId);
+  }
+
   async updateMaintenanceRequestStatus(id: string, status: MaintenanceRequest['status'], technicianNotes?: string): Promise<void> {
     const requests = this.getStoredMaintenanceRequests();
     const requestIndex = requests.findIndex(r => r.id === id);
