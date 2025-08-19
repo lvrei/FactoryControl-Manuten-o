@@ -304,7 +304,11 @@ export default function Alerts() {
           Alertas ({allAlerts.length})
         </button>
         <button
-          onClick={() => setActiveTab('maintenance')}
+          onClick={() => {
+            console.log('Maintenance tab clicked, current tab:', activeTab);
+            setActiveTab('maintenance');
+            console.log('Tab set to maintenance');
+          }}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
             activeTab === 'maintenance'
