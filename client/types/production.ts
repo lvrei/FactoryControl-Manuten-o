@@ -334,6 +334,9 @@ export interface MaintenanceRequest {
   cost?: number;
   followUpRequired: boolean;
   nextMaintenanceDate?: string;
+  workHours?: number;
+  photos?: string[];
+  actualDowntime?: number;
 }
 
 export interface MaintenanceAlert {
