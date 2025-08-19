@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { 
-  AlertTriangle, 
-  Bell, 
+import {
+  AlertTriangle,
+  Bell,
   CheckCircle,
   XCircle,
   Factory,
@@ -17,11 +17,17 @@ import {
   MoreVertical,
   Wrench,
   Timer,
-  AlertCircle
+  AlertCircle,
+  FileText,
+  Play,
+  CheckSquare,
+  Clock
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { maintenanceService } from '@/services/maintenanceService';
 import { MaintenanceRequest, MaintenanceAlert, MachineDowntime } from '@/types/production';
+import { MaintenancePopupContainer } from '@/components/MaintenancePopup';
+import { MaintenanceWorkSheet } from '@/components/MaintenanceWorkSheet';
 
 export default function AlertsSimple() {
   const [activeTab, setActiveTab] = useState<'alerts' | 'maintenance' | 'analytics' | 'rules'>('alerts');
