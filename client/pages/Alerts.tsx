@@ -120,7 +120,7 @@ const alertTrend = [
 const typeConfig = {
   critical: { color: "text-destructive bg-destructive/10", label: "Crítico", icon: XCircle },
   warning: { color: "text-warning bg-warning/10", label: "Aviso", icon: AlertTriangle },
-  info: { color: "text-info bg-info/10", label: "Informaç��o", icon: Bell },
+  info: { color: "text-info bg-info/10", label: "Informação", icon: Bell },
   success: { color: "text-success bg-success/10", label: "Sucesso", icon: CheckCircle }
 };
 
@@ -603,10 +603,6 @@ export default function Alerts() {
         </div>
       ) : activeTab === 'maintenance' ? (
         <div className="space-y-6">
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            <p><strong>Maintenance Tab Active!</strong> Requests: {maintenanceRequests.length}, Alerts: {maintenanceAlerts.length}, Downtime: {machineDowntime.length}</p>
-            <p>Loading: {loading ? 'Yes' : 'No'}</p>
-          </div>
           {/* Maintenance Overview */}
           <div className="grid gap-4 md:grid-cols-4">
             <div className="rounded-lg border bg-card p-4">
