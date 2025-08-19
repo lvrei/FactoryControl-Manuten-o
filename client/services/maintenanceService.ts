@@ -82,7 +82,7 @@ class MaintenanceService {
         }
         
         // Update machine status back to available if it was in maintenance
-        if (request.urgencyLevel === 'critical') {
+        if (request.urgencyLevel === 'critical' && status === 'completed') {
           await productionService.updateMachineStatus(request.machineId, 'available');
         }
       }
