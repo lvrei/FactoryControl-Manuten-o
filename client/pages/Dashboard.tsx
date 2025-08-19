@@ -390,6 +390,9 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Maintenance Popup for Backend Team */}
+      <MaintenancePopupContainer onRequestUpdate={loadData} />
     </div>
   );
 }
