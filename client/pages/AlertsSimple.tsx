@@ -28,6 +28,7 @@ import { maintenanceService } from '@/services/maintenanceService';
 import { MaintenanceRequest, MaintenanceAlert, MachineDowntime } from '@/types/production';
 import { MaintenancePopupContainer } from '@/components/MaintenancePopup';
 import { MaintenanceWorkSheet } from '@/components/MaintenanceWorkSheet';
+import { MachineMaintenanceHistory } from '@/components/MachineMaintenanceHistory';
 
 export default function AlertsSimple() {
   const [activeTab, setActiveTab] = useState<'alerts' | 'maintenance' | 'analytics' | 'rules'>('alerts');
