@@ -168,6 +168,7 @@ export default function Alerts() {
         maintenanceService.getMaintenanceAlerts(),
         maintenanceService.getMachineDowntime()
       ]);
+      console.log('Maintenance data loaded:', { requests, alerts, downtime });
       setMaintenanceRequests(requests);
       setMaintenanceAlerts(alerts);
       setMachineDowntime(downtime);
