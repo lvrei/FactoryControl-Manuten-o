@@ -495,9 +495,24 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
                               type="number"
                               placeholder="Comprimento"
                               value={line.finalDimensions.length}
-                              onChange={(e) => updateLine(line.id, {
-                                finalDimensions: { ...line.finalDimensions, length: Number(e.target.value) }
-                              })}
+                              onChange={(e) => {
+                                const newLength = Number(e.target.value);
+                                const newFinalDimensions = { ...line.finalDimensions, length: newLength };
+
+                                // Atualizar as dimensões de entrada das operações BZM, Pré-CNC e CNC
+                                const updatedOperations = line.cuttingOperations.map(op => {
+                                  const machine = machines.find(m => m.id === op.machineId);
+                                  if (machine && ['BZM', 'PRE_CNC', 'CNC'].includes(machine.type)) {
+                                    return { ...op, inputDimensions: newFinalDimensions };
+                                  }
+                                  return op;
+                                });
+
+                                updateLine(line.id, {
+                                  finalDimensions: newFinalDimensions,
+                                  cuttingOperations: updatedOperations
+                                });
+                              }}
                               className="px-2 py-1 border rounded bg-background text-sm"
                             />
                             <input
