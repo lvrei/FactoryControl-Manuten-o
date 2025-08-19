@@ -381,6 +381,16 @@ class ProductionService {
     }
 
     this.saveData(data);
+
+    // Also update the maintenance service status tracking
+    const machineStatusKey = 'factoryControl_machineStatus';
+    const statusUpdates = JSON.parse(localStorage.getItem(machineStatusKey) || '{}');
+    statusUpdates[machineId] = {
+      status,
+      updatedAt: new Date().toISOString()
+    };
+    localStorage.setItem(machineStatusKey, JSON.stringify(statusUpdates));
+
     return machine;
   }
 
