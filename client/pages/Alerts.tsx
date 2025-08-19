@@ -229,13 +229,6 @@ export default function Alerts() {
   const pendingMaintenanceRequests = maintenanceRequests.filter(r => r.status === 'pending').length;
   const criticalMaintenanceRequests = maintenanceRequests.filter(r => r.urgencyLevel === 'critical' && r.status !== 'completed').length;
 
-  console.log('Alerts component render - activeTab:', activeTab, 'maintenance data:', {
-    requests: maintenanceRequests.length,
-    alerts: maintenanceAlerts.length,
-    downtime: machineDowntime.length,
-    loading
-  });
-
   return (
     <div className="space-y-6">
       {/* Header */}
