@@ -217,6 +217,17 @@ export default function AlertsSimple() {
           Manutenção ({pendingMaintenanceRequests})
         </button>
         <button
+          onClick={() => handleTabClick('history')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            activeTab === 'history'
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Histórico por Máquina
+        </button>
+        <button
           onClick={() => handleTabClick('analytics')}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
