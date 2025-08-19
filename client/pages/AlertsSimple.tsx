@@ -95,6 +95,47 @@ export default function AlertsSimple() {
     setActiveTab(tab as any);
   };
 
+  const handleRequestUpdate = () => {
+    loadMaintenanceData();
+  };
+
+  const handleConfirmReceipt = async (requestId: string) => {
+    try {
+      await maintenanceService.updateMaintenanceRequestStatus(
+        requestId,
+        'assigned',
+        'Confirmado recebimento pela equipa de manutenção'
+      );
+      loadMaintenanceData();
+    } catch (error) {
+      console.error('Error confirming receipt:', error);
+    }
+  };
+
+  const handleStartWork = async (requestId: string) => {
+    try {
+      await maintenanceService.updateMaintenanceRequestStatus(
+        requestId,
+        'in_progress',
+        'Trabalho de manutenção iniciado'
+      );
+      loadMaintenanceData();
+    } catch (error) {
+      console.error('Error starting work:', error);
+    }
+  };
+
+  const handleOpenWorkSheet = (request: MaintenanceRequest) => {
+    setSelectedRequest(request);
+    setShowWorkSheet(true);
+  };
+
+  const handleWorkSheetComplete = (requestId: string) => {
+    setShowWorkSheet(false);
+    setSelectedRequest(null);
+    loadMaintenanceData();
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
