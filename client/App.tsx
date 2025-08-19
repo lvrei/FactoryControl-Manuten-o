@@ -59,7 +59,7 @@ const App = () => {
               <Route path="stock" element={<Stock />} />
               <Route path="equipment" element={<Equipment />} />
               <Route path="quality" element={<Quality />} />
-              <Route path="maintenance" element={<Maintenance />} />
+              <Route path="maintenance" element={<MaintenanceComplete />} />
               <Route path="team" element={
                 <ProtectedRoute requiredRole="supervisor">
                   <Team />
