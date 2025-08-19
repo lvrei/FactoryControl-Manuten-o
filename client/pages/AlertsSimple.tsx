@@ -456,7 +456,7 @@ export default function AlertsSimple() {
                 Consulte o histórico completo de manutenção de cada máquina, incluindo estatísticas, custos e detalhes técnicos.
               </p>
             </div>
-            <MachineMaintenanceHistory />
+            <MachineMaintenanceHistory machineId={selectedMachineFromURL || undefined} />
           </div>
         )}
 
