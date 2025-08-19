@@ -42,6 +42,7 @@ interface EquipmentDetails extends Machine {
 }
 
 export default function Equipment() {
+  const navigate = useNavigate();
   const [equipment, setEquipment] = useState<EquipmentDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
