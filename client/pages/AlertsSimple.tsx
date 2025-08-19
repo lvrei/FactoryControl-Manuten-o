@@ -31,6 +31,10 @@ import { MaintenanceWorkSheet } from '@/components/MaintenanceWorkSheet';
 import { MachineMaintenanceHistory } from '@/components/MachineMaintenanceHistory';
 
 export default function AlertsSimple() {
+  // Check URL parameters
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialTab = urlParams.get('tab') || 'alerts';
+  const selectedMachineFromURL = urlParams.get('machine');
   const [activeTab, setActiveTab] = useState<'alerts' | 'maintenance' | 'history' | 'analytics' | 'rules'>('alerts');
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [maintenanceAlerts, setMaintenanceAlerts] = useState<MaintenanceAlert[]>([]);
