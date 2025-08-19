@@ -17,7 +17,7 @@ import TestProduction from "./pages/TestProduction";
 import Stock from "./pages/Stock";
 import Equipment from "./pages/Equipment";
 import Quality from "./pages/Quality";
-import Maintenance from "./pages/Maintenance";
+import MaintenanceComplete from "./pages/MaintenanceComplete";
 import Team from "./pages/Team";
 import Planning from "./pages/Planning";
 import AlertsSimple from "./pages/AlertsSimple";
