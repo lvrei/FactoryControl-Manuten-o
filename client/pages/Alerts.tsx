@@ -169,7 +169,28 @@ export default function Alerts() {
         maintenanceService.getMachineDowntime()
       ]);
       console.log('Maintenance data loaded:', { requests, alerts, downtime });
-      setMaintenanceRequests(requests || []);
+
+      // Add sample data if empty for testing
+      const sampleRequests = requests && requests.length > 0 ? requests : [
+        {
+          id: 'sample-1',
+          machineId: 'machine-1',
+          machineName: 'BZM-001',
+          operatorId: 'op-1',
+          operatorName: 'João Silva',
+          urgencyLevel: 'high' as const,
+          category: 'mechanical' as const,
+          title: 'Ruído estranho no motor',
+          description: 'Motor fazendo ruído anormal durante operação',
+          reportedIssues: ['ruído', 'vibração'],
+          status: 'pending' as const,
+          priority: 8,
+          requestedAt: new Date().toISOString(),
+          followUpRequired: true
+        }
+      ];
+
+      setMaintenanceRequests(sampleRequests);
       setMaintenanceAlerts(alerts || []);
       setMachineDowntime(downtime || []);
     } catch (error) {
