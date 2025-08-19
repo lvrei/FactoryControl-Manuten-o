@@ -146,7 +146,7 @@ class ProductionService {
     const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === id);
     
     if (orderIndex === -1) {
-      throw new Error('Ordem de produção n��o encontrada');
+      throw new Error('Ordem de produção não encontrada');
     }
 
     data.productionOrders[orderIndex] = {
@@ -562,7 +562,7 @@ class ProductionService {
     data.operatorSessions = [...data.operatorSessions, newSession];
     
     // Atualizar status da máquina
-    await this.updateMachineStatus(machineId, 'busy');
+    await this.updateMachineStatus(machineId, 'busy', operatorName);
     
     this.saveData(data);
     return newSession;
