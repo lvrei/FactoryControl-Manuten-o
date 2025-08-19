@@ -53,7 +53,8 @@ const maintenanceStatusConfig = {
 export default function Maintenance() {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [maintenances, setMaintenances] = useState<MaintenanceData[]>([]);
-  const [activeTab, setActiveTab] = useState<'machines' | 'maintenance'>('maintenance');
+  const [interventionHistory, setInterventionHistory] = useState<MaintenanceRequest[]>([]);
+  const [activeTab, setActiveTab] = useState<'maintenance' | 'history' | 'reports'>('maintenance');
   const [showMaintenanceForm, setShowMaintenanceForm] = useState(false);
   const [showReports, setShowReports] = useState(false);
   const [showChecklist, setShowChecklist] = useState(false);
