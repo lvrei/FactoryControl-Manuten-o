@@ -35,6 +35,8 @@ export default function AlertsSimple() {
   const [maintenanceAlerts, setMaintenanceAlerts] = useState<MaintenanceAlert[]>([]);
   const [machineDowntime, setMachineDowntime] = useState<MachineDowntime[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
+  const [showWorkSheet, setShowWorkSheet] = useState(false);
 
   useEffect(() => {
     loadMaintenanceData();
