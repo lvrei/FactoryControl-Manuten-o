@@ -85,6 +85,10 @@ export default function Maintenance() {
         } else {
           setMaintenances(mockMaintenances);
         }
+
+        // Load intervention history from maintenance service
+        const interventions = await maintenanceService.getMaintenanceRequests();
+        setInterventionHistory(interventions);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
