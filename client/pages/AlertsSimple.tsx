@@ -31,7 +31,7 @@ import { MaintenanceWorkSheet } from '@/components/MaintenanceWorkSheet';
 import { MachineMaintenanceHistory } from '@/components/MachineMaintenanceHistory';
 
 export default function AlertsSimple() {
-  const [activeTab, setActiveTab] = useState<'alerts' | 'maintenance' | 'analytics' | 'rules'>('alerts');
+  const [activeTab, setActiveTab] = useState<'alerts' | 'maintenance' | 'history' | 'analytics' | 'rules'>('alerts');
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [maintenanceAlerts, setMaintenanceAlerts] = useState<MaintenanceAlert[]>([]);
   const [machineDowntime, setMachineDowntime] = useState<MachineDowntime[]>([]);
