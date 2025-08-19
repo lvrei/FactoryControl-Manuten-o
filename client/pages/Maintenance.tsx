@@ -298,6 +298,43 @@ export default function Maintenance() {
         </div>
       </div>
 
+      {/* Navigation Tabs */}
+      <div className="flex rounded-lg bg-muted p-1">
+        <button
+          onClick={() => setActiveTab('maintenance')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            activeTab === 'maintenance'
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Manutenções Programadas ({maintenances.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('history')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            activeTab === 'history'
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Histórico de Intervenções ({interventionHistory.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('reports')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            activeTab === 'reports'
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Relatórios e Análises
+        </button>
+      </div>
+
       {/* Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
