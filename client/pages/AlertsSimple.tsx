@@ -349,26 +349,73 @@ export default function AlertsSimple() {
                           
                           <p className="text-sm text-muted-foreground mb-2">{request.description}</p>
                           
-                          <div className="flex items-center justify-between text-sm">
-                            <div className="space-y-1">
-                              <div>Máquina: {request.machineName}</div>
-                              <div>Operador: {request.operatorName}</div>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="space-y-1">
+                                <div>Máquina: {request.machineName}</div>
+                                <div>Operador: {request.operatorName}</div>
+                              </div>
+                              <div className="text-right space-y-1">
+                                <div className={cn(
+                                  "px-2 py-1 rounded text-xs",
+                                  request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                  request.status === 'assigned' ? 'bg-blue-100 text-blue-800' :
+                                  request.status === 'in_progress' ? 'bg-purple-100 text-purple-800' :
+                                  request.status === 'completed' ? 'bg-green-100 text-green-800' :
+                                  'bg-gray-100 text-gray-800'
+                                )}>
+                                  {request.status === 'pending' ? 'Pendente' :
+                                   request.status === 'assigned' ? 'Atribuída' :
+                                   request.status === 'in_progress' ? 'Em Progresso' :
+                                   request.status === 'completed' ? 'Concluída' : 'Cancelada'}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  Há {ageDays > 0 ? `${ageDays}d` : ageHours > 0 ? `${ageHours}h` : `${ageMinutes}min`}
+                                </div>
+                              </div>
                             </div>
-                            <div className="text-right space-y-1">
-                              <div className={cn(
-                                "px-2 py-1 rounded text-xs",
-                                request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                request.status === 'assigned' ? 'bg-blue-100 text-blue-800' :
-                                request.status === 'in_progress' ? 'bg-purple-100 text-purple-800' :
-                                'bg-gray-100 text-gray-800'
-                              )}>
-                                {request.status === 'pending' ? 'Pendente' :
-                                 request.status === 'assigned' ? 'Atribuída' :
-                                 request.status === 'in_progress' ? 'Em Progresso' : 'Cancelada'}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Há {ageDays > 0 ? `${ageDays}d` : ageHours > 0 ? `${ageHours}h` : `${ageMinutes}min`}
-                              </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex gap-2 pt-2 border-t">
+                              {request.status === 'pending' && (
+                                <button
+                                  onClick={() => handleConfirmReceipt(request.id)}
+                                  className="flex-1 px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 flex items-center justify-center gap-1"
+                                >
+                                  <CheckSquare className="h-3 w-3" />
+                                  Confirmar Recepção
+                                </button>
+                              )}
+
+                              {request.status === 'assigned' && (
+                                <button
+                                  onClick={() => handleStartWork(request.id)}
+                                  className="flex-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 flex items-center justify-center gap-1"
+                                >
+                                  <Play className="h-3 w-3" />
+                                  Iniciar Trabalho
+                                </button>
+                              )}
+
+                              {(request.status === 'in_progress' || request.status === 'assigned') && (
+                                <button
+                                  onClick={() => handleOpenWorkSheet(request)}
+                                  className="flex-1 px-3 py-1 bg-orange-600 text-white rounded text-xs hover:bg-orange-700 flex items-center justify-center gap-1"
+                                >
+                                  <FileText className="h-3 w-3" />
+                                  Folha de Trabalho
+                                </button>
+                              )}
+
+                              {request.status === 'completed' && (
+                                <button
+                                  onClick={() => handleOpenWorkSheet(request)}
+                                  className="flex-1 px-3 py-1 bg-gray-600 text-white rounded text-xs hover:bg-gray-700 flex items-center justify-center gap-1"
+                                >
+                                  <Eye className="h-3 w-3" />
+                                  Ver Detalhes
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>
