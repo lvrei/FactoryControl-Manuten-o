@@ -130,7 +130,7 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
     const newOperation: CuttingOperation = {
       id: Date.now().toString(),
       machineId: machines[0]?.id || '',
-      inputDimensions: line.initialDimensions,
+      inputDimensions: line.finalDimensions, // Use dimensões finais da linha como entrada da operação
       outputDimensions: line.finalDimensions,
       quantity: line.quantity,
       completedQuantity: 0,
@@ -167,6 +167,14 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
     return lines.reduce((total, line) => {
       const volume = (line.finalDimensions.length * line.finalDimensions.width * line.finalDimensions.height * line.quantity) / 1000000000;
       return total + volume;
+    }, 0);
+  };
+
+  const calculateTotalLength = () => {
+    return lines.reduce((total, line) => {
+      // Comprimento em metros = (comprimento final em mm × quantidade de blocos) / 1000
+      const lengthMeters = (line.finalDimensions.length * line.quantity) / 1000;
+      return total + lengthMeters;
     }, 0);
   };
 
@@ -538,7 +546,17 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
                                       <label className="block text-xs font-medium mb-1">Máquina</label>
                                       <select
                                         value={operation.machineId}
-                                        onChange={(e) => updateOperation(line.id, operation.id, { machineId: e.target.value })}
+                                        onChange={(e) => {
+                                          const selectedMachine = machines.find(m => m.id === e.target.value);
+                                          const updates: Partial<CuttingOperation> = { machineId: e.target.value };
+
+                                          // Para máquinas BZM, Pré-CNC e CNC, usar dimensões finais da linha como entrada
+                                          if (selectedMachine && ['BZM', 'PRE_CNC', 'CNC'].includes(selectedMachine.type)) {
+                                            updates.inputDimensions = line.finalDimensions;
+                                          }
+
+                                          updateOperation(line.id, operation.id, updates);
+                                        }}
                                         className="w-full px-2 py-1 border rounded bg-background text-sm"
                                       >
                                         {machines.map(machine => (
@@ -662,10 +680,15 @@ export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrde
             {lines.length > 0 && (
               <div className="border rounded-lg p-6 bg-muted/30">
                 <h3 className="text-lg font-semibold mb-4">Resumo da Ordem</h3>
-                <div className="grid gap-4 md:grid-cols-4">
+                <div className="grid gap-4 md:grid-cols-5">
                   <div>
                     <div className="text-sm text-muted-foreground">Total de Linhas</div>
                     <div className="text-xl font-bold">{lines.length}</div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">Comprimento Total</div>
+                    <div className="text-xl font-bold text-blue-600">{calculateTotalLength().toFixed(2)} m</div>
+                    <div className="text-xs text-muted-foreground">Dimensão final × blocos</div>
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">Volume Total</div>
