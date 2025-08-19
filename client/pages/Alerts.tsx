@@ -169,11 +169,15 @@ export default function Alerts() {
         maintenanceService.getMachineDowntime()
       ]);
       console.log('Maintenance data loaded:', { requests, alerts, downtime });
-      setMaintenanceRequests(requests);
-      setMaintenanceAlerts(alerts);
-      setMachineDowntime(downtime);
+      setMaintenanceRequests(requests || []);
+      setMaintenanceAlerts(alerts || []);
+      setMachineDowntime(downtime || []);
     } catch (error) {
       console.error('Erro ao carregar dados de manutenção:', error);
+      // Set empty arrays as fallback
+      setMaintenanceRequests([]);
+      setMaintenanceAlerts([]);
+      setMachineDowntime([]);
     } finally {
       setLoading(false);
     }
