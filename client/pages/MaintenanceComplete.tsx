@@ -254,6 +254,13 @@ export default function MaintenanceComplete() {
             Nova Manutenção
           </button>
           <button
+            onClick={() => setShowChecklist(true)}
+            className="px-4 py-2 text-sm font-medium text-purple-50 bg-purple-600 rounded-lg hover:bg-purple-700 flex items-center gap-2"
+          >
+            <Camera className="h-4 w-4" />
+            Checklist DL50
+          </button>
+          <button
             type="button"
             onClick={() => setShowReports(true)}
             className="px-4 py-2 text-sm font-medium text-info-foreground bg-info rounded-lg hover:bg-info/90 flex items-center gap-2"
