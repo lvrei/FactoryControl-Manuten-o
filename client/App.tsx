@@ -66,7 +66,7 @@ const App = () => {
                 </ProtectedRoute>
               } />
               <Route path="planning" element={<Planning />} />
-              <Route path="alerts" element={<Alerts />} />
+              <Route path="alerts" element={<AlertsSimple />} />
             </Route>
 
             {/* Protected Operator Route */}
