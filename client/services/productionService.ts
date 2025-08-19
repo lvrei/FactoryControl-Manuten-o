@@ -354,12 +354,12 @@ class ProductionService {
     localStorage.setItem(machineStatusKey, JSON.stringify(statusUpdates));
 
     // Update the main machine data as well
-    const data = this.getStoredData();
-    if (data.machines) {
-      const machineIndex = data.machines.findIndex((machine: Machine) => machine.id === id);
+    const machineData = this.getStoredData();
+    if (machineData.machines) {
+      const machineIndex = machineData.machines.findIndex((machine: Machine) => machine.id === id);
       if (machineIndex !== -1) {
-        data.machines[machineIndex].status = status;
-        this.saveData(data);
+        machineData.machines[machineIndex].status = status;
+        this.saveData(machineData);
       }
     }
   }
