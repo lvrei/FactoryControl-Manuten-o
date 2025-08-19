@@ -16,6 +16,7 @@ import {
 import { productionService } from '@/services/productionService';
 import { maintenanceService } from '@/services/maintenanceService';
 import { ProductionOrder, Machine, MachineDowntime, MaintenanceRequest } from '@/types/production';
+import { MaintenancePopupContainer } from '@/components/MaintenancePopup';
 
 export default function Dashboard() {
   const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>([]);
