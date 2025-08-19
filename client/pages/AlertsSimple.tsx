@@ -448,6 +448,21 @@ export default function AlertsSimple() {
           </div>
         )}
       </div>
+
+      {/* Maintenance Popup for Backend Team */}
+      <MaintenancePopupContainer onRequestUpdate={handleRequestUpdate} />
+
+      {/* Maintenance Work Sheet */}
+      {showWorkSheet && selectedRequest && (
+        <MaintenanceWorkSheet
+          request={selectedRequest}
+          onClose={() => {
+            setShowWorkSheet(false);
+            setSelectedRequest(null);
+          }}
+          onComplete={handleWorkSheetComplete}
+        />
+      )}
     </div>
   );
 }
