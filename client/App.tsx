@@ -20,7 +20,7 @@ import Quality from "./pages/Quality";
 import Maintenance from "./pages/Maintenance";
 import Team from "./pages/Team";
 import Planning from "./pages/Planning";
-import Alerts from "./pages/Alerts";
+import AlertsSimple from "./pages/AlertsSimple";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
