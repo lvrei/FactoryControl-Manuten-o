@@ -143,7 +143,7 @@ const categoryConfig = {
 const COLORS = ['hsl(var(--destructive))', 'hsl(var(--warning))', 'hsl(var(--info))'];
 
 export default function Alerts() {
-  const [activeTab, setActiveTab] = useState<'alerts' | 'rules' | 'analytics' | 'maintenance'>('alerts');
+  const [activeTab, setActiveTab] = useState<'alerts' | 'rules' | 'analytics' | 'maintenance'>('maintenance');
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
