@@ -481,6 +481,13 @@ export default function Equipment() {
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
+                    onClick={() => navigate(`/alerts?tab=history&machine=${eq.id}`)}
+                    className="p-1 text-muted-foreground hover:text-blue-600"
+                    title="Ver Histórico de Manutenção"
+                  >
+                    <Wrench className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => handleDelete(eq.id)}
                     className="p-1 text-muted-foreground hover:text-destructive"
                     title="Excluir"
