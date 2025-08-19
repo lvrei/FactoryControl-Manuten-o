@@ -440,6 +440,18 @@ export default function AlertsSimple() {
           )
         )}
 
+        {activeTab === 'history' && (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-900 mb-2">📋 Histórico de Manutenção por Máquina</h3>
+              <p className="text-sm text-blue-800">
+                Consulte o histórico completo de manutenção de cada máquina, incluindo estatísticas, custos e detalhes técnicos.
+              </p>
+            </div>
+            <MachineMaintenanceHistory />
+          </div>
+        )}
+
         {activeTab === 'analytics' && (
           <div className="rounded-lg border bg-card p-6">
             <h3 className="text-lg font-semibold mb-4">Análises</h3>
