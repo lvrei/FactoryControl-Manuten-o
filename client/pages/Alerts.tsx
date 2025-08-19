@@ -603,6 +603,10 @@ export default function Alerts() {
         </div>
       ) : activeTab === 'maintenance' ? (
         <div className="space-y-6">
+          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <p><strong>Maintenance Tab Active!</strong> Requests: {maintenanceRequests.length}, Alerts: {maintenanceAlerts.length}, Downtime: {machineDowntime.length}</p>
+            <p>Loading: {loading ? 'Yes' : 'No'}</p>
+          </div>
           {/* Maintenance Overview */}
           <div className="grid gap-4 md:grid-cols-4">
             <div className="rounded-lg border bg-card p-4">
