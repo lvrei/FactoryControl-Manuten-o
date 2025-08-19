@@ -35,7 +35,11 @@ export default function AlertsSimple() {
   const urlParams = new URLSearchParams(window.location.search);
   const initialTab = urlParams.get('tab') || 'alerts';
   const selectedMachineFromURL = urlParams.get('machine');
-  const [activeTab, setActiveTab] = useState<'alerts' | 'maintenance' | 'history' | 'analytics' | 'rules'>('alerts');
+  const [activeTab, setActiveTab] = useState<'alerts' | 'maintenance' | 'history' | 'analytics' | 'rules'>(
+    (initialTab === 'history' || initialTab === 'maintenance' || initialTab === 'analytics' || initialTab === 'rules')
+      ? initialTab as any
+      : 'alerts'
+  );
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
   const [maintenanceAlerts, setMaintenanceAlerts] = useState<MaintenanceAlert[]>([]);
   const [machineDowntime, setMachineDowntime] = useState<MachineDowntime[]>([]);
