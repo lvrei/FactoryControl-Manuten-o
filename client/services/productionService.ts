@@ -415,8 +415,12 @@ class ProductionService {
 
       order.lines.forEach(line => {
         line.cuttingOperations.forEach(operation => {
-          if (operation.status === 'completed') return;
+          // Skip operations that are fully completed
+          if (operation.status === 'completed' && operation.completedQuantity >= operation.quantity) return;
+          // Skip operations for different machines
           if (machineId && operation.machineId !== machineId) return;
+          // Skip if remaining quantity is 0 or less
+          if (operation.quantity - operation.completedQuantity <= 0) return;
 
           const machine = this.mockMachines.find(m => m.id === operation.machineId);
           if (!machine) return;
