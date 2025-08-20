@@ -526,7 +526,12 @@ class ProductionService {
     if (!operation) {
       console.error(`❌ Operation not found: ${operationId}`);
       console.log('Available operations:', line.cuttingOperations.map((op: CuttingOperation) => op.id));
-      alert(`Erro: Operação não encontrada: ${operationId}\n\nIsto indica um problema de sincronização de dados.\nVá ao console e execute: productionService.fixDataConsistency()`);
+
+      // Auto-fix and retry
+      console.log('🔧 Attempting to fix data automatically...');
+      await this.fixDataConsistency();
+
+      alert(`Dados inconsistentes detectados e corrigidos automaticamente.\n\nPor favor, atualize a página (F5) e tente novamente.`);
       return;
     }
 
