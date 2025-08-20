@@ -41,7 +41,11 @@ class ShippingService {
             op => op.status === 'completed' && op.completedQuantity >= op.quantity
           );
 
-          if (allOperationsCompleted && line.completedQuantity > 0) {
+          // Additional checks: line must be completed and have reached full quantity
+          const lineFullyCompleted = line.status === 'completed' &&
+                                   line.completedQuantity >= line.quantity;
+
+          if (allOperationsCompleted && lineFullyCompleted && line.completedQuantity > 0) {
             // Find matching label for this item
             const matchingLabel = labels.find(label => 
               label.orderId === order.id && label.lineId === line.id
