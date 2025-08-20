@@ -451,40 +451,70 @@ class ProductionService {
   async completeWorkItem(workItemId: string, completedQuantity: number, operatorNotes?: string): Promise<void> {
     const [orderId, lineId, operationId] = workItemId.split('-');
     const data = this.getStoredData();
-    
-    const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === orderId);
-    if (orderIndex === -1) return;
 
-    const line = data.productionOrders[orderIndex].lines.find((l: ProductionOrderLine) => l.id === lineId);
-    if (!line) return;
+    // Ensure orders array exists
+    if (!data.orders) {
+      data.orders = [];
+    }
 
-    const operation = line.cuttingOperations.find((op: any) => op.id === operationId);
-    if (!operation) return;
+    const orderIndex = data.orders.findIndex((order: ProductionOrder) => order.id === orderId);
+    if (orderIndex === -1) {
+      console.error(`Order not found: ${orderId}`);
+      return;
+    }
 
+    const line = data.orders[orderIndex].lines.find((l: ProductionOrderLine) => l.id === lineId);
+    if (!line) {
+      console.error(`Line not found: ${lineId}`);
+      return;
+    }
+
+    const operation = line.cuttingOperations.find((op: CuttingOperation) => op.id === operationId);
+    if (!operation) {
+      console.error(`Operation not found: ${operationId}`);
+      return;
+    }
+
+    // Update operation completed quantity
     operation.completedQuantity = Math.min(operation.completedQuantity + completedQuantity, operation.quantity);
+
     if (operatorNotes) {
       operation.operatorNotes = operatorNotes;
     }
 
+    // Mark operation as completed if quantity is reached
     if (operation.completedQuantity >= operation.quantity) {
       operation.status = 'completed';
+      operation.completedAt = new Date().toISOString();
+    } else {
+      operation.status = 'in_progress';
     }
 
-    // Atualizar status da linha se todas as operações estão completas
-    const allOperationsComplete = line.cuttingOperations.every((op: any) => op.status === 'completed');
-    if (allOperationsComplete) {
+    // Update line status and completed quantity based on operations
+    const allOperationsComplete = line.cuttingOperations.every((op: CuttingOperation) => op.status === 'completed');
+    const totalCompletedQuantity = Math.min(...line.cuttingOperations.map((op: CuttingOperation) => op.completedQuantity));
+
+    line.completedQuantity = totalCompletedQuantity;
+
+    if (allOperationsComplete && totalCompletedQuantity >= line.quantity) {
       line.status = 'completed';
       line.completedQuantity = line.quantity;
+    } else if (totalCompletedQuantity > 0) {
+      line.status = 'in_progress';
     }
 
-    // Atualizar status da ordem se todas as linhas estão completas
-    const allLinesComplete = data.productionOrders[orderIndex].lines.every((l: ProductionOrderLine) => l.status === 'completed');
+    // Update order status if all lines are completed
+    const allLinesComplete = data.orders[orderIndex].lines.every((l: ProductionOrderLine) => l.status === 'completed');
     if (allLinesComplete) {
-      data.productionOrders[orderIndex].status = 'completed';
+      data.orders[orderIndex].status = 'completed';
+    } else if (data.orders[orderIndex].lines.some((l: ProductionOrderLine) => l.status === 'in_progress')) {
+      data.orders[orderIndex].status = 'in_progress';
     }
 
-    data.productionOrders[orderIndex].updatedAt = new Date().toISOString();
+    data.orders[orderIndex].updatedAt = new Date().toISOString();
     this.saveData(data);
+
+    console.log(`Work item completed: ${workItemId}, quantity: ${completedQuantity}, operation status: ${operation.status}`);
   }
 
   // Chat
