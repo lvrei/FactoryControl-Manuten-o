@@ -21,33 +21,35 @@ class LabelService {
 
   generateZPLCode(label: PrintLabel): string {
     const { barcodeId, customerName, orderNumber, foamType, quantity, dimensions, operatorName, machineName, completionDate } = label;
-    
-    // ZPL code for Zebra printer
+
+    // ZPL code for Zebra printer - Otimizado para etiquetas 105.5x150mm (420x600 pontos a 203dpi)
     const zplCode = `
 ^XA
-^PO0
-^LH30,30
-
+^PW420
+^LL600
+^LH0,0
 ~SD20
 
-^FO50,50^FDFactoryControl - Espuma Cortada^FS
-^FO50,80^FD${new Date(completionDate).toLocaleDateString('pt-BR')} ${new Date(completionDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}^FS
+^FO20,20^A0N,25,20^FDFactoryControl^FS
+^FO20,50^A0N,20,15^FD${new Date(completionDate).toLocaleDateString('pt-BR')} ${new Date(completionDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}^FS
 
-^FO50,120^FDCliente: ${customerName}^FS
-^FO50,150^FDOP: ${orderNumber}^FS
-^FO50,180^FDTipo: ${foamType}^FS
+^FO20,85^A0N,20,15^FDCliente: ${customerName.substring(0, 25)}^FS
+^FO20,110^A0N,20,15^FDOP: ${orderNumber}^FS
+^FO20,135^A0N,18,12^FDTipo: ${foamType.substring(0, 20)}^FS
 
-^FO50,220^FDQuantidade: ${quantity} unidades^FS
-^FO50,250^FDDimensoes: ${dimensions.length}x${dimensions.width}x${dimensions.height}mm^FS
+^FO20,170^A0N,18,12^FDQtd: ${quantity} un^FS
+^FO20,195^A0N,16,10^FDDim: ${dimensions.length}x${dimensions.width}x${dimensions.height}mm^FS
 
-^FO50,290^FDMaquina: ${machineName}^FS
-^FO50,320^FDOperador: ${operatorName}^FS
+^FO20,225^A0N,16,10^FDMaquina: ${machineName.substring(0, 20)}^FS
+^FO20,250^A0N,16,10^FDOperador: ${operatorName.substring(0, 20)}^FS
 
-^FO50,370^BY2
-^BCN,60,Y,N,N
+^FO20,290^BY2,2,50
+^BCN,50,Y,N,N
 ^FD${barcodeId}^FS
 
-^FO50,450^FDCodigo: ${barcodeId}^FS
+^FO20,360^A0N,16,12^FDCodigo: ${barcodeId}^FS
+
+^FO20,570^A0N,12,8^FDwww.factorycontrol.pt^FS
 
 ^XZ`;
 
