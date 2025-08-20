@@ -262,17 +262,31 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     }
   };
 
+  const checkPrinterStatus = async () => {
+    try {
+      const status = await labelService.getPrinterConnectionStatus();
+      setPrinterStatus(status);
+    } catch (error) {
+      setPrinterStatus({
+        connected: false,
+        message: 'Erro ao verificar impressora'
+      });
+    }
+  };
+
   const handlePrintLabel = async () => {
     if (!currentLabel) return;
 
     try {
-      const result = await labelService.printLabel(currentLabel);
+      const result = await labelService.printLabel(currentLabel, true); // Try direct printing
       if (result.success) {
-        alert('Etiqueta enviada para impressão/download!');
+        alert(result.message || 'Etiqueta enviada para impressão!');
         setShowPrintPreview(false);
         setCurrentLabel(null);
+        // Refresh printer status
+        await checkPrinterStatus();
       } else {
-        alert('Erro ao imprimir etiqueta');
+        alert(`Erro ao imprimir: ${result.message || 'Erro desconhecido'}`);
       }
     } catch (error) {
       console.error('Erro ao imprimir:', error);
