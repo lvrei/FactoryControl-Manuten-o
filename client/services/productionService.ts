@@ -456,18 +456,18 @@ class ProductionService {
     const [orderId, lineId, operationId] = workItemId.split('-');
     const data = this.getStoredData();
 
-    // Ensure orders array exists
-    if (!data.orders) {
-      data.orders = [];
+    // Ensure productionOrders array exists
+    if (!data.productionOrders) {
+      data.productionOrders = [];
     }
 
-    const orderIndex = data.orders.findIndex((order: ProductionOrder) => order.id === orderId);
+    const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === orderId);
     if (orderIndex === -1) {
       console.error(`Order not found: ${orderId}`);
       return;
     }
 
-    const line = data.orders[orderIndex].lines.find((l: ProductionOrderLine) => l.id === lineId);
+    const line = data.productionOrders[orderIndex].lines.find((l: ProductionOrderLine) => l.id === lineId);
     if (!line) {
       console.error(`Line not found: ${lineId}`);
       return;
@@ -478,6 +478,8 @@ class ProductionService {
       console.error(`Operation not found: ${operationId}`);
       return;
     }
+
+    console.log(`BEFORE - Operation ${operationId}: completed=${operation.completedQuantity}, quantity=${operation.quantity}, status=${operation.status}`);
 
     // Update operation completed quantity
     operation.completedQuantity = Math.min(operation.completedQuantity + completedQuantity, operation.quantity);
@@ -494,6 +496,8 @@ class ProductionService {
       operation.status = 'in_progress';
     }
 
+    console.log(`AFTER - Operation ${operationId}: completed=${operation.completedQuantity}, quantity=${operation.quantity}, status=${operation.status}`);
+
     // Update line status and completed quantity based on operations
     const allOperationsComplete = line.cuttingOperations.every((op: CuttingOperation) => op.status === 'completed');
     const totalCompletedQuantity = Math.min(...line.cuttingOperations.map((op: CuttingOperation) => op.completedQuantity));
@@ -507,18 +511,20 @@ class ProductionService {
       line.status = 'in_progress';
     }
 
+    console.log(`Line ${lineId}: completed=${line.completedQuantity}, quantity=${line.quantity}, status=${line.status}, allOpsComplete=${allOperationsComplete}`);
+
     // Update order status if all lines are completed
-    const allLinesComplete = data.orders[orderIndex].lines.every((l: ProductionOrderLine) => l.status === 'completed');
+    const allLinesComplete = data.productionOrders[orderIndex].lines.every((l: ProductionOrderLine) => l.status === 'completed');
     if (allLinesComplete) {
-      data.orders[orderIndex].status = 'completed';
-    } else if (data.orders[orderIndex].lines.some((l: ProductionOrderLine) => l.status === 'in_progress')) {
-      data.orders[orderIndex].status = 'in_progress';
+      data.productionOrders[orderIndex].status = 'completed';
+    } else if (data.productionOrders[orderIndex].lines.some((l: ProductionOrderLine) => l.status === 'in_progress')) {
+      data.productionOrders[orderIndex].status = 'in_progress';
     }
 
-    data.orders[orderIndex].updatedAt = new Date().toISOString();
+    data.productionOrders[orderIndex].updatedAt = new Date().toISOString();
     this.saveData(data);
 
-    console.log(`Work item completed: ${workItemId}, quantity: ${completedQuantity}, operation status: ${operation.status}`);
+    console.log(`Work item completed: ${workItemId}, completed quantity: ${completedQuantity}, operation status: ${operation.status}, line status: ${line.status}`);
   }
 
   // Chat
