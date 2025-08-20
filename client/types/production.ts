@@ -305,6 +305,85 @@ export interface EnhancedMachine extends Machine {
   notes?: string;
 }
 
+// Shipping and Load Management
+export interface ShippableItem {
+  id: string;
+  orderId: string;
+  orderNumber: string;
+  lineId: string;
+  operationId: string;
+  barcodeId?: string; // From print label if exists
+  customerName: string;
+  foamType: string;
+  quantity: number;
+  dimensions: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  completedAt: string;
+  readyForShipping: boolean;
+  weight?: number; // kg
+  volume: number; // m³
+}
+
+export interface ShipmentLoad {
+  id: string;
+  loadNumber: string;
+  operatorId: string;
+  operatorName: string;
+  truckPlate?: string;
+  driverName?: string;
+  startTime: string;
+  endTime?: string;
+  status: 'loading' | 'completed' | 'cancelled';
+  items: ShippedItem[];
+  totalWeight: number; // kg
+  totalVolume: number; // m³
+  totalItems: number;
+  notes?: string;
+}
+
+export interface ShippedItem {
+  id: string;
+  shippableItemId: string;
+  orderId: string;
+  orderNumber: string;
+  lineId: string;
+  operationId: string;
+  barcodeId?: string;
+  customerName: string;
+  foamType: string;
+  quantity: number;
+  dimensions: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  weight?: number;
+  volume: number;
+  addedToLoadAt: string;
+  scannedAt?: string; // When barcode was scanned
+  operatorNotes?: string;
+}
+
+export interface BarcodeScanner {
+  isScanning: boolean;
+  lastScannedCode?: string;
+  lastScannedAt?: string;
+}
+
+export interface ShippingFilters {
+  customer?: string;
+  orderNumber?: string;
+  foamType?: string;
+  dateRange?: {
+    start: string;
+    end: string;
+  };
+  status?: 'ready' | 'shipped';
+}
+
 // Maintenance Request System
 export interface MaintenanceRequest {
   id: string;
