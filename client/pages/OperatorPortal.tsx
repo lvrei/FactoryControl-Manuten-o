@@ -393,6 +393,17 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     return 'text-green-600 bg-green-50';
   };
 
+  // Show material shipping if requested
+  if (showMaterialShipping) {
+    return (
+      <MaterialShipping
+        operatorId={operatorData.id}
+        operatorName={operatorData.name}
+        onBack={() => setShowMaterialShipping(false)}
+      />
+    );
+  }
+
   if (!currentSession) {
     return (
       <div className="min-h-screen bg-background p-4">
