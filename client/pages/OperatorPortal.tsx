@@ -92,6 +92,9 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     message: 'Verificando...'
   });
 
+  // Material shipping state
+  const [showMaterialShipping, setShowMaterialShipping] = useState(false);
+
   useEffect(() => {
     loadData();
     checkPrinterStatus();
