@@ -482,7 +482,18 @@ class ProductionService {
   }
 
   async completeWorkItem(workItemId: string, completedQuantity: number, operatorNotes?: string): Promise<void> {
-    const [orderId, lineId, operationId] = workItemId.split('-');
+    console.log(`🎯 Attempting to complete work item: ${workItemId}`);
+
+    const parts = workItemId.split('-');
+    if (parts.length < 3) {
+      console.error(`Invalid work item ID format: ${workItemId}`);
+      alert(`Erro: ID de trabalho inválido: ${workItemId}`);
+      return;
+    }
+
+    const [orderId, lineId, operationId] = parts;
+    console.log(`📋 Parsed IDs - Order: ${orderId}, Line: ${lineId}, Operation: ${operationId}`);
+
     const data = this.getStoredData();
 
     // Ensure productionOrders array exists
@@ -490,21 +501,29 @@ class ProductionService {
       data.productionOrders = [];
     }
 
+    console.log(`📊 Searching in ${data.productionOrders.length} orders`);
+
     const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === orderId);
     if (orderIndex === -1) {
-      console.error(`Order not found: ${orderId}`);
+      console.error(`❌ Order not found: ${orderId}`);
+      console.log('Available orders:', data.productionOrders.map((o: ProductionOrder) => ({ id: o.id, number: o.orderNumber })));
+      alert(`Erro: Ordem não encontrada: ${orderId}`);
       return;
     }
 
     const line = data.productionOrders[orderIndex].lines.find((l: ProductionOrderLine) => l.id === lineId);
     if (!line) {
-      console.error(`Line not found: ${lineId}`);
+      console.error(`❌ Line not found: ${lineId}`);
+      console.log('Available lines:', data.productionOrders[orderIndex].lines.map((l: ProductionOrderLine) => l.id));
+      alert(`Erro: Linha não encontrada: ${lineId}`);
       return;
     }
 
     const operation = line.cuttingOperations.find((op: CuttingOperation) => op.id === operationId);
     if (!operation) {
-      console.error(`Operation not found: ${operationId}`);
+      console.error(`❌ Operation not found: ${operationId}`);
+      console.log('Available operations:', line.cuttingOperations.map((op: CuttingOperation) => op.id));
+      alert(`Erro: Operação não encontrada: ${operationId}\n\nIsto indica um problema de sincronização de dados.\nVá ao console e execute: productionService.fixDataConsistency()`);
       return;
     }
 
