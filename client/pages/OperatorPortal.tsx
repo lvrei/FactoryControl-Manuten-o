@@ -84,6 +84,13 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
   const [messageNotifications, setMessageNotifications] = useState<(ChatMessage & { id: string })[]>([]);
   const [lastMessageCount, setLastMessageCount] = useState(0);
 
+  // Printer setup state
+  const [showPrinterSetup, setShowPrinterSetup] = useState(false);
+  const [printerStatus, setPrinterStatus] = useState<{ connected: boolean; name?: string; message: string }>({
+    connected: false,
+    message: 'Verificando...'
+  });
+
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 5000); // Atualizar a cada 5 segundos
