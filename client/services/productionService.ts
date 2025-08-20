@@ -408,6 +408,9 @@ class ProductionService {
 
   // Lista de trabalho para operadores
   async getOperatorWorkItems(machineId?: string, filters?: ProductionFilters): Promise<OperatorWorkItem[]> {
+    // Auto-fix data consistency if no valid orders exist
+    await this.ensureDataConsistency();
+
     const orders = await this.getProductionOrders();
     const workItems: OperatorWorkItem[] = [];
 
