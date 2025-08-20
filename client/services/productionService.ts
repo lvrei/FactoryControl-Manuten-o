@@ -604,6 +604,202 @@ class ProductionService {
       console.error('❌ Error initializing clean system:', error);
     }
   }
+
+  // MÉTODOS DE CHAT E SESSÕES (EM FALTA)
+  async getChatMessages(machineId?: string, operatorId?: string): Promise<ChatMessage[]> {
+    try {
+      const data = this.getStoredData();
+      let messages = data.chatMessages || [];
+
+      if (machineId) {
+        messages = messages.filter((msg: ChatMessage) => msg.machineId === machineId);
+      }
+
+      if (operatorId) {
+        messages = messages.filter((msg: ChatMessage) => msg.operatorId === operatorId || msg.to === operatorId);
+      }
+
+      return messages.sort((a: ChatMessage, b: ChatMessage) =>
+        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+    } catch (error) {
+      console.error('❌ Error loading chat messages:', error);
+      return [];
+    }
+  }
+
+  async sendChatMessage(message: Omit<ChatMessage, 'id' | 'timestamp' | 'isRead'>): Promise<ChatMessage> {
+    try {
+      const data = this.getStoredData();
+      const newMessage: ChatMessage = {
+        ...message,
+        id: Date.now().toString(),
+        timestamp: new Date().toISOString(),
+        isRead: false
+      };
+
+      data.chatMessages = [...(data.chatMessages || []), newMessage];
+      this.saveData(data);
+      return newMessage;
+    } catch (error) {
+      console.error('❌ Error sending chat message:', error);
+      throw error;
+    }
+  }
+
+  async markMessageAsRead(messageId: string): Promise<void> {
+    try {
+      const data = this.getStoredData();
+      if (!data.chatMessages) return;
+
+      const messageIndex = data.chatMessages.findIndex((msg: ChatMessage) => msg.id === messageId);
+      if (messageIndex !== -1) {
+        data.chatMessages[messageIndex].isRead = true;
+        this.saveData(data);
+      }
+    } catch (error) {
+      console.error('❌ Error marking message as read:', error);
+    }
+  }
+
+  // SESSÕES DE OPERADORES
+  async startOperatorSession(operatorId: string, operatorName: string, machineId: string): Promise<OperatorSession> {
+    try {
+      const data = this.getStoredData();
+      const machines = await this.getMachines();
+      const machine = machines.find(m => m.id === machineId);
+
+      if (!machine) {
+        throw new Error('Máquina não encontrada');
+      }
+
+      // Encerrar sessão anterior se existir
+      data.operatorSessions = (data.operatorSessions || []).map((session: OperatorSession) => {
+        if (session.operatorId === operatorId && session.isActive) {
+          return { ...session, isActive: false, endTime: new Date().toISOString() };
+        }
+        return session;
+      });
+
+      const newSession: OperatorSession = {
+        id: Date.now().toString(),
+        operatorId,
+        operatorName,
+        machineId,
+        machineName: machine.name,
+        startTime: new Date().toISOString(),
+        isActive: true
+      };
+
+      data.operatorSessions = [...(data.operatorSessions || []), newSession];
+      this.saveData(data);
+
+      console.log(`✅ Operator session started: ${operatorName} on ${machine.name}`);
+      return newSession;
+    } catch (error) {
+      console.error('❌ Error starting operator session:', error);
+      throw error;
+    }
+  }
+
+  async endOperatorSession(sessionId: string): Promise<void> {
+    try {
+      const data = this.getStoredData();
+      const sessionIndex = data.operatorSessions.findIndex((session: OperatorSession) => session.id === sessionId);
+
+      if (sessionIndex !== -1) {
+        data.operatorSessions[sessionIndex].isActive = false;
+        data.operatorSessions[sessionIndex].endTime = new Date().toISOString();
+        this.saveData(data);
+        console.log(`✅ Operator session ended: ${sessionId}`);
+      }
+    } catch (error) {
+      console.error('❌ Error ending operator session:', error);
+      throw error;
+    }
+  }
+
+  async getOperatorSessions(activeOnly = false): Promise<OperatorSession[]> {
+    try {
+      const data = this.getStoredData();
+      const sessions = data.operatorSessions || [];
+
+      if (activeOnly) {
+        return sessions.filter((session: OperatorSession) => session.isActive);
+      }
+
+      return sessions.sort((a: OperatorSession, b: OperatorSession) =>
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      );
+    } catch (error) {
+      console.error('❌ Error loading operator sessions:', error);
+      return [];
+    }
+  }
+
+  // FICHAS TÉCNICAS E PRODUTOS
+  async getProductSheets(): Promise<ProductSheet[]> {
+    try {
+      const data = this.getStoredData();
+      return data.productSheets || [];
+    } catch (error) {
+      console.error('❌ Error loading product sheets:', error);
+      return [];
+    }
+  }
+
+  async createProductSheet(sheet: Omit<ProductSheet, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProductSheet> {
+    try {
+      const data = this.getStoredData();
+      const newSheet: ProductSheet = {
+        ...sheet,
+        id: Date.now().toString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+
+      data.productSheets = [...(data.productSheets || []), newSheet];
+      this.saveData(data);
+      return newSheet;
+    } catch (error) {
+      console.error('❌ Error creating product sheet:', error);
+      throw error;
+    }
+  }
+
+  async updateProductSheet(id: string, updates: Partial<ProductSheet>): Promise<ProductSheet> {
+    try {
+      const data = this.getStoredData();
+      const sheetIndex = data.productSheets.findIndex((sheet: ProductSheet) => sheet.id === id);
+
+      if (sheetIndex === -1) {
+        throw new Error('Ficha técnica não encontrada');
+      }
+
+      data.productSheets[sheetIndex] = {
+        ...data.productSheets[sheetIndex],
+        ...updates,
+        updatedAt: new Date().toISOString()
+      };
+
+      this.saveData(data);
+      return data.productSheets[sheetIndex];
+    } catch (error) {
+      console.error('❌ Error updating product sheet:', error);
+      throw error;
+    }
+  }
+
+  async deleteProductSheet(id: string): Promise<void> {
+    try {
+      const data = this.getStoredData();
+      data.productSheets = data.productSheets.filter((sheet: ProductSheet) => sheet.id !== id);
+      this.saveData(data);
+    } catch (error) {
+      console.error('❌ Error deleting product sheet:', error);
+      throw error;
+    }
+  }
 }
 
 export const productionService = new ProductionService();
