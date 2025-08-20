@@ -1065,6 +1065,46 @@ class ProductionService {
     console.log('Test order created successfully!');
   }
 
+  async ensureDataConsistency(): Promise<void> {
+    const data = this.getStoredData();
+
+    // Check if we have valid orders with consistent data
+    if (!data.productionOrders || data.productionOrders.length === 0) {
+      console.log('📋 No orders found, creating test data...');
+      await this.createTestOrder();
+      return;
+    }
+
+    // Validate existing orders for consistency
+    let hasInconsistentData = false;
+
+    for (const order of data.productionOrders) {
+      if (!order.id || !order.lines) {
+        hasInconsistentData = true;
+        break;
+      }
+
+      for (const line of order.lines) {
+        if (!line.id || !line.cuttingOperations) {
+          hasInconsistentData = true;
+          break;
+        }
+
+        for (const operation of line.cuttingOperations) {
+          if (!operation.id || !operation.machineId) {
+            hasInconsistentData = true;
+            break;
+          }
+        }
+      }
+    }
+
+    if (hasInconsistentData) {
+      console.log('🔧 Inconsistent data detected, fixing...');
+      await this.fixDataConsistency();
+    }
+  }
+
   async fixDataConsistency(): Promise<void> {
     console.log('🔧 Fixing data consistency...');
 
