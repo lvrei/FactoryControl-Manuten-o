@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 Inicialização Automática - FactoryControl</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container { 
+            max-width: 600px; 
+            background: rgba(255,255,255,0.95); 
+            color: #333;
+            padding: 30px; 
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+        .status { 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            font-weight: 500;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            transition: width 0.5s ease;
+            border-radius: 10px;
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            margin: 5px;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        button:hover { 
+            background: #0056b3; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .logo {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .step {
+            text-align: left;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.05);
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏭</div>
+        <h1>FactoryControl</h1>
+        <h2>Inicialização Automática</h2>
+        <p>Sistema de inicialização automática para resolver problemas de carregamento.</p>
+        
+        <div class="progress">
+            <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+        </div>
+        
+        <div id="currentStep">Preparando inicialização...</div>
+        
+        <div id="results"></div>
+        
+        <div style="margin-top: 30px;">
+            <button onclick="runAutoInit()" id="startBtn">🚀 Iniciar Automaticamente</button>
+            <button onclick="window.location.href='http://localhost:8080'" id="openAppBtn" style="display:none; background: #28a745;">
+                📱 Abrir Aplicação
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+        const progressBar = document.getElementById('progressBar');
+        const currentStep = document.getElementById('currentStep');
+        
+        let progress = 0;
+
+        function updateProgress(percent, message) {
+            progress = percent;
+            progressBar.style.width = percent + '%';
+            currentStep.textContent = message;
+        }
+
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function runAutoInit() {
+            document.getElementById('startBtn').style.display = 'none';
+            addLog('🚀 Iniciando configuração automática...', 'info');
+            
+            try {
+                // Step 1: Clear old data
+                updateProgress(10, 'Limpando dados antigos...');
+                await clearOldData();
+                
+                // Step 2: Initialize auth
+                updateProgress(30, 'Configurando autenticação...');
+                await initAuth();
+                
+                // Step 3: Initialize production
+                updateProgress(50, 'Inicializando sistema de produção...');
+                await initProduction();
+                
+                // Step 4: Validate initialization
+                updateProgress(70, 'Validando configuração...');
+                await validateInit();
+                
+                // Step 5: Check app availability
+                updateProgress(90, 'Verificando disponibilidade da aplicação...');
+                await checkApp();
+                
+                updateProgress(100, 'Inicialização concluída com sucesso!');
+                addLog('🎉 Sistema configurado e pronto para uso!', 'success');
+                
+                document.getElementById('openAppBtn').style.display = 'inline-block';
+                
+            } catch (error) {
+                addLog(`❌ Erro durante inicialização: ${error.message}`, 'error');
+                updateProgress(0, 'Erro na inicialização');
+                document.getElementById('startBtn').style.display = 'inline-block';
+                document.getElementById('startBtn').textContent = '🔄 Tentar Novamente';
+            }
+        }
+
+        async function clearOldData() {
+            addLog('🧹 Limpando dados antigos...', 'info');
+            
+            // Clear all localStorage
+            const keys = Object.keys(localStorage);
+            let cleared = 0;
+            
+            keys.forEach(key => {
+                if (key.includes('factory') || 
+                    key.includes('production') || 
+                    key.includes('Control') ||
+                    key.includes('auth') ||
+                    key.includes('session')) {
+                    localStorage.removeItem(key);
+                    cleared++;
+                }
+            });
+
+            addLog(`✅ Removidos ${cleared} itens de dados antigos`, 'success');
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        async function initAuth() {
+            addLog('🔐 Configurando autenticação automática...', 'info');
+            
+            // Set up auto-login session
+            const autoSession = {
+                id: 'auto-' + Date.now(),
+                userId: '1',
+                username: 'admin',
+                role: 'admin',
+                accessLevel: 'full',
+                loginTime: new Date().toISOString(),
+                lastActivity: new Date().toISOString(),
+                isActive: true
+            };
+            
+            localStorage.setItem('factoryControl_session', JSON.stringify(autoSession));
+            addLog('✅ Autenticação automática configurada', 'success');
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        async function initProduction() {
+            addLog('🏭 Inicializando sistema de produção...', 'info');
+            
+            // Initialize clean production data
+            const cleanData = {
+                productionOrders: [],
+                productSheets: [],
+                chatMessages: [],
+                operatorSessions: [],
+                foamBlocks: [],
+                stockMovements: [],
+                _initialized: true,
+                _version: '1.0.0',
+                _timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('factoryControl_production', JSON.stringify(cleanData));
+            addLog('✅ Sistema de produção inicializado', 'success');
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        async function validateInit() {
+            addLog('🔍 Validando inicialização...', 'info');
+            
+            // Check auth
+            const session = localStorage.getItem('factoryControl_session');
+            if (!session) {
+                throw new Error('Falha na configuração de autenticação');
+            }
+            
+            // Check production
+            const production = localStorage.getItem('factoryControl_production');
+            if (!production) {
+                throw new Error('Falha na inicialização do sistema de produção');
+            }
+            
+            const prodData = JSON.parse(production);
+            if (!prodData._initialized) {
+                throw new Error('Sistema de produção não foi inicializado corretamente');
+            }
+            
+            addLog('✅ Validação bem-sucedida', 'success');
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        async function checkApp() {
+            addLog('🌐 Verificando aplicação...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:8080');
+                if (!response.ok) {
+                    throw new Error(`Servidor retornou status ${response.status}`);
+                }
+                
+                addLog('✅ Aplicação está respondendo corretamente', 'success');
+            } catch (error) {
+                addLog('⚠️ Aplicação pode não estar disponível, mas configuração foi concluída', 'warning');
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+
+        // Auto-start on page load
+        window.addEventListener('load', () => {
+            addLog('📋 Sistema de inicialização automática carregado', 'info');
+            addLog('🔧 Pronto para configurar a aplicação automaticamente', 'info');
+        });
+    </script>
+</body>
+</html>
