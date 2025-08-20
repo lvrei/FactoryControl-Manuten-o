@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Página Produção</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .button-group { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug Página Produção</h1>
+        
+        <div class="button-group">
+            <button onclick="testConnection()">🔗 Testar Conexão</button>
+            <button onclick="clearAllData()">🧹 Limpar Dados</button>
+            <button onclick="checkLocalStorage()">💾 Verificar Storage</button>
+            <button onclick="testProductionService()">⚙️ Testar Service</button>
+            <button onclick="initCleanSystem()">🔄 Sistema Limpo</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testConnection() {
+            addLog('🔗 Testando conexão com localhost:8080...', 'info');
+            try {
+                const response = await fetch('http://localhost:8080');
+                if (response.ok) {
+                    addLog('✅ Conexão OK - Servidor respondendo', 'success');
+                } else {
+                    addLog(`❌ Servidor retornou: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                addLog(`❌ Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+
+        function clearAllData() {
+            addLog('🧹 Limpando todos os dados...', 'info');
+            
+            // Limpar localStorage
+            const keys = Object.keys(localStorage);
+            let cleared = 0;
+            
+            keys.forEach(key => {
+                if (key.startsWith('factoryControl_') || 
+                    key.includes('production') || 
+                    key.includes('maintenance') || 
+                    key.includes('operator') ||
+                    key.includes('machine') ||
+                    key.includes('shipping')) {
+                    localStorage.removeItem(key);
+                    cleared++;
+                }
+            });
+
+            addLog(`✅ Removidas ${cleared} entradas do localStorage`, 'success');
+            
+            // Limpar sessionStorage
+            const sessionKeys = Object.keys(sessionStorage);
+            let sessionCleared = 0;
+            
+            sessionKeys.forEach(key => {
+                if (key.startsWith('factoryControl_') || 
+                    key.includes('production')) {
+                    sessionStorage.removeItem(key);
+                    sessionCleared++;
+                }
+            });
+
+            addLog(`✅ Removidas ${sessionCleared} entradas do sessionStorage`, 'success');
+            addLog('🔄 Dados limpos! Atualize a página principal (F5)', 'warning');
+        }
+
+        function checkLocalStorage() {
+            addLog('💾 Verificando localStorage...', 'info');
+            
+            const keys = Object.keys(localStorage);
+            const factoryKeys = keys.filter(key => 
+                key.startsWith('factoryControl_') || 
+                key.includes('production') ||
+                key.includes('maintenance')
+            );
+
+            if (factoryKeys.length === 0) {
+                addLog('✅ localStorage limpo - nenhum dado do sistema encontrado', 'success');
+            } else {
+                addLog(`⚠️ Encontradas ${factoryKeys.length} entradas:`, 'warning');
+                factoryKeys.forEach(key => {
+                    const value = localStorage.getItem(key);
+                    const size = value ? (value.length / 1024).toFixed(2) : '0';
+                    addLog(`  - ${key} (${size}KB)`, 'info');
+                });
+            }
+        }
+
+        async function testProductionService() {
+            addLog('⚙️ Testando ProductionService...', 'info');
+            
+            // Test basic fetch to the app
+            try {
+                const response = await fetch('http://localhost:8080');
+                const html = await response.text();
+                
+                if (html.includes('root')) {
+                    addLog('✅ Aplicação principal carregando', 'success');
+                } else {
+                    addLog('❌ Estrutura HTML inesperada', 'error');
+                }
+                
+                // Check for common errors in HTML
+                if (html.includes('Cannot resolve module') || html.includes('Failed to resolve')) {
+                    addLog('❌ Erro de importação de módulos detectado', 'error');
+                }
+                
+                if (html.includes('SyntaxError') || html.includes('Unexpected token')) {
+                    addLog('❌ Erro de sintaxe detectado', 'error');
+                }
+                
+            } catch (error) {
+                addLog(`❌ Erro ao testar service: ${error.message}`, 'error');
+            }
+        }
+
+        function initCleanSystem() {
+            addLog('🔄 Inicializando sistema completamente limpo...', 'info');
+            
+            // Clear everything
+            clearAllData();
+            
+            // Create minimal clean structure
+            const cleanData = {
+                productionOrders: [],
+                productSheets: [],
+                chatMessages: [],
+                operatorSessions: [],
+                foamBlocks: [],
+                stockMovements: []
+            };
+            
+            localStorage.setItem('factoryControl_production', JSON.stringify(cleanData));
+            addLog('✅ Sistema inicializado limpo', 'success');
+            addLog('🔄 Atualize a página principal para aplicar', 'warning');
+        }
+
+        // Auto-run basic checks
+        window.addEventListener('load', () => {
+            addLog('🚀 Debug da página produção iniciado', 'info');
+            checkLocalStorage();
+        });
+    </script>
+</body>
+</html>
