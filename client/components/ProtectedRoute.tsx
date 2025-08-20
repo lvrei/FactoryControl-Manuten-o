@@ -20,14 +20,21 @@ export function ProtectedRoute({
 
   useEffect(() => {
     const checkAuth = () => {
-      const session = authService.getCurrentUser();
-      const authenticated = authService.isAuthenticated();
-      
-      setUserSession(session);
-      setIsAuthenticated(authenticated);
+      try {
+        const session = authService.getCurrentUser();
+        const authenticated = authService.isAuthenticated();
 
-      if (authenticated) {
-        authService.updateActivity();
+        setUserSession(session);
+        setIsAuthenticated(authenticated);
+
+        if (authenticated && session) {
+          authService.updateActivity();
+        }
+      } catch (error) {
+        console.error('❌ Error checking auth:', error);
+        // In case of error, try to recover
+        setIsAuthenticated(false);
+        setUserSession(null);
       }
     };
 
