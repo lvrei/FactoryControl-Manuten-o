@@ -65,12 +65,14 @@ function ProductionNew() {
         productionService.getMachines(),
         productionService.getOperatorSessions(true)
       ]);
-      
+
+      console.log(`📋 Loaded ${orders.length} production orders`);
       setProductionOrders(orders);
       setMachines(machinesData);
       setOperatorSessions(sessions);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
+      alert('Erro ao carregar dados de produção');
     } finally {
       setLoading(false);
     }
