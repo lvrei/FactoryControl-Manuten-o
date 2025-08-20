@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐛 Debug - Problemas OP e Portal</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .section { 
+            border: 1px solid #ddd; 
+            margin: 20px 0; 
+            padding: 15px; 
+            border-radius: 8px;
+        }
+        .button-group { margin: 20px 0; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🐛 Debug - Problemas Identificados</h1>
+        
+        <div class="section">
+            <h2>📋 Problema 1: Criação de OPs</h2>
+            <p><strong>Sintoma:</strong> OP criada mas não aparece na lista</p>
+            <button onclick="debugOrderCreation()">🔍 Debug Criação OPs</button>
+            <button onclick="testCreateOrder()">🧪 Teste Criar OP</button>
+            <button onclick="listOrders()">📋 Listar OPs</button>
+        </div>
+
+        <div class="section">
+            <h2>👤 Problema 2: Portal do Operador</h2>
+            <p><strong>Sintoma:</strong> Erro ao entrar em qualquer máquina</p>
+            <button onclick="debugOperatorPortal()">🔍 Debug Portal</button>
+            <button onclick="checkOperatorMethods()">⚙️ Verificar Métodos</button>
+            <button onclick="testOperatorSession()">🧪 Teste Sessão</button>
+        </div>
+
+        <div class="section">
+            <h2>🔧 Correções Automáticas</h2>
+            <button onclick="fixAllIssues()">🚀 Corrigir Todos os Problemas</button>
+            <button onclick="resetSystem()">🔄 Resetar Sistema</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function debugOrderCreation() {
+            addLog('🔍 Debugando criação de OPs...', 'info');
+            
+            try {
+                // Check if createProductionOrder method exists
+                if (window.productionService && window.productionService.createProductionOrder) {
+                    addLog('✅ Método createProductionOrder existe', 'success');
+                } else {
+                    addLog('❌ Método createProductionOrder não encontrado', 'error');
+                    return;
+                }
+
+                // Check storage
+                const stored = localStorage.getItem('factoryControl_production');
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    addLog(`📊 ${data.productionOrders?.length || 0} OPs no storage`, 'info');
+                    
+                    if (data.productionOrders && data.productionOrders.length > 0) {
+                        addLog('📋 OPs encontradas:', 'info');
+                        data.productionOrders.forEach((order, idx) => {
+                            addLog(`  ${idx + 1}. ${order.orderNumber} - ${order.status}`, 'info');
+                        });
+                    }
+                } else {
+                    addLog('⚠️ Nenhum dado no storage', 'warning');
+                }
+
+            } catch (error) {
+                addLog(`❌ Erro no debug: ${error.message}`, 'error');
+            }
+        }
+
+        async function testCreateOrder() {
+            addLog('🧪 Testando criação de OP...', 'info');
+            
+            try {
+                if (!window.productionService) {
+                    addLog('❌ productionService não disponível', 'error');
+                    return;
+                }
+
+                const testOrder = {
+                    orderNumber: `OP-TEST-${Date.now()}`,
+                    customer: {
+                        id: 'test-customer',
+                        name: 'Cliente Teste',
+                        contact: 'teste@exemplo.com'
+                    },
+                    expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    lines: [],
+                    status: 'created',
+                    priority: 'medium',
+                    totalVolume: 0,
+                    estimatedCost: 0,
+                    notes: 'OP de teste para debug',
+                    createdBy: 'Debug'
+                };
+
+                const created = await window.productionService.createProductionOrder(testOrder);
+                addLog(`✅ OP criada: ${created.orderNumber}`, 'success');
+                
+                // Verify it was saved
+                setTimeout(() => listOrders(), 500);
+
+            } catch (error) {
+                addLog(`❌ Erro ao criar OP: ${error.message}`, 'error');
+            }
+        }
+
+        async function listOrders() {
+            addLog('📋 Listando OPs...', 'info');
+            
+            try {
+                if (!window.productionService) {
+                    addLog('❌ productionService não disponível', 'error');
+                    return;
+                }
+
+                const orders = await window.productionService.getProductionOrders();
+                addLog(`📊 Total de OPs: ${orders.length}`, 'info');
+                
+                if (orders.length === 0) {
+                    addLog('⚠️ Nenhuma OP encontrada', 'warning');
+                } else {
+                    orders.forEach((order, idx) => {
+                        addLog(`  ${idx + 1}. ${order.orderNumber} - ${order.status} - ${order.customer.name}`, 'info');
+                    });
+                }
+
+            } catch (error) {
+                addLog(`❌ Erro ao listar OPs: ${error.message}`, 'error');
+            }
+        }
+
+        async function debugOperatorPortal() {
+            addLog('🔍 Debugando portal do operador...', 'info');
+            
+            try {
+                // Check methods needed for operator portal
+                const requiredMethods = [
+                    'startOperatorSession',
+                    'endOperatorSession', 
+                    'getOperatorSessions',
+                    'getOperatorWorkItems',
+                    'getChatMessages'
+                ];
+
+                let missingMethods = [];
+                
+                requiredMethods.forEach(method => {
+                    if (window.productionService && typeof window.productionService[method] === 'function') {
+                        addLog(`✅ Método ${method} existe`, 'success');
+                    } else {
+                        addLog(`❌ Método ${method} não encontrado`, 'error');
+                        missingMethods.push(method);
+                    }
+                });
+
+                if (missingMethods.length === 0) {
+                    addLog('✅ Todos os métodos necessários estão presentes', 'success');
+                } else {
+                    addLog(`❌ ${missingMethods.length} métodos em falta: ${missingMethods.join(', ')}`, 'error');
+                }
+
+            } catch (error) {
+                addLog(`❌ Erro no debug: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkOperatorMethods() {
+            addLog('⚙️ Verificando métodos do operador...', 'info');
+            
+            try {
+                if (!window.productionService) {
+                    addLog('❌ productionService não disponível', 'error');
+                    return;
+                }
+
+                // Check if machines are available
+                const machines = await window.productionService.getMachines();
+                addLog(`🏭 ${machines.length} máquinas disponíveis`, 'info');
+
+                // Check if we can get work items
+                const workItems = await window.productionService.getOperatorWorkItems();
+                addLog(`📋 ${workItems.length} work items encontrados`, 'info');
+
+                // Check sessions
+                const sessions = await window.productionService.getOperatorSessions();
+                addLog(`👤 ${sessions.length} sessões no histórico`, 'info');
+
+            } catch (error) {
+                addLog(`❌ Erro ao verificar métodos: ${error.message}`, 'error');
+            }
+        }
+
+        async function testOperatorSession() {
+            addLog('🧪 Testando sessão do operador...', 'info');
+            
+            try {
+                if (!window.productionService) {
+                    addLog('❌ productionService não disponível', 'error');
+                    return;
+                }
+
+                // Get first available machine
+                const machines = await window.productionService.getMachines();
+                if (machines.length === 0) {
+                    addLog('❌ Nenhuma máquina disponível', 'error');
+                    return;
+                }
+
+                const machine = machines[0];
+                addLog(`🏭 Testando com máquina: ${machine.name}`, 'info');
+
+                // Try to start a session
+                const session = await window.productionService.startOperatorSession(
+                    'test-operator',
+                    'Operador Teste',
+                    machine.id
+                );
+
+                addLog(`✅ Sessão criada: ${session.id}`, 'success');
+
+                // End the session
+                await window.productionService.endOperatorSession(session.id);
+                addLog('✅ Sessão encerrada com sucesso', 'success');
+
+            } catch (error) {
+                addLog(`❌ Erro no teste de sessão: ${error.message}`, 'error');
+            }
+        }
+
+        async function fixAllIssues() {
+            addLog('🚀 Corrigindo todos os problemas...', 'info');
+            
+            try {
+                // Clear and reinitialize
+                if (window.initializeCleanSystem) {
+                    await window.initializeCleanSystem();
+                    addLog('✅ Sistema reinicializado', 'success');
+                }
+
+                // Test both functionalities
+                await testCreateOrder();
+                await testOperatorSession();
+
+                addLog('🎉 Correções aplicadas! Recarregue a página principal.', 'success');
+
+            } catch (error) {
+                addLog(`❌ Erro na correção: ${error.message}`, 'error');
+            }
+        }
+
+        async function resetSystem() {
+            addLog('🔄 Resetando sistema...', 'info');
+            
+            if (window.clearProductionData) {
+                await window.clearProductionData();
+                addLog('✅ Sistema resetado', 'success');
+            } else {
+                // Manual reset
+                localStorage.clear();
+                addLog('✅ localStorage limpo manualmente', 'success');
+            }
+            
+            addLog('🔄 Recarregue a página para aplicar', 'warning');
+        }
+
+        // Auto-run basic checks
+        window.addEventListener('load', () => {
+            addLog('🐛 Debug dos problemas iniciado', 'info');
+            setTimeout(() => {
+                debugOrderCreation();
+                debugOperatorPortal();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
