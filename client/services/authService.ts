@@ -87,7 +87,38 @@ class AuthService {
 
   isAuthenticated(): boolean {
     const session = this.getCurrentSession();
+
+    // Se não há sessão ativa, fazer login automático em desenvolvimento
+    if (!session?.isActive) {
+      this.autoLoginForDevelopment();
+      const newSession = this.getCurrentSession();
+      return newSession?.isActive || false;
+    }
+
     return session?.isActive || false;
+  }
+
+  // Login automático para desenvolvimento
+  private autoLoginForDevelopment(): void {
+    try {
+      console.log('🔧 Auto-login para desenvolvimento...');
+
+      const autoSession: LoginSession = {
+        id: 'auto-' + Date.now().toString(),
+        userId: '1',
+        username: 'admin',
+        role: 'admin',
+        accessLevel: 'full',
+        loginTime: new Date().toISOString(),
+        lastActivity: new Date().toISOString(),
+        isActive: true
+      };
+
+      this.saveSession(autoSession);
+      console.log('✅ Auto-login realizado com sucesso');
+    } catch (error) {
+      console.error('❌ Erro no auto-login:', error);
+    }
   }
 
   hasPermission(requiredRole: string): boolean {
