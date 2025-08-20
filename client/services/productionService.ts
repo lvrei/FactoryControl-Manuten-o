@@ -1076,3 +1076,9 @@ class ProductionService {
 }
 
 export const productionService = new ProductionService();
+
+// Expose for debugging in console
+if (typeof window !== 'undefined') {
+  (window as any).productionService = productionService;
+  console.log('🔧 productionService available globally for debugging');
+}
