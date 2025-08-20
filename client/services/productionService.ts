@@ -929,30 +929,30 @@ class ProductionService {
 
   async markOrderLineAsShipped(orderId: string, lineId: string): Promise<ProductionOrder> {
     const data = this.getStoredData();
-    const orderIndex = data.orders.findIndex((order: ProductionOrder) => order.id === orderId);
+    const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === orderId);
 
     if (orderIndex === -1) {
       throw new Error('Order not found');
     }
 
-    const lineIndex = data.orders[orderIndex].lines.findIndex((line: ProductionOrderLine) => line.id === lineId);
+    const lineIndex = data.productionOrders[orderIndex].lines.findIndex((line: ProductionOrderLine) => line.id === lineId);
 
     if (lineIndex === -1) {
       throw new Error('Order line not found');
     }
 
     // Mark the line as shipped/completed
-    data.orders[orderIndex].lines[lineIndex].status = 'completed';
-    data.orders[orderIndex].lines[lineIndex].shippedAt = new Date().toISOString();
+    data.productionOrders[orderIndex].lines[lineIndex].status = 'completed';
+    data.productionOrders[orderIndex].lines[lineIndex].shippedAt = new Date().toISOString();
 
     // Update order status if all lines are completed
-    const allLinesCompleted = data.orders[orderIndex].lines.every((line: ProductionOrderLine) => line.status === 'completed');
+    const allLinesCompleted = data.productionOrders[orderIndex].lines.every((line: ProductionOrderLine) => line.status === 'completed');
     if (allLinesCompleted) {
-      data.orders[orderIndex].status = 'completed';
+      data.productionOrders[orderIndex].status = 'completed';
     }
 
     this.saveData(data);
-    return data.orders[orderIndex];
+    return data.productionOrders[orderIndex];
   }
 }
 
