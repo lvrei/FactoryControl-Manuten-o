@@ -409,18 +409,38 @@ class ProductionService {
     const orders = await this.getProductionOrders();
     const workItems: OperatorWorkItem[] = [];
 
+    console.log(`🔍 Getting work items for machine: ${machineId}, found ${orders.length} orders`);
+
     orders.forEach(order => {
+      console.log(`📋 Order ${order.orderNumber}: status=${order.status}, lines=${order.lines.length}`);
+
       // Só mostrar OPs que estão em andamento ou programadas (não completed)
-      if (order.status === 'completed') return;
+      if (order.status === 'completed') {
+        console.log(`⏭️ Skipping completed order: ${order.orderNumber}`);
+        return;
+      }
 
       order.lines.forEach(line => {
+        console.log(`📄 Line ${line.id}: status=${line.status}, completed=${line.completedQuantity}/${line.quantity}, operations=${line.cuttingOperations.length}`);
+
         line.cuttingOperations.forEach(operation => {
+          console.log(`⚙️ Operation ${operation.id}: machine=${operation.machineId}, status=${operation.status}, completed=${operation.completedQuantity}/${operation.quantity}`);
+
           // Skip operations that are fully completed
-          if (operation.status === 'completed' && operation.completedQuantity >= operation.quantity) return;
+          if (operation.status === 'completed' && operation.completedQuantity >= operation.quantity) {
+            console.log(`✅ Skipping completed operation: ${operation.id}`);
+            return;
+          }
           // Skip operations for different machines
-          if (machineId && operation.machineId !== machineId) return;
+          if (machineId && operation.machineId !== machineId) {
+            console.log(`🏭 Skipping operation for different machine: ${operation.id} (machine: ${operation.machineId}, looking for: ${machineId})`);
+            return;
+          }
           // Skip if remaining quantity is 0 or less
-          if (operation.quantity - operation.completedQuantity <= 0) return;
+          if (operation.quantity - operation.completedQuantity <= 0) {
+            console.log(`📊 Skipping operation with no remaining quantity: ${operation.id}`);
+            return;
+          }
 
           const machine = this.mockMachines.find(m => m.id === operation.machineId);
           if (!machine) return;
