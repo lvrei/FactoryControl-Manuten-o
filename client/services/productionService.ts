@@ -983,6 +983,21 @@ class ProductionService {
     this.saveData(data);
     return data.productionOrders[orderIndex];
   }
+
+  // Debug methods
+  async debugPrintStorageData(): Promise<void> {
+    const data = this.getStoredData();
+    console.log('=== STORAGE DEBUG ===');
+    console.log('Storage key:', this.storageKey);
+    console.log('Production orders:', data.productionOrders?.length || 0);
+    console.log('Full data:', JSON.stringify(data, null, 2));
+    console.log('===================');
+  }
+
+  async clearAllData(): Promise<void> {
+    localStorage.removeItem(this.storageKey);
+    console.log('All production data cleared');
+  }
 }
 
 export const productionService = new ProductionService();
