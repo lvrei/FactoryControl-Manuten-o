@@ -575,7 +575,9 @@ function ProductionNew() {
           onClose={() => {
             setShowOrderForm(false);
             setEditingOrder(null);
-            loadData();
+          }}
+          onOrderCreated={() => {
+            loadData(); // Recarregar dados após criação/edição
           }}
         />
       )}
