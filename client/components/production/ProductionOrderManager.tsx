@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 interface ProductionOrderManagerProps {
   onClose?: () => void;
   editingOrder?: ProductionOrder | null;
+  onOrderCreated?: () => void;
 }
 
 export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrderManagerProps) {
