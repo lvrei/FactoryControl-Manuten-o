@@ -1219,8 +1219,19 @@ if (typeof window !== 'undefined') {
     await productionService.debugPrintStorageData();
   };
 
+  (window as any).fixBzmIssue = async () => {
+    await productionService.fixBzmIssue();
+    console.log('✅ BZM issue fixed. Refresh the page.');
+  };
+
+  (window as any).validateData = async () => {
+    return await productionService.validateDataIntegrity();
+  };
+
   console.log('🔧 Global functions available:');
   console.log('  - clearProductionData()');
   console.log('  - fixProductionData()');
   console.log('  - debugProduction()');
+  console.log('  - fixBzmIssue() - Correção específica para BZM');
+  console.log('  - validateData() - Validar integridade dos dados');
 }
