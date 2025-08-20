@@ -473,7 +473,7 @@ class ProductionService {
       data.productionOrders = [];
     }
 
-    console.log(`📊 Searching in ${data.productionOrders.length} orders`);
+    console.log(`��� Searching in ${data.productionOrders.length} orders`);
 
     const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === orderId);
     if (orderIndex === -1) {
@@ -1260,10 +1260,16 @@ if (typeof window !== 'undefined') {
     return await productionService.validateDataIntegrity();
   };
 
+  (window as any).initializeCleanSystem = async () => {
+    await productionService.initializeCleanSystem();
+    console.log('✅ Clean system initialized. Refresh the page.');
+  };
+
   console.log('🔧 Global functions available:');
   console.log('  - clearProductionData()');
   console.log('  - fixProductionData()');
   console.log('  - debugProduction()');
   console.log('  - fixBzmIssue() - Correção específica para BZM');
   console.log('  - validateData() - Validar integridade dos dados');
+  console.log('  - initializeCleanSystem() - Inicializar sistema completamente limpo');
 }
