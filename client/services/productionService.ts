@@ -334,37 +334,6 @@ class ProductionService {
     return data.machines[machineIndex];
   }
 
-  async updateMachineStatus(id: string, status: 'available' | 'busy' | 'maintenance' | 'offline'): Promise<void> {
-    const data = this.getStoredData();
-    if (!data.machines) {
-      data.machines = [...this.mockMachines];
-    }
-
-    const machineIndex = data.machines.findIndex((machine: Machine) => machine.id === id);
-    if (machineIndex !== -1) {
-      data.machines[machineIndex].status = status;
-      this.saveData(data);
-    }
-
-    // Also update the maintenance service status tracking
-    const machineStatusKey = 'factoryControl_machineStatus';
-    const statusUpdates = JSON.parse(localStorage.getItem(machineStatusKey) || '{}');
-    statusUpdates[id] = {
-      status,
-      updatedAt: new Date().toISOString()
-    };
-    localStorage.setItem(machineStatusKey, JSON.stringify(statusUpdates));
-
-    // Update the main machine data as well
-    const machineData = this.getStoredData();
-    if (machineData.machines) {
-      const machineIndex = machineData.machines.findIndex((machine: Machine) => machine.id === id);
-      if (machineIndex !== -1) {
-        machineData.machines[machineIndex].status = status;
-        this.saveData(machineData);
-      }
-    }
-  }
 
   async deleteMachine(id: string): Promise<void> {
     const data = this.getStoredData();
@@ -382,7 +351,7 @@ class ProductionService {
 
     const machine = data.machines.find((m: Machine) => m.id === machineId);
     if (!machine) {
-      throw new Error('M��quina não encontrada');
+      throw new Error('Máquina não encontrada');
     }
 
     machine.status = status;
@@ -417,7 +386,7 @@ class ProductionService {
     console.log(`🔍 Getting work items for machine: ${machineId}, found ${orders.length} orders`);
 
     orders.forEach(order => {
-      console.log(`📋 Order ${order.orderNumber}: status=${order.status}, lines=${order.lines.length}`);
+      console.log(`���� Order ${order.orderNumber}: status=${order.status}, lines=${order.lines.length}`);
 
       // Só mostrar OPs que estão em andamento ou programadas (não completed)
       if (order.status === 'completed') {
@@ -522,17 +491,26 @@ class ProductionService {
       return;
     }
 
-    const operation = line.cuttingOperations.find((op: CuttingOperation) => op.id === operationId);
+    let operation = line.cuttingOperations.find((op: CuttingOperation) => op.id === operationId);
     if (!operation) {
       console.error(`❌ Operation not found: ${operationId}`);
       console.log('Available operations:', line.cuttingOperations.map((op: CuttingOperation) => op.id));
+      console.log('Looking for operation ID type:', typeof operationId, operationId);
+      console.log('Available operation ID types:', line.cuttingOperations.map((op: CuttingOperation) => [typeof op.id, op.id]));
 
-      // Auto-fix and retry
-      console.log('🔧 Attempting to fix data automatically...');
-      await this.fixDataConsistency();
+      // Try finding by string conversion
+      operation = line.cuttingOperations.find((op: CuttingOperation) => op.id.toString() === operationId.toString());
 
-      alert(`Dados inconsistentes detectados e corrigidos automaticamente.\n\nPor favor, atualize a página (F5) e tente novamente.`);
-      return;
+      if (!operation) {
+        // Auto-fix and retry
+        console.log('🔧 Attempting to fix data automatically...');
+        await this.fixDataConsistency();
+
+        alert(`Operação não encontrada (ID: ${operationId}).\n\nOs dados foram corrigidos automaticamente.\nPor favor, atualize a página (F5) e tente novamente.`);
+        return;
+      } else {
+        console.log('✅ Found operation after string conversion');
+      }
     }
 
     console.log(`BEFORE - Operation ${operationId}: completed=${operation.completedQuantity}, quantity=${operation.quantity}, status=${operation.status}`);
@@ -1029,19 +1007,21 @@ class ProductionService {
   async createTestOrder(): Promise<void> {
     console.log('Creating test order with consistent IDs...');
 
+    // Use timestamp-based IDs for consistency
+    const timestamp = Date.now();
     const testOrder = {
-      orderNumber: 'OP-20241201-001',
+      orderNumber: `OP-${new Date().getFullYear()}${String(new Date().getMonth() + 1).padStart(2, '0')}${String(new Date().getDate()).padStart(2, '0')}-${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`,
       customer: {
-        id: 'cust-1',
-        name: 'Cliente Teste',
-        contact: 'cliente@teste.com'
+        id: 'cust-test-1',
+        name: 'Cliente Teste BZM',
+        contact: 'teste@bzm.com'
       },
       expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
       priority: 'medium' as const,
-      notes: 'Ordem de teste para debug',
+      notes: 'Ordem de teste para debug - BZM',
       lines: [
         {
-          id: 'line-1',
+          id: `line-${timestamp}`,
           foamType: this.mockFoamTypes[0],
           initialDimensions: { length: 4000, width: 2000, height: 2000 },
           finalDimensions: { length: 1000, width: 500, height: 200 },
@@ -1051,7 +1031,7 @@ class ProductionService {
           priority: 5,
           cuttingOperations: [
             {
-              id: 'op-bzm-1',
+              id: `op-bzm-${timestamp}`,
               machineId: '1', // BZM-01
               inputDimensions: { length: 4000, width: 2000, height: 2000 },
               outputDimensions: { length: 1000, width: 500, height: 200 },
@@ -1059,7 +1039,7 @@ class ProductionService {
               completedQuantity: 0,
               estimatedTime: 30,
               status: 'pending' as const,
-              observations: 'Corte inicial do bloco de espuma'
+              observations: 'Corte inicial do bloco de espuma - Teste'
             }
           ]
         }
@@ -1067,7 +1047,7 @@ class ProductionService {
     };
 
     await this.createProductionOrder(testOrder);
-    console.log('Test order created successfully!');
+    console.log('✅ Test order created successfully!', testOrder.orderNumber);
   }
 
   async ensureDataConsistency(): Promise<void> {
