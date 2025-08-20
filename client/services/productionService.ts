@@ -998,6 +998,62 @@ class ProductionService {
     localStorage.removeItem(this.storageKey);
     console.log('All production data cleared');
   }
+
+  async createTestOrder(): Promise<void> {
+    console.log('Creating test order with consistent IDs...');
+
+    const testOrder = {
+      orderNumber: 'OP-20241201-001',
+      customer: {
+        id: 'cust-1',
+        name: 'Cliente Teste',
+        contact: 'cliente@teste.com'
+      },
+      expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      priority: 'medium' as const,
+      notes: 'Ordem de teste para debug',
+      lines: [
+        {
+          id: 'line-1',
+          foamType: this.mockFoamTypes[0],
+          initialDimensions: { length: 4000, width: 2000, height: 2000 },
+          finalDimensions: { length: 1000, width: 500, height: 200 },
+          quantity: 5,
+          completedQuantity: 0,
+          status: 'pending' as const,
+          priority: 5,
+          cuttingOperations: [
+            {
+              id: 'op-bzm-1',
+              machineId: '1', // BZM-01
+              inputDimensions: { length: 4000, width: 2000, height: 2000 },
+              outputDimensions: { length: 1000, width: 500, height: 200 },
+              quantity: 5,
+              completedQuantity: 0,
+              estimatedTime: 30,
+              status: 'pending' as const,
+              observations: 'Corte inicial do bloco de espuma'
+            }
+          ]
+        }
+      ]
+    };
+
+    await this.createProductionOrder(testOrder);
+    console.log('Test order created successfully!');
+  }
+
+  async fixDataConsistency(): Promise<void> {
+    console.log('🔧 Fixing data consistency...');
+
+    // Clear all data first
+    await this.clearAllData();
+
+    // Create a clean test order
+    await this.createTestOrder();
+
+    console.log('✅ Data consistency fixed!');
+  }
 }
 
 export const productionService = new ProductionService();
