@@ -1055,8 +1055,8 @@ class ProductionService {
 
     // Check if we have valid orders with consistent data
     if (!data.productionOrders || data.productionOrders.length === 0) {
-      console.log('📋 No orders found, creating test data...');
-      await this.createTestOrder();
+      console.log('📋 No orders found - system starting clean');
+      // Don't create test data automatically - keep system clean
       return;
     }
 
@@ -1085,8 +1085,10 @@ class ProductionService {
     }
 
     if (hasInconsistentData) {
-      console.log('🔧 Inconsistent data detected, fixing...');
-      await this.fixDataConsistency();
+      console.log('🔧 Inconsistent data detected, removing invalid data...');
+      // Instead of auto-fixing, just clear the bad data
+      await this.clearAllData();
+      console.log('✅ Invalid data cleared - system is now clean');
     }
   }
 
