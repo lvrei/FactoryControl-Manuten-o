@@ -219,8 +219,14 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
         await productionService.updateProductionOrder(editingOrder.id, orderData);
         alert('Ordem de produção atualizada com sucesso!');
       } else {
-        await productionService.createProductionOrder(orderData);
+        const createdOrder = await productionService.createProductionOrder(orderData);
+        console.log('✅ Order created successfully:', createdOrder.orderNumber);
         alert('Ordem de produção criada com sucesso!');
+      }
+
+      // Chamar callback para recarregar dados
+      if (onOrderCreated) {
+        onOrderCreated();
       }
 
       if (onClose) onClose();
