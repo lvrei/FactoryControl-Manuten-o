@@ -23,7 +23,7 @@ interface ProductionOrderManagerProps {
   onOrderCreated?: () => void;
 }
 
-export function ProductionOrderManager({ onClose, editingOrder }: ProductionOrderManagerProps) {
+export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }: ProductionOrderManagerProps) {
   const [foamTypes, setFoamTypes] = useState<FoamType[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
   const [loading, setLoading] = useState(true);
