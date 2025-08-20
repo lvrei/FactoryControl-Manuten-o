@@ -108,6 +108,8 @@ class ProductionService {
     const data = this.getStoredData();
     let orders = data.productionOrders || [];
 
+    console.log(`📋 Loading production orders from storage: ${orders.length} orders found`);
+
     if (filters) {
       if (filters.status?.length) {
         orders = orders.filter((order: ProductionOrder) => filters.status!.includes(order.status));
