@@ -81,6 +81,7 @@ export interface ProductionOrderLine {
   cuttingOperations: CuttingOperation[];
   status: 'pending' | 'in_progress' | 'completed';
   priority: number; // 1-10, onde 10 é mais prioritário
+  shippedAt?: string; // Date when the line was shipped
 }
 
 export interface ProductionOrder {
