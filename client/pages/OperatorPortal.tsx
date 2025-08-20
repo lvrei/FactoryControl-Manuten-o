@@ -29,6 +29,7 @@ import { Machine, OperatorWorkItem, OperatorSession, ChatMessage, PrintLabel, Ma
 import { productionService } from '@/services/productionService';
 import { labelService } from '@/services/labelService';
 import { PrinterSetup } from '@/components/PrinterSetup';
+import MaterialShipping from './MaterialShipping';
 import { authService } from '@/services/authService';
 import { maintenanceService } from '@/services/maintenanceService';
 import { MessageNotificationContainer } from '@/components/MessageNotification';
