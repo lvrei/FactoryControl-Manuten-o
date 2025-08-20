@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Teste Métodos BZM</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #f5f5f5;
+        }
+        .container { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 8px 16px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        pre { 
+            background: #f8f9fa; 
+            padding: 10px; 
+            border-radius: 4px; 
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Teste Específico - Métodos BZM</h1>
+        
+        <div class="step">
+            <h2>1. Verificar Métodos</h2>
+            <button onclick="checkMethods()">🔍 Verificar Todos os Métodos</button>
+        </div>
+
+        <div class="step">
+            <h2>2. Criar OP para Teste</h2>
+            <button onclick="createTestOrder()">📋 Criar OP Teste</button>
+        </div>
+
+        <div class="step">
+            <h2>3. Testar Sessão Operador</h2>
+            <button onclick="testOperatorSession()">👤 Testar Sessão BZM</button>
+        </div>
+
+        <div class="step">
+            <h2>4. Testar Work Items</h2>
+            <button onclick="testWorkItems()">⚙️ Testar Work Items</button>
+        </div>
+
+        <div class="step">
+            <h2>5. Testar Conclusão</h2>
+            <button onclick="testCompletion()">✅ Testar Conclusão</button>
+        </div>
+
+        <div class="step">
+            <h2>🚀 Teste Completo</h2>
+            <button onclick="runFullTest()">🧪 Executar Teste Completo</button>
+            <button onclick="resetAndTest()">🔄 Reset + Teste</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const results = document.getElementById('results');
+
+        function addLog(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `status ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function checkMethods() {
+            addLog('🔍 Verificando métodos do productionService...', 'info');
+            
+            const requiredMethods = [
+                'getProductionOrders',
+                'createProductionOrder',
+                'getOperatorWorkItems', 
+                'startOperatorSession',
+                'endOperatorSession',
+                'getOperatorSessions',
+                'getChatMessages',
+                'completeWorkItem',
+                'getMachines'
+            ];
+
+            let allPresent = true;
+
+            if (!window.productionService) {
+                addLog('❌ productionService não está disponível', 'error');
+                return false;
+            }
+
+            requiredMethods.forEach(method => {
+                const exists = typeof window.productionService[method] === 'function';
+                addLog(`${exists ? '✅' : '❌'} ${method}: ${exists ? 'OK' : 'FALTA'}`, exists ? 'success' : 'error');
+                if (!exists) allPresent = false;
+            });
+
+            if (allPresent) {
+                addLog('🎉 Todos os métodos necessários estão presentes!', 'success');
+            } else {
+                addLog('❌ Alguns métodos estão em falta - verificar implementação', 'error');
+            }
+
+            return allPresent;
+        }
+
+        async function createTestOrder() {
+            addLog('📋 Criando OP de teste para BZM...', 'info');
+
+            try {
+                const testOrder = {
+                    orderNumber: `OP-BZM-TEST-${Date.now()}`,
+                    customer: {
+                        id: 'test-bzm',
+                        name: 'Cliente Teste BZM',
+                        contact: 'bzm@teste.com'
+                    },
+                    expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    lines: [{
+                        id: `line-${Date.now()}`,
+                        foamType: {
+                            id: '1',
+                            name: 'Espuma D20',
+                            density: 20,
+                            hardness: 'Macia',
+                            color: 'Branca',
+                            specifications: 'Teste BZM',
+                            pricePerM3: 45.00
+                        },
+                        initialDimensions: { length: 4000, width: 2000, height: 2000 },
+                        finalDimensions: { length: 1000, width: 500, height: 200 },
+                        quantity: 3,
+                        completedQuantity: 0,
+                        status: 'pending',
+                        priority: 5,
+                        cuttingOperations: [{
+                            id: `op-bzm-${Date.now()}`,
+                            machineId: '1', // BZM-01
+                            inputDimensions: { length: 4000, width: 2000, height: 2000 },
+                            outputDimensions: { length: 1000, width: 500, height: 200 },
+                            quantity: 3,
+                            completedQuantity: 0,
+                            estimatedTime: 30,
+                            status: 'pending',
+                            observations: 'Teste completo BZM'
+                        }]
+                    }],
+                    status: 'created',
+                    priority: 'high',
+                    totalVolume: 0,
+                    estimatedCost: 0,
+                    notes: 'OP específica para teste BZM',
+                    createdBy: 'TesteBZM'
+                };
+
+                const created = await window.productionService.createProductionOrder(testOrder);
+                addLog(`✅ OP criada: ${created.orderNumber}`, 'success');
+                
+                // Store for later use
+                window.testOrderId = created.id;
+                window.testWorkItemId = `${created.id}-${testOrder.lines[0].id}-${testOrder.lines[0].cuttingOperations[0].id}`;
+                
+                addLog(`📋 Work Item ID: ${window.testWorkItemId}`, 'info');
+                return created;
+
+            } catch (error) {
+                addLog(`❌ Erro ao criar OP: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function testOperatorSession() {
+            addLog('👤 Testando sessão do operador na BZM...', 'info');
+
+            try {
+                // Start session
+                const session = await window.productionService.startOperatorSession(
+                    'test-operator-bzm',
+                    'Operador Teste BZM',
+                    '1' // BZM-01
+                );
+
+                addLog(`✅ Sessão iniciada: ${session.id}`, 'success');
+                addLog(`👤 Operador: ${session.operatorName} na ${session.machineName}`, 'info');
+
+                // Store session for cleanup
+                window.testSessionId = session.id;
+
+                return session;
+
+            } catch (error) {
+                addLog(`❌ Erro na sessão: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        async function testWorkItems() {
+            addLog('⚙️ Testando work items para BZM...', 'info');
+
+            try {
+                const workItems = await window.productionService.getOperatorWorkItems('1'); // BZM-01
+                addLog(`📋 Work items encontrados: ${workItems.length}`, 'info');
+
+                if (workItems.length === 0) {
+                    addLog('⚠️ Nenhum work item encontrado - criar OP primeiro', 'warning');
+                } else {
+                    workItems.forEach((item, idx) => {
+                        addLog(`  ${idx + 1}. ${item.orderNumber} - ${item.foamType} - Restante: ${item.remainingQuantity}`, 'info');
+                    });
+                }
+
+                return workItems;
+
+            } catch (error) {
+                addLog(`❌ Erro ao buscar work items: ${error.message}`, 'error');
+                return [];
+            }
+        }
+
+        async function testCompletion() {
+            addLog('✅ Testando conclusão de operação...', 'info');
+
+            try {
+                if (!window.testWorkItemId) {
+                    addLog('⚠️ Nenhum work item de teste - criar OP primeiro', 'warning');
+                    return false;
+                }
+
+                await window.productionService.completeWorkItem(
+                    window.testWorkItemId,
+                    1,
+                    'Teste automático de conclusão BZM'
+                );
+
+                addLog(`✅ Operação completada: ${window.testWorkItemId}`, 'success');
+                return true;
+
+            } catch (error) {
+                addLog(`❌ Erro na conclusão: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        async function runFullTest() {
+            addLog('🧪 Iniciando teste completo do sistema BZM...', 'info');
+
+            try {
+                // Step 1: Check methods
+                if (!checkMethods()) {
+                    addLog('❌ Teste abortado - métodos em falta', 'error');
+                    return;
+                }
+
+                // Step 2: Create test order
+                const order = await createTestOrder();
+                if (!order) {
+                    addLog('❌ Teste abortado - falha na criação da OP', 'error');
+                    return;
+                }
+
+                // Step 3: Start operator session
+                const session = await testOperatorSession();
+                if (!session) {
+                    addLog('❌ Teste abortado - falha na sessão', 'error');
+                    return;
+                }
+
+                // Step 4: Test work items
+                const workItems = await testWorkItems();
+                if (workItems.length === 0) {
+                    addLog('❌ Teste abortado - nenhum work item', 'error');
+                    return;
+                }
+
+                // Step 5: Test completion
+                const completed = await testCompletion();
+                if (!completed) {
+                    addLog('❌ Teste abortado - falha na conclusão', 'error');
+                    return;
+                }
+
+                // Cleanup
+                if (window.testSessionId) {
+                    await window.productionService.endOperatorSession(window.testSessionId);
+                    addLog('🧹 Sessão encerrada', 'info');
+                }
+
+                addLog('🎉 TESTE COMPLETO BEM-SUCEDIDO!', 'success');
+                addLog('✅ Todos os métodos funcionando corretamente', 'success');
+                addLog('🔄 Sistema BZM está operacional', 'success');
+
+            } catch (error) {
+                addLog(`❌ Erro no teste completo: ${error.message}`, 'error');
+            }
+        }
+
+        async function resetAndTest() {
+            addLog('🔄 Reset do sistema + teste...', 'info');
+
+            try {
+                // Reset system
+                if (window.initializeCleanSystem) {
+                    await window.initializeCleanSystem();
+                    addLog('✅ Sistema resetado', 'success');
+                } else {
+                    localStorage.clear();
+                    addLog('✅ localStorage limpo', 'success');
+                }
+
+                // Wait a bit
+                await new Promise(resolve => setTimeout(resolve, 1000));
+
+                // Run full test
+                await runFullTest();
+
+            } catch (error) {
+                addLog(`❌ Erro no reset: ${error.message}`, 'error');
+            }
+        }
+
+        // Auto-run on load
+        window.addEventListener('load', () => {
+            addLog('🔧 Sistema de teste BZM carregado', 'info');
+            setTimeout(() => {
+                checkMethods();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
