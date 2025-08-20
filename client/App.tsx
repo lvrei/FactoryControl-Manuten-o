@@ -39,52 +39,50 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/login" element={<Login />} />
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/login" element={<Login />} />
 
-              {/* Protected Backend Routes */}
-              <Route path="/" element={
-                <ProtectedRoute requiredRole="operator">
-                  <Layout />
-                </ProtectedRoute>
-              }>
-                <Route index element={<Dashboard />} />
-                <Route path="production" element={<ProductionNew />} />
-                <Route path="production-old" element={<Production />} />
-                <Route path="test-production" element={<TestProduction />} />
-                <Route path="stock" element={<Stock />} />
-                <Route path="equipment" element={<Equipment />} />
-                <Route path="quality" element={<Quality />} />
-                <Route path="maintenance" element={<MaintenanceComplete />} />
-                <Route path="team" element={
-                  <ProtectedRoute requiredRole="supervisor">
-                    <Team />
-                  </ProtectedRoute>
-                } />
-                <Route path="planning" element={<Planning />} />
-                <Route path="alerts" element={<AlertsSimple />} />
-              </Route>
-
-              {/* Protected Operator Route */}
-              <Route path="operator" element={
-                <ProtectedRoute requiredRole="operator">
-                  <OperatorPortal />
+            {/* Protected Backend Routes */}
+            <Route path="/" element={
+              <ProtectedRoute requiredRole="operator">
+                <Layout />
+              </ProtectedRoute>
+            }>
+              <Route index element={<Dashboard />} />
+              <Route path="production" element={<ProductionNew />} />
+              <Route path="production-old" element={<Production />} />
+              <Route path="test-production" element={<TestProduction />} />
+              <Route path="stock" element={<Stock />} />
+              <Route path="equipment" element={<Equipment />} />
+              <Route path="quality" element={<Quality />} />
+              <Route path="maintenance" element={<MaintenanceComplete />} />
+              <Route path="team" element={
+                <ProtectedRoute requiredRole="supervisor">
+                  <Team />
                 </ProtectedRoute>
               } />
+              <Route path="planning" element={<Planning />} />
+              <Route path="alerts" element={<AlertsSimple />} />
+            </Route>
 
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            {/* Protected Operator Route */}
+            <Route path="operator" element={
+              <ProtectedRoute requiredRole="operator">
+                <OperatorPortal />
+              </ProtectedRoute>
+            } />
 
-            {/* PWA Install Button - Simplified for debugging */}
-            <SimplePWAInstall />
-          </BrowserRouter>
-        </TooltipProvider>
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+
+          {/* PWA Install Button - Simplified for debugging */}
+          <SimplePWAInstall />
+        </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
   );
