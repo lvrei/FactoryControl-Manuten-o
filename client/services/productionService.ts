@@ -1123,5 +1123,24 @@ export const productionService = new ProductionService();
 // Expose for debugging in console
 if (typeof window !== 'undefined') {
   (window as any).productionService = productionService;
-  console.log('🔧 productionService available globally for debugging');
+
+  // Create simple global functions for common debugging tasks
+  (window as any).clearProductionData = async () => {
+    await productionService.clearAllData();
+    console.log('✅ Production data cleared. Refresh the page.');
+  };
+
+  (window as any).fixProductionData = async () => {
+    await productionService.fixDataConsistency();
+    console.log('✅ Production data fixed. Refresh the page.');
+  };
+
+  (window as any).debugProduction = async () => {
+    await productionService.debugPrintStorageData();
+  };
+
+  console.log('🔧 Global functions available:');
+  console.log('  - clearProductionData()');
+  console.log('  - fixProductionData()');
+  console.log('  - debugProduction()');
 }
