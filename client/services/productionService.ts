@@ -559,53 +559,7 @@ class ProductionService {
     }
   }
 
-  // MÉTODOS DE LIMPEZA E INICIALIZAÇÃO
-  async clearAllData(): Promise<void> {
-    try {
-      localStorage.removeItem(this.storageKey);
-      this.initialized = false;
-      console.log('✅ All production data cleared');
-    } catch (error) {
-      console.error('❌ Error clearing data:', error);
-    }
-  }
-
-  async initializeCleanSystem(): Promise<void> {
-    try {
-      console.log('🧹 Initializing completely clean system...');
-      
-      // Clear all factory control related data
-      const keys = Object.keys(localStorage);
-      keys.forEach(key => {
-        if (key.startsWith('factoryControl_') || 
-            key.includes('production') || 
-            key.includes('maintenance') || 
-            key.includes('operator') ||
-            key.includes('machine') ||
-            key.includes('shipping')) {
-          localStorage.removeItem(key);
-        }
-      });
-
-      // Initialize with empty data structure
-      const cleanData = {
-        productionOrders: [],
-        productSheets: [],
-        chatMessages: [],
-        operatorSessions: [],
-        foamBlocks: [],
-        stockMovements: []
-      };
-
-      this.saveData(cleanData);
-      this.initialized = true;
-      console.log('✅ System initialized completely clean - no test data');
-    } catch (error) {
-      console.error('❌ Error initializing clean system:', error);
-    }
-  }
-
-  // MÉTODOS DE CHAT E SESSÕES (EM FALTA)
+  // CHAT E MENSAGENS
   async getChatMessages(machineId?: string, operatorId?: string): Promise<ChatMessage[]> {
     try {
       const data = this.getStoredData();
@@ -619,7 +573,7 @@ class ProductionService {
         messages = messages.filter((msg: ChatMessage) => msg.operatorId === operatorId || msg.to === operatorId);
       }
 
-      return messages.sort((a: ChatMessage, b: ChatMessage) =>
+      return messages.sort((a: ChatMessage, b: ChatMessage) => 
         new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
       );
     } catch (error) {
@@ -668,7 +622,7 @@ class ProductionService {
       const data = this.getStoredData();
       const machines = await this.getMachines();
       const machine = machines.find(m => m.id === machineId);
-
+      
       if (!machine) {
         throw new Error('Máquina não encontrada');
       }
@@ -693,7 +647,7 @@ class ProductionService {
 
       data.operatorSessions = [...(data.operatorSessions || []), newSession];
       this.saveData(data);
-
+      
       console.log(`✅ Operator session started: ${operatorName} on ${machine.name}`);
       return newSession;
     } catch (error) {
@@ -737,7 +691,7 @@ class ProductionService {
     }
   }
 
-  // FICHAS TÉCNICAS E PRODUTOS
+  // FICHAS TÉCNICAS
   async getProductSheets(): Promise<ProductSheet[]> {
     try {
       const data = this.getStoredData();
@@ -800,6 +754,52 @@ class ProductionService {
       throw error;
     }
   }
+
+  // MÉTODOS DE LIMPEZA E INICIALIZAÇÃO
+  async clearAllData(): Promise<void> {
+    try {
+      localStorage.removeItem(this.storageKey);
+      this.initialized = false;
+      console.log('✅ All production data cleared');
+    } catch (error) {
+      console.error('❌ Error clearing data:', error);
+    }
+  }
+
+  async initializeCleanSystem(): Promise<void> {
+    try {
+      console.log('🧹 Initializing completely clean system...');
+      
+      // Clear all factory control related data
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        if (key.startsWith('factoryControl_') || 
+            key.includes('production') || 
+            key.includes('maintenance') || 
+            key.includes('operator') ||
+            key.includes('machine') ||
+            key.includes('shipping')) {
+          localStorage.removeItem(key);
+        }
+      });
+
+      // Initialize with empty data structure
+      const cleanData = {
+        productionOrders: [],
+        productSheets: [],
+        chatMessages: [],
+        operatorSessions: [],
+        foamBlocks: [],
+        stockMovements: []
+      };
+
+      this.saveData(cleanData);
+      this.initialized = true;
+      console.log('✅ System initialized completely clean - no test data');
+    } catch (error) {
+      console.error('❌ Error initializing clean system:', error);
+    }
+  }
 }
 
 export const productionService = new ProductionService();
@@ -819,7 +819,27 @@ if (typeof window !== 'undefined') {
     console.log('✅ Clean system initialized. Refresh the page.');
   };
 
+  (window as any).testAllMethods = () => {
+    const methods = [
+      'getProductionOrders',
+      'createProductionOrder', 
+      'getOperatorWorkItems',
+      'startOperatorSession',
+      'endOperatorSession',
+      'getOperatorSessions',
+      'getChatMessages',
+      'completeWorkItem'
+    ];
+    
+    console.log('🔍 Testing all methods:');
+    methods.forEach(method => {
+      const exists = typeof productionService[method] === 'function';
+      console.log(`${exists ? '✅' : '❌'} ${method}: ${exists ? 'EXISTS' : 'MISSING'}`);
+    });
+  };
+
   console.log('🔧 Global functions available:');
   console.log('  - clearProductionData()');
   console.log('  - initializeCleanSystem()');
+  console.log('  - testAllMethods() - Test all required methods');
 }
