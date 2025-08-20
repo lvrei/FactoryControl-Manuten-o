@@ -445,6 +445,24 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
             </div>
           </div>
 
+          {/* Material Shipping Option */}
+          <div className="bg-card border rounded-lg p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Saída de Material
+            </h2>
+            <p className="text-muted-foreground mb-4">
+              Acesso à gestão de cargas e expedição de material pronto
+            </p>
+            <button
+              onClick={() => setShowMaterialShipping(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+            >
+              <Package className="h-4 w-4" />
+              Abrir Saída de Material
+            </button>
+          </div>
+
           {/* Seleção de Máquina */}
           <div className="bg-card border rounded-lg p-6">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
