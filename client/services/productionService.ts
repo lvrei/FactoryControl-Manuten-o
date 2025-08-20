@@ -1004,6 +1004,36 @@ class ProductionService {
     console.log('All production data cleared');
   }
 
+  async initializeCleanSystem(): Promise<void> {
+    console.log('🧹 Initializing completely clean system...');
+
+    // Clear all factory control related data
+    const keys = Object.keys(localStorage);
+    keys.forEach(key => {
+      if (key.startsWith('factoryControl_') ||
+          key.includes('production') ||
+          key.includes('maintenance') ||
+          key.includes('operator') ||
+          key.includes('machine') ||
+          key.includes('shipping')) {
+        localStorage.removeItem(key);
+      }
+    });
+
+    // Initialize with empty data structure
+    const cleanData = {
+      productionOrders: [],
+      productSheets: [],
+      chatMessages: [],
+      operatorSessions: [],
+      foamBlocks: [],
+      stockMovements: []
+    };
+
+    this.saveData(cleanData);
+    console.log('✅ System initialized completely clean - no test data');
+  }
+
   async createTestOrder(): Promise<void> {
     console.log('Creating test order with consistent IDs...');
 
