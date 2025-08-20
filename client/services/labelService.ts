@@ -72,14 +72,31 @@ class LabelService {
     return newLabel;
   }
 
-  async printLabel(label: PrintLabel): Promise<{ success: boolean; zplCode: string }> {
+  async printLabel(label: PrintLabel, directPrint: boolean = true): Promise<{ success: boolean; zplCode: string; message?: string }> {
     const zplCode = this.generateZPLCode(label);
 
     try {
-      // In a real implementation, this would send to Zebra printer
-      // For now, we'll just prepare the ZPL code and show it to user
-      
-      // Create a downloadable file with ZPL code
+      // Check if we should try direct USB printing first
+      if (directPrint) {
+        const printerStatus = await zebraUSBService.getPrinterStatus();
+
+        if (printerStatus.connected) {
+          // Try direct USB printing
+          const usbResult = await zebraUSBService.printZPL(zplCode);
+          if (usbResult.success) {
+            return {
+              success: true,
+              zplCode,
+              message: `Etiqueta impressa com sucesso via USB: ${usbResult.message}`
+            };
+          } else {
+            // USB failed, fallback to download
+            console.warn('USB printing failed, falling back to download:', usbResult.message);
+          }
+        }
+      }
+
+      // Fallback: Create a downloadable file with ZPL code
       const blob = new Blob([zplCode], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -90,10 +107,18 @@ class LabelService {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
 
-      return { success: true, zplCode };
+      return {
+        success: true,
+        zplCode,
+        message: 'Arquivo ZPL baixado. Envie manualmente para a impressora ou configure conexão USB.'
+      };
     } catch (error) {
       console.error('Error printing label:', error);
-      return { success: false, zplCode };
+      return {
+        success: false,
+        zplCode,
+        message: error instanceof Error ? error.message : 'Erro desconhecido ao imprimir'
+      };
     }
   }
 
