@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste de Correção BZM</title>
+</head>
+<body>
+    <h1>Teste de Correção do Problema BZM</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function fixBzmIssue() {
+            const results = document.getElementById('results');
+            
+            results.innerHTML += '<p>🔧 Iniciando correção...</p>';
+            
+            // 1. Limpar dados antigos
+            localStorage.removeItem('factoryControl_production');
+            results.innerHTML += '<p>✅ Dados antigos removidos</p>';
+            
+            // 2. Criar dados limpos
+            const timestamp = Date.now();
+            const testData = {
+                productionOrders: [
+                    {
+                        id: `order-${timestamp}`,
+                        orderNumber: `OP-TEST-${timestamp}`,
+                        customer: {
+                            id: 'cust-test',
+                            name: 'Cliente Teste BZM',
+                            contact: 'teste@exemplo.com'
+                        },
+                        expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                        lines: [
+                            {
+                                id: `line-${timestamp}`,
+                                foamType: {
+                                    id: '1',
+                                    name: 'Espuma D20',
+                                    density: 20,
+                                    hardness: 'Macia',
+                                    color: 'Branca',
+                                    specifications: 'Teste',
+                                    pricePerM3: 45.00
+                                },
+                                initialDimensions: { length: 4000, width: 2000, height: 2000 },
+                                finalDimensions: { length: 1000, width: 500, height: 200 },
+                                quantity: 5,
+                                completedQuantity: 0,
+                                status: 'pending',
+                                priority: 5,
+                                cuttingOperations: [
+                                    {
+                                        id: `op-${timestamp}`,
+                                        machineId: '1',
+                                        inputDimensions: { length: 4000, width: 2000, height: 2000 },
+                                        outputDimensions: { length: 1000, width: 500, height: 200 },
+                                        quantity: 5,
+                                        completedQuantity: 0,
+                                        estimatedTime: 30,
+                                        status: 'pending',
+                                        observations: 'Operação de teste'
+                                    }
+                                ]
+                            }
+                        ],
+                        status: 'created',
+                        priority: 'medium',
+                        totalVolume: 0,
+                        estimatedCost: 0,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        createdBy: 'Test'
+                    }
+                ],
+                productSheets: [],
+                chatMessages: [],
+                operatorSessions: [],
+                foamBlocks: [],
+                stockMovements: []
+            };
+            
+            localStorage.setItem('factoryControl_production', JSON.stringify(testData));
+            results.innerHTML += '<p>✅ Dados limpos criados</p>';
+            
+            // 3. Verificar
+            const stored = JSON.parse(localStorage.getItem('factoryControl_production') || '{}');
+            const order = stored.productionOrders[0];
+            const line = order.lines[0];
+            const operation = line.cuttingOperations[0];
+            const workItemId = `${order.id}-${line.id}-${operation.id}`;
+            
+            results.innerHTML += `<p>📋 Work Item ID criado: ${workItemId}</p>`;
+            results.innerHTML += `<p>🎯 Ordem: ${order.orderNumber}</p>`;
+            results.innerHTML += `<p>📄 Linha: ${line.id}</p>`;
+            results.innerHTML += `<p>⚙️ Operação: ${operation.id}</p>`;
+            results.innerHTML += '<p>✅ Correção concluída! Atualize a página principal.</p>';
+        }
+        
+        // Executar automaticamente
+        fixBzmIssue();
+    </script>
+</body>
+</html>
