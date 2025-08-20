@@ -162,33 +162,103 @@ class LabelService {
     return labels.find(label => label.barcodeId === barcodeId) || null;
   }
 
-  // Preview ZPL as HTML (simplified representation)
+  // Preview ZPL as HTML (optimized for 105.5x150mm label)
   generatePreviewHTML(label: PrintLabel): string {
     const { barcodeId, customerName, orderNumber, foamType, quantity, dimensions, operatorName, machineName, completionDate } = label;
-    
+
     return `
-      <div style="width: 400px; height: 300px; border: 2px solid #000; padding: 10px; font-family: monospace; font-size: 12px; background: white;">
-        <div style="text-align: center; font-weight: bold; margin-bottom: 10px;">FactoryControl - Espuma Cortada</div>
-        <div style="text-align: center; margin-bottom: 15px;">${new Date(completionDate).toLocaleDateString('pt-BR')} ${new Date(completionDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
-        
-        <div><strong>Cliente:</strong> ${customerName}</div>
-        <div><strong>OP:</strong> ${orderNumber}</div>
-        <div><strong>Tipo:</strong> ${foamType}</div>
-        <br>
-        <div><strong>Quantidade:</strong> ${quantity} unidades</div>
-        <div><strong>Dimensões:</strong> ${dimensions.length}x${dimensions.width}x${dimensions.height}mm</div>
-        <br>
-        <div><strong>Máquina:</strong> ${machineName}</div>
-        <div><strong>Operador:</strong> ${operatorName}</div>
-        <br>
-        <div style="text-align: center; margin: 10px 0;">
-          <div style="font-family: 'Courier New', monospace; font-size: 24px; letter-spacing: 2px; border: 1px solid #000; padding: 5px;">
-            ||||| ${barcodeId} |||||
+      <div style="
+        width: 420px;
+        height: 600px;
+        border: 2px solid #000;
+        padding: 20px;
+        font-family: 'Arial', sans-serif;
+        font-size: 14px;
+        background: white;
+        box-sizing: border-box;
+        position: relative;
+        transform: scale(0.7);
+        transform-origin: top left;
+      ">
+        <div style="text-align: left; font-weight: bold; font-size: 16px; margin-bottom: 8px;">FactoryControl</div>
+        <div style="text-align: left; font-size: 12px; margin-bottom: 20px; color: #666;">
+          ${new Date(completionDate).toLocaleDateString('pt-BR')} ${new Date(completionDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+        </div>
+
+        <div style="margin-bottom: 8px;"><strong>Cliente:</strong> ${customerName.substring(0, 25)}</div>
+        <div style="margin-bottom: 8px;"><strong>OP:</strong> ${orderNumber}</div>
+        <div style="margin-bottom: 20px; font-size: 12px;"><strong>Tipo:</strong> ${foamType.substring(0, 20)}</div>
+
+        <div style="margin-bottom: 8px; font-size: 12px;"><strong>Qtd:</strong> ${quantity} un</div>
+        <div style="margin-bottom: 20px; font-size: 11px;"><strong>Dim:</strong> ${dimensions.length}×${dimensions.width}×${dimensions.height}mm</div>
+
+        <div style="margin-bottom: 8px; font-size: 11px;"><strong>Máquina:</strong> ${machineName.substring(0, 20)}</div>
+        <div style="margin-bottom: 30px; font-size: 11px;"><strong>Operador:</strong> ${operatorName.substring(0, 20)}</div>
+
+        <div style="text-align: center; margin: 20px 0;">
+          <div style="
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            letter-spacing: 1px;
+            border: 2px solid #000;
+            padding: 8px;
+            background: linear-gradient(90deg, #000 2px, transparent 2px),
+                        linear-gradient(90deg, transparent 8px, #000 10px);
+            background-size: 12px 100%;
+            color: white;
+            text-shadow: 1px 1px 0 #000;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            ${barcodeId}
           </div>
         </div>
-        <div style="text-align: center;"><strong>Código:</strong> ${barcodeId}</div>
+
+        <div style="text-align: center; font-size: 12px; margin-bottom: 20px;"><strong>Código:</strong> ${barcodeId}</div>
+
+        <div style="
+          position: absolute;
+          bottom: 20px;
+          left: 20px;
+          right: 20px;
+          text-align: center;
+          font-size: 10px;
+          color: #666;
+        ">
+          www.factorycontrol.pt
+        </div>
       </div>
     `;
+  }
+
+  // Get printer connection status for UI
+  async getPrinterConnectionStatus(): Promise<{ connected: boolean; name?: string; message: string }> {
+    try {
+      const status = await zebraUSBService.getPrinterStatus();
+
+      if (status.connected) {
+        return {
+          connected: true,
+          name: status.name,
+          message: `Conectado: ${status.name}`
+        };
+      } else {
+        const isSupported = await zebraUSBService.isWebUSBSupported();
+        return {
+          connected: false,
+          message: isSupported
+            ? 'Impressora não conectada. Clique para configurar.'
+            : 'WebUSB não suportado. Use Chrome/Edge para conexão direta.'
+        };
+      }
+    } catch (error) {
+      return {
+        connected: false,
+        message: 'Erro ao verificar status da impressora'
+      };
+    }
   }
 }
 
