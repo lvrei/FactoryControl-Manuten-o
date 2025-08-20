@@ -1101,6 +1101,101 @@ class ProductionService {
 
     console.log('✅ Data consistency fixed!');
   }
+
+  // Método específico para resolver problemas BZM
+  async fixBzmIssue(): Promise<void> {
+    console.log('🔧 Corrigindo problemas específicos da BZM...');
+
+    // Limpar dados problemáticos
+    await this.clearAllData();
+
+    // Criar ordem de teste com IDs consistentes
+    const timestamp = Date.now();
+    const cleanOrder = {
+      orderNumber: `OP-BZM-${timestamp}`,
+      customer: {
+        id: 'cust-bzm-test',
+        name: 'Cliente BZM Test',
+        contact: 'bzm@test.com'
+      },
+      expectedDeliveryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+      priority: 'medium' as const,
+      notes: 'Ordem limpa para BZM - sem problemas de ID',
+      lines: [
+        {
+          id: `line-${timestamp}`,
+          foamType: this.mockFoamTypes[0],
+          initialDimensions: { length: 4000, width: 2000, height: 2000 },
+          finalDimensions: { length: 1000, width: 500, height: 200 },
+          quantity: 5,
+          completedQuantity: 0,
+          status: 'pending' as const,
+          priority: 5,
+          cuttingOperations: [
+            {
+              id: `op-bzm-${timestamp}`,
+              machineId: '1', // BZM-01
+              inputDimensions: { length: 4000, width: 2000, height: 2000 },
+              outputDimensions: { length: 1000, width: 500, height: 200 },
+              quantity: 5,
+              completedQuantity: 0,
+              estimatedTime: 30,
+              status: 'pending' as const,
+              observations: 'Operação BZM limpa - sem falhas'
+            }
+          ]
+        }
+      ]
+    };
+
+    await this.createProductionOrder(cleanOrder);
+    console.log('✅ Ordem BZM limpa criada com sucesso!');
+    console.log(`📋 Número da ordem: ${cleanOrder.orderNumber}`);
+    console.log(`🎯 Work Item ID: order-${timestamp}-line-${timestamp}-op-bzm-${timestamp}`);
+  }
+
+  // Método para validar integridade dos IDs
+  async validateDataIntegrity(): Promise<boolean> {
+    const data = this.getStoredData();
+
+    if (!data.productionOrders || data.productionOrders.length === 0) {
+      console.log('⚠️ Nenhuma ordem de produção encontrada');
+      return false;
+    }
+
+    let hasProblems = false;
+
+    for (const order of data.productionOrders) {
+      if (!order.id || !order.lines) {
+        console.error(`❌ Ordem inválida: ${order.orderNumber || 'SEM NÚMERO'}`);
+        hasProblems = true;
+        continue;
+      }
+
+      for (const line of order.lines) {
+        if (!line.id || !line.cuttingOperations) {
+          console.error(`❌ Linha inválida na ordem: ${order.orderNumber}`);
+          hasProblems = true;
+          continue;
+        }
+
+        for (const operation of line.cuttingOperations) {
+          if (!operation.id || !operation.machineId) {
+            console.error(`❌ Operação inválida na linha ${line.id}, ordem ${order.orderNumber}`);
+            hasProblems = true;
+          }
+        }
+      }
+    }
+
+    if (hasProblems) {
+      console.log('❌ Problemas de integridade encontrados nos dados');
+    } else {
+      console.log('✅ Integridade dos dados verificada - OK');
+    }
+
+    return !hasProblems;
+  }
 }
 
 export const productionService = new ProductionService();
