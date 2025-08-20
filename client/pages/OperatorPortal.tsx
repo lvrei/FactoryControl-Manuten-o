@@ -547,6 +547,21 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
           </div>
           
           <div className="flex gap-2">
+            {/* Printer Status */}
+            <button
+              onClick={() => setShowPrinterSetup(true)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
+                printerStatus.connected
+                  ? "bg-green-100 text-green-700 hover:bg-green-200"
+                  : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+              )}
+              title={printerStatus.message}
+            >
+              <Printer className="h-4 w-4" />
+              {printerStatus.connected ? printerStatus.name : 'Configurar Impressora'}
+            </button>
+
             <button
               onClick={() => setShowMaintenanceRequest(true)}
               className="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 flex items-center gap-2"
