@@ -123,7 +123,37 @@ class ProductionService {
   }
 
   private saveData(data: any): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(data));
+    try {
+      // Validate data before saving
+      if (!data || typeof data !== 'object') {
+        console.error('❌ Invalid data structure, cannot save');
+        return;
+      }
+
+      localStorage.setItem(this.storageKey, JSON.stringify(data));
+    } catch (error) {
+      console.error('❌ Error saving data to localStorage:', error);
+    }
+  }
+
+  // Initialize system on first load
+  private initializeSystem(): void {
+    try {
+      const data = this.getStoredData();
+
+      // Ensure all required arrays exist
+      if (!data.productionOrders) data.productionOrders = [];
+      if (!data.productSheets) data.productSheets = [];
+      if (!data.chatMessages) data.chatMessages = [];
+      if (!data.operatorSessions) data.operatorSessions = [];
+      if (!data.foamBlocks) data.foamBlocks = [];
+      if (!data.stockMovements) data.stockMovements = [];
+
+      this.saveData(data);
+      console.log('✅ Production system initialized successfully');
+    } catch (error) {
+      console.error('❌ Error initializing production system:', error);
+    }
   }
 
   // MÉTODO CORRIGIDO - ROBUSTO PARA COMPLETAR WORK ITEMS
