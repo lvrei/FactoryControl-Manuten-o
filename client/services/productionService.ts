@@ -443,9 +443,12 @@ class ProductionService {
           }
 
           const machine = this.mockMachines.find(m => m.id === operation.machineId);
-          if (!machine) return;
+          if (!machine) {
+            console.log(`🏭 Machine not found for operation: ${operation.id}, machineId: ${operation.machineId}`);
+            return;
+          }
 
-          workItems.push({
+          const workItem = {
             id: `${order.id}-${line.id}-${operation.id}`,
             orderId: order.id,
             orderNumber: order.orderNumber,
@@ -464,11 +467,15 @@ class ProductionService {
             expectedDeliveryDate: order.expectedDeliveryDate,
             estimatedTime: operation.estimatedTime,
             observations: operation.observations
-          });
+          };
+
+          console.log(`✨ Adding work item: ${workItem.id}, remaining: ${workItem.remainingQuantity}`);
+          workItems.push(workItem);
         });
       });
     });
 
+    console.log(`📝 Total work items found: ${workItems.length}`);
     return workItems.sort((a, b) => b.priority - a.priority);
   }
 
