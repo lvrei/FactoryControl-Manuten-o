@@ -89,8 +89,30 @@ class ProductionService {
   ];
 
   private getStoredData(): any {
-    const stored = localStorage.getItem(this.storageKey);
-    return stored ? JSON.parse(stored) : {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+
+        // Validate data structure
+        if (parsed && typeof parsed === 'object') {
+          return {
+            productionOrders: Array.isArray(parsed.productionOrders) ? parsed.productionOrders : [],
+            productSheets: Array.isArray(parsed.productSheets) ? parsed.productSheets : [],
+            chatMessages: Array.isArray(parsed.chatMessages) ? parsed.chatMessages : [],
+            operatorSessions: Array.isArray(parsed.operatorSessions) ? parsed.operatorSessions : [],
+            foamBlocks: Array.isArray(parsed.foamBlocks) ? parsed.foamBlocks : [],
+            stockMovements: Array.isArray(parsed.stockMovements) ? parsed.stockMovements : []
+          };
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Erro ao carregar dados do localStorage, inicializando estrutura limpa:', error);
+      this.clearAllData();
+    }
+
+    // Return clean structure
+    return {
       productionOrders: [],
       productSheets: [],
       chatMessages: [],
