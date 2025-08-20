@@ -1042,6 +1042,16 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
         </div>
       )}
 
+      {/* Printer Setup Modal */}
+      <PrinterSetup
+        isOpen={showPrinterSetup}
+        onClose={() => setShowPrinterSetup(false)}
+        onPrinterConfigured={async (printerInfo) => {
+          console.log('Printer configured:', printerInfo);
+          await checkPrinterStatus();
+        }}
+      />
+
       {/* Message Notifications */}
       <MessageNotificationContainer
         notifications={messageNotifications}
