@@ -1,4 +1,5 @@
 import { PrintLabel } from '@/types/production';
+import { zebraUSBService } from './zebraUSBService';
 
 class LabelService {
   private storageKey = 'factoryControl_labels';
