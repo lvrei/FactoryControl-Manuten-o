@@ -34,6 +34,7 @@ import { authService } from '@/services/authService';
 import { maintenanceService } from '@/services/maintenanceService';
 import { MessageNotificationContainer } from '@/components/MessageNotification';
 import { cn } from '@/lib/utils';
+import { BackToOperatorButton } from '@/components/BackToOperatorButton';
 
 interface OperatorPortalProps {
   onClose?: () => void;
@@ -570,13 +571,23 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              Lista de Trabalho - {currentSession.machineName}
-            </h1>
-            <p className="text-muted-foreground">
-              Operador: {currentSession.operatorName} | Sessão iniciada: {new Date(currentSession.startTime).toLocaleTimeString()}
-            </p>
+          <div className="flex items-center gap-4">
+            <BackToOperatorButton
+              onClick={() => {
+                if (confirm('Voltar ao portal principal? A sessão continuará ativa.')) {
+                  setCurrentSession(null);
+                }
+              }}
+              variant="link"
+            />
+            <div>
+              <h1 className="text-2xl font-bold text-foreground">
+                Lista de Trabalho - {currentSession.machineName}
+              </h1>
+              <p className="text-muted-foreground">
+                Operador: {currentSession.operatorName} | Sessão iniciada: {new Date(currentSession.startTime).toLocaleTimeString()}
+              </p>
+            </div>
           </div>
           
           <div className="flex gap-2">
