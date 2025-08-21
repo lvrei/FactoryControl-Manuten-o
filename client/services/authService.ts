@@ -15,12 +15,11 @@ interface AuthResponse {
 }
 
 /**
- * SECURE AUTH SERVICE - JWT + Server-side
- * Versão segura com autenticação server-side e cookies httpOnly
+ * SIMPLE AUTH SERVICE - For Testing
+ * Versão simples para testes (sem server-side)
  */
 class AuthService {
   private storageKey = 'factoryControl_auth';
-  private apiBaseUrl = '/api/auth';
   private currentUser: LoginSession | null = null;
 
   // Método privado para requests HTTP
@@ -48,30 +47,33 @@ class AuthService {
     }
   }
 
-  // Login com credenciais
+  // Login com credenciais (versão simples para teste)
   async login(username: string, password: string): Promise<LoginSession> {
     try {
       console.log('🔐 Tentando login:', username);
 
-      const response: AuthResponse = await this.makeRequest('/login', {
-        method: 'POST',
-        body: JSON.stringify({ username, password }),
-      });
+      // Credenciais válidas para teste
+      const validCredentials = {
+        'admin': { role: 'admin', name: 'Administrador' },
+        'operador': { role: 'operator', name: 'Operador Principal' },
+        'supervisor': { role: 'supervisor', name: 'Supervisor' }
+      };
 
-      if (!response.success || !response.user) {
-        throw new Error(response.message || 'Falha no login');
+      if (!validCredentials[username] || password !== 'admin123') {
+        throw new Error('Credenciais inválidas');
       }
 
-      // Adicionar timestamp de login
+      const userData = validCredentials[username];
       const userWithLoginTime: LoginSession = {
-        ...response.user,
+        id: `${username}-1`,
+        username,
+        role: userData.role as any,
+        name: userData.name,
         loginTime: new Date().toISOString(),
       };
 
-      // Salvar usuário atual em memória
+      // Salvar usuário atual
       this.currentUser = userWithLoginTime;
-
-      // Salvar também no localStorage como backup (sem tokens sensíveis)
       localStorage.setItem(this.storageKey, JSON.stringify(userWithLoginTime));
 
       console.log('✅ Login bem-sucedido:', username);
@@ -83,52 +85,36 @@ class AuthService {
     }
   }
 
-  // Logout (limpar cookies e sessão)
+  // Logout (versão simples)
   async logout(): Promise<void> {
     try {
-      // Tentar fazer logout no servidor (limpar cookies)
-      await this.makeRequest('/logout', { method: 'POST' });
-    } catch (error) {
-      console.warn('⚠️ Erro no logout server-side:', error);
-      // Continuar com limpeza local mesmo se falhar no servidor
-    } finally {
       // Limpeza local
       this.currentUser = null;
       localStorage.removeItem(this.storageKey);
       console.log('👋 Logout concluído');
+    } catch (error) {
+      console.error('❌ Erro no logout:', error);
     }
   }
 
-  // Verificar se usuário está autenticado
+  // Verificar se usuário está autenticado (versão simples)
   async isAuthenticated(): Promise<boolean> {
     try {
-      // Tentar verificar com servidor (cookies JWT)
-      const response: AuthResponse = await this.makeRequest('/verify');
-      
-      if (response.success && response.user) {
-        // Atualizar dados do usuário se válido
-        this.currentUser = {
-          ...response.user,
-          loginTime: this.currentUser?.loginTime || new Date().toISOString()
-        };
+      // Verificar se há usuário em memória ou localStorage
+      if (this.currentUser) return true;
+
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        this.currentUser = JSON.parse(stored);
         return true;
       }
 
       return false;
     } catch (error) {
       console.warn('⚠️ Verificação de autenticação falhou:', error);
-      
-      // Tentar renovar token automaticamente
-      try {
-        await this.refreshToken();
-        return true;
-      } catch (refreshError) {
-        console.warn('⚠️ Renovação automática falhou:', refreshError);
-        // Limpar dados inválidos
-        this.currentUser = null;
-        localStorage.removeItem(this.storageKey);
-        return false;
-      }
+      this.currentUser = null;
+      localStorage.removeItem(this.storageKey);
+      return false;
     }
   }
 

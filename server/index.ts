@@ -5,7 +5,6 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { handleDemo } from "./routes/demo";
-import authRoutes from "./routes/auth";
 
 export function createServer() {
   const app = express();
@@ -29,7 +28,7 @@ export function createServer() {
 
   // CORS configuration
   app.use(cors({
-    origin: process.env.NODE_ENV === 'production'
+    origin: process.env.NODE_ENV === 'production' 
       ? ['https://yourdomain.com'] // Substituir por domínio real em produção
       : ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true,
@@ -48,19 +47,7 @@ export function createServer() {
     legacyHeaders: false,
   });
 
-  // Rate limiting específico para auth
-  const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 5, // máximo 5 tentativas de login por IP
-    message: {
-      success: false,
-      message: 'Muitas tentativas de login. Tente novamente em 15 minutos.'
-    },
-    skipSuccessfulRequests: true,
-  });
-
   app.use(limiter);
-  app.use('/api/auth/login', authLimiter);
 
   // Body parsing middleware
   app.use(express.json({ limit: '10mb' }));
@@ -75,13 +62,10 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  // Auth routes
-  app.use("/api/auth", authRoutes);
-
   // Health check
   app.get("/api/health", (_req, res) => {
-    res.json({
-      status: "ok",
+    res.json({ 
+      status: "ok", 
       timestamp: new Date().toISOString(),
       version: "4.0.0"
     });
@@ -90,11 +74,11 @@ export function createServer() {
   // Error handling middleware
   app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('❌ Server Error:', err);
-
+    
     res.status(err.status || 500).json({
       success: false,
-      message: process.env.NODE_ENV === 'production'
-        ? 'Erro interno do servidor'
+      message: process.env.NODE_ENV === 'production' 
+        ? 'Erro interno do servidor' 
         : err.message,
       ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
     });
