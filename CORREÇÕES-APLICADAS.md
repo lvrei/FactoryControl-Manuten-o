@@ -2,7 +2,15 @@
 
 ## ✅ **Principais Problemas Corrigidos**
 
-### 1. **Sistema BZM - "Linha Falsa"**
+### 1. **Sistema BZM - "Operation not found" (NOVO)**
+- ✅ **PROBLEMA RECENTE**: Erro ao completar operações BZM com "Operation not found"
+- ✅ **CAUSA**: IDs BZM com sufixo "-bzm" não eram parseados corretamente
+- ✅ **EXEMPLO**: `1755712770917-1755712769047-1755712769047-bzm` falhava
+- ✅ **SOLUÇÃO**: Corrigido parsing do workItemId para reconstituir operationId completo
+- ✅ Busca robusta de operações com múltiplas conversões de tipo
+- ✅ Logging detalhado para debug futuro
+
+### 2. **Sistema BZM - "Linha Falsa" (ANTERIOR)**
 - ✅ Corrigido método `completeWorkItem` com validação robusta
 - ✅ Melhor tratamento de IDs e conversão de tipos
 - ✅ Verificação de integridade após salvamento
