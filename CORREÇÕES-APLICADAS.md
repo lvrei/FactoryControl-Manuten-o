@@ -114,7 +114,7 @@ await fixBzmIssue()
 
 1. **Instalar dependências**: `npm install`
 2. **Iniciar aplicação**: `npm run dev`
-3. **Aceder**: `http://localhost:8080`
+3. **Aceder**: `http://localhost:3000`
 
 ### Login Automático
 - **Username**: admin
