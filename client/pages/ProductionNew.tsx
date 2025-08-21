@@ -139,7 +139,7 @@ function ProductionNew() {
   const machineStatusConfig = {
     available: { color: "text-green-600 bg-green-50", label: "Disponível" },
     busy: { color: "text-yellow-600 bg-yellow-50", label: "Ocupada" },
-    maintenance: { color: "text-red-600 bg-red-50", label: "Manutenção" },
+    maintenance: { color: "text-red-600 bg-red-50", label: "Manuten��ão" },
     offline: { color: "text-gray-600 bg-gray-50", label: "Offline" }
   };
 
@@ -395,8 +395,8 @@ function ProductionNew() {
                       
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <span className={cn("inline-flex rounded border px-2 py-1 text-xs font-medium", priorityConfig[order.priority].color)}>
-                            {priorityConfig[order.priority].label}
+                          <span className={cn("inline-flex rounded border px-2 py-1 text-xs font-medium", priorityConfig[order.priority]?.color || "text-gray-600 bg-gray-50 border-gray-200")}>
+                            {priorityConfig[order.priority]?.label || order.priority}
                           </span>
                           <div className="flex flex-col">
                             <button
@@ -474,7 +474,7 @@ function ProductionNew() {
                             <button
                               onClick={() => updateOrderStatus(order.id, 'created')}
                               className="p-1 text-yellow-600 hover:text-yellow-700"
-                              title="Pausar produção"
+                              title="Pausar produç��o"
                             >
                               <Pause className="h-4 w-4" />
                             </button>
