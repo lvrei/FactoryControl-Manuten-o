@@ -514,9 +514,9 @@ export default function Equipment() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Status:</span>
-                  <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", statusConfig[eq.status].color)}>
+                  <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", statusInfo.color)}>
                     <StatusIcon className="h-3 w-3" />
-                    {statusConfig[eq.status].label}
+                    {statusInfo.label}
                   </span>
                 </div>
 
