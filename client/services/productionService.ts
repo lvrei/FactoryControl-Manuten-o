@@ -300,7 +300,16 @@ class ProductionService {
     try {
       const data = this.getStoredData();
       if (data.foamTypes && data.foamTypes.length > 0) {
-        return data.foamTypes;
+        // Verificação defensiva para garantir que todos os foam types têm as propriedades necessárias
+        const safeFoamTypes = data.foamTypes.map((foamType: FoamType) => ({
+          ...foamType,
+          color: foamType.color || 'N/A',
+          stockColor: foamType.stockColor || '#f8f9fa',
+          name: foamType.name || 'Tipo Desconhecido',
+          specifications: foamType.specifications || '',
+          pricePerM3: foamType.pricePerM3 || 0
+        }));
+        return safeFoamTypes;
       }
 
       // Se não existir, usar os tipos padrão e salvar
