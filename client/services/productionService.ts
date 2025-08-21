@@ -425,7 +425,8 @@ class ProductionService {
         throw new Error(`Formato de ID inválido: ${workItemId}. Esperado: orderId-lineId-operationId`);
       }
 
-      const [orderId, lineId, operationId] = parts;
+      const [orderId, lineId, ...operationParts] = parts;
+      const operationId = operationParts.join('-'); // Reconstroi o operationId completo incluindo sufixos como -bzm
       console.log(`📋 Parsed IDs - Order: ${orderId}, Line: ${lineId}, Operation: ${operationId}`);
 
       // Get and validate data
