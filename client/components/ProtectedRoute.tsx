@@ -27,8 +27,9 @@ export function ProtectedRoute({
         setUserSession(session);
         setIsAuthenticated(authenticated);
 
+        // Activity update removed for simplified auth
         if (authenticated && session) {
-          authService.updateActivity();
+          // User is authenticated and active
         }
       } catch (error) {
         console.error('❌ Error checking auth:', error);
