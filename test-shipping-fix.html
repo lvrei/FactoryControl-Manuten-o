@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Shipping Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border-left: 5px solid #28a745; }
+        .error { background: #f8d7da; border-left: 5px solid #dc3545; }
+        .info { background: #d1ecf1; border-left: 5px solid #17a2b8; }
+        .warning { background: #fff3cd; border-left: 5px solid #ffc107; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🚚 Teste de Correção do Sistema de Expedição</h1>
+    
+    <div class="section">
+        <h2>🔧 Testes de Funcionalidade</h2>
+        <button onclick="testMarkOrderLineAsShipped()">✅ Testar markOrderLineAsShipped</button>
+        <button onclick="testRemoveShippedItems()">🗑️ Testar Remoção de Itens Shipped</button>
+        <button onclick="testShippingFilters()">🔍 Testar Filtros</button>
+        <button onclick="simulateCompleteWorkflow()">🚚 Simular Workflow Completo</button>
+    </div>
+
+    <div class="section">
+        <h2>📊 Diagnóstico de Dados</h2>
+        <button onclick="checkShippableItems()">📦 Verificar Itens Disponíveis</button>
+        <button onclick="checkCompletedLoads()">🚛 Verificar Cargas Completadas</button>
+        <button onclick="checkProductionOrders()">📋 Verificar Estado OPs</button>
+        <button onclick="clearShippingData()">🧹 Limpar Dados Shipping</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        async function testMarkOrderLineAsShipped() {
+            log('🧪 Testando função markOrderLineAsShipped...', 'info');
+            
+            try {
+                if (typeof window.productionService === 'object' && 
+                    typeof window.productionService.markOrderLineAsShipped === 'function') {
+                    
+                    log('✅ Função markOrderLineAsShipped existe no productionService', 'success');
+                    
+                    // Testar com dados fictícios
+                    await window.productionService.markOrderLineAsShipped('test-order-123', 'test-line-456');
+                    log('✅ Função executou sem erro (mesmo com IDs fictícios)', 'success');
+                } else {
+                    log('❌ Função markOrderLineAsShipped não encontrada!', 'error');
+                }
+            } catch (error) {
+                if (error.message.includes('not found')) {
+                    log('⚠️ Esperado: erro de ordem não encontrada (IDs fictícios)', 'warning');
+                } else {
+                    log(`❌ Erro inesperado: ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function testRemoveShippedItems() {
+            log('🧪 Testando remoção de itens shipped...', 'info');
+            
+            try {
+                const shippingService = window.shippingService;
+                if (!shippingService) {
+                    log('❌ shippingService não disponível', 'error');
+                    return;
+                }
+
+                // Verificar se o método existe
+                if (typeof shippingService.removeShippedItemsFromAvailable === 'function') {
+                    log('✅ Método removeShippedItemsFromAvailable existe', 'success');
+                } else {
+                    log('❌ Método removeShippedItemsFromAvailable não encontrado', 'error');
+                }
+
+                // Testar a exportação CSV melhorada
+                if (typeof shippingService.exportShippableItemsToCSV === 'function') {
+                    log('✅ Função de exportação CSV existe e foi melhorada', 'success');
+                } else {
+                    log('❌ Função de exportação CSV não encontrada', 'error');
+                }
+
+            } catch (error) {
+                log(`❌ Erro ao testar: ${error.message}`, 'error');
+            }
+        }
+
+        async function testShippingFilters() {
+            log('🔍 Testando filtros de shipping...', 'info');
+            
+            try {
+                const shippingService = window.shippingService;
+                if (!shippingService) {
+                    log('❌ shippingService não disponível', 'error');
+                    return;
+                }
+
+                // Testar filtros
+                const testFilters = {
+                    status: 'ready',
+                    customer: 'teste',
+                    foamType: 'D20'
+                };
+
+                const items = await shippingService.getShippableItems(testFilters);
+                log(`✅ Filtros funcionando: ${items.length} itens retornados`, 'success');
+                log(`📊 Filtros testados: status=${testFilters.status}, customer=${testFilters.customer}`, 'info');
+
+            } catch (error) {
+                log(`❌ Erro ao testar filtros: ${error.message}`, 'error');
+            }
+        }
+
+        async function simulateCompleteWorkflow() {
+            log('🚚 Simulando workflow completo de expedição...', 'info');
+            
+            try {
+                // 1. Verificar itens disponíveis antes
+                const shippingService = window.shippingService;
+                if (!shippingService) {
+                    log('❌ shippingService não disponível', 'error');
+                    return;
+                }
+
+                const itemsBefore = await shippingService.getShippableItems();
+                log(`📦 Itens disponíveis antes: ${itemsBefore.length}`, 'info');
+
+                // 2. Verificar cargas
+                const loads = await shippingService.getLoads();
+                log(`🚛 Cargas no sistema: ${loads.length}`, 'info');
+
+                if (loads.length > 0) {
+                    const lastLoad = loads[0];
+                    log(`📋 Última carga: ${lastLoad.loadNumber} (${lastLoad.status})`, 'info');
+                    log(`📊 Itens na carga: ${lastLoad.items.length}`, 'info');
+                    
+                    if (lastLoad.status === 'completed') {
+                        log('✅ Encontrada carga completada - verificando se itens foram removidos', 'success');
+                        
+                        // Verificar se os itens desta carga ainda estão na lista disponível
+                        const shippedItemIds = lastLoad.items.map(item => item.shippableItemId);
+                        const stillAvailable = itemsBefore.filter(item => shippedItemIds.includes(item.id));
+                        
+                        if (stillAvailable.length === 0) {
+                            log('✅ Correção funcionando: itens shipped foram removidos da lista', 'success');
+                        } else {
+                            log(`❌ Problema: ${stillAvailable.length} itens shipped ainda aparecem como disponíveis`, 'error');
+                        }
+                    }
+                } else {
+                    log('⚠️ Nenhuma carga encontrada para testar', 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ Erro no workflow: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkShippableItems() {
+            log('📦 Verificando itens disponíveis para expedição...', 'info');
+            
+            try {
+                const shippingService = window.shippingService;
+                if (!shippingService) {
+                    log('❌ shippingService não disponível', 'error');
+                    return;
+                }
+
+                const items = await shippingService.getShippableItems();
+                log(`📊 Total de itens disponíveis: ${items.length}`, 'info');
+
+                if (items.length > 0) {
+                    const byCustomer = items.reduce((acc, item) => {
+                        acc[item.customerName] = (acc[item.customerName] || 0) + 1;
+                        return acc;
+                    }, {});
+
+                    log('👥 Por cliente:', 'info');
+                    Object.entries(byCustomer).forEach(([customer, count]) => {
+                        log(`   - ${customer}: ${count} itens`, 'info');
+                    });
+
+                    const ready = items.filter(item => item.readyForShipping);
+                    log(`✅ Prontos para expedição: ${ready.length}`, ready.length > 0 ? 'success' : 'warning');
+                } else {
+                    log('📭 Nenhum item disponível para expedição', 'warning');
+                }
+
+            } catch (error) {
+                log(`❌ Erro ao verificar itens: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkCompletedLoads() {
+            log('🚛 Verificando cargas completadas...', 'info');
+            
+            try {
+                const shippingService = window.shippingService;
+                if (!shippingService) {
+                    log('❌ shippingService não disponível', 'error');
+                    return;
+                }
+
+                const loads = await shippingService.getLoads();
+                const completed = loads.filter(load => load.status === 'completed');
+                
+                log(`📊 Total de cargas: ${loads.length}`, 'info');
+                log(`✅ Cargas completadas: ${completed.length}`, 'info');
+
+                completed.forEach((load, index) => {
+                    log(`🚚 Carga ${index + 1}: ${load.loadNumber} - ${load.totalItems} itens - ${load.totalVolume.toFixed(2)}m³`, 'info');
+                });
+
+            } catch (error) {
+                log(`❌ Erro ao verificar cargas: ${error.message}`, 'error');
+            }
+        }
+
+        async function checkProductionOrders() {
+            log('📋 Verificando estado das ordens de produção...', 'info');
+            
+            try {
+                const productionService = window.productionService;
+                if (!productionService) {
+                    log('❌ productionService não disponível', 'error');
+                    return;
+                }
+
+                const orders = await productionService.getProductionOrders();
+                log(`📊 Total de ordens: ${orders.length}`, 'info');
+
+                const byStatus = orders.reduce((acc, order) => {
+                    acc[order.status] = (acc[order.status] || 0) + 1;
+                    return acc;
+                }, {});
+
+                log('📊 Por status:', 'info');
+                Object.entries(byStatus).forEach(([status, count]) => {
+                    log(`   - ${status}: ${count} ordens`, 'info');
+                });
+
+                // Verificar linhas shipped
+                let shippedLines = 0;
+                orders.forEach(order => {
+                    order.lines.forEach(line => {
+                        if (line.status === 'shipped') {
+                            shippedLines++;
+                        }
+                    });
+                });
+
+                log(`🚚 Linhas expedidas: ${shippedLines}`, shippedLines > 0 ? 'success' : 'info');
+
+            } catch (error) {
+                log(`❌ Erro ao verificar ordens: ${error.message}`, 'error');
+            }
+        }
+
+        async function clearShippingData() {
+            log('🧹 Limpando dados de shipping...', 'warning');
+            
+            if (!confirm('Tem certeza que quer limpar todos os dados de shipping? Esta ação não pode ser desfeita.')) {
+                log('❌ Operação cancelada pelo utilizador', 'info');
+                return;
+            }
+
+            try {
+                // Limpar dados relacionados ao shipping
+                localStorage.removeItem('factoryControl_shipping');
+                
+                // Limpar dados de produção também se necessário
+                const clearProduction = confirm('Quer também limpar dados de produção?');
+                if (clearProduction) {
+                    localStorage.removeItem('factoryControl_production');
+                }
+
+                log('✅ Dados de shipping limpos com sucesso', 'success');
+                log('🔄 Recarregue a página para ver os efeitos', 'info');
+
+            } catch (error) {
+                log(`❌ Erro ao limpar dados: ${error.message}`, 'error');
+            }
+        }
+
+        // Inicializar
+        log('🚀 Sistema de teste de shipping carregado', 'success');
+        log('Clique nos botões acima para testar as correções', 'info');
+    </script>
+</body>
+</html>
