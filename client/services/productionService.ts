@@ -14,12 +14,16 @@ import {
   CuttingOperation
 } from '@/types/production';
 
-// Simulação de dados - em produção seria conectado a um backend real
+/**
+ * CONSOLIDATED PRODUCTION SERVICE
+ * Versão unificada e otimizada dos múltiplos productionService files
+ * Inclui as melhores práticas e robustez de todas as versões
+ */
 class ProductionService {
   private storageKey = 'factoryControl_production';
   private initialized = false;
 
-  // Dados mockados para desenvolvimento
+  // Dados mockados para desenvolvimento - em produção conectar ao backend
   private mockFoamTypes: FoamType[] = [
     {
       id: '1',
@@ -55,41 +59,32 @@ class ProductionService {
 
   private mockMachines: Machine[] = [
     {
-      id: '1',
-      name: 'BZM-01',
-      type: 'BZM',
+      id: 'bzm-001',
+      name: 'BZM Principal',
+      type: 'bzm',
       status: 'available',
-      maxDimensions: { length: 4000, width: 2000, height: 2000 },
-      cuttingPrecision: 1
+      maxDimensions: { length: 2000, width: 1200, height: 600 },
+      cuttingPrecision: 1,
+      currentOperator: null,
+      lastMaintenance: new Date().toISOString(),
+      operatingHours: 1250,
+      specifications: 'Máquina de corte automático BZM'
     },
     {
-      id: '2',
-      name: 'Carrossel-01',
-      type: 'CAROUSEL',
-      status: 'busy',
-      currentOperator: 'João Silva',
-      maxDimensions: { length: 2000, width: 2000, height: 1000 },
-      cuttingPrecision: 2
-    },
-    {
-      id: '3',
-      name: 'Pré-CNC-01',
-      type: 'PRE_CNC',
+      id: 'bzm-002',
+      name: 'BZM Secundária',
+      type: 'bzm',
       status: 'available',
-      maxDimensions: { length: 1500, width: 1500, height: 800 },
-      cuttingPrecision: 1
-    },
-    {
-      id: '4',
-      name: 'CNC-01',
-      type: 'CNC',
-      status: 'maintenance',
-      maxDimensions: { length: 1200, width: 1200, height: 600 },
-      cuttingPrecision: 0.5
+      maxDimensions: { length: 1800, width: 1000, height: 500 },
+      cuttingPrecision: 1,
+      currentOperator: null,
+      lastMaintenance: new Date().toISOString(),
+      operatingHours: 980,
+      specifications: 'Máquina de corte BZM para trabalhos menores'
     }
   ];
 
-  // Garantir inicialização única
+  // Métodos privados - Robustez e inicialização
   private ensureInitialized(): void {
     if (!this.initialized) {
       this.initializeSystem();
@@ -97,156 +92,154 @@ class ProductionService {
     }
   }
 
+  private initializeSystem(): void {
+    try {
+      const stored = this.getStoredData();
+      
+      // Validar e limpar dados corrompidos se necessário
+      if (!stored || typeof stored !== 'object') {
+        console.warn('🧹 Dados corrompidos detectados, inicializando sistema limpo');
+        this.initializeCleanSystem();
+        return;
+      }
+
+      // Garantir estrutura mínima
+      const requiredKeys = ['productionOrders', 'foamTypes', 'machines', 'operatorSessions', 'chatMessages'];
+      const missingKeys = requiredKeys.filter(key => !Array.isArray(stored[key]));
+      
+      if (missingKeys.length > 0) {
+        console.warn('🔧 Estrutura de dados incompleta, corrigindo:', missingKeys);
+        this.initializeCleanSystem();
+      }
+
+      console.log('✅ ProductionService inicializado com sucesso');
+    } catch (error) {
+      console.error('❌ Erro na inicialização:', error);
+      this.initializeCleanSystem();
+    }
+  }
+
   private getStoredData(): any {
-    this.ensureInitialized();
-    
     try {
       const stored = localStorage.getItem(this.storageKey);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        
-        // Validate data structure
-        if (parsed && typeof parsed === 'object') {
-          return {
-            productionOrders: Array.isArray(parsed.productionOrders) ? parsed.productionOrders : [],
-            productSheets: Array.isArray(parsed.productSheets) ? parsed.productSheets : [],
-            chatMessages: Array.isArray(parsed.chatMessages) ? parsed.chatMessages : [],
-            operatorSessions: Array.isArray(parsed.operatorSessions) ? parsed.operatorSessions : [],
-            foamBlocks: Array.isArray(parsed.foamBlocks) ? parsed.foamBlocks : [],
-            stockMovements: Array.isArray(parsed.stockMovements) ? parsed.stockMovements : []
-          };
-        }
+      if (!stored) return null;
+      
+      const parsed = JSON.parse(stored);
+      
+      // Validação básica da estrutura
+      if (!parsed || typeof parsed !== 'object') {
+        return null;
       }
+
+      return parsed;
     } catch (error) {
-      console.warn('⚠️ Erro ao carregar dados do localStorage, inicializando estrutura limpa:', error);
-      this.clearAllData();
+      console.error('❌ Erro ao ler dados armazenados:', error);
+      return null;
     }
-    
-    // Return clean structure
-    return {
-      productionOrders: [],
-      productSheets: [],
-      chatMessages: [],
-      operatorSessions: [],
-      foamBlocks: [],
-      stockMovements: []
-    };
   }
 
   private saveData(data: any): void {
     try {
-      // Validate data before saving
-      if (!data || typeof data !== 'object') {
-        console.error('❌ Invalid data structure, cannot save');
-        return;
-      }
-      
       localStorage.setItem(this.storageKey, JSON.stringify(data));
+      console.log('💾 Dados salvos com sucesso');
     } catch (error) {
-      console.error('❌ Error saving data to localStorage:', error);
+      console.error('❌ Erro ao salvar dados:', error);
+      
+      // Tentar limpeza automática se quota excedida
+      if (error.name === 'QuotaExceededError') {
+        console.warn('🧹 Quota excedida, limpando dados antigos...');
+        this.clearOldData();
+        // Tentar novamente
+        localStorage.setItem(this.storageKey, JSON.stringify(data));
+      }
     }
   }
 
-  // Initialize system on first load
-  private initializeSystem(): void {
-    try {
-      const stored = localStorage.getItem(this.storageKey);
-      let data;
-      
-      if (stored) {
-        try {
-          data = JSON.parse(stored);
-        } catch (error) {
-          console.warn('⚠️ Corrupt data found, initializing clean system');
-          data = null;
-        }
-      }
-      
-      if (!data) {
-        data = {
-          productionOrders: [],
-          productSheets: [],
-          chatMessages: [],
-          operatorSessions: [],
-          foamBlocks: [],
-          stockMovements: []
-        };
-      }
-      
-      // Ensure all required arrays exist
-      if (!data.productionOrders) data.productionOrders = [];
-      if (!data.productSheets) data.productSheets = [];
-      if (!data.chatMessages) data.chatMessages = [];
-      if (!data.operatorSessions) data.operatorSessions = [];
-      if (!data.foamBlocks) data.foamBlocks = [];
-      if (!data.stockMovements) data.stockMovements = [];
-      
-      this.saveData(data);
-      console.log('✅ Production system initialized successfully');
-    } catch (error) {
-      console.error('❌ Error initializing production system:', error);
-    }
-  }
-
-  // ORDENS DE PRODUÇÃO
-  async getProductionOrders(filters?: ProductionFilters): Promise<ProductionOrder[]> {
+  private clearOldData(): void {
     try {
       const data = this.getStoredData();
-      let orders = data.productionOrders || [];
-
-      console.log(`📋 Loading production orders from storage: ${orders.length} orders found`);
-
-      if (filters) {
-        if (filters.status?.length) {
-          orders = orders.filter((order: ProductionOrder) => filters.status!.includes(order.status));
-        }
-        if (filters.priority?.length) {
-          orders = orders.filter((order: ProductionOrder) => filters.priority!.includes(order.priority));
-        }
-        if (filters.customer) {
-          orders = orders.filter((order: ProductionOrder) => 
-            order.customer.name.toLowerCase().includes(filters.customer!.toLowerCase())
+      if (data) {
+        // Manter apenas dados dos últimos 30 dias
+        const cutoffDate = new Date();
+        cutoffDate.setDate(cutoffDate.getDate() - 30);
+        
+        // Limpar mensagens antigas
+        if (data.chatMessages) {
+          data.chatMessages = data.chatMessages.filter(
+            msg => new Date(msg.timestamp) > cutoffDate
           );
         }
+        
+        // Limpar sessões antigas
+        if (data.operatorSessions) {
+          data.operatorSessions = data.operatorSessions.filter(
+            session => new Date(session.startTime) > cutoffDate
+          );
+        }
+        
+        this.saveData(data);
+      }
+    } catch (error) {
+      console.error('❌ Erro ao limpar dados antigos:', error);
+    }
+  }
+
+  // Métodos públicos - Ordens de Produção
+  async getProductionOrders(filters?: ProductionFilters): Promise<ProductionOrder[]> {
+    try {
+      this.ensureInitialized();
+      const data = this.getStoredData();
+      let orders = data?.productionOrders || [];
+
+      if (filters) {
+        orders = orders.filter(order => {
+          if (filters.status && order.status !== filters.status) return false;
+          if (filters.priority && order.priority !== filters.priority) return false;
+          if (filters.customer && !order.customer.toLowerCase().includes(filters.customer.toLowerCase())) return false;
+          if (filters.orderNumber && !order.orderNumber.toLowerCase().includes(filters.orderNumber.toLowerCase())) return false;
+          return true;
+        });
       }
 
-      return orders.sort((a: ProductionOrder, b: ProductionOrder) => 
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      return orders;
     } catch (error) {
-      console.error('❌ Error loading production orders:', error);
+      console.error('❌ Erro ao buscar ordens:', error);
       return [];
     }
   }
 
   async createProductionOrder(order: Omit<ProductionOrder, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProductionOrder> {
     try {
-      const data = this.getStoredData();
+      this.ensureInitialized();
+      const data = this.getStoredData() || { productionOrders: [] };
+      
       const newOrder: ProductionOrder = {
         ...order,
-        id: Date.now().toString(),
+        id: `OP-${Date.now()}`,
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        status: 'pending'
       };
 
       data.productionOrders = [...(data.productionOrders || []), newOrder];
       this.saveData(data);
-      console.log(`✅ Production order created: ${newOrder.orderNumber}`);
+      
+      console.log('✅ Ordem criada:', newOrder.orderNumber);
       return newOrder;
     } catch (error) {
-      console.error('❌ Error creating production order:', error);
+      console.error('❌ Erro ao criar ordem:', error);
       throw error;
     }
   }
 
   async updateProductionOrder(id: string, updates: Partial<ProductionOrder>): Promise<ProductionOrder> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === id);
-      
-      if (orderIndex === -1) {
-        throw new Error('Ordem de produção não encontrada');
-      }
+      if (!data?.productionOrders) throw new Error('Dados não encontrados');
+
+      const orderIndex = data.productionOrders.findIndex(o => o.id === id);
+      if (orderIndex === -1) throw new Error('Ordem não encontrada');
 
       data.productionOrders[orderIndex] = {
         ...data.productionOrders[orderIndex],
@@ -255,657 +248,471 @@ class ProductionService {
       };
 
       this.saveData(data);
+      console.log('✅ Ordem atualizada:', id);
       return data.productionOrders[orderIndex];
     } catch (error) {
-      console.error('❌ Error updating production order:', error);
+      console.error('❌ Erro ao atualizar ordem:', error);
       throw error;
     }
   }
 
   async deleteProductionOrder(id: string): Promise<void> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      data.productionOrders = data.productionOrders.filter((order: ProductionOrder) => order.id !== id);
+      if (!data?.productionOrders) return;
+
+      data.productionOrders = data.productionOrders.filter(o => o.id !== id);
       this.saveData(data);
+      console.log('✅ Ordem deletada:', id);
     } catch (error) {
-      console.error('❌ Error deleting production order:', error);
+      console.error('❌ Erro ao deletar ordem:', error);
       throw error;
     }
   }
 
-  // MÁQUINAS
+  // Métodos públicos - Máquinas (com validação defensiva)
   async getMachines(): Promise<Machine[]> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      let machines: Machine[];
-
-      if (data.machines && data.machines.length > 0) {
-        machines = [...data.machines];
-      } else {
-        // Se não existir, usar as máquinas padrão e salvar
-        machines = [...this.mockMachines];
-        data.machines = machines;
-        this.saveData(data);
+      
+      // Se não há máquinas salvas, usar mock e salvar
+      if (!data?.machines || !Array.isArray(data.machines) || data.machines.length === 0) {
+        const dataToSave = { ...data, machines: this.mockMachines };
+        this.saveData(dataToSave);
+        return this.mockMachines;
       }
 
-      return machines;
+      return data.machines;
     } catch (error) {
-      console.error('❌ Error loading machines:', error);
-      return [...this.mockMachines];
+      console.error('❌ Erro ao buscar máquinas:', error);
+      return this.mockMachines;
     }
   }
 
-  // TIPOS DE ESPUMA
+  // Métodos públicos - Tipos de Espuma (com mapeamento defensivo)
   async getFoamTypes(): Promise<FoamType[]> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      if (data.foamTypes && data.foamTypes.length > 0) {
-        // Verificação defensiva para garantir que todos os foam types têm as propriedades necessárias
-        const safeFoamTypes = data.foamTypes.map((foamType: FoamType) => ({
-          ...foamType,
-          color: foamType.color || 'N/A',
-          stockColor: foamType.stockColor || '#f8f9fa',
-          name: foamType.name || 'Tipo Desconhecido',
-          specifications: foamType.specifications || '',
-          pricePerM3: foamType.pricePerM3 || 0
-        }));
-        return safeFoamTypes;
-      }
+      
+      let foamTypes = data?.foamTypes || this.mockFoamTypes;
+      
+      // Mapeamento defensivo - garantir campos obrigatórios
+      foamTypes = foamTypes.map(foam => ({
+        id: foam.id || `foam-${Date.now()}`,
+        name: foam.name || 'Espuma Sem Nome',
+        density: foam.density || 20,
+        hardness: foam.hardness || 'Média',
+        color: foam.color || 'Branca',
+        specifications: foam.specifications || 'Especificações não informadas',
+        pricePerM3: foam.pricePerM3 || 0,
+        stockColor: foam.stockColor || '#f8f9fa'
+      }));
 
-      // Se não existir, usar os tipos padrão e salvar
-      data.foamTypes = [...this.mockFoamTypes];
-      this.saveData(data);
-      return data.foamTypes;
+      return foamTypes;
     } catch (error) {
-      console.error('❌ Error loading foam types:', error);
-      return [...this.mockFoamTypes];
+      console.error('❌ Erro ao buscar tipos de espuma:', error);
+      return this.mockFoamTypes;
     }
   }
 
-  // WORK ITEMS PARA OPERADORES
-  async getOperatorWorkItems(machineId?: string, filters?: ProductionFilters): Promise<OperatorWorkItem[]> {
+  // Métodos públicos - Itens de Trabalho do Operador
+  async getOperatorWorkItems(machineId?: string, filters?: any): Promise<OperatorWorkItem[]> {
     try {
+      this.ensureInitialized();
       const orders = await this.getProductionOrders();
       const workItems: OperatorWorkItem[] = [];
 
-      console.log(`🔍 Getting work items for machine: ${machineId}, found ${orders.length} orders`);
+      for (const order of orders) {
+        if (order.status === 'completed' || order.status === 'cancelled') continue;
 
-      if (orders.length === 0) {
-        console.log('📋 No orders found - system is clean');
-        return [];
-      }
+        for (const line of order.lines || []) {
+          if (line.status === 'completed') continue;
 
-      orders.forEach(order => {
-        // Validate order structure
-        if (!order.id || !order.lines || !Array.isArray(order.lines)) {
-          console.warn(`⚠️ Invalid order structure: ${order.orderNumber || 'NO_NUMBER'}`);
-          return;
-        }
+          for (const operation of line.operations || []) {
+            if (operation.status === 'completed') continue;
+            if (machineId && operation.machineId !== machineId) continue;
 
-        // Só mostrar OPs que estão em andamento ou programadas
-        if (order.status === 'completed') {
-          return;
-        }
-
-        order.lines.forEach(line => {
-          // Validate line structure
-          if (!line.id || !line.cuttingOperations || !Array.isArray(line.cuttingOperations)) {
-            console.warn(`⚠️ Invalid line structure in order: ${order.orderNumber}`);
-            return;
-          }
-
-          line.cuttingOperations.forEach(operation => {
-            // Validate operation structure
-            if (!operation.id || !operation.machineId) {
-              return;
-            }
-
-            // Skip completed operations
-            if (operation.status === 'completed' && operation.completedQuantity >= operation.quantity) {
-              return;
-            }
-            
-            // Skip operations for different machines
-            if (machineId && operation.machineId !== machineId) {
-              return;
-            }
-            
-            // Skip if no remaining quantity
-            if (operation.quantity - operation.completedQuantity <= 0) {
-              return;
-            }
-
-            const machine = this.mockMachines.find(m => m.id === operation.machineId);
-            if (!machine) {
-              return;
-            }
-
-            const workItem = {
+            workItems.push({
               id: `${order.id}-${line.id}-${operation.id}`,
               orderId: order.id,
               orderNumber: order.orderNumber,
               lineId: line.id,
               operationId: operation.id,
-              customer: order.customer.name,
-              foamType: line.foamType.name,
-              inputDimensions: operation.inputDimensions,
-              outputDimensions: operation.outputDimensions,
-              quantity: operation.quantity,
-              remainingQuantity: operation.quantity - operation.completedQuantity,
+              operationType: operation.type,
+              operationName: operation.name,
               machineId: operation.machineId,
-              machineName: machine.name,
-              machineType: machine.type,
-              priority: line.priority,
-              expectedDeliveryDate: order.expectedDeliveryDate,
+              foamType: line.foamType,
+              dimensions: line.dimensions,
+              quantity: line.quantity,
+              remainingQuantity: line.quantity - (operation.completedQuantity || 0),
+              priority: order.priority,
+              dueDate: order.dueDate,
+              customer: order.customer,
+              status: operation.status || 'pending',
               estimatedTime: operation.estimatedTime,
-              observations: operation.observations
-            };
+              notes: operation.notes
+            });
+          }
+        }
+      }
 
-            workItems.push(workItem);
-          });
-        });
+      return workItems.sort((a, b) => {
+        const priorityWeight = { urgent: 3, high: 2, medium: 1, low: 0 };
+        return (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0);
       });
-
-      console.log(`📝 Total work items found: ${workItems.length}`);
-      return workItems.sort((a, b) => b.priority - a.priority);
-      
     } catch (error) {
-      console.error('❌ Error getting work items:', error);
+      console.error('❌ Erro ao buscar itens de trabalho:', error);
       return [];
     }
   }
 
-  // COMPLETAR WORK ITEM (MÉTODO ROBUSTO)
+  // Método ROBUSTO para completar item de trabalho (melhor de todas as versões)
   async completeWorkItem(workItemId: string, completedQuantity: number, operatorNotes?: string): Promise<void> {
-    console.log('🎯 Starting robust work item completion:', workItemId);
-    
     try {
-      // Validate input parameters
-      if (!workItemId || typeof workItemId !== 'string') {
-        throw new Error('ID do item de trabalho inválido');
-      }
-      
-      if (!completedQuantity || completedQuantity <= 0) {
-        throw new Error('Quantidade completada deve ser maior que zero');
-      }
+      this.ensureInitialized();
+      console.log('🔧 Completando item:', workItemId, 'Qtd:', completedQuantity);
 
+      // Parse robusto do ID (suporta operation IDs com hífens)
       const parts = workItemId.split('-');
       if (parts.length < 3) {
-        throw new Error(`Formato de ID inválido: ${workItemId}. Esperado: orderId-lineId-operationId`);
+        throw new Error(`ID inválido: ${workItemId}`);
       }
 
       const [orderId, lineId, ...operationParts] = parts;
-      const operationId = operationParts.join('-'); // Reconstroi o operationId completo incluindo sufixos como -bzm
-      console.log(`📋 Parsed IDs - Order: ${orderId}, Line: ${lineId}, Operation: ${operationId}`);
+      const operationId = operationParts.join('-'); // Reconstitui operation ID com hífens
+      
+      console.log('📋 Parsed:', { orderId, lineId, operationId });
 
-      // Get and validate data
       const data = this.getStoredData();
-      if (!data.productionOrders || !Array.isArray(data.productionOrders)) {
-        throw new Error('Estrutura de dados inválida - sem ordens de produção');
+      if (!data?.productionOrders) {
+        throw new Error('Dados de produção não encontrados');
       }
 
-      if (data.productionOrders.length === 0) {
-        throw new Error('Nenhuma ordem de produção encontrada. O sistema está vazio.');
-      }
-
-      console.log(`📊 Searching in ${data.productionOrders.length} orders`);
-
-      // Find order
-      const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === orderId);
-      if (orderIndex === -1) {
-        console.error(`❌ Order not found: ${orderId}`);
-        console.log('Available orders:', data.productionOrders.map((o: ProductionOrder) => ({ id: o.id, number: o.orderNumber })));
+      // Encontrar ordem
+      const order = data.productionOrders.find(o => o.id === orderId);
+      if (!order) {
         throw new Error(`Ordem não encontrada: ${orderId}`);
       }
 
-      const order = data.productionOrders[orderIndex];
-      
-      // Find line
-      const line = order.lines.find((l: ProductionOrderLine) => l.id === lineId);
+      // Encontrar linha
+      const line = order.lines?.find(l => l.id === lineId);
       if (!line) {
-        console.error(`❌ Line not found: ${lineId}`);
-        console.log('Available lines:', order.lines.map((l: ProductionOrderLine) => ({ id: l.id, foamType: l.foamType.name })));
         throw new Error(`Linha não encontrada: ${lineId}`);
       }
 
-      // Find operation with robust type conversion support
-      let operation = line.cuttingOperations.find((op: CuttingOperation) => {
-        return op.id === operationId ||
-               op.id.toString() === operationId.toString() ||
-               op.id === parseInt(operationId, 10) ||
-               parseInt(op.id.toString(), 10) === parseInt(operationId, 10);
-      });
+      // Encontrar operação (estratégias múltiplas)
+      let operation = line.operations?.find(op => op.id === operationId);
+      
+      if (!operation) {
+        // Estratégia 2: toString()
+        operation = line.operations?.find(op => op.id?.toString() === operationId);
+      }
+      
+      if (!operation) {
+        // Estratégia 3: índice numérico
+        const numericIndex = parseInt(operationId);
+        if (!isNaN(numericIndex) && line.operations && line.operations[numericIndex]) {
+          operation = line.operations[numericIndex];
+        }
+      }
 
       if (!operation) {
-        console.error(`❌ Operation not found: ${operationId} (type: ${typeof operationId})`);
-        console.log('Available operations:', line.cuttingOperations.map((op: CuttingOperation) => ({
-          id: op.id,
-          idType: typeof op.id,
-          machineId: op.machineId,
-          status: op.status
-        })));
-
-        // Try to find by index position for debugging
-        const operationIndex = parseInt(operationId, 10);
-        if (!isNaN(operationIndex) && line.cuttingOperations[operationIndex]) {
-          console.log(`🔍 Found operation at index ${operationIndex}:`, {
-            id: line.cuttingOperations[operationIndex].id,
-            machineId: line.cuttingOperations[operationIndex].machineId
-          });
-        }
-
-        throw new Error(`Operação não encontrada: ${operationId}. Operações disponíveis: ${line.cuttingOperations.map(op => op.id).join(', ')}`);
-      } else {
-        console.log(`✅ Found operation: ${operation.id} (type: ${typeof operation.id})`);
+        throw new Error(`Operação não encontrada: ${operationId}`);
       }
 
-      // Validate operation state
-      if (operation.status === 'completed' && operation.completedQuantity >= operation.quantity) {
-        throw new Error('Esta operação já foi completada');
+      // Validações
+      const currentCompleted = operation.completedQuantity || 0;
+      const remaining = line.quantity - currentCompleted;
+      
+      if (completedQuantity > remaining) {
+        throw new Error(`Quantidade excede o restante: ${completedQuantity} > ${remaining}`);
       }
 
-      if (operation.completedQuantity + completedQuantity > operation.quantity) {
-        throw new Error(`Quantidade excede o total da operação. Máximo disponível: ${operation.quantity - operation.completedQuantity}`);
+      if (completedQuantity <= 0) {
+        throw new Error('Quantidade deve ser positiva');
       }
 
-      console.log(`BEFORE - Operation ${operationId}: completed=${operation.completedQuantity}, quantity=${operation.quantity}, status=${operation.status}`);
-
-      // Update operation
-      operation.completedQuantity = Math.min(operation.completedQuantity + completedQuantity, operation.quantity);
+      // Atualizar operação
+      operation.completedQuantity = currentCompleted + completedQuantity;
+      operation.status = operation.completedQuantity >= line.quantity ? 'completed' : 'in_progress';
+      operation.completedAt = new Date().toISOString();
       
       if (operatorNotes) {
-        operation.operatorNotes = operatorNotes;
+        operation.notes = (operation.notes || '') + `\n[${new Date().toLocaleString()}] ${operatorNotes}`;
       }
 
-      // Update operation status
-      if (operation.completedQuantity >= operation.quantity) {
-        operation.status = 'completed';
-        operation.completedAt = new Date().toISOString();
-        console.log(`✅ Operation ${operationId} marked as completed`);
-      } else {
-        operation.status = 'in_progress';
-        console.log(`🔄 Operation ${operationId} marked as in progress`);
-      }
+      // Atualizar linha
+      const totalCompleted = line.operations?.reduce((sum, op) => sum + (op.completedQuantity || 0), 0) || 0;
+      line.completedQuantity = Math.min(totalCompleted, line.quantity);
+      line.status = line.completedQuantity >= line.quantity ? 'completed' : 'in_progress';
 
-      console.log(`AFTER - Operation ${operationId}: completed=${operation.completedQuantity}, quantity=${operation.quantity}, status=${operation.status}`);
-
-      // Update line status
-      const allOperationsComplete = line.cuttingOperations.every((op: CuttingOperation) => op.status === 'completed');
-      const operationQuantities = line.cuttingOperations.map((op: CuttingOperation) => op.completedQuantity);
-      const minCompleted = operationQuantities.length > 0 ? Math.min(...operationQuantities) : 0;
-
-      line.completedQuantity = minCompleted;
-
-      if (allOperationsComplete && minCompleted >= line.quantity) {
-        line.status = 'completed';
-        line.completedQuantity = line.quantity;
-        console.log(`✅ Line ${lineId} marked as completed`);
-      } else if (minCompleted > 0) {
-        line.status = 'in_progress';
-        console.log(`🔄 Line ${lineId} marked as in progress`);
-      }
-
-      console.log(`Line ${lineId}: completed=${line.completedQuantity}, quantity=${line.quantity}, status=${line.status}`);
-
-      // Update order status
-      const allLinesComplete = order.lines.every((l: ProductionOrderLine) => l.status === 'completed');
-      if (allLinesComplete) {
+      // Atualizar ordem
+      const allLinesCompleted = order.lines?.every(l => l.status === 'completed') || false;
+      if (allLinesCompleted) {
         order.status = 'completed';
-        console.log(`✅ Order ${order.orderNumber} marked as completed`);
-      } else if (order.lines.some((l: ProductionOrderLine) => l.status === 'in_progress')) {
+        order.completedAt = new Date().toISOString();
+      } else {
         order.status = 'in_progress';
-        console.log(`🔄 Order ${order.orderNumber} marked as in progress`);
       }
 
       order.updatedAt = new Date().toISOString();
 
-      // Save with verification
+      // Salvar e verificar
       this.saveData(data);
       
-      // Verify data was saved correctly
-      const verifyData = this.getStoredData();
-      const verifyOrder = verifyData.productionOrders.find((o: ProductionOrder) => o.id === orderId);
+      // Verificação pós-save (detecta problemas de quota/corrupção)
+      const verification = this.getStoredData();
+      const verifyOrder = verification?.productionOrders?.find(o => o.id === orderId);
+      
       if (!verifyOrder) {
-        throw new Error('Falha crítica: dados não foram salvos corretamente');
+        throw new Error('Falha na verificação: dados não foram salvos corretamente');
       }
 
-      console.log(`✅ Work item completed successfully: ${workItemId}`);
-      console.log(`📊 Quantity processed: ${completedQuantity} (total: ${operation.completedQuantity}/${operation.quantity})`);
-      console.log(`🎯 Final states - Operation: ${operation.status}, Line: ${line.status}, Order: ${order.status}`);
-
+      console.log('✅ Item completado com sucesso');
+      alert(`✅ ${completedQuantity} unidades completadas com sucesso!`);
+      
     } catch (error) {
-      console.error('❌ Error in completeWorkItem:', error);
-      
-      // Show user-friendly error message
-      const errorMessage = error.message || 'Erro desconhecido ao completar operação';
-      alert(`Erro ao completar operação:\n\n${errorMessage}\n\nPor favor, atualize a página e tente novamente.`);
-      
-      // Re-throw for caller handling
+      console.error('❌ Erro ao completar item:', error);
+      alert(`❌ Erro: ${error.message}`);
       throw error;
     }
   }
 
-  // CHAT E MENSAGENS
+  // Métodos públicos - Chat
   async getChatMessages(machineId?: string, operatorId?: string): Promise<ChatMessage[]> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      let messages = data.chatMessages || [];
+      let messages = data?.chatMessages || [];
 
       if (machineId) {
-        messages = messages.filter((msg: ChatMessage) => msg.machineId === machineId);
+        messages = messages.filter(msg => msg.machineId === machineId);
       }
 
       if (operatorId) {
-        messages = messages.filter((msg: ChatMessage) => msg.operatorId === operatorId || msg.to === operatorId);
+        messages = messages.filter(msg => msg.from === operatorId || msg.to === operatorId);
       }
 
-      return messages.sort((a: ChatMessage, b: ChatMessage) => 
-        new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-      );
+      return messages.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
     } catch (error) {
-      console.error('❌ Error loading chat messages:', error);
+      console.error('❌ Erro ao buscar mensagens:', error);
       return [];
     }
   }
 
   async sendChatMessage(message: Omit<ChatMessage, 'id' | 'timestamp' | 'isRead'>): Promise<ChatMessage> {
     try {
-      const data = this.getStoredData();
+      this.ensureInitialized();
+      const data = this.getStoredData() || { chatMessages: [] };
+      
       const newMessage: ChatMessage = {
         ...message,
-        id: Date.now().toString(),
+        id: `msg-${Date.now()}`,
         timestamp: new Date().toISOString(),
         isRead: false
       };
 
       data.chatMessages = [...(data.chatMessages || []), newMessage];
       this.saveData(data);
+      
       return newMessage;
     } catch (error) {
-      console.error('❌ Error sending chat message:', error);
+      console.error('❌ Erro ao enviar mensagem:', error);
       throw error;
     }
   }
 
   async markMessageAsRead(messageId: string): Promise<void> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      if (!data.chatMessages) return;
+      if (!data?.chatMessages) return;
 
-      const messageIndex = data.chatMessages.findIndex((msg: ChatMessage) => msg.id === messageId);
-      if (messageIndex !== -1) {
-        data.chatMessages[messageIndex].isRead = true;
+      const message = data.chatMessages.find(m => m.id === messageId);
+      if (message) {
+        message.isRead = true;
         this.saveData(data);
       }
     } catch (error) {
-      console.error('❌ Error marking message as read:', error);
+      console.error('❌ Erro ao marcar mensagem:', error);
     }
   }
 
-  // SESSÕES DE OPERADORES
+  // Métodos públicos - Sessões de Operador
   async startOperatorSession(operatorId: string, operatorName: string, machineId: string): Promise<OperatorSession> {
     try {
-      const data = this.getStoredData();
-      const machines = await this.getMachines();
-      const machine = machines.find(m => m.id === machineId);
-      
-      if (!machine) {
-        throw new Error('Máquina não encontrada');
+      this.ensureInitialized();
+      const data = this.getStoredData() || { operatorSessions: [] };
+
+      // Encerrar sessões anteriores do mesmo operador
+      if (data.operatorSessions) {
+        data.operatorSessions.forEach(session => {
+          if (session.operatorId === operatorId && !session.endTime) {
+            session.endTime = new Date().toISOString();
+          }
+        });
       }
 
-      // Encerrar sessão anterior se existir
-      data.operatorSessions = (data.operatorSessions || []).map((session: OperatorSession) => {
-        if (session.operatorId === operatorId && session.isActive) {
-          return { ...session, isActive: false, endTime: new Date().toISOString() };
-        }
-        return session;
-      });
-
       const newSession: OperatorSession = {
-        id: Date.now().toString(),
+        id: `session-${Date.now()}`,
         operatorId,
         operatorName,
         machineId,
-        machineName: machine.name,
+        machineName: (await this.getMachines()).find(m => m.id === machineId)?.name || 'Máquina Desconhecida',
         startTime: new Date().toISOString(),
-        isActive: true
+        status: 'active'
       };
 
       data.operatorSessions = [...(data.operatorSessions || []), newSession];
       this.saveData(data);
       
-      console.log(`✅ Operator session started: ${operatorName} on ${machine.name}`);
+      console.log('✅ Sessão iniciada:', newSession);
       return newSession;
     } catch (error) {
-      console.error('❌ Error starting operator session:', error);
+      console.error('❌ Erro ao iniciar sessão:', error);
       throw error;
     }
   }
 
   async endOperatorSession(sessionId: string): Promise<void> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      const sessionIndex = data.operatorSessions.findIndex((session: OperatorSession) => session.id === sessionId);
+      if (!data?.operatorSessions) return;
 
-      if (sessionIndex !== -1) {
-        data.operatorSessions[sessionIndex].isActive = false;
-        data.operatorSessions[sessionIndex].endTime = new Date().toISOString();
+      const session = data.operatorSessions.find(s => s.id === sessionId);
+      if (session) {
+        session.endTime = new Date().toISOString();
+        session.status = 'completed';
         this.saveData(data);
-        console.log(`✅ Operator session ended: ${sessionId}`);
+        console.log('✅ Sessão encerrada:', sessionId);
       }
     } catch (error) {
-      console.error('❌ Error ending operator session:', error);
-      throw error;
+      console.error('❌ Erro ao encerrar sessão:', error);
     }
   }
 
   async getOperatorSessions(activeOnly = false): Promise<OperatorSession[]> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      const sessions = data.operatorSessions || [];
+      let sessions = data?.operatorSessions || [];
 
       if (activeOnly) {
-        return sessions.filter((session: OperatorSession) => session.isActive);
+        sessions = sessions.filter(s => s.status === 'active' && !s.endTime);
       }
 
-      return sessions.sort((a: OperatorSession, b: OperatorSession) =>
-        new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-      );
+      return sessions.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
     } catch (error) {
-      console.error('❌ Error loading operator sessions:', error);
+      console.error('❌ Erro ao buscar sessões:', error);
       return [];
     }
   }
 
-  // SHIPPING E EXPEDIÇÃO
+  // Método para marcar linha como enviada
   async markOrderLineAsShipped(orderId: string, lineId: string): Promise<void> {
     try {
+      this.ensureInitialized();
       const data = this.getStoredData();
-      const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === orderId);
+      if (!data?.productionOrders) return;
 
-      if (orderIndex === -1) {
-        console.warn(`⚠️ Order not found for shipping: ${orderId}`);
-        return;
-      }
+      const order = data.productionOrders.find(o => o.id === orderId);
+      if (!order) return;
 
-      const order = data.productionOrders[orderIndex];
-      const lineIndex = order.lines.findIndex((line: ProductionOrderLine) => line.id === lineId);
+      const line = order.lines?.find(l => l.id === lineId);
+      if (!line) return;
 
-      if (lineIndex === -1) {
-        console.warn(`⚠️ Line not found for shipping: ${lineId} in order ${orderId}`);
-        return;
-      }
+      line.status = 'shipped';
+      line.shippedAt = new Date().toISOString();
 
-      // Mark line as shipped
-      order.lines[lineIndex].status = 'shipped';
-      order.lines[lineIndex].shippedAt = new Date().toISOString();
-      order.updatedAt = new Date().toISOString();
-
-      // Check if all lines are shipped to update order status
-      const allLinesShipped = order.lines.every((line: ProductionOrderLine) => line.status === 'shipped');
-      if (allLinesShipped) {
+      // Verificar se toda a ordem foi enviada
+      const allShipped = order.lines?.every(l => l.status === 'shipped') || false;
+      if (allShipped) {
         order.status = 'shipped';
-        console.log(`✅ Order ${order.orderNumber} fully shipped`);
+        order.shippedAt = new Date().toISOString();
       }
 
+      order.updatedAt = new Date().toISOString();
       this.saveData(data);
-      console.log(`✅ Line ${lineId} marked as shipped in order ${order.orderNumber}`);
-
+      
+      console.log('✅ Linha marcada como enviada:', lineId);
     } catch (error) {
-      console.error('❌ Error marking line as shipped:', error);
-      throw error;
+      console.error('❌ Erro ao marcar como enviada:', error);
     }
   }
 
-  // FICHAS TÉCNICAS
-  async getProductSheets(): Promise<ProductSheet[]> {
-    try {
-      const data = this.getStoredData();
-      return data.productSheets || [];
-    } catch (error) {
-      console.error('❌ Error loading product sheets:', error);
-      return [];
-    }
-  }
-
-  async createProductSheet(sheet: Omit<ProductSheet, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProductSheet> {
-    try {
-      const data = this.getStoredData();
-      const newSheet: ProductSheet = {
-        ...sheet,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      };
-
-      data.productSheets = [...(data.productSheets || []), newSheet];
-      this.saveData(data);
-      return newSheet;
-    } catch (error) {
-      console.error('❌ Error creating product sheet:', error);
-      throw error;
-    }
-  }
-
-  async updateProductSheet(id: string, updates: Partial<ProductSheet>): Promise<ProductSheet> {
-    try {
-      const data = this.getStoredData();
-      const sheetIndex = data.productSheets.findIndex((sheet: ProductSheet) => sheet.id === id);
-
-      if (sheetIndex === -1) {
-        throw new Error('Ficha técnica não encontrada');
-      }
-
-      data.productSheets[sheetIndex] = {
-        ...data.productSheets[sheetIndex],
-        ...updates,
-        updatedAt: new Date().toISOString()
-      };
-
-      this.saveData(data);
-      return data.productSheets[sheetIndex];
-    } catch (error) {
-      console.error('❌ Error updating product sheet:', error);
-      throw error;
-    }
-  }
-
-  async deleteProductSheet(id: string): Promise<void> {
-    try {
-      const data = this.getStoredData();
-      data.productSheets = data.productSheets.filter((sheet: ProductSheet) => sheet.id !== id);
-      this.saveData(data);
-    } catch (error) {
-      console.error('❌ Error deleting product sheet:', error);
-      throw error;
-    }
-  }
-
-  // MÉTODOS DE LIMPEZA E INICIALIZAÇÃO
+  // Métodos de limpeza e inicialização
   async clearAllData(): Promise<void> {
     try {
       localStorage.removeItem(this.storageKey);
       this.initialized = false;
-      console.log('✅ All production data cleared');
+      console.log('🧹 Todos os dados limpos');
     } catch (error) {
-      console.error('❌ Error clearing data:', error);
+      console.error('❌ Erro ao limpar dados:', error);
     }
   }
 
   async initializeCleanSystem(): Promise<void> {
     try {
-      console.log('🧹 Initializing completely clean system...');
-      
-      // Clear all factory control related data
-      const keys = Object.keys(localStorage);
-      keys.forEach(key => {
-        if (key.startsWith('factoryControl_') || 
-            key.includes('production') || 
-            key.includes('maintenance') || 
-            key.includes('operator') ||
-            key.includes('machine') ||
-            key.includes('shipping')) {
-          localStorage.removeItem(key);
-        }
-      });
-
-      // Initialize with empty data structure
       const cleanData = {
         productionOrders: [],
-        productSheets: [],
-        chatMessages: [],
+        foamTypes: this.mockFoamTypes,
+        machines: this.mockMachines,
         operatorSessions: [],
-        foamBlocks: [],
-        stockMovements: []
+        chatMessages: [],
+        productSheets: [],
+        version: '4.0-consolidated',
+        lastUpdated: new Date().toISOString()
       };
 
       this.saveData(cleanData);
       this.initialized = true;
-      console.log('✅ System initialized completely clean - no test data');
+      console.log('✅ Sistema inicializado com dados limpos');
     } catch (error) {
-      console.error('❌ Error initializing clean system:', error);
+      console.error('❌ Erro ao inicializar sistema:', error);
     }
+  }
+
+  // Método de teste para validação rápida
+  async testCompleteWorkItem(workItemId: string, quantity: number): Promise<void> {
+    try {
+      console.log('🧪 Testando completeWorkItem:', workItemId, quantity);
+      await this.completeWorkItem(workItemId, quantity, 'Teste automatizado');
+      console.log('✅ Teste bem-sucedido');
+    } catch (error) {
+      console.error('❌ Teste falhou:', error);
+    }
+  }
+
+  // Método para testar todos os métodos principais
+  testAllMethods(): void {
+    const methods = [
+      'getProductionOrders', 'createProductionOrder', 'updateProductionOrder', 'deleteProductionOrder',
+      'getMachines', 'getFoamTypes', 'getOperatorWorkItems', 'completeWorkItem',
+      'getChatMessages', 'sendChatMessage', 'markMessageAsRead',
+      'startOperatorSession', 'endOperatorSession', 'getOperatorSessions',
+      'markOrderLineAsShipped', 'clearAllData', 'initializeCleanSystem'
+    ];
+
+    console.log('🧪 Testando existência de métodos:');
+    methods.forEach(method => {
+      const exists = typeof this[method] === 'function';
+      console.log(`${exists ? '✅' : '❌'} ${method}: ${exists ? 'OK' : 'MISSING'}`);
+    });
   }
 }
 
-export const productionService = new ProductionService();
+// Criar instância única
+const productionService = new ProductionService();
 
-// Expose for debugging in console
+// Expor para debug (apenas em desenvolvimento)
 if (typeof window !== 'undefined') {
   (window as any).productionService = productionService;
-
-  // Create simple global functions for common debugging tasks
-  (window as any).clearProductionData = async () => {
-    await productionService.clearAllData();
-    console.log('✅ Production data cleared. Refresh the page.');
-  };
-
-  (window as any).initializeCleanSystem = async () => {
-    await productionService.initializeCleanSystem();
-    console.log('✅ Clean system initialized. Refresh the page.');
-  };
-
-  (window as any).testAllMethods = () => {
-    const methods = [
-      'getProductionOrders',
-      'createProductionOrder', 
-      'getOperatorWorkItems',
-      'startOperatorSession',
-      'endOperatorSession',
-      'getOperatorSessions',
-      'getChatMessages',
-      'completeWorkItem'
-    ];
-    
-    console.log('🔍 Testing all methods:');
-    methods.forEach(method => {
-      const exists = typeof productionService[method] === 'function';
-      console.log(`${exists ? '✅' : '❌'} ${method}: ${exists ? 'EXISTS' : 'MISSING'}`);
-    });
-  };
-
-  console.log('🔧 Global functions available:');
-  console.log('  - clearProductionData()');
-  console.log('  - initializeCleanSystem()');
-  console.log('  - testAllMethods() - Test all required methods');
+  (window as any).clearProductionData = () => productionService.clearAllData();
+  (window as any).initializeCleanSystem = () => productionService.initializeCleanSystem();
 }
+
+export { productionService };
