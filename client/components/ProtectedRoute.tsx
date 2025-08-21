@@ -63,7 +63,7 @@ export function ProtectedRoute({
   }
 
   // Check role permission if required
-  if (requiredRole && !authService.hasPermission(requiredRole)) {
+  if (requiredRole && !authService.canAccess(requiredRole)) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
         <div className="text-center max-w-md">
