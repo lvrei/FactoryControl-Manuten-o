@@ -76,8 +76,8 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
 
-          {/* PWA Install Button - Emergency version */}
-          <SimplePWAInstallEmergency />
+          {/* PWA Install Button - Emergency version - TEMPORARY DISABLED */}
+          {/* <SimplePWAInstallEmergency /> */}
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
