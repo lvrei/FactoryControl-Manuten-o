@@ -110,7 +110,7 @@ function ProductionNew() {
     }
   };
 
-  const filteredOrders = productionOrders.filter(order => {
+  const filteredOrders = (productionOrders || []).filter(order => {
     const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
     
