@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X, Plus } from "lucide-react";
+import { BackToOperatorButton } from '../BackToOperatorButton';
 import { cn } from "@/lib/utils";
 
 interface MachineFormProps {
@@ -7,6 +8,8 @@ interface MachineFormProps {
   onClose: () => void;
   onSave: (machine: MachineData) => void;
   editingMachine?: MachineData | null;
+  showBackToOperator?: boolean;
+  onBackToOperator?: () => void;
 }
 
 export interface MachineData {
