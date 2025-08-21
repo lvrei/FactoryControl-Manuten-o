@@ -458,19 +458,35 @@ class ProductionService {
         throw new Error(`Linha não encontrada: ${lineId}`);
       }
 
-      // Find operation with type conversion support
-      let operation = line.cuttingOperations.find((op: CuttingOperation) => op.id === operationId);
+      // Find operation with robust type conversion support
+      let operation = line.cuttingOperations.find((op: CuttingOperation) => {
+        return op.id === operationId ||
+               op.id.toString() === operationId.toString() ||
+               op.id === parseInt(operationId, 10) ||
+               parseInt(op.id.toString(), 10) === parseInt(operationId, 10);
+      });
+
       if (!operation) {
-        // Try string conversion
-        operation = line.cuttingOperations.find((op: CuttingOperation) => op.id.toString() === operationId.toString());
-        
-        if (!operation) {
-          console.error(`❌ Operation not found: ${operationId}`);
-          console.log('Available operations:', line.cuttingOperations.map((op: CuttingOperation) => ({ id: op.id, machineId: op.machineId, status: op.status })));
-          throw new Error(`Operação não encontrada: ${operationId}`);
-        } else {
-          console.log('✅ Found operation after string conversion');
+        console.error(`❌ Operation not found: ${operationId} (type: ${typeof operationId})`);
+        console.log('Available operations:', line.cuttingOperations.map((op: CuttingOperation) => ({
+          id: op.id,
+          idType: typeof op.id,
+          machineId: op.machineId,
+          status: op.status
+        })));
+
+        // Try to find by index position for debugging
+        const operationIndex = parseInt(operationId, 10);
+        if (!isNaN(operationIndex) && line.cuttingOperations[operationIndex]) {
+          console.log(`🔍 Found operation at index ${operationIndex}:`, {
+            id: line.cuttingOperations[operationIndex].id,
+            machineId: line.cuttingOperations[operationIndex].machineId
+          });
         }
+
+        throw new Error(`Operação não encontrada: ${operationId}. Operações disponíveis: ${line.cuttingOperations.map(op => op.id).join(', ')}`);
+      } else {
+        console.log(`✅ Found operation: ${operation.id} (type: ${typeof operation.id})`);
       }
 
       // Validate operation state
