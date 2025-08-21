@@ -19,10 +19,10 @@ export function ProtectedRoute({
   const location = useLocation();
 
   useEffect(() => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
         const session = authService.getCurrentUser();
-        const authenticated = authService.isAuthenticated();
+        const authenticated = await authService.isAuthenticated();
 
         setUserSession(session);
         setIsAuthenticated(authenticated);
