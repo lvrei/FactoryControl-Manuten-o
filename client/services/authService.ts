@@ -7,45 +7,13 @@ export interface LoginSession {
   loginTime: string;
 }
 
-// Interface para resposta de login
-interface AuthResponse {
-  success: boolean;
-  message: string;
-  user?: LoginSession;
-}
-
 /**
  * SIMPLE AUTH SERVICE - For Testing
- * Versão simples para testes (sem server-side)
+ * Versão simplificada para testes sem server-side
  */
 class AuthService {
   private storageKey = 'factoryControl_auth';
   private currentUser: LoginSession | null = null;
-
-  // Método privado para requests HTTP
-  private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
-    try {
-      const response = await fetch(`${this.apiBaseUrl}${endpoint}`, {
-        credentials: 'include', // Incluir cookies automaticamente
-        headers: {
-          'Content-Type': 'application/json',
-          ...options.headers,
-        },
-        ...options,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || `HTTP ${response.status}`);
-      }
-
-      return data;
-    } catch (error) {
-      console.error(`❌ Auth request failed (${endpoint}):`, error);
-      throw error;
-    }
-  }
 
   // Login com credenciais (versão simples para teste)
   async login(username: string, password: string): Promise<LoginSession> {
@@ -53,7 +21,7 @@ class AuthService {
       console.log('🔐 Tentando login:', username);
 
       // Credenciais válidas para teste
-      const validCredentials = {
+      const validCredentials: Record<string, { role: string; name: string }> = {
         'admin': { role: 'admin', name: 'Administrador' },
         'operador': { role: 'operator', name: 'Operador Principal' },
         'supervisor': { role: 'supervisor', name: 'Supervisor' }
@@ -102,50 +70,19 @@ class AuthService {
     try {
       // Verificar se há usuário em memória ou localStorage
       if (this.currentUser) return true;
-
+      
       const stored = localStorage.getItem(this.storageKey);
       if (stored) {
         this.currentUser = JSON.parse(stored);
         return true;
       }
-
+      
       return false;
     } catch (error) {
       console.warn('⚠️ Verificação de autenticação falhou:', error);
       this.currentUser = null;
       localStorage.removeItem(this.storageKey);
       return false;
-    }
-  }
-
-  // Renovar token JWT
-  async refreshToken(): Promise<LoginSession> {
-    try {
-      console.log('🔄 Renovando token...');
-
-      const response: AuthResponse = await this.makeRequest('/refresh', {
-        method: 'POST',
-      });
-
-      if (!response.success || !response.user) {
-        throw new Error(response.message || 'Falha na renovação');
-      }
-
-      // Atualizar usuário atual
-      const userWithLoginTime: LoginSession = {
-        ...response.user,
-        loginTime: this.currentUser?.loginTime || new Date().toISOString()
-      };
-
-      this.currentUser = userWithLoginTime;
-      localStorage.setItem(this.storageKey, JSON.stringify(userWithLoginTime));
-
-      console.log('✅ Token renovado com sucesso');
-      return userWithLoginTime;
-
-    } catch (error) {
-      console.error('❌ Erro na renovação:', error);
-      throw error;
     }
   }
 
@@ -156,7 +93,7 @@ class AuthService {
       return this.currentUser;
     }
 
-    // Fallback para localStorage (dados podem estar desatualizados)
+    // Fallback para localStorage
     try {
       const stored = localStorage.getItem(this.storageKey);
       if (stored) {
@@ -170,31 +107,6 @@ class AuthService {
     }
 
     return null;
-  }
-
-  // Obter dados do usuário atualizados do servidor
-  async getUserProfile(): Promise<LoginSession> {
-    try {
-      const response: AuthResponse = await this.makeRequest('/me');
-      
-      if (!response.success || !response.user) {
-        throw new Error(response.message || 'Falha ao obter perfil');
-      }
-
-      // Atualizar dados locais
-      const userWithLoginTime: LoginSession = {
-        ...response.user,
-        loginTime: this.currentUser?.loginTime || new Date().toISOString()
-      };
-
-      this.currentUser = userWithLoginTime;
-      localStorage.setItem(this.storageKey, JSON.stringify(userWithLoginTime));
-
-      return userWithLoginTime;
-    } catch (error) {
-      console.error('❌ Erro ao obter perfil:', error);
-      throw error;
-    }
   }
 
   // Verificar se usuário tem role específica
@@ -215,7 +127,7 @@ class AuthService {
     if (!user) return false;
 
     // Hierarquia de roles (admin > supervisor > maintenance > operator)
-    const roleHierarchy = {
+    const roleHierarchy: Record<string, number> = {
       'admin': 4,
       'supervisor': 3,
       'maintenance': 2,
@@ -243,22 +155,6 @@ class AuthService {
     this.currentUser = null;
     localStorage.removeItem(this.storageKey);
     console.log('🧹 Dados de autenticação limpos');
-  }
-
-  // Método para interceptar respostas 401/403 e renovar token automaticamente
-  async handleAuthError(originalRequest: () => Promise<any>): Promise<any> {
-    try {
-      // Tentar renovar token
-      await this.refreshToken();
-      
-      // Repetir request original
-      return await originalRequest();
-    } catch (error) {
-      // Se renovação falhar, fazer logout
-      console.warn('🔄 Renovação falhou, fazendo logout...');
-      await this.logout();
-      throw new Error('Sessão expirada. Faça login novamente.');
-    }
   }
 
   // Debug - informações da sessão
