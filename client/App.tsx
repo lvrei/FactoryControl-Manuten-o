@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
-// import { SimplePWAInstallEmergency } from "@/components/SimplePWAInstall_emergency"; // Temporarily disabled
+import { PWAInstall, PWAStatus } from "@/components/PWAInstall";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Dashboard from "./pages/Dashboard";
@@ -76,8 +76,9 @@ const App = () => {
             <Route path="*" element={<NotFound />} />
           </Routes>
 
-          {/* PWA Install Button - Emergency version - TEMPORARY DISABLED */}
-          {/* <SimplePWAInstallEmergency /> */}
+          {/* PWA Components - Stable Version */}
+          <PWAInstall />
+          <PWAStatus />
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
