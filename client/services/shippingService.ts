@@ -330,7 +330,11 @@ class ShippingService {
       [`Peso Total: ${load.totalWeight.toFixed(2)} kg`],
       [`Observações: ${load.notes || 'Nenhuma'}`],
       [''],
-      ['=== DETALHES DOS ITENS ==='],
+      ['=== IDENTIFICAÇÃO E DETALHES DO MATERIAL ==='],
+      [''],
+      ['╔══════════════════════════════════════════════════════════════════════════════════════╗'],
+      ['║                        TABELA DE IDENTIFICAÇÃO DO MATERIAL                          ║'],
+      ['╚══════════════════════════════════════════════════════════════════════════════════════╝'],
       ['']
     ];
 
