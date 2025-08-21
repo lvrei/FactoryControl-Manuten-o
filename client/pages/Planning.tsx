@@ -16,6 +16,12 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import {
+  FormValidation,
+  SuccessMessage,
+  useFormValidation,
+  validationRules
+} from '@/components/ui/FormValidation';
 import { ProductionOrder, Machine } from '@/types/production';
 import { productionService } from '@/services/productionService';
 
