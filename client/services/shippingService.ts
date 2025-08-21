@@ -370,29 +370,109 @@ class ShippingService {
   }
 
   exportShippableItemsToCSV(items: ShippableItem[]): void {
-    const csvData = [
-      ['Cliente', 'OP', 'Tipo Espuma', 'Quantidade', 'Dimensões (L×W×H)', 'Volume (m³)', 'Peso (kg)', 'Código Barras', 'Data Conclusão'],
-      ...items.map(item => [
-        item.customerName,
-        item.orderNumber,
-        item.foamType,
-        item.quantity,
-        `${item.dimensions.length}×${item.dimensions.width}×${item.dimensions.height}mm`,
-        item.volume.toFixed(3),
-        (item.weight || 0).toFixed(2),
-        item.barcodeId || 'N/A',
-        new Date(item.completedAt).toLocaleString('pt-BR')
+    const dateString = new Date().toLocaleDateString('pt-BR');
+    const timeString = new Date().toLocaleTimeString('pt-BR');
+
+    // Calcular totais
+    const totalItems = items.length;
+    const totalVolume = items.reduce((sum, item) => sum + item.volume, 0);
+    const totalWeight = items.reduce((sum, item) => sum + (item.weight || 0), 0);
+    const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
+
+    // Estatísticas por cliente
+    const customerStats = items.reduce((acc, item) => {
+      if (!acc[item.customerName]) {
+        acc[item.customerName] = { items: 0, volume: 0, weight: 0, quantity: 0 };
+      }
+      acc[item.customerName].items++;
+      acc[item.customerName].volume += item.volume;
+      acc[item.customerName].weight += (item.weight || 0);
+      acc[item.customerName].quantity += item.quantity;
+      return acc;
+    }, {} as Record<string, any>);
+
+    // Cabeçalho com informações gerais
+    const headerInfo = [
+      ['=== RELATÓRIO DE MATERIAL DISPONÍVEL PARA EXPEDIÇÃO ==='],
+      [''],
+      [`Data de Exportação: ${dateString} às ${timeString}`],
+      [`Total de Linhas de Produção: ${totalItems}`],
+      [`Quantidade Total de Peças: ${totalQuantity}`],
+      [`Volume Total: ${totalVolume.toFixed(3)} m³`],
+      [`Peso Total: ${totalWeight.toFixed(2)} kg`],
+      [''],
+      ['=== RESUMO POR CLIENTE ===']
+    ];
+
+    // Adicionar estatísticas por cliente
+    const customerStatsData = [
+      ['Cliente', 'Linhas', 'Peças', 'Volume (m³)', 'Peso (kg)'],
+      ...Object.entries(customerStats).map(([customer, stats]: [string, any]) => [
+        customer,
+        stats.items.toString(),
+        stats.quantity.toString(),
+        stats.volume.toFixed(3),
+        stats.weight.toFixed(2)
       ])
     ];
 
-    const csvContent = csvData.map(row => 
-      row.map(cell => `"${cell}"`).join(',')
+    // Dados detalhados dos itens
+    const detailsHeader = [
+      [''],
+      ['=== DETALHES POR LINHA DE PRODUÇÃO ==='],
+      ['']
+    ];
+
+    const itemsData = [
+      ['#', 'Cliente', 'OP', 'Tipo Espuma', 'Qtd Peças', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso (kg)', 'Código Barras', 'Data Conclusão', 'Pronto Expedição'],
+      ...items.map((item, index) => [
+        (index + 1).toString(),
+        item.customerName,
+        item.orderNumber,
+        item.foamType,
+        item.quantity.toString(),
+        item.dimensions.length.toString(),
+        item.dimensions.width.toString(),
+        item.dimensions.height.toString(),
+        item.volume.toFixed(3),
+        (item.weight || 0).toFixed(2),
+        item.barcodeId || 'N/A',
+        new Date(item.completedAt).toLocaleString('pt-BR'),
+        item.readyForShipping ? 'Sim' : 'Não'
+      ])
+    ];
+
+    // Rodapé
+    const footerInfo = [
+      [''],
+      ['=== INFORMAÇÕES DO SISTEMA ==='],
+      [`Sistema: FactoryControl - Gestão de Produção de Espuma`],
+      [`Módulo: Expedição de Material`],
+      [`Filtros Aplicados: ${items.length < totalItems ? 'Sim (lista filtrada)' : 'Nenhum (lista completa)'}`],
+      [`Status: Material pronto para carregamento`]
+    ];
+
+    // Combinar todos os dados
+    const allData = [
+      ...headerInfo,
+      [''],
+      ...customerStatsData,
+      ...detailsHeader,
+      ...itemsData,
+      ...footerInfo
+    ];
+
+    const csvContent = allData.map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
     ).join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Add BOM for proper encoding in Excel
+    const csvContentWithBOM = '\uFEFF' + csvContent;
+
+    const blob = new Blob([csvContentWithBOM], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `material_disponivel_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `Material_Disponivel_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   }
 
