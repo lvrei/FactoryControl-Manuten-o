@@ -29,7 +29,7 @@ export function BackToOperatorButton({
   if (variant === 'header') {
     return (
       <button
-        onClick={onClick}
+        onClick={handleClick}
         className={cn(
           "flex items-center gap-2 text-primary hover:text-primary/80",
           "transition-colors duration-200 font-medium text-sm",
@@ -46,7 +46,7 @@ export function BackToOperatorButton({
   if (variant === 'link') {
     return (
       <button
-        onClick={onClick}
+        onClick={handleClick}
         className={cn(
           "flex items-center gap-2 text-blue-600 hover:text-blue-800",
           "text-sm underline underline-offset-2",
@@ -62,7 +62,7 @@ export function BackToOperatorButton({
   // Default button variant
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       className={cn(
         "flex items-center gap-2 px-4 py-2 rounded-lg",
         "bg-primary text-primary-foreground hover:bg-primary/90",
