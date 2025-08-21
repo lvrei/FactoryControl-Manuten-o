@@ -61,26 +61,50 @@ class ProductionService {
     {
       id: 'bzm-001',
       name: 'BZM Principal',
-      type: 'bzm',
+      type: 'BZM',
       status: 'available',
-      maxDimensions: { length: 2000, width: 1200, height: 600 },
-      cuttingPrecision: 1,
+      maxDimensions: { length: 4000, width: 2000, height: 2000 },
+      cuttingPrecision: 0.5,
       currentOperator: null,
       lastMaintenance: new Date().toISOString(),
       operatingHours: 1250,
-      specifications: 'Máquina de corte automático BZM'
+      specifications: 'Máquina de corte automático BZM - corte inicial de blocos'
     },
     {
-      id: 'bzm-002',
-      name: 'BZM Secundária',
-      type: 'bzm',
+      id: 'carousel-001',
+      name: 'Carrossel Coxins',
+      type: 'CAROUSEL',
       status: 'available',
-      maxDimensions: { length: 1800, width: 1000, height: 500 },
-      cuttingPrecision: 1,
+      maxDimensions: { length: 3000, width: 1800, height: 1500 },
+      cuttingPrecision: 1.0,
       currentOperator: null,
       lastMaintenance: new Date().toISOString(),
       operatingHours: 980,
-      specifications: 'Máquina de corte BZM para trabalhos menores'
+      specifications: 'Máquina carrossel para corte de coxins'
+    },
+    {
+      id: 'pre-cnc-001',
+      name: 'Pré-CNC 01',
+      type: 'PRE_CNC',
+      status: 'available',
+      maxDimensions: { length: 2500, width: 1500, height: 1200 },
+      cuttingPrecision: 0.8,
+      currentOperator: null,
+      lastMaintenance: new Date().toISOString(),
+      operatingHours: 1680,
+      specifications: 'Máquina de preparação pré-CNC'
+    },
+    {
+      id: 'cnc-001',
+      name: 'CNC Acabamento',
+      type: 'CNC',
+      status: 'available',
+      maxDimensions: { length: 2200, width: 1300, height: 1000 },
+      cuttingPrecision: 0.3,
+      currentOperator: null,
+      lastMaintenance: new Date().toISOString(),
+      operatingHours: 2150,
+      specifications: 'Máquina CNC para acabamento final'
     }
   ];
 
