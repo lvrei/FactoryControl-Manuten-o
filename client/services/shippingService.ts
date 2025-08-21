@@ -328,7 +328,7 @@ class ShippingService {
 
     // Dados dos itens
     const itemsData = [
-      ['#', 'Cliente', 'OP', 'Tipo Espuma', 'Qtd', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso (kg)', 'Código Barras', 'Data Adição', 'Observações'],
+      ['#', 'Cliente', 'OP', 'Tipo Espuma', 'Qtd', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso (kg)', 'Código Barras', 'Data Adiç��o', 'Observações'],
       ...load.items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
@@ -527,6 +527,26 @@ class ShippingService {
       }
     } catch (error) {
       console.error('Error marking production order lines as completed:', error);
+    }
+  }
+
+  private async removeShippedItemsFromAvailable(load: ShipmentLoad): Promise<void> {
+    try {
+      const data = this.getStoredData();
+
+      // Get IDs of items that were shipped in this load
+      const shippedItemIds = load.items.map(item => item.shippableItemId);
+
+      // Remove shipped items from available list
+      data.shippableItems = data.shippableItems.filter(item =>
+        !shippedItemIds.includes(item.id)
+      );
+
+      this.saveData(data);
+      console.log(`✅ Removed ${shippedItemIds.length} shipped items from available list`);
+
+    } catch (error) {
+      console.error('❌ Error removing shipped items from available list:', error);
     }
   }
 }
