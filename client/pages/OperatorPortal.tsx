@@ -57,8 +57,8 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     const session = authService.getCurrentUser();
     if (session) {
       setOperatorData({
-        id: session.userId,
-        name: session.username
+        id: session.id || session.username || '',
+        name: session.name || session.username || ''
       });
     }
   }, []);
