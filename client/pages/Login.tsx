@@ -33,6 +33,18 @@ export default function Login() {
     }
   };
 
+  const quickLogin = (role: 'admin' | 'operator' | 'supervisor') => {
+    const credentials = {
+      admin: { username: 'admin', password: 'admin123' },
+      operator: { username: 'operador', password: 'admin123' },
+      supervisor: { username: 'supervisor', password: 'admin123' }
+    };
+    
+    const cred = credentials[role];
+    setUsername(cred.username);
+    setPassword(cred.password);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -56,6 +68,40 @@ export default function Login() {
               <p className="text-sm text-muted-foreground mt-1">
                 Aceda ao sistema com as suas credenciais
               </p>
+            </div>
+
+            {/* Demo Credentials */}
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="text-sm font-medium text-blue-900 mb-2">🔐 Credenciais de Demonstração:</h4>
+              <div className="space-y-1 text-xs text-blue-800">
+                <div className="flex justify-between items-center">
+                  <span><strong>Admin:</strong> admin / admin123</span>
+                  <button 
+                    onClick={() => quickLogin('admin')}
+                    className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                  >
+                    Usar
+                  </button>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span><strong>Operador:</strong> operador / admin123</span>
+                  <button 
+                    onClick={() => quickLogin('operator')}
+                    className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                  >
+                    Usar
+                  </button>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span><strong>Supervisor:</strong> supervisor / admin123</span>
+                  <button 
+                    onClick={() => quickLogin('supervisor')}
+                    className="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
+                  >
+                    Usar
+                  </button>
+                </div>
+              </div>
             </div>
 
             {error && (
@@ -104,18 +150,13 @@ export default function Login() {
 
               <button
                 type="submit"
-                disabled={loading || !username || !password}
-                className={cn(
-                  "w-full px-4 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-2 transition-colors",
-                  loading || !username || !password
-                    ? "bg-muted text-muted-foreground cursor-not-allowed"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
-                )}
+                disabled={loading}
+                className="w-full bg-primary text-primary-foreground py-3 px-4 rounded-lg hover:bg-primary/90 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-transparent border-t-current"></div>
-                    A entrar...
+                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Entrando...
                   </>
                 ) : (
                   <>
@@ -126,23 +167,13 @@ export default function Login() {
               </button>
             </form>
           </div>
-
-          {/* Default Credentials Info */}
-          <div className="border-t bg-muted/50 p-4">
-            <h3 className="text-sm font-medium text-card-foreground mb-2">Credenciais Padrão:</h3>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <div><strong>Administrador:</strong> admin / admin123</div>
-              <div className="text-xs text-muted-foreground/70">
-                (Criar mais utilizadores na secção "Equipa")
-              </div>
-            </div>
-          </div>
         </div>
 
-        {/* Info Footer */}
-        <div className="text-center mt-6 text-xs text-muted-foreground">
-          <p>© 2024 FactoryControl - Sistema de Gestão Industrial</p>
-          <p>Desenvolvido para indústria de corte de espuma</p>
+        {/* Footer */}
+        <div className="text-center mt-6">
+          <p className="text-xs text-muted-foreground">
+            FactoryControl v4.0 - Sistema Seguro com JWT
+          </p>
         </div>
       </div>
     </div>
