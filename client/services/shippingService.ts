@@ -299,15 +299,42 @@ class ShippingService {
 
   // Export functionality
   exportLoadToCSV(load: ShipmentLoad): void {
-    const csvData = [
-      ['Carga Nº', 'Cliente', 'OP', 'Tipo Espuma', 'Quantidade', 'Dimensões (L×W×H)', 'Volume (m³)', 'Peso (kg)', 'Código Barras', 'Data Adição', 'Observações'],
-      ...load.items.map(item => [
-        load.loadNumber,
+    const dateString = new Date().toLocaleDateString('pt-BR');
+    const timeString = new Date().toLocaleTimeString('pt-BR');
+
+    // Cabeçalho com informações da carga
+    const headerInfo = [
+      ['=== RELATÓRIO DE CARGA DE EXPEDIÇÃO ==='],
+      [''],
+      [`Carga Nº: ${load.loadNumber}`],
+      [`Operador: ${load.operatorName}`],
+      [`Placa Camião: ${load.truckPlate || 'N/A'}`],
+      [`Motorista: ${load.driverName || 'N/A'}`],
+      [`Início Carregamento: ${new Date(load.startTime).toLocaleString('pt-BR')}`],
+      [`Fim Carregamento: ${load.endTime ? new Date(load.endTime).toLocaleString('pt-BR') : 'Em andamento'}`],
+      [`Estado: ${load.status === 'completed' ? 'Completa' : load.status === 'loading' ? 'A carregar' : 'Cancelada'}`],
+      [''],
+      [`Total de Itens: ${load.totalItems}`],
+      [`Volume Total: ${load.totalVolume.toFixed(3)} m³`],
+      [`Peso Total: ${load.totalWeight.toFixed(2)} kg`],
+      [`Observações: ${load.notes || 'Nenhuma'}`],
+      [''],
+      ['=== DETALHES DOS ITENS ==='],
+      ['']
+    ];
+
+    // Dados dos itens
+    const itemsData = [
+      ['#', 'Cliente', 'OP', 'Tipo Espuma', 'Qtd', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso (kg)', 'Código Barras', 'Data Adição', 'Observações'],
+      ...load.items.map((item, index) => [
+        (index + 1).toString(),
         item.customerName,
         item.orderNumber,
         item.foamType,
-        item.quantity,
-        `${item.dimensions.length}×${item.dimensions.width}×${item.dimensions.height}mm`,
+        item.quantity.toString(),
+        item.dimensions.length.toString(),
+        item.dimensions.width.toString(),
+        item.dimensions.height.toString(),
         item.volume.toFixed(3),
         (item.weight || 0).toFixed(2),
         item.barcodeId || 'N/A',
@@ -316,14 +343,29 @@ class ShippingService {
       ])
     ];
 
-    const csvContent = csvData.map(row => 
-      row.map(cell => `"${cell}"`).join(',')
+    // Rodapé com totais
+    const footerInfo = [
+      [''],
+      ['=== RESUMO FINAL ==='],
+      [`Data de Exportação: ${dateString} às ${timeString}`],
+      [`Sistema: FactoryControl - Gestão de Produção`],
+      [`Exportado por: ${load.operatorName}`]
+    ];
+
+    // Combinar todos os dados
+    const allData = [...headerInfo, ...itemsData, ...footerInfo];
+
+    const csvContent = allData.map(row =>
+      row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
     ).join('\n');
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    // Add BOM for proper encoding
+    const csvContentWithBOM = '\uFEFF' + csvContent;
+
+    const blob = new Blob([csvContentWithBOM], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `carga_${load.loadNumber}_${new Date().toISOString().split('T')[0]}.csv`;
+    link.download = `Carga_${load.loadNumber}_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   }
 
