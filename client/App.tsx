@@ -77,7 +77,7 @@ const App = () => {
           </Routes>
 
           {/* PWA Install Button - Simplified for debugging */}
-          <SimplePWAInstallSafe />
+          <SimplePWAInstall />
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
