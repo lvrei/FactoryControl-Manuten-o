@@ -65,6 +65,7 @@
 - `debug-current-issues.html` - Debug dos problemas principais
 - `auto-init-app.html` - Inicialização automática da aplicação
 - `test-bzm-complete-solution.html` - Teste completo da solução BZM
+- `test-workitem-fix.html` - **NOVO**: Teste específico para correção "Operation not found"
 
 ### Funções de Console Disponíveis
 ```javascript
