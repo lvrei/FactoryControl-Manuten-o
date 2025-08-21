@@ -39,10 +39,41 @@ export default function Dashboard() {
         maintenanceService.getMachineDowntime(),
         maintenanceService.getMaintenanceRequests()
       ]);
-      setProductionOrders(orders);
-      setMachines(machinesData);
-      setMachineDowntime(downtime);
-      setMaintenanceRequests(requests);
+
+      // Verificação defensiva para garantir dados válidos
+      const safeOrders = orders.filter(order =>
+        order && typeof order === 'object' && order.id && order.lines && Array.isArray(order.lines)
+      ).map(order => ({
+        ...order,
+        lines: order.lines.filter(line =>
+          line && typeof line === 'object' && line.foamType &&
+          typeof line.foamType === 'object' && line.foamType.name
+        ).map(line => ({
+          ...line,
+          foamType: {
+            ...line.foamType,
+            color: line.foamType.color || 'N/A',
+            stockColor: line.foamType.stockColor || '#f8f9fa'
+          }
+        }))
+      }));
+
+      const safeMachines = machinesData.filter(machine =>
+        machine && typeof machine === 'object' && machine.id && machine.name
+      );
+
+      const safeDowntime = downtime.filter(dt =>
+        dt && typeof dt === 'object' && dt.id && dt.machineName
+      );
+
+      const safeRequests = requests.filter(req =>
+        req && typeof req === 'object' && req.id && req.title
+      );
+
+      setProductionOrders(safeOrders);
+      setMachines(safeMachines);
+      setMachineDowntime(safeDowntime);
+      setMaintenanceRequests(safeRequests);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
