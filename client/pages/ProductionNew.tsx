@@ -144,11 +144,11 @@ function ProductionNew() {
   };
 
   // Estatísticas
-  const totalOrders = productionOrders.length;
-  const inProgressOrders = productionOrders.filter(o => o.status === 'in_progress').length;
-  const completedOrders = productionOrders.filter(o => o.status === 'completed').length;
-  const urgentOrders = productionOrders.filter(o => o.priority === 'urgent').length;
-  const activeMachines = machines.filter(m => m.status === 'busy').length;
+  const totalOrders = (productionOrders || []).length;
+  const inProgressOrders = (productionOrders || []).filter(o => o.status === 'in_progress').length;
+  const completedOrders = (productionOrders || []).filter(o => o.status === 'completed').length;
+  const urgentOrders = (productionOrders || []).filter(o => o.priority === 'urgent').length;
+  const activeMachines = (machines || []).filter(m => m.status === 'busy').length;
 
   if (loading) {
     return (
