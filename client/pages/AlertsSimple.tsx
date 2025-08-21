@@ -456,7 +456,10 @@ export default function AlertsSimple() {
                 Consulte o histórico completo de manutenção de cada máquina, incluindo estatísticas, custos e detalhes técnicos.
               </p>
             </div>
-            <MachineMaintenanceHistory machineId={selectedMachineFromURL || undefined} />
+            <MachineMaintenanceHistory
+              machineId={selectedMachineFromURL || undefined}
+              onBackToOperator={() => window.open('/operator', '_self')}
+            />
           </div>
         )}
 
