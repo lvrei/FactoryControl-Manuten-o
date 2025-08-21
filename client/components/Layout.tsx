@@ -170,10 +170,10 @@ export function Layout({ children }: LayoutProps) {
         <main className="flex-1 p-4 md:p-6 pb-20 md:pb-6">
           {children || <Outlet />}
 
-          {/* PWA Debug Component - only in development */}
-          <div className="mt-8 pt-4 border-t border-muted">
+          {/* PWA Debug Component - only in development - TEMPORARILY DISABLED */}
+          {/* <div className="mt-8 pt-4 border-t border-muted">
             <PWADebug />
-          </div>
+          </div> */}
         </main>
       </div>
 
