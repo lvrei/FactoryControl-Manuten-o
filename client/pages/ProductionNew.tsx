@@ -27,8 +27,12 @@ import { ProductionOrderManager } from '@/components/production/ProductionOrderM
 import { ProductSheetsManager } from '@/components/production/ProductSheetsManager';
 import { ProductionChat, useChatNotifications } from '@/components/production/ProductionChat';
 import { cn } from '@/lib/utils';
+import { BackToOperatorButton } from '@/components/BackToOperatorButton';
+import { useLocation } from 'react-router-dom';
 
 function ProductionNew() {
+  const location = useLocation();
+  const fromOperator = location.search.includes('from=operator');
   const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
   const [operatorSessions, setOperatorSessions] = useState<OperatorSession[]>([]);
