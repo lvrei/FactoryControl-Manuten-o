@@ -1,23 +1,104 @@
 import "dotenv/config";
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 import { handleDemo } from "./routes/demo";
+import authRoutes from "./routes/auth";
 
 export function createServer() {
   const app = express();
 
-  // Middleware
-  app.use(cors());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  // Security middleware
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+        fontSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        mediaSrc: ["'self'"],
+        frameSrc: ["'none'"],
+      },
+    },
+  }));
 
-  // Example API routes
+  // CORS configuration
+  app.use(cors({
+    origin: process.env.NODE_ENV === 'production'
+      ? ['https://yourdomain.com'] // Substituir por domínio real em produção
+      : ['http://localhost:3000', 'http://127.0.0.1:3000'],
+    credentials: true,
+    optionsSuccessStatus: 200
+  }));
+
+  // Rate limiting
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 100, // máximo 100 requests por IP por janela
+    message: {
+      success: false,
+      message: 'Muitas tentativas. Tente novamente em 15 minutos.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  // Rate limiting específico para auth
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 5, // máximo 5 tentativas de login por IP
+    message: {
+      success: false,
+      message: 'Muitas tentativas de login. Tente novamente em 15 minutos.'
+    },
+    skipSuccessfulRequests: true,
+  });
+
+  app.use(limiter);
+  app.use('/api/auth/login', authLimiter);
+
+  // Body parsing middleware
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(cookieParser());
+
+  // API routes
   app.get("/api/ping", (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Auth routes
+  app.use("/api/auth", authRoutes);
+
+  // Health check
+  app.get("/api/health", (_req, res) => {
+    res.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      version: "4.0.0"
+    });
+  });
+
+  // Error handling middleware
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    console.error('❌ Server Error:', err);
+
+    res.status(err.status || 500).json({
+      success: false,
+      message: process.env.NODE_ENV === 'production'
+        ? 'Erro interno do servidor'
+        : err.message,
+      ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
+    });
+  });
 
   return app;
 }
