@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Correção Erro Color</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border-left: 5px solid #28a745; }
+        .error { background: #f8d7da; border-left: 5px solid #dc3545; }
+        .info { background: #d1ecf1; border-left: 5px solid #17a2b8; }
+        .warning { background: #fff3cd; border-left: 5px solid #ffc107; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Correção do Erro "Cannot read properties of undefined (reading 'color')"</h1>
+    
+    <div class="section">
+        <h2>🚨 Problema Identificado</h2>
+        <p>O erro está acontecendo porque alguns dados no localStorage têm propriedades <code>foamType</code> corruptas ou incompletas.</p>
+        <p><strong>Erro:</strong> <code>TypeError: Cannot read properties of undefined (reading 'color')</code></p>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Ferramentas de Correção</h2>
+        <button onclick="fixDataCorruption()">🔧 Corrigir Dados Corrompidos</button>
+        <button onclick="inspectData()">🔍 Inspecionar Dados</button>
+        <button onclick="clearAllData()">🧹 Limpar Todos os Dados</button>
+        <button onclick="resetToDefaults()">🔄 Reset Completo</button>
+        <button onclick="goToApp()">🚀 Ir para Aplicação</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        function fixDataCorruption() {
+            log('🔧 Iniciando correção de dados corrompidos...', 'info');
+            
+            try {
+                const keys = [
+                    'factoryControl_production',
+                    'factoryControl_shipping',
+                    'factoryControl_auth',
+                    'factoryControl_maintenance'
+                ];
+                
+                let totalFixed = 0;
+                
+                keys.forEach(key => {
+                    try {
+                        const data = localStorage.getItem(key);
+                        if (data) {
+                            const parsed = JSON.parse(data);
+                            log(`📊 Verificando ${key}...`, 'info');
+                            
+                            if (key === 'factoryControl_production' && parsed.productionOrders) {
+                                let fixed = false;
+                                
+                                parsed.productionOrders.forEach((order, orderIndex) => {
+                                    if (order && order.lines) {
+                                        order.lines.forEach((line, lineIndex) => {
+                                            if (line && line.foamType) {
+                                                if (!line.foamType.color) {
+                                                    line.foamType.color = 'N/A';
+                                                    fixed = true;
+                                                    totalFixed++;
+                                                }
+                                                if (!line.foamType.stockColor) {
+                                                    line.foamType.stockColor = '#f8f9fa';
+                                                    fixed = true;
+                                                    totalFixed++;
+                                                }
+                                                if (!line.foamType.name) {
+                                                    line.foamType.name = 'Tipo Desconhecido';
+                                                    fixed = true;
+                                                    totalFixed++;
+                                                }
+                                            } else if (line && !line.foamType) {
+                                                line.foamType = {
+                                                    id: '1',
+                                                    name: 'Tipo Padrão',
+                                                    density: 20,
+                                                    hardness: 'Média',
+                                                    color: 'Branca',
+                                                    specifications: 'Tipo de espuma padrão',
+                                                    pricePerM3: 45.00,
+                                                    stockColor: '#f8f9fa'
+                                                };
+                                                fixed = true;
+                                                totalFixed++;
+                                            }
+                                        });
+                                    }
+                                });
+                                
+                                if (fixed) {
+                                    localStorage.setItem(key, JSON.stringify(parsed));
+                                    log(`✅ Dados de ${key} corrigidos`, 'success');
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        log(`❌ Erro ao processar ${key}: ${error.message}`, 'error');
+                        log(`🗑️ Removendo dados corrompidos de ${key}...`, 'warning');
+                        localStorage.removeItem(key);
+                        totalFixed++;
+                    }
+                });
+                
+                if (totalFixed > 0) {
+                    log(`✅ Correção concluída: ${totalFixed} problemas corrigidos`, 'success');
+                    log('🔄 Recarregue a página para aplicar as correções', 'info');
+                } else {
+                    log('✅ Nenhum problema encontrado nos dados', 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ Erro na correção: ${error.message}`, 'error');
+            }
+        }
+
+        function inspectData() {
+            log('🔍 Inspecionando dados do localStorage...', 'info');
+            
+            const keys = Object.keys(localStorage).filter(key => key.startsWith('factoryControl_'));
+            
+            if (keys.length === 0) {
+                log('📭 Nenhum dado FactoryControl encontrado', 'info');
+                return;
+            }
+            
+            keys.forEach(key => {
+                try {
+                    const data = localStorage.getItem(key);
+                    const parsed = JSON.parse(data);
+                    
+                    log(`📊 ${key}:`, 'info');
+                    
+                    if (key === 'factoryControl_production') {
+                        const orders = parsed.productionOrders || [];
+                        log(`   - Ordens de produção: ${orders.length}`, 'info');
+                        
+                        let problemsFound = 0;
+                        orders.forEach((order, orderIndex) => {
+                            if (order && order.lines) {
+                                order.lines.forEach((line, lineIndex) => {
+                                    if (!line.foamType) {
+                                        problemsFound++;
+                                        log(`   ⚠️ Linha ${lineIndex} da ordem ${orderIndex}: foamType ausente`, 'warning');
+                                    } else if (!line.foamType.color || !line.foamType.stockColor) {
+                                        problemsFound++;
+                                        log(`   ⚠️ Linha ${lineIndex} da ordem ${orderIndex}: propriedades color/stockColor ausentes`, 'warning');
+                                    }
+                                });
+                            }
+                        });
+                        
+                        if (problemsFound === 0) {
+                            log(`   ✅ Nenhum problema encontrado`, 'success');
+                        } else {
+                            log(`   ❌ ${problemsFound} problemas encontrados`, 'error');
+                        }
+                    }
+                    
+                } catch (error) {
+                    log(`   ❌ Erro ao parsear ${key}: ${error.message}`, 'error');
+                }
+            });
+        }
+
+        function clearAllData() {
+            if (!confirm('⚠️ Tem certeza que quer limpar TODOS os dados? Esta ação não pode ser desfeita!')) {
+                log('❌ Operação cancelada pelo usuário', 'info');
+                return;
+            }
+            
+            log('🧹 Limpando todos os dados...', 'warning');
+            
+            const keys = Object.keys(localStorage).filter(key => key.startsWith('factoryControl_'));
+            keys.forEach(key => {
+                localStorage.removeItem(key);
+                log(`🗑️ Removido: ${key}`, 'info');
+            });
+            
+            log('✅ Todos os dados foram limpos', 'success');
+            log('🔄 Recarregue a página para inicializar sistema limpo', 'info');
+        }
+
+        function resetToDefaults() {
+            if (!confirm('🔄 Quer fazer um reset completo para valores padrão?')) {
+                log('❌ Reset cancelado pelo usuário', 'info');
+                return;
+            }
+            
+            log('🔄 Fazendo reset para valores padrão...', 'info');
+            
+            // Limpar dados existentes
+            clearAllData();
+            
+            // Criar dados padrão básicos
+            const defaultData = {
+                productionOrders: [],
+                productSheets: [],
+                chatMessages: [],
+                operatorSessions: [],
+                foamBlocks: [],
+                stockMovements: [],
+                foamTypes: [
+                    {
+                        id: '1',
+                        name: 'Espuma D20',
+                        density: 20,
+                        hardness: 'Macia',
+                        color: 'Branca',
+                        specifications: 'Espuma de poliuretano flexível D20',
+                        pricePerM3: 45.00,
+                        stockColor: '#f8f9fa'
+                    },
+                    {
+                        id: '2',
+                        name: 'Espuma D28',
+                        density: 28,
+                        hardness: 'Média',
+                        color: 'Amarela',
+                        specifications: 'Espuma de poliuretano flexível D28',
+                        pricePerM3: 65.00,
+                        stockColor: '#fff3cd'
+                    }
+                ]
+            };
+            
+            localStorage.setItem('factoryControl_production', JSON.stringify(defaultData));
+            log('✅ Dados padrão criados', 'success');
+            log('🔄 Sistema pronto para uso', 'info');
+        }
+
+        function goToApp() {
+            log('🚀 Redirecionando para aplicação...', 'info');
+            window.location.href = 'http://localhost:3000';
+        }
+
+        // Inicializar
+        log('🚀 Ferramenta de correção carregada', 'info');
+        log('Clique em "Corrigir Dados Corrompidos" para resolver o erro', 'info');
+    </script>
+</body>
+</html>
