@@ -139,7 +139,7 @@ function ProductionNew() {
   const machineStatusConfig = {
     available: { color: "text-green-600 bg-green-50", label: "Disponível" },
     busy: { color: "text-yellow-600 bg-yellow-50", label: "Ocupada" },
-    maintenance: { color: "text-red-600 bg-red-50", label: "Manuten��ão" },
+    maintenance: { color: "text-red-600 bg-red-50", label: "Manutenção" },
     offline: { color: "text-gray-600 bg-gray-50", label: "Offline" }
   };
 
@@ -474,7 +474,7 @@ function ProductionNew() {
                             <button
                               onClick={() => updateOrderStatus(order.id, 'created')}
                               className="p-1 text-yellow-600 hover:text-yellow-700"
-                              title="Pausar produç��o"
+                              title="Pausar produção"
                             >
                               <Pause className="h-4 w-4" />
                             </button>
@@ -525,8 +525,8 @@ function ProductionNew() {
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-lg font-semibold text-card-foreground">{machine.name}</h3>
-                    <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", machineStatusConfig[machine.status].color)}>
-                      {machineStatusConfig[machine.status].label}
+                    <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", machineStatusConfig[machine.status]?.color || "text-gray-600 bg-gray-50")}>
+                      {machineStatusConfig[machine.status]?.label || machine.status}
                     </span>
                   </div>
                   <Factory className="h-8 w-8 text-muted-foreground" />
