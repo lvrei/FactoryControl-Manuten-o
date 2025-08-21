@@ -239,7 +239,10 @@ class ShippingService {
 
     // Mark all production order lines as completed in production service
     await this.markProductionOrderLinesAsCompleted(loads[loadIndex]);
-    
+
+    // Remove shipped items from available shippable items
+    await this.removeShippedItemsFromAvailable(loads[loadIndex]);
+
     return loads[loadIndex];
   }
 
