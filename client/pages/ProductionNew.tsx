@@ -388,8 +388,8 @@ function ProductionNew() {
                       </td>
                       
                       <td className="p-4">
-                        <span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", statusConfig[order.status].color)}>
-                          {statusConfig[order.status].label}
+                        <span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", statusConfig[order.status]?.color || "text-gray-600 bg-gray-50")}>
+                          {statusConfig[order.status]?.label || order.status}
                         </span>
                       </td>
                       
