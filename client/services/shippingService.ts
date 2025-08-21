@@ -441,7 +441,7 @@ class ShippingService {
       [''],
       ['╔══════════════════════════════════════════════════════════════════════════════════════╗'],
       ['║                        LISTAGEM DETALHADA DO MATERIAL                                ║'],
-      ['╚══════════════════════════════════════════════════════════════════════════════════════╝'],
+      ['╚════════════════════════════════════════════════════════════════════��═════════════════╝'],
       ['']
     ];
 
@@ -556,17 +556,17 @@ class ShippingService {
 
   private async removeShippedItemsFromAvailable(load: ShipmentLoad): Promise<void> {
     try {
-      const data = this.getStoredData();
+      const { shippableItems } = this.getStoredData();
 
       // Get IDs of items that were shipped in this load
       const shippedItemIds = load.items.map(item => item.shippableItemId);
 
       // Remove shipped items from available list
-      data.shippableItems = data.shippableItems.filter(item =>
+      const updatedItems = shippableItems.filter(item =>
         !shippedItemIds.includes(item.id)
       );
 
-      this.saveData(data);
+      this.saveShippableItems(updatedItems);
       console.log(`✅ Removed ${shippedItemIds.length} shipped items from available list`);
 
     } catch (error) {
