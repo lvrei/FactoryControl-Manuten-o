@@ -66,6 +66,16 @@ export default function Planning() {
   const [showForm, setShowForm] = useState(false);
   const [editingPlan, setEditingPlan] = useState<ProductionPlan | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+
+  const {
+    errors,
+    isSubmitting,
+    setIsSubmitting,
+    addError,
+    clearErrors,
+    hasErrors
+  } = useFormValidation();
 
   const [formData, setFormData] = useState({
     orderId: '',
