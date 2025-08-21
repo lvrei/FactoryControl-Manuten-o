@@ -15,7 +15,7 @@ import {
   Warehouse
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PWADebug } from "./PWADebug";
+// import { PWADebug } from "./PWADebug"; // Temporarily disabled
 import { authService } from "@/services/authService";
 import { LoginSession } from "@/types/production";
 
