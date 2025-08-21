@@ -147,6 +147,16 @@ export function MachineMaintenanceHistory({ machineId, onBackToOperator }: Machi
 
   return (
     <div className="space-y-6">
+      {/* Header with Back Button */}
+      {onBackToOperator && (
+        <div className="flex items-center justify-between">
+          <BackToOperatorButton
+            onClick={onBackToOperator}
+            variant="header"
+          />
+        </div>
+      )}
+
       {/* Machine Selector */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
         <div className="flex-1">
