@@ -76,7 +76,7 @@
         async function testConnection() {
             addLog('🔗 Testando conexão com localhost:3000...', 'info');
             try {
-                const response = await fetch('http://localhost:8080');
+                const response = await fetch('http://localhost:3000');
                 if (response.ok) {
                     addLog('✅ Conexão OK - Servidor respondendo', 'success');
                 } else {
@@ -151,7 +151,7 @@
             
             // Test basic fetch to the app
             try {
-                const response = await fetch('http://localhost:8080');
+                const response = await fetch('http://localhost:3000');
                 const html = await response.text();
                 
                 if (html.includes('root')) {
