@@ -220,11 +220,19 @@ export default function Production() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Controle de Produção</h1>
-          <p className="text-muted-foreground">
-            Gestão de ordens de produção e linhas de fabricação
-          </p>
+        <div className="flex items-center gap-4">
+          {fromOperator && (
+            <BackToOperatorButton
+              variant="header"
+              useRouter={true}
+            />
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Controle de Produção</h1>
+            <p className="text-muted-foreground">
+              Gestão de ordens de produção e linhas de fabricação
+            </p>
+          </div>
         </div>
         
         <button
