@@ -20,6 +20,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from 'recharts';
+import { BackToOperatorButton } from '@/components/BackToOperatorButton';
+import { useLocation } from 'react-router-dom';
 
 interface ProductionOrder {
   id: string;
@@ -188,6 +190,8 @@ const lineStatusConfig = {
 };
 
 export default function Production() {
+  const location = useLocation();
+  const fromOperator = location.search.includes('from=operator');
   const [activeTab, setActiveTab] = useState<'orders' | 'lines'>('orders');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
