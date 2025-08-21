@@ -94,7 +94,7 @@ export interface ProductionOrder {
   };
   expectedDeliveryDate: string;
   lines: ProductionOrderLine[];
-  status: 'created' | 'in_progress' | 'completed' | 'cancelled';
+  status: 'created' | 'in_progress' | 'completed' | 'cancelled' | 'shipped';
   priority: 'low' | 'medium' | 'high' | 'urgent';
   totalVolume: number; // volume total em m³
   estimatedCost: number;
