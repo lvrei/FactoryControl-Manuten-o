@@ -105,9 +105,34 @@ export default function Planning() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!formData.orderId || !formData.machineId || !formData.plannedStartDate || !formData.estimatedDuration) {
-      alert('Preencha todos os campos obrigatórios');
+    clearErrors();
+    setIsSubmitting(true);
+
+    // Validar campos obrigatórios
+    let hasValidationErrors = false;
+
+    if (!formData.orderId) {
+      addError('Ordem de Produção', 'Selecione uma ordem de produção');
+      hasValidationErrors = true;
+    }
+
+    if (!formData.machineId) {
+      addError('Máquina', 'Selecione uma máquina');
+      hasValidationErrors = true;
+    }
+
+    if (!formData.plannedStartDate) {
+      addError('Data de Início', 'Informe a data de início');
+      hasValidationErrors = true;
+    }
+
+    if (!formData.estimatedDuration || Number(formData.estimatedDuration) <= 0) {
+      addError('Duração', 'Informe uma duração válida em horas');
+      hasValidationErrors = true;
+    }
+
+    if (hasValidationErrors) {
+      setIsSubmitting(false);
       return;
     }
 
@@ -172,9 +197,16 @@ export default function Planning() {
       savePlans(updatedPlans);
       resetForm();
       setShowForm(false);
+      // Sucesso
+      setSuccessMessage(editingPlan ? 'Plano atualizado com sucesso!' : 'Plano criado com sucesso!');
+      setShowForm(false);
+      resetForm();
+
     } catch (error) {
       console.error('Erro ao salvar plano:', error);
-      alert('Erro ao salvar plano');
+      addError('Sistema', 'Erro ao salvar plano. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
