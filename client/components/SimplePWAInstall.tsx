@@ -1,14 +1,12 @@
-// VERSÃO NOVA - NUNCA TEVE HOOKS - CACHE SAFE
-// Este arquivo foi completamente reescrito para evitar problemas de cache
+// COMPONENTE COMPLETAMENTE DESATIVADO - VERSÃO FINAL
+// Não usa React, não usa hooks, não causa erros
 
-function SimplePWAInstall() {
-  // Retorna null sempre - componente desativado por problemas de cache
+export default function SimplePWAInstall() {
   return null;
 }
 
-// Export por segurança
+// Export nomeado para compatibilidade
 export { SimplePWAInstall };
-export default SimplePWAInstall;
 
-// Log para debug
-console.log('🚫 SimplePWAInstall: Componente desativado por segurança');
+// Console log para confirmar que está carregado
+console.log('✅ SimplePWAInstall: Componente desativado - versão final segura');
