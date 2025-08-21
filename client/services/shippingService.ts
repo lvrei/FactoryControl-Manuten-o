@@ -437,12 +437,18 @@ class ShippingService {
     // Dados detalhados dos itens
     const detailsHeader = [
       [''],
-      ['=== DETALHES POR LINHA DE PRODUÇÃO ==='],
+      ['=== MATERIAL DISPONÍVEL PARA EXPEDIÇÃO ==='],
+      [''],
+      ['╔══════════════════════════════════════════════════════════════════════════════════════╗'],
+      ['║                        LISTAGEM DETALHADA DO MATERIAL                                ║'],
+      ['╚══════════════════════════════════════════════════════════════════════════════════════╝'],
       ['']
     ];
 
     const itemsData = [
-      ['#', 'Cliente', 'OP', 'Tipo Espuma', 'Qtd Peças', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso (kg)', 'Código Barras', 'Data Conclusão', 'Pronto Expedição'],
+      ['────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'],
+      ['#', 'CLIENTE', 'ORDEM PROD.', 'TIPO ESPUMA', 'QTD', 'COMP.(mm)', 'LARG.(mm)', 'ALT.(mm)', 'VOL.(m³)', 'PESO(kg)', 'CÓDIGO BARRAS', 'DATA CONCLUSÃO', 'PRONTO EXP.'],
+      ['────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'],
       ...items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
