@@ -604,6 +604,14 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
             </button>
 
             <button
+              onClick={() => window.open('/equipment?from=operator', '_blank')}
+              className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Ver Equipamentos
+            </button>
+
+            <button
               onClick={() => setShowChat(!showChat)}
               className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2 relative"
             >
