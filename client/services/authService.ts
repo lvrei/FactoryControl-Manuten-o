@@ -157,6 +157,12 @@ class AuthService {
     console.log('🧹 Dados de autenticação limpos');
   }
 
+  // Atualizar atividade do usuário (método vazio para compatibilidade)
+  updateActivity(): void {
+    // Método vazio - na versão completa seria para atualizar timestamp de atividade
+    return;
+  }
+
   // Debug - informações da sessão
   getSessionInfo(): any {
     const user = this.getCurrentUser();
@@ -167,7 +173,7 @@ class AuthService {
       role: user.role,
       name: user.name,
       loginTime: user.loginTime,
-      sessionDuration: user.loginTime 
+      sessionDuration: user.loginTime
         ? `${Math.round((Date.now() - new Date(user.loginTime).getTime()) / 60000)} minutos`
         : 'Desconhecido'
     };
