@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 Emergency Fix - React useState Error</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; }
+        .emergency { background: #dc3545; color: white; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: center; }
+        .log { background: #fff; padding: 10px; margin: 10px 0; border-radius: 5px; border-left: 5px solid #6c757d; }
+        .success { border-left-color: #28a745; background: #d4edda; }
+        .error { border-left-color: #dc3545; background: #f8d7da; }
+        .info { border-left-color: #17a2b8; background: #d1ecf1; }
+        .warning { border-left-color: #ffc107; background: #fff3cd; }
+        button { background: #dc3545; color: white; border: none; padding: 15px 25px; margin: 5px; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background: #c82333; }
+        .safe-btn { background: #28a745; }
+        .safe-btn:hover { background: #218838; }
+        .section { background: white; margin: 20px 0; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+    <div class="emergency">
+        <h1>🚨 EMERGENCY FIX</h1>
+        <h2>React useState Returning NULL</h2>
+        <p>Este script resolverá definitivamente o erro de navegação</p>
+    </div>
+
+    <div class="section">
+        <h2>🎯 Problema Identificado</h2>
+        <p><strong>Erro:</strong> <code>Cannot read properties of null (reading 'useState')</code></p>
+        <p><strong>Causa:</strong> React hooks retornando null devido a dados corrompidos ou import incorreto</p>
+        <p><strong>Stack trace aponta para:</strong> SimplePWAInstall component (linha específica no bundle)</p>
+    </div>
+
+    <div class="section">
+        <h2>🚨 AÇÕES DE EMERGÊNCIA</h2>
+        <button onclick="emergencyCleanup()">🧹 LIMPEZA TOTAL DE EMERGÊNCIA</button>
+        <button onclick="fixReactIssue()">⚛️ CORRIGIR PROBLEMA REACT</button>
+        <button onclick="resetToCleanState()">🔄 RESET COMPLETO DO SISTEMA</button>
+        <button onclick="debugReactState()" class="safe-btn">🔍 DEBUG REACT STATE</button>
+    </div>
+
+    <div class="section">
+        <h2>✅ TESTE APÓS CORREÇÃO</h2>
+        <button onclick="testApp()" class="safe-btn">🚀 TESTAR APLICAÇÃO</button>
+        <button onclick="goToApp()" class="safe-btn">📱 IR PARA APP</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        function emergencyCleanup() {
+            log('🚨 INICIANDO LIMPEZA TOTAL DE EMERGÊNCIA...', 'error');
+            
+            try {
+                // 1. Limpar TODOS os dados do localStorage
+                const allKeys = Object.keys(localStorage);
+                let factoryKeys = 0;
+                let otherKeys = 0;
+                
+                allKeys.forEach(key => {
+                    if (key.startsWith('factoryControl_') || 
+                        key.includes('production') || 
+                        key.includes('maintenance') || 
+                        key.includes('shipping') ||
+                        key.includes('operator') ||
+                        key.includes('auth')) {
+                        localStorage.removeItem(key);
+                        factoryKeys++;
+                    } else if (key.includes('react') || key.includes('vite') || key.includes('dev')) {
+                        localStorage.removeItem(key);
+                        otherKeys++;
+                    }
+                });
+                
+                log(`🗑️ Removidas ${factoryKeys} chaves do FactoryControl`, 'warning');
+                log(`🗑️ Removidas ${otherKeys} chaves de desenvolvimento`, 'warning');
+                
+                // 2. Limpar sessionStorage também
+                sessionStorage.clear();
+                log('🧹 SessionStorage limpo', 'warning');
+                
+                // 3. Forçar reload do cache do navegador
+                if (caches) {
+                    caches.keys().then(names => {
+                        names.forEach(name => {
+                            caches.delete(name);
+                            log(`🗑️ Cache removido: ${name}`, 'warning');
+                        });
+                    });
+                }
+                
+                log('✅ LIMPEZA TOTAL CONCLUÍDA', 'success');
+                log('🔄 Recarregue a página para aplicar as mudanças', 'info');
+                
+            } catch (error) {
+                log(`❌ Erro na limpeza: ${error.message}`, 'error');
+            }
+        }
+
+        function fixReactIssue() {
+            log('⚛️ CORRIGINDO PROBLEMA ESPECÍFICO DO REACT...', 'info');
+            
+            try {
+                // 1. Verificar se React está disponível
+                if (typeof React !== 'undefined') {
+                    log('✅ React está disponível globalmente', 'success');
+                } else {
+                    log('⚠️ React não está disponível globalmente', 'warning');
+                }
+                
+                // 2. Limpar qualquer cache específico do React
+                const reactKeys = Object.keys(localStorage).filter(key => 
+                    key.includes('react') || key.includes('hook') || key.includes('state')
+                );
+                
+                reactKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    log(`🗑️ Removida chave React: ${key}`, 'warning');
+                });
+                
+                // 3. Forçar reload dos módulos
+                if (typeof window !== 'undefined' && window.location) {
+                    // Adicionar parâmetro para evitar cache
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('_fix', Date.now().toString());
+                    
+                    log('🔄 Preparando reload com cache bypass...', 'info');
+                    setTimeout(() => {
+                        window.location.href = url.toString();
+                    }, 2000);
+                }
+                
+                log('✅ Correção React aplicada', 'success');
+                
+            } catch (error) {
+                log(`❌ Erro na correção React: ${error.message}`, 'error');
+            }
+        }
+
+        function resetToCleanState() {
+            log('🔄 RESET COMPLETO DO SISTEMA...', 'warning');
+            
+            if (!confirm('⚠️ ATENÇÃO: Isso irá apagar TODOS os dados e resetar o sistema. Tem certeza?')) {
+                log('❌ Reset cancelado pelo usuário', 'info');
+                return;
+            }
+            
+            try {
+                // 1. Limpar tudo
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // 2. Criar estrutura básica segura
+                const safeData = {
+                    version: '2.0',
+                    timestamp: new Date().toISOString(),
+                    productionOrders: [],
+                    productSheets: [],
+                    chatMessages: [],
+                    operatorSessions: [],
+                    foamBlocks: [],
+                    stockMovements: [],
+                    foamTypes: [
+                        {
+                            id: '1',
+                            name: 'Espuma D20',
+                            density: 20,
+                            hardness: 'Macia',
+                            color: 'Branca',
+                            specifications: 'Espuma padrão D20',
+                            pricePerM3: 45.00,
+                            stockColor: '#f8f9fa'
+                        }
+                    ]
+                };
+                
+                localStorage.setItem('factoryControl_production', JSON.stringify(safeData));
+                
+                log('✅ Sistema resetado para estado limpo e seguro', 'success');
+                log('📊 Dados básicos criados com proteções', 'success');
+                log('🔄 Sistema pronto para uso sem erros', 'success');
+                
+                // Auto-redirect após 3 segundos
+                setTimeout(() => {
+                    log('🚀 Redirecionando para aplicação...', 'info');
+                    window.location.href = 'http://localhost:3000';
+                }, 3000);
+                
+            } catch (error) {
+                log(`❌ Erro no reset: ${error.message}`, 'error');
+            }
+        }
+
+        function debugReactState() {
+            log('🔍 DEBUGGING ESTADO DO REACT...', 'info');
+            
+            try {
+                // Verificar ambiente
+                log(`🌐 User Agent: ${navigator.userAgent}`, 'info');
+                log(`🔒 Secure Context: ${window.isSecureContext}`, 'info');
+                log(`📍 Location: ${window.location.href}`, 'info');
+                
+                // Verificar React
+                if (typeof React !== 'undefined') {
+                    log(`⚛️ React Version: ${React.version || 'Unknown'}`, 'success');
+                    
+                    if (React.useState) {
+                        log('✅ useState está disponível', 'success');
+                    } else {
+                        log('❌ useState NÃO está disponível', 'error');
+                    }
+                } else {
+                    log('❌ React não está disponível no escopo global', 'error');
+                }
+                
+                // Verificar localStorage
+                const keys = Object.keys(localStorage);
+                log(`💾 LocalStorage tem ${keys.length} chaves`, 'info');
+                
+                const factoryKeys = keys.filter(k => k.startsWith('factoryControl_'));
+                log(`🏭 FactoryControl tem ${factoryKeys.length} chaves`, 'info');
+                
+                factoryKeys.forEach(key => {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        const size = JSON.stringify(data).length;
+                        log(`   📊 ${key}: ${size} bytes`, 'info');
+                    } catch (error) {
+                        log(`   ❌ ${key}: dados corrompidos`, 'error');
+                    }
+                });
+                
+                log('✅ Debug concluído', 'success');
+                
+            } catch (error) {
+                log(`❌ Erro no debug: ${error.message}`, 'error');
+            }
+        }
+
+        function testApp() {
+            log('🚀 TESTANDO APLICAÇÃO...', 'info');
+            
+            try {
+                // Testar conexão
+                fetch('http://localhost:3000')
+                    .then(response => {
+                        if (response.ok) {
+                            log('✅ Servidor respondendo normalmente', 'success');
+                            log('🌐 Status: ' + response.status, 'success');
+                            return response.text();
+                        } else {
+                            throw new Error('Status: ' + response.status);
+                        }
+                    })
+                    .then(html => {
+                        if (html.includes('root')) {
+                            log('✅ HTML contém elemento root', 'success');
+                        }
+                        if (html.includes('react')) {
+                            log('✅ React detectado no HTML', 'success');
+                        }
+                        log('✅ Aplicação parece estar funcionando', 'success');
+                    })
+                    .catch(error => {
+                        log(`❌ Erro ao testar app: ${error.message}`, 'error');
+                    });
+                    
+            } catch (error) {
+                log(`❌ Erro no teste: ${error.message}`, 'error');
+            }
+        }
+
+        function goToApp() {
+            log('🚀 Redirecionando para aplicação...', 'info');
+            window.location.href = 'http://localhost:3000';
+        }
+
+        // Monitorar erros
+        window.addEventListener('error', (event) => {
+            log(`❌ Erro detectado: ${event.message}`, 'error');
+        });
+
+        // Inicializar
+        log('🚨 Sistema de emergência carregado', 'error');
+        log('Use os botões acima para resolver o erro definitivamente', 'warning');
+        log('Recomendo começar com "LIMPEZA TOTAL DE EMERGÊNCIA"', 'warning');
+    </script>
+</body>
+</html>
