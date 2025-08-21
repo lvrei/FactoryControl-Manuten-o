@@ -517,7 +517,7 @@ function ProductionNew() {
       ) : (
         // Tab de máquinas
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {machines.map((machine) => {
+          {(machines || []).map((machine) => {
             const activeSession = operatorSessions.find(s => s.machineId === machine.id);
             
             return (
