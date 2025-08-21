@@ -93,7 +93,7 @@ export default function Equipment() {
         return {
           ...machine,
           location: existingDetails?.location || getDefaultLocation(machine.type),
-          manufacturer: existingDetails?.manufacturer || 'Fabricante Padrão',
+          manufacturer: existingDetails?.manufacturer || 'Fabricante Padr��o',
           model: existingDetails?.model || machine.type + '-Model',
           serialNumber: existingDetails?.serialNumber || `SN-${machine.id}`,
           installationDate: existingDetails?.installationDate || '2023-01-01',
@@ -359,13 +359,21 @@ export default function Equipment() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestão de Equipamentos</h1>
-          <p className="text-muted-foreground">
-            Máquinas de corte de espuma da fábrica
-          </p>
+        <div className="flex items-center gap-4">
+          {fromOperator && (
+            <BackToOperatorButton
+              useRouter={true}
+              variant="header"
+            />
+          )}
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Gestão de Equipamentos</h1>
+            <p className="text-muted-foreground">
+              Máquinas de corte de espuma da fábrica
+            </p>
+          </div>
         </div>
-        
+
         <button
           onClick={() => setShowForm(true)}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
