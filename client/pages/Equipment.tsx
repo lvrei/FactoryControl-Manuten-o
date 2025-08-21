@@ -23,7 +23,8 @@ import {
   Eye
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { BackToOperatorButton } from '@/components/BackToOperatorButton';
 import { Machine, MachineFile } from "@/types/production";
 import { productionService } from "@/services/productionService";
 
@@ -43,6 +44,10 @@ interface EquipmentDetails extends Machine {
 
 export default function Equipment() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Check if came from operator portal
+  const fromOperator = location.state?.fromOperator || location.search.includes('from=operator');
   const [equipment, setEquipment] = useState<EquipmentDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
