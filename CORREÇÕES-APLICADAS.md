@@ -7,7 +7,7 @@
 - ✅ **CAUSA**: IDs BZM com sufixo "-bzm" não eram parseados corretamente
 - ✅ **EXEMPLO**: `1755712770917-1755712769047-1755712769047-bzm` falhava
 - ✅ **SOLUÇÃO**: Corrigido parsing do workItemId para reconstituir operationId completo
-- ✅ Busca robusta de operações com múltiplas conversões de tipo
+- ✅ Busca robusta de operações com m��ltiplas conversões de tipo
 - ✅ Logging detalhado para debug futuro
 
 ### 2. **Sistema BZM - "Linha Falsa" (ANTERIOR)**
@@ -26,7 +26,7 @@
 - ✅ Tratamento robusto de sessões
 - ✅ Validação de máquinas disponíveis
 
-### 3. **Criação de OPs - Não Apareciam na Lista**
+### 4. **Criação de OPs - Não Apareciam na Lista**
 - ✅ Implementado callback de recarregamento após criação
 - ✅ Corrigido método `createProductionOrder`
 - ✅ Melhorado feedback visual
