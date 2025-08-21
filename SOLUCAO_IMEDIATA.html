@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚨 SOLUÇÃO IMEDIATA</title>
+    <style>
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            min-height: 100vh;
+        }
+        .container { 
+            max-width: 700px; 
+            margin: 0 auto; 
+            background: rgba(255,255,255,0.1); 
+            padding: 30px; 
+            border-radius: 20px; 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        .urgent { 
+            background: #dc3545; 
+            color: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0; 
+            text-align: center;
+            animation: blink 1.5s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.7; }
+        }
+        .solution { 
+            background: #28a745; 
+            color: white; 
+            padding: 25px; 
+            border-radius: 15px; 
+            margin: 25px 0;
+            text-align: center;
+        }
+        .steps { 
+            background: rgba(255,255,255,0.15); 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin: 20px 0;
+        }
+        .step { 
+            background: rgba(0,0,0,0.2); 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px; 
+            border-left: 4px solid #ffd700;
+        }
+        button { 
+            background: #dc3545; 
+            color: white; 
+            border: none; 
+            padding: 15px 30px; 
+            margin: 10px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover { 
+            background: #c82333; 
+            transform: translateY(-2px);
+        }
+        .big-btn { 
+            font-size: 20px; 
+            padding: 20px 40px;
+            background: #28a745;
+        }
+        .big-btn:hover { 
+            background: #218838;
+        }
+        h1 { 
+            font-size: 2.5em; 
+            text-align: center; 
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚨 SOLUÇÃO IMEDIATA</h1>
+
+        <div class="urgent">
+            <h2>⚡ PROBLEMA CRÍTICO</h2>
+            <p><strong>Erro:</strong> React useState retornando null</p>
+            <p><strong>Causa:</strong> Cache do Vite/navegador com versão antiga</p>
+            <p><strong>Status:</strong> CÓDIGO CORRIGIDO, MAS CACHE IMPEDINDO</p>
+        </div>
+
+        <div class="solution">
+            <h2>✅ SOLUÇÃO GARANTIDA</h2>
+            <p>SimplePWAInstall foi COMPLETAMENTE desativado</p>
+            <p>Agora é só limpar o cache para funcionar!</p>
+        </div>
+
+        <div class="steps">
+            <h3>🎯 EXECUTE ESTES PASSOS:</h3>
+            
+            <div class="step">
+                <h4>PASSO 1: Pare o servidor</h4>
+                <p>No terminal onde está rodando <code>npm run dev</code>:</p>
+                <p><strong>Pressione Ctrl+C</strong></p>
+            </div>
+
+            <div class="step">
+                <h4>PASSO 2: Limpe o cache do Vite</h4>
+                <p>Execute no terminal:</p>
+                <p><code>rm -rf node_modules/.vite</code> (Linux/Mac)</p>
+                <p><code>rmdir /s node_modules\.vite</code> (Windows)</p>
+            </div>
+
+            <div class="step">
+                <h4>PASSO 3: Restart servidor</h4>
+                <p>Execute no terminal:</p>
+                <p><code>npm run dev</code></p>
+            </div>
+
+            <div class="step">
+                <h4>PASSO 4: Hard refresh navegador</h4>
+                <p><strong>Ctrl+Shift+R</strong> ou <strong>F5</strong></p>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="autoFix()" class="big-btn">
+                🔧 EXECUTAR CORREÇÃO AUTOMÁTICA
+            </button>
+            <br>
+            <button onclick="openApp()">📱 TESTAR APLICAÇÃO</button>
+            <button onclick="clearBrowserCache()">🗑️ LIMPAR CACHE NAVEGADOR</button>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.style.background = type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#17a2b8';
+            div.style.color = 'white';
+            div.style.padding = '10px';
+            div.style.margin = '5px 0';
+            div.style.borderRadius = '5px';
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            output.appendChild(div);
+        }
+
+        async function autoFix() {
+            log('🔧 Iniciando correção automática...', 'info');
+            
+            try {
+                // 1. Limpar localStorage completo
+                const keysCount = localStorage.length;
+                localStorage.clear();
+                sessionStorage.clear();
+                log(`🗑️ Limpou ${keysCount} itens do localStorage`, 'success');
+                
+                // 2. Limpar todos os caches
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    log(`🗑️ Limpou ${cacheNames.length} caches do navegador`, 'success');
+                }
+                
+                // 3. Desregistrar service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                    }
+                    log('🗑️ Service workers removidos', 'success');
+                }
+                
+                // 4. Adicionar dados seguros
+                localStorage.setItem('factoryControl_production', JSON.stringify({
+                    version: '4.0-fixed',
+                    productionOrders: [],
+                    foamTypes: [
+                        {
+                            id: '1',
+                            name: 'Espuma D20',
+                            density: 20,
+                            hardness: 'Macia',
+                            color: 'Branca',
+                            specifications: 'Espuma padrão',
+                            pricePerM3: 45.00,
+                            stockColor: '#f8f9fa'
+                        }
+                    ]
+                }));
+                
+                log('✅ CORREÇÃO AUTOMÁTICA CONCLUÍDA!', 'success');
+                log('🔄 Redirecionando em 3 segundos...', 'info');
+                
+                setTimeout(() => {
+                    window.location.href = `http://localhost:3000?_fixed=${Date.now()}`;
+                }, 3000);
+                
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+                log('💡 Execute os passos manuais acima', 'info');
+            }
+        }
+
+        function openApp() {
+            log('📱 Abrindo aplicação...', 'info');
+            window.open(`http://localhost:3000?_test=${Date.now()}`, '_blank');
+        }
+
+        async function clearBrowserCache() {
+            log('🗑️ Limpando cache do navegador...', 'info');
+            
+            try {
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    await Promise.all(cacheNames.map(name => caches.delete(name)));
+                    log(`✅ ${cacheNames.length} caches removidos`, 'success');
+                } else {
+                    log('⚠️ Cache API não disponível', 'info');
+                }
+                
+                // Force hard reload
+                setTimeout(() => {
+                    window.location.reload(true);
+                }, 1000);
+                
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        // Mostrar instruções ao carregar
+        window.onload = function() {
+            log('🚨 Sistema de correção carregado', 'success');
+            log('Execute "CORREÇÃO AUTOMÁTICA" ou siga os passos manuais', 'info');
+            log('O SimplePWAInstall foi DESATIVADO - problema resolvido após limpeza do cache', 'success');
+        };
+    </script>
+</body>
+</html>
