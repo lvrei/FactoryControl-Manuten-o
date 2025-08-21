@@ -52,8 +52,18 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
         productionService.getFoamTypes(),
         productionService.getMachines()
       ]);
-      setFoamTypes(foams);
-      setMachines(machinesData);
+
+      // Verificação defensiva para garantir arrays válidos
+      const safeFoams = Array.isArray(foams) ? foams.filter(foam =>
+        foam && typeof foam === 'object' && foam.id && foam.name
+      ) : [];
+
+      const safeMachines = Array.isArray(machinesData) ? machinesData.filter(machine =>
+        machine && typeof machine === 'object' && machine.id && machine.name
+      ) : [];
+
+      setFoamTypes(safeFoams);
+      setMachines(safeMachines);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
     } finally {
