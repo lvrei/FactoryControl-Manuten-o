@@ -461,7 +461,8 @@ export default function Equipment() {
       {/* Equipment Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredEquipment.map((eq) => {
-          const StatusIcon = statusConfig[eq.status].icon;
+          const statusInfo = statusConfig[eq.status] || statusConfig.offline;
+          const StatusIcon = statusInfo.icon;
           
           return (
             <div key={eq.id} className="bg-card border rounded-lg p-6">
