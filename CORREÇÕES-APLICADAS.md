@@ -7,7 +7,7 @@
 - ✅ **CAUSA**: IDs BZM com sufixo "-bzm" não eram parseados corretamente
 - ✅ **EXEMPLO**: `1755712770917-1755712769047-1755712769047-bzm` falhava
 - ✅ **SOLUÇÃO**: Corrigido parsing do workItemId para reconstituir operationId completo
-- ✅ Busca robusta de operações com m��ltiplas conversões de tipo
+- ✅ Busca robusta de operações com múltiplas conversões de tipo
 - ✅ Logging detalhado para debug futuro
 
 ### 2. **Sistema BZM - "Linha Falsa" (ANTERIOR)**
@@ -32,7 +32,7 @@
 - ✅ Melhorado feedback visual
 - ✅ Atualização automática da lista após salvar
 
-### 4. **Inicialização da Aplicação**
+### 5. **Inicialização da Aplicação**
 - ✅ Autenticação automática para desenvolvimento
 - ✅ ErrorBoundary global para capturar erros
 - ✅ Inicialização robusta do `productionService`
