@@ -16,7 +16,7 @@
 - ✅ Verificação de integridade após salvamento
 - ✅ Sincronização correta entre operação → linha → ordem
 
-### 2. **Portal do Operador - Erro ao Entrar nas Máquinas**
+### 3. **Portal do Operador - Erro ao Entrar nas Máquinas**
 - ✅ Adicionados métodos em falta no `productionService`:
   - `startOperatorSession`
   - `endOperatorSession` 
