@@ -252,7 +252,7 @@ class ProductionService {
         id: `OP-${Date.now()}`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        status: 'pending'
+        status: order.status || 'created'
       };
 
       data.productionOrders = [...(data.productionOrders || []), newOrder];
@@ -434,7 +434,7 @@ class ProductionService {
       // Encontrar linha
       const line = order.lines?.find(l => l.id === lineId);
       if (!line) {
-        throw new Error(`Linha não encontrada: ${lineId}`);
+        throw new Error(`Linha n��o encontrada: ${lineId}`);
       }
 
       // Encontrar operação (estratégias múltiplas)
