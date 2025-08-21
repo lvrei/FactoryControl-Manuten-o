@@ -358,6 +358,9 @@ class ShippingService {
       ])
     ];
 
+    // Adicionar separador visual final à tabela
+    itemsData.push(['────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────']);
+
     // Rodapé com totais
     const footerInfo = [
       [''],
