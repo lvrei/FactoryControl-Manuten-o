@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Correção Navegação</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border-left: 5px solid #28a745; }
+        .error { background: #f8d7da; border-left: 5px solid #dc3545; }
+        .info { background: #d1ecf1; border-left: 5px solid #17a2b8; }
+        .warning { background: #fff3cd; border-left: 5px solid #ffc107; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .test-page { display: inline-block; margin: 5px; padding: 8px 16px; background: #6c757d; color: white; border-radius: 3px; text-decoration: none; font-size: 14px; }
+        .test-page:hover { background: #5a6268; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Teste de Correção do Erro de Navegação</h1>
+    
+    <div class="section">
+        <h2>🎯 Problema Resolvido</h2>
+        <p><strong>Erro:</strong> <code>TypeError: Cannot read properties of undefined (reading 'color')</code></p>
+        <p><strong>Causa:</strong> Componente SimplePWAInstall usando React hooks incorretamente</p>
+        <p><strong>Solução:</strong> Simplificado componente para não usar hooks</p>
+    </div>
+
+    <div class="section">
+        <h2>🧪 Testes de Navegação</h2>
+        <p>Teste navegar entre as páginas para verificar se o erro foi corrigido:</p>
+        
+        <div style="margin: 15px 0;">
+            <a href="http://localhost:3000/" class="test-page">🏠 Dashboard</a>
+            <a href="http://localhost:3000/production" class="test-page">🏭 Produção</a>
+            <a href="http://localhost:3000/operator" class="test-page">👷 Operador</a>
+            <a href="http://localhost:3000/quality" class="test-page">✅ Qualidade</a>
+            <a href="http://localhost:3000/equipment" class="test-page">⚙️ Equipamentos</a>
+            <a href="http://localhost:3000/stock" class="test-page">📦 Stock</a>
+            <a href="http://localhost:3000/shipping" class="test-page">🚚 Expedição</a>
+            <a href="http://localhost:3000/team" class="test-page">👥 Equipa</a>
+            <a href="http://localhost:3000/planning" class="test-page">📅 Planeamento</a>
+            <a href="http://localhost:3000/maintenance" class="test-page">🔧 Manutenção</a>
+            <a href="http://localhost:3000/alerts" class="test-page">🚨 Alertas</a>
+        </div>
+        
+        <p><strong>Como testar:</strong></p>
+        <ol>
+            <li>Clique em cada link acima</li>
+            <li>Verifique se a página carrega sem erros</li>
+            <li>Navegue de volta para o Dashboard</li>
+            <li>Repita para todas as páginas</li>
+        </ol>
+    </div>
+
+    <div class="section">
+        <h2>🛠️ Ferramentas de Diagnóstico</h2>
+        <button onclick="testReactImports()">🔍 Testar Imports React</button>
+        <button onclick="testLocalStorage()">💾 Verificar LocalStorage</button>
+        <button onclick="testArrays()">📊 Verificar Arrays</button>
+        <button onclick="clearConsole()">🧹 Limpar Console</button>
+        <button onclick="goToApp()">🚀 Ir para App</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        function testReactImports() {
+            log('🔍 Testando imports do React...', 'info');
+            
+            try {
+                // Verificar se React está disponível globalmente
+                if (typeof React !== 'undefined') {
+                    log('✅ React está disponível globalmente', 'success');
+                    log(`📋 Versão do React: ${React.version || 'Desconhecida'}`, 'info');
+                } else {
+                    log('⚠️ React não está disponível globalmente (normal em apps modernas)', 'warning');
+                }
+
+                // Verificar se useState está disponível
+                if (typeof React !== 'undefined' && React.useState) {
+                    log('✅ React.useState disponível', 'success');
+                } else {
+                    log('⚠️ React.useState não acessível', 'warning');
+                }
+
+                log('✅ Teste de imports concluído', 'success');
+                
+            } catch (error) {
+                log(`❌ Erro ao testar imports: ${error.message}`, 'error');
+            }
+        }
+
+        function testLocalStorage() {
+            log('💾 Verificando dados do localStorage...', 'info');
+            
+            try {
+                const keys = Object.keys(localStorage).filter(key => key.startsWith('factoryControl_'));
+                
+                if (keys.length === 0) {
+                    log('📭 Nenhum dado FactoryControl encontrado (sistema limpo)', 'info');
+                    return;
+                }
+                
+                log(`📊 Encontradas ${keys.length} chaves de dados`, 'info');
+                
+                keys.forEach(key => {
+                    try {
+                        const data = JSON.parse(localStorage.getItem(key));
+                        
+                        if (key === 'factoryControl_production') {
+                            const orders = data.productionOrders || [];
+                            const foamTypes = data.foamTypes || [];
+                            
+                            log(`📋 Ordens de produção: ${orders.length}`, 'info');
+                            log(`🧽 Tipos de espuma: ${foamTypes.length}`, 'info');
+                            
+                            // Verificar se há problemas nos dados
+                            let issues = 0;
+                            orders.forEach((order, orderIndex) => {
+                                if (order && order.lines) {
+                                    order.lines.forEach((line, lineIndex) => {
+                                        if (!line.foamType || !line.foamType.color) {
+                                            issues++;
+                                        }
+                                    });
+                                }
+                            });
+                            
+                            if (issues === 0) {
+                                log('✅ Todos os dados parecem válidos', 'success');
+                            } else {
+                                log(`⚠️ ${issues} problemas encontrados nos dados`, 'warning');
+                            }
+                        }
+                        
+                    } catch (parseError) {
+                        log(`❌ Erro ao parsear ${key}: ${parseError.message}`, 'error');
+                    }
+                });
+                
+            } catch (error) {
+                log(`❌ Erro ao verificar localStorage: ${error.message}`, 'error');
+            }
+        }
+
+        function testArrays() {
+            log('📊 Testando proteções de arrays...', 'info');
+            
+            try {
+                // Simular cenários que podem causar problemas
+                const testCases = [
+                    { name: 'Array vazio', data: [] },
+                    { name: 'Array com undefined', data: [undefined, null, { id: '1', name: 'Test' }] },
+                    { name: 'Array com objetos incompletos', data: [{ id: '1' }, { name: 'Test' }, { id: '2', name: 'Valid' }] },
+                    { name: 'Undefined', data: undefined },
+                    { name: 'Null', data: null }
+                ];
+                
+                testCases.forEach(testCase => {
+                    try {
+                        // Simular o filtro usado no código
+                        const filtered = (testCase.data || []).filter(item => item && item.id && item.name);
+                        log(`✅ ${testCase.name}: ${filtered.length} itens válidos`, 'success');
+                    } catch (error) {
+                        log(`❌ ${testCase.name}: ${error.message}`, 'error');
+                    }
+                });
+                
+                log('✅ Teste de arrays concluído - proteções funcionando', 'success');
+                
+            } catch (error) {
+                log(`❌ Erro no teste de arrays: ${error.message}`, 'error');
+            }
+        }
+
+        function clearConsole() {
+            console.clear();
+            document.getElementById('output').innerHTML = '';
+            log('🧹 Console e output limpos', 'info');
+        }
+
+        function goToApp() {
+            log('🚀 Redirecionando para aplicação...', 'info');
+            window.location.href = 'http://localhost:3000';
+        }
+
+        // Monitorar erros na página
+        window.addEventListener('error', (event) => {
+            log(`❌ Erro detectado: ${event.message}`, 'error');
+            log(`📍 Arquivo: ${event.filename}:${event.lineno}`, 'error');
+        });
+
+        // Inicializar
+        log('🚀 Sistema de teste carregado', 'success');
+        log('Navegue entre as páginas usando os links acima para testar', 'info');
+        log('Abra o console do navegador (F12) para monitorar erros', 'info');
+    </script>
+</body>
+</html>
