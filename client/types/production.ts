@@ -79,7 +79,7 @@ export interface ProductionOrderLine {
   quantity: number;
   completedQuantity: number;
   cuttingOperations: CuttingOperation[];
-  status: 'pending' | 'in_progress' | 'completed';
+  status: 'pending' | 'in_progress' | 'completed' | 'shipped';
   priority: number; // 1-10, onde 10 é mais prioritário
   shippedAt?: string; // Date when the line was shipped
 }
