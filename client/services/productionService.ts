@@ -217,9 +217,19 @@ class ProductionService {
 
       if (filters) {
         orders = orders.filter(order => {
-          if (filters.status && order.status !== filters.status) return false;
-          if (filters.priority && order.priority !== filters.priority) return false;
-          if (filters.customer && !order.customer.toLowerCase().includes(filters.customer.toLowerCase())) return false;
+          // Handle status filter (can be string or array)
+          if (filters.status) {
+            const statusArray = Array.isArray(filters.status) ? filters.status : [filters.status];
+            if (statusArray.length > 0 && !statusArray.includes(order.status)) return false;
+          }
+
+          // Handle priority filter (can be string or array)
+          if (filters.priority) {
+            const priorityArray = Array.isArray(filters.priority) ? filters.priority : [filters.priority];
+            if (priorityArray.length > 0 && !priorityArray.includes(order.priority)) return false;
+          }
+
+          if (filters.customer && !order.customer.name.toLowerCase().includes(filters.customer.toLowerCase())) return false;
           if (filters.orderNumber && !order.orderNumber.toLowerCase().includes(filters.orderNumber.toLowerCase())) return false;
           return true;
         });
