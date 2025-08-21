@@ -469,10 +469,10 @@ export default function Equipment() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">{typeConfig[eq.type].icon}</span>
+                    <span className="text-lg">{typeConfig[eq.type]?.icon || "⚙️"}</span>
                     <h3 className="text-lg font-semibold text-card-foreground">{eq.name}</h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">{typeConfig[eq.type].label}</p>
+                  <p className="text-sm text-muted-foreground">{typeConfig[eq.type]?.label || "Equipamento"}</p>
                   <p className="text-xs text-muted-foreground">{eq.location}</p>
                 </div>
                 
