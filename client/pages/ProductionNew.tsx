@@ -132,7 +132,8 @@ function ProductionNew() {
     created: { color: "text-blue-600 bg-blue-50", label: "Criada" },
     in_progress: { color: "text-purple-600 bg-purple-50", label: "Em Andamento" },
     completed: { color: "text-green-600 bg-green-50", label: "Concluída" },
-    cancelled: { color: "text-gray-600 bg-gray-50", label: "Cancelada" }
+    cancelled: { color: "text-gray-600 bg-gray-50", label: "Cancelada" },
+    shipped: { color: "text-teal-600 bg-teal-50", label: "Expedida" }
   };
 
   const machineStatusConfig = {
