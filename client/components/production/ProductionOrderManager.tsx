@@ -418,9 +418,9 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                             }}
                             className="w-full px-3 py-2 border rounded bg-background text-sm"
                           >
-                            {foamTypes.map(foam => (
+                            {(foamTypes || []).filter(foam => foam && foam.id && foam.name).map(foam => (
                               <option key={foam.id} value={foam.id}>
-                                {foam.name} - D{foam.density}
+                                {foam.name} - D{foam.density || 'N/A'}
                               </option>
                             ))}
                           </select>
