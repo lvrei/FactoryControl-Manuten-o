@@ -1,209 +1,258 @@
-const CACHE_NAME = 'factorycontrol-v1.2.0';
-const urlsToCache = [
+// FACTORY CONTROL - SERVICE WORKER v4.0
+// Versão estável e limpa do Service Worker
+
+const CACHE_NAME = 'factory-control-v4.0';
+const STATIC_CACHE_NAME = 'factory-control-static-v4.0';
+
+// Recursos críticos para cache offline
+const STATIC_ASSETS = [
   '/',
   '/manifest.json',
-  '/client/App.tsx',
-  '/client/global.css',
-  // Adicionar mais recursos conforme necessário
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/login'
 ];
 
-// Install event - cache resources
-self.addEventListener('install', event => {
-  console.log('🔧 ServiceWorker installing...');
+// Recursos que devem ser atualizados sempre
+const NETWORK_FIRST = [
+  '/api/',
+  '/auth/'
+];
+
+// Log simplificado para debug
+const log = (message, data = '') => {
+  console.log(`[SW v4.0] ${message}`, data);
+};
+
+// Install Event - Cache recursos estáticos
+self.addEventListener('install', (event) => {
+  log('Installing Service Worker');
+  
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        console.log('📦 Opened cache');
-        return cache.addAll(urlsToCache.map(url => new Request(url, {
-          mode: 'no-cors'
-        })));
+    caches.open(STATIC_CACHE_NAME)
+      .then((cache) => {
+        log('Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
       })
-      .catch(error => {
-        console.error('❌ Cache install failed:', error);
+      .then(() => {
+        log('Static assets cached successfully');
+        // Ativar imediatamente o novo SW
+        return self.skipWaiting();
+      })
+      .catch((error) => {
+        log('Error caching static assets:', error);
       })
   );
-  // Force activation immediately
-  self.skipWaiting();
 });
 
-// Activate event - clean up old caches and take control
-self.addEventListener('activate', event => {
-  console.log('🚀 ServiceWorker activating...');
+// Activate Event - Limpar caches antigos
+self.addEventListener('activate', (event) => {
+  log('Activating Service Worker');
+  
   event.waitUntil(
     Promise.all([
-      // Clean up old caches
-      caches.keys().then(cacheNames => {
+      // Limpar caches antigos
+      caches.keys().then((cacheNames) => {
         return Promise.all(
-          cacheNames.map(cacheName => {
-            if (cacheName !== CACHE_NAME) {
-              console.log('🗑️ Deleting old cache:', cacheName);
+          cacheNames.map((cacheName) => {
+            if (cacheName !== CACHE_NAME && cacheName !== STATIC_CACHE_NAME) {
+              log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       }),
-      // Take control of all clients immediately
+      // Assumir controle de todas as abas
       self.clients.claim()
     ])
+    .then(() => {
+      log('Service Worker activated successfully');
+    })
+    .catch((error) => {
+      log('Error during activation:', error);
+    })
   );
 });
 
-// Fetch event - serve from cache when offline, update cache when online
-self.addEventListener('fetch', event => {
-  // Skip non-GET requests
-  if (event.request.method !== 'GET') {
+// Fetch Event - Estratégias de cache
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Ignorar requisições não-GET e extensões do navegador
+  if (request.method !== 'GET' || url.protocol === 'chrome-extension:') {
     return;
   }
 
-  // Skip chrome-extension and other non-http requests
-  if (!event.request.url.startsWith('http')) {
+  // Estratégia Network First para APIs
+  if (NETWORK_FIRST.some(pattern => url.pathname.startsWith(pattern))) {
+    event.respondWith(networkFirst(request));
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached version if available
-        if (response) {
-          console.log('📦 Serving from cache:', event.request.url);
-          return response;
-        }
-
-        // Fetch from network
-        return fetch(event.request)
-          .then(response => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response for caching
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
-            return response;
-          })
-          .catch(() => {
-            // Return offline fallback for navigation requests
-            if (event.request.destination === 'document') {
-              return caches.match('/') || new Response('App offline', {
-                status: 200,
-                headers: { 'Content-Type': 'text/html' }
-              });
-            }
-            return new Response('Resource offline', { status: 503 });
-          });
-      })
-  );
-});
-
-// Background sync for maintenance data
-self.addEventListener('sync', event => {
-  console.log('🔄 Background sync triggered:', event.tag);
-  if (event.tag === 'background-sync-maintenances') {
-    event.waitUntil(syncMaintenances());
+  // Estratégia Cache First para recursos estáticos
+  if (STATIC_ASSETS.includes(url.pathname) || 
+      url.pathname.includes('.css') || 
+      url.pathname.includes('.js') ||
+      url.pathname.includes('.png') ||
+      url.pathname.includes('.jpg') ||
+      url.pathname.includes('.ico')) {
+    event.respondWith(cacheFirst(request));
+    return;
   }
+
+  // Estratégia Stale While Revalidate para páginas
+  event.respondWith(staleWhileRevalidate(request));
 });
 
-async function syncMaintenances() {
+// Estratégia Cache First
+async function cacheFirst(request) {
   try {
-    // Get pending maintenance data from localStorage
-    const pendingData = localStorage.getItem('pending-maintenances');
-    if (pendingData) {
-      const data = JSON.parse(pendingData);
-      console.log('📤 Syncing maintenance data:', data);
-      
-      // Here you would typically send to your backend
-      // For now, just simulate successful sync
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      localStorage.removeItem('pending-maintenances');
-      console.log('✅ Maintenance data synced successfully');
+    const cachedResponse = await caches.match(request);
+    if (cachedResponse) {
+      return cachedResponse;
     }
+
+    const networkResponse = await fetch(request);
+    if (networkResponse.ok) {
+      const cache = await caches.open(STATIC_CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
   } catch (error) {
-    console.error('❌ Sync failed:', error);
-    throw error; // This will trigger a retry
+    log('Cache First error:', error);
+    // Retornar página offline se disponível
+    if (request.destination === 'document') {
+      return caches.match('/');
+    }
+    throw error;
   }
 }
 
-// Push notification event
-self.addEventListener('push', event => {
-  console.log('📱 Push notification received');
-  
-  const options = {
-    body: event.data ? event.data.text() : 'Nova manutenção agendada',
-    icon: 'https://via.placeholder.com/192x192/2563eb/ffffff?text=FC',
-    badge: 'https://via.placeholder.com/72x72/2563eb/ffffff?text=!',
-    vibrate: [200, 100, 200],
-    tag: 'maintenance-notification',
-    requireInteraction: true,
-    data: {
-      url: '/?tab=maintenance',
-      timestamp: Date.now()
-    },
-    actions: [
-      {
-        action: 'view',
-        title: 'Ver Detalhes',
-        icon: 'https://via.placeholder.com/32x32/2563eb/ffffff?text=👁'
-      },
-      {
-        action: 'dismiss',
-        title: 'Dispensar',
-        icon: 'https://via.placeholder.com/32x32/dc2626/ffffff?text=✖'
-      }
-    ]
-  };
+// Estratégia Network First
+async function networkFirst(request) {
+  try {
+    const networkResponse = await fetch(request);
+    
+    // Cache apenas respostas bem-sucedidas
+    if (networkResponse.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, networkResponse.clone());
+    }
+    
+    return networkResponse;
+  } catch (error) {
+    log('Network First fallback to cache for:', request.url);
+    const cachedResponse = await caches.match(request);
+    
+    if (cachedResponse) {
+      return cachedResponse;
+    }
+    
+    // Se for uma requisição de documento, retornar página principal
+    if (request.destination === 'document') {
+      return caches.match('/');
+    }
+    
+    throw error;
+  }
+}
 
+// Estratégia Stale While Revalidate
+async function staleWhileRevalidate(request) {
+  const cache = await caches.open(CACHE_NAME);
+  const cachedResponse = await cache.match(request);
+
+  // Buscar versão atualizada em background
+  const fetchPromise = fetch(request).then((networkResponse) => {
+    if (networkResponse.ok) {
+      cache.put(request, networkResponse.clone());
+    }
+    return networkResponse;
+  }).catch(() => cachedResponse);
+
+  // Retornar cache imediatamente se disponível, senão aguardar network
+  return cachedResponse || fetchPromise;
+}
+
+// Message Event - Comunicação com a aplicação
+self.addEventListener('message', (event) => {
+  const { type, payload } = event.data || {};
+
+  switch (type) {
+    case 'SKIP_WAITING':
+      log('Received SKIP_WAITING message');
+      self.skipWaiting();
+      break;
+
+    case 'GET_VERSION':
+      event.ports[0].postMessage({ version: CACHE_NAME });
+      break;
+
+    case 'CLEAR_CACHE':
+      log('Clearing all caches');
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => caches.delete(cacheName))
+        );
+      }).then(() => {
+        event.ports[0].postMessage({ success: true });
+      });
+      break;
+
+    default:
+      log('Unknown message type:', type);
+  }
+});
+
+// Background Sync (para funcionalidades futuras)
+self.addEventListener('sync', (event) => {
+  log('Background sync:', event.tag);
+  
+  if (event.tag === 'background-sync') {
+    // Implementar sincronização de dados offline
+    event.waitUntil(doBackgroundSync());
+  }
+});
+
+async function doBackgroundSync() {
+  try {
+    log('Performing background sync');
+    // Aqui seria implementada a sincronização de dados offline
+    // Por exemplo, enviar dados salvos localmente quando a rede voltar
+  } catch (error) {
+    log('Background sync error:', error);
+  }
+}
+
+// Error handler global
+self.addEventListener('error', (event) => {
+  log('Service Worker error:', event.error);
+});
+
+self.addEventListener('unhandledrejection', (event) => {
+  log('Unhandled promise rejection:', event.reason);
+});
+
+// Notificações (para funcionalidades futuras)
+self.addEventListener('notificationclick', (event) => {
+  log('Notification clicked:', event.notification.tag);
+  
+  event.notification.close();
+  
+  // Abrir/focar a aplicação
   event.waitUntil(
-    self.registration.showNotification('FactoryControl 🏭', options)
+    clients.matchAll({ type: 'window' }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url === '/' && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow('/');
+      }
+    })
   );
 });
 
-// Notification click event
-self.addEventListener('notificationclick', event => {
-  console.log('🔔 Notification clicked:', event.action);
-  event.notification.close();
-
-  if (event.action === 'view') {
-    event.waitUntil(
-      clients.matchAll({ type: 'window' }).then(clientList => {
-        // Check if app is already open
-        for (const client of clientList) {
-          if (client.url === self.location.origin && 'focus' in client) {
-            return client.focus();
-          }
-        }
-        
-        // Open new window/tab
-        if (clients.openWindow) {
-          return clients.openWindow('/?tab=maintenance&source=notification');
-        }
-      })
-    );
-  }
-});
-
-// Handle updates and prompt user
-self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('⚡ Forcing update activation');
-    self.skipWaiting();
-  }
-});
-
-// Log when service worker is ready
-console.log('🚀 FactoryControl Service Worker loaded successfully');
-
-// Enhanced error handling
-self.addEventListener('error', event => {
-  console.error('💥 ServiceWorker error:', event.error);
-});
-
-self.addEventListener('unhandledrejection', event => {
-  console.error('💥 ServiceWorker unhandled rejection:', event.reason);
-});
+log('Service Worker script loaded successfully');
