@@ -1,18 +1,30 @@
 import React from 'react';
 import { ChevronLeft, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useBackToOperator } from '@/hooks/useBackToOperator';
 
 interface BackToOperatorButtonProps {
-  onClick: () => void;
+  onClick?: () => void;
   className?: string;
   variant?: 'button' | 'header' | 'link';
+  useRouter?: boolean;
 }
 
-export function BackToOperatorButton({ 
-  onClick, 
+export function BackToOperatorButton({
+  onClick,
   className,
-  variant = 'button'
+  variant = 'button',
+  useRouter = false
 }: BackToOperatorButtonProps) {
+  const { goBackToOperator } = useBackToOperator();
+
+  const handleClick = () => {
+    if (onClick) {
+      onClick();
+    } else if (useRouter) {
+      goBackToOperator();
+    }
+  };
   
   if (variant === 'header') {
     return (
