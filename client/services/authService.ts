@@ -1,201 +1,306 @@
-import { User, LoginSession } from '@/types/production';
+// Interface para dados do usuário autenticado
+export interface LoginSession {
+  id: string;
+  username: string;
+  role: 'operator' | 'supervisor' | 'admin' | 'maintenance';
+  name: string;
+  loginTime: string;
+}
 
+// Interface para resposta de login
+interface AuthResponse {
+  success: boolean;
+  message: string;
+  user?: LoginSession;
+}
+
+/**
+ * SECURE AUTH SERVICE - JWT + Server-side
+ * Versão segura com autenticação server-side e cookies httpOnly
+ */
 class AuthService {
   private storageKey = 'factoryControl_auth';
-  private sessionKey = 'factoryControl_session';
+  private apiBaseUrl = '/api/auth';
+  private currentUser: LoginSession | null = null;
 
-  // Default admin user
-  private defaultUsers: User[] = [
-    {
-      id: '1',
-      username: 'admin',
-      name: 'Administrador',
-      email: 'admin@empresa.com',
-      password: 'admin123', // In production, this should be hashed
-      role: 'admin',
-      accessLevel: 'full',
-      isActive: true
-    }
-  ];
+  // Método privado para requests HTTP
+  private async makeRequest(endpoint: string, options: RequestInit = {}): Promise<any> {
+    try {
+      const response = await fetch(`${this.apiBaseUrl}${endpoint}`, {
+        credentials: 'include', // Incluir cookies automaticamente
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        ...options,
+      });
 
-  private getStoredUsers(): User[] {
-    const stored = localStorage.getItem(this.storageKey);
-    if (stored) {
-      try {
-        return JSON.parse(stored);
-      } catch (error) {
-        console.error('Error loading users:', error);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP ${response.status}`);
       }
+
+      return data;
+    } catch (error) {
+      console.error(`❌ Auth request failed (${endpoint}):`, error);
+      throw error;
     }
-    return [...this.defaultUsers];
   }
 
-  private saveUsers(users: User[]): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(users));
+  // Login com credenciais
+  async login(username: string, password: string): Promise<LoginSession> {
+    try {
+      console.log('🔐 Tentando login:', username);
+
+      const response: AuthResponse = await this.makeRequest('/login', {
+        method: 'POST',
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.success || !response.user) {
+        throw new Error(response.message || 'Falha no login');
+      }
+
+      // Adicionar timestamp de login
+      const userWithLoginTime: LoginSession = {
+        ...response.user,
+        loginTime: new Date().toISOString(),
+      };
+
+      // Salvar usuário atual em memória
+      this.currentUser = userWithLoginTime;
+
+      // Salvar também no localStorage como backup (sem tokens sensíveis)
+      localStorage.setItem(this.storageKey, JSON.stringify(userWithLoginTime));
+
+      console.log('✅ Login bem-sucedido:', username);
+      return userWithLoginTime;
+
+    } catch (error) {
+      console.error('❌ Erro no login:', error);
+      throw error;
+    }
   }
 
-  private getCurrentSession(): LoginSession | null {
-    const stored = localStorage.getItem(this.sessionKey);
-    if (stored) {
+  // Logout (limpar cookies e sessão)
+  async logout(): Promise<void> {
+    try {
+      // Tentar fazer logout no servidor (limpar cookies)
+      await this.makeRequest('/logout', { method: 'POST' });
+    } catch (error) {
+      console.warn('⚠️ Erro no logout server-side:', error);
+      // Continuar com limpeza local mesmo se falhar no servidor
+    } finally {
+      // Limpeza local
+      this.currentUser = null;
+      localStorage.removeItem(this.storageKey);
+      console.log('👋 Logout concluído');
+    }
+  }
+
+  // Verificar se usuário está autenticado
+  async isAuthenticated(): Promise<boolean> {
+    try {
+      // Tentar verificar com servidor (cookies JWT)
+      const response: AuthResponse = await this.makeRequest('/verify');
+      
+      if (response.success && response.user) {
+        // Atualizar dados do usuário se válido
+        this.currentUser = {
+          ...response.user,
+          loginTime: this.currentUser?.loginTime || new Date().toISOString()
+        };
+        return true;
+      }
+
+      return false;
+    } catch (error) {
+      console.warn('⚠️ Verificação de autenticação falhou:', error);
+      
+      // Tentar renovar token automaticamente
       try {
-        return JSON.parse(stored);
-      } catch (error) {
-        console.error('Error loading session:', error);
+        await this.refreshToken();
+        return true;
+      } catch (refreshError) {
+        console.warn('⚠️ Renovação automática falhou:', refreshError);
+        // Limpar dados inválidos
+        this.currentUser = null;
+        localStorage.removeItem(this.storageKey);
+        return false;
       }
     }
+  }
+
+  // Renovar token JWT
+  async refreshToken(): Promise<LoginSession> {
+    try {
+      console.log('🔄 Renovando token...');
+
+      const response: AuthResponse = await this.makeRequest('/refresh', {
+        method: 'POST',
+      });
+
+      if (!response.success || !response.user) {
+        throw new Error(response.message || 'Falha na renovação');
+      }
+
+      // Atualizar usuário atual
+      const userWithLoginTime: LoginSession = {
+        ...response.user,
+        loginTime: this.currentUser?.loginTime || new Date().toISOString()
+      };
+
+      this.currentUser = userWithLoginTime;
+      localStorage.setItem(this.storageKey, JSON.stringify(userWithLoginTime));
+
+      console.log('✅ Token renovado com sucesso');
+      return userWithLoginTime;
+
+    } catch (error) {
+      console.error('❌ Erro na renovação:', error);
+      throw error;
+    }
+  }
+
+  // Obter usuário atual
+  getCurrentUser(): LoginSession | null {
+    // Retornar da memória se disponível
+    if (this.currentUser) {
+      return this.currentUser;
+    }
+
+    // Fallback para localStorage (dados podem estar desatualizados)
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const user = JSON.parse(stored);
+        this.currentUser = user;
+        return user;
+      }
+    } catch (error) {
+      console.error('❌ Erro ao ler usuário do localStorage:', error);
+      localStorage.removeItem(this.storageKey);
+    }
+
     return null;
   }
 
-  private saveSession(session: LoginSession): void {
-    localStorage.setItem(this.sessionKey, JSON.stringify(session));
-  }
-
-  async login(username: string, password: string): Promise<LoginSession> {
-    const users = this.getStoredUsers();
-    const user = users.find(u => u.username === username && u.password === password && u.isActive);
-
-    if (!user) {
-      throw new Error('Credenciais inválidas');
-    }
-
-    const session: LoginSession = {
-      id: Date.now().toString(),
-      userId: user.id,
-      username: user.username,
-      role: user.role,
-      accessLevel: user.accessLevel,
-      loginTime: new Date().toISOString(),
-      lastActivity: new Date().toISOString(),
-      isActive: true
-    };
-
-    // Update user's last login
-    user.lastLogin = new Date().toISOString();
-    this.saveUsers(users);
-    this.saveSession(session);
-
-    return session;
-  }
-
-  async logout(): Promise<void> {
-    localStorage.removeItem(this.sessionKey);
-  }
-
-  getCurrentUser(): LoginSession | null {
-    return this.getCurrentSession();
-  }
-
-  isAuthenticated(): boolean {
-    const session = this.getCurrentSession();
-
-    // Se não há sessão ativa, fazer login automático em desenvolvimento
-    if (!session?.isActive) {
-      this.autoLoginForDevelopment();
-      const newSession = this.getCurrentSession();
-      return newSession?.isActive || false;
-    }
-
-    return session?.isActive || false;
-  }
-
-  // Login automático para desenvolvimento
-  private autoLoginForDevelopment(): void {
+  // Obter dados do usuário atualizados do servidor
+  async getUserProfile(): Promise<LoginSession> {
     try {
-      console.log('🔧 Auto-login para desenvolvimento...');
+      const response: AuthResponse = await this.makeRequest('/me');
+      
+      if (!response.success || !response.user) {
+        throw new Error(response.message || 'Falha ao obter perfil');
+      }
 
-      const autoSession: LoginSession = {
-        id: 'auto-' + Date.now().toString(),
-        userId: '1',
-        username: 'admin',
-        role: 'admin',
-        accessLevel: 'full',
-        loginTime: new Date().toISOString(),
-        lastActivity: new Date().toISOString(),
-        isActive: true
+      // Atualizar dados locais
+      const userWithLoginTime: LoginSession = {
+        ...response.user,
+        loginTime: this.currentUser?.loginTime || new Date().toISOString()
       };
 
-      this.saveSession(autoSession);
-      console.log('✅ Auto-login realizado com sucesso');
+      this.currentUser = userWithLoginTime;
+      localStorage.setItem(this.storageKey, JSON.stringify(userWithLoginTime));
+
+      return userWithLoginTime;
     } catch (error) {
-      console.error('❌ Erro no auto-login:', error);
+      console.error('❌ Erro ao obter perfil:', error);
+      throw error;
     }
   }
 
-  hasPermission(requiredRole: string): boolean {
-    const session = this.getCurrentSession();
-    if (!session) return false;
+  // Verificar se usuário tem role específica
+  hasRole(role: string): boolean {
+    const user = this.getCurrentUser();
+    return user?.role === role;
+  }
 
+  // Verificar se usuário tem uma das roles especificadas
+  hasAnyRole(roles: string[]): boolean {
+    const user = this.getCurrentUser();
+    return user ? roles.includes(user.role) : false;
+  }
+
+  // Verificar permissões de acesso
+  canAccess(requiredRole: string): boolean {
+    const user = this.getCurrentUser();
+    if (!user) return false;
+
+    // Hierarquia de roles (admin > supervisor > maintenance > operator)
     const roleHierarchy = {
-      'admin': 5,
-      'supervisor': 4,
-      'quality': 3,
+      'admin': 4,
+      'supervisor': 3,
       'maintenance': 2,
       'operator': 1
     };
 
-    const userLevel = roleHierarchy[session.role as keyof typeof roleHierarchy] || 0;
-    const requiredLevel = roleHierarchy[requiredRole as keyof typeof roleHierarchy] || 0;
+    const userLevel = roleHierarchy[user.role] || 0;
+    const requiredLevel = roleHierarchy[requiredRole] || 0;
 
     return userLevel >= requiredLevel;
   }
 
-  async getUsers(): Promise<User[]> {
-    return this.getStoredUsers();
+  // Inicializar verificação automática de autenticação
+  async initialize(): Promise<boolean> {
+    try {
+      return await this.isAuthenticated();
+    } catch (error) {
+      console.warn('⚠️ Falha na inicialização do auth:', error);
+      return false;
+    }
   }
 
-  async createUser(userData: Omit<User, 'id' | 'lastLogin'>): Promise<User> {
-    const users = this.getStoredUsers();
-    
-    // Check if username already exists
-    const existingUser = users.find(u => u.username === userData.username);
-    if (existingUser) {
-      throw new Error('Nome de utilizador já existe');
-    }
+  // Limpar todos os dados de autenticação
+  clearAuthData(): void {
+    this.currentUser = null;
+    localStorage.removeItem(this.storageKey);
+    console.log('🧹 Dados de autenticação limpos');
+  }
 
-    const newUser: User = {
-      ...userData,
-      id: Date.now().toString()
+  // Método para interceptar respostas 401/403 e renovar token automaticamente
+  async handleAuthError(originalRequest: () => Promise<any>): Promise<any> {
+    try {
+      // Tentar renovar token
+      await this.refreshToken();
+      
+      // Repetir request original
+      return await originalRequest();
+    } catch (error) {
+      // Se renovação falhar, fazer logout
+      console.warn('🔄 Renovação falhou, fazendo logout...');
+      await this.logout();
+      throw new Error('Sessão expirada. Faça login novamente.');
+    }
+  }
+
+  // Debug - informações da sessão
+  getSessionInfo(): any {
+    const user = this.getCurrentUser();
+    if (!user) return null;
+
+    return {
+      username: user.username,
+      role: user.role,
+      name: user.name,
+      loginTime: user.loginTime,
+      sessionDuration: user.loginTime 
+        ? `${Math.round((Date.now() - new Date(user.loginTime).getTime()) / 60000)} minutos`
+        : 'Desconhecido'
     };
-
-    users.push(newUser);
-    this.saveUsers(users);
-    return newUser;
-  }
-
-  async updateUser(id: string, updates: Partial<User>): Promise<User> {
-    const users = this.getStoredUsers();
-    const userIndex = users.findIndex(u => u.id === id);
-
-    if (userIndex === -1) {
-      throw new Error('Utilizador não encontrado');
-    }
-
-    // Check username uniqueness if updating username
-    if (updates.username && updates.username !== users[userIndex].username) {
-      const existingUser = users.find(u => u.username === updates.username && u.id !== id);
-      if (existingUser) {
-        throw new Error('Nome de utilizador já existe');
-      }
-    }
-
-    users[userIndex] = { ...users[userIndex], ...updates };
-    this.saveUsers(users);
-    return users[userIndex];
-  }
-
-  async deleteUser(id: string): Promise<void> {
-    const users = this.getStoredUsers();
-    const filteredUsers = users.filter(u => u.id !== id);
-    this.saveUsers(filteredUsers);
-  }
-
-  updateActivity(): void {
-    const session = this.getCurrentSession();
-    if (session) {
-      session.lastActivity = new Date().toISOString();
-      this.saveSession(session);
-    }
   }
 }
 
-export const authService = new AuthService();
+// Instância singleton
+const authService = new AuthService();
+
+// Inicializar verificação de autenticação quando o módulo carrega
+authService.initialize().catch(console.warn);
+
+// Expor para debug (apenas em desenvolvimento)
+if (typeof window !== 'undefined') {
+  (window as any).authService = authService;
+}
+
+export { authService };
