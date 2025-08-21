@@ -708,6 +708,46 @@ class ProductionService {
     }
   }
 
+  // SHIPPING E EXPEDIÇÃO
+  async markOrderLineAsShipped(orderId: string, lineId: string): Promise<void> {
+    try {
+      const data = this.getStoredData();
+      const orderIndex = data.productionOrders.findIndex((order: ProductionOrder) => order.id === orderId);
+
+      if (orderIndex === -1) {
+        console.warn(`⚠️ Order not found for shipping: ${orderId}`);
+        return;
+      }
+
+      const order = data.productionOrders[orderIndex];
+      const lineIndex = order.lines.findIndex((line: ProductionOrderLine) => line.id === lineId);
+
+      if (lineIndex === -1) {
+        console.warn(`⚠️ Line not found for shipping: ${lineId} in order ${orderId}`);
+        return;
+      }
+
+      // Mark line as shipped
+      order.lines[lineIndex].status = 'shipped';
+      order.lines[lineIndex].shippedAt = new Date().toISOString();
+      order.updatedAt = new Date().toISOString();
+
+      // Check if all lines are shipped to update order status
+      const allLinesShipped = order.lines.every((line: ProductionOrderLine) => line.status === 'shipped');
+      if (allLinesShipped) {
+        order.status = 'shipped';
+        console.log(`✅ Order ${order.orderNumber} fully shipped`);
+      }
+
+      this.saveData(data);
+      console.log(`✅ Line ${lineId} marked as shipped in order ${order.orderNumber}`);
+
+    } catch (error) {
+      console.error('❌ Error marking line as shipped:', error);
+      throw error;
+    }
+  }
+
   // FICHAS TÉCNICAS
   async getProductSheets(): Promise<ProductSheet[]> {
     try {
