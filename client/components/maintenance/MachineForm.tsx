@@ -42,7 +42,14 @@ const categories = [
   'Outros'
 ];
 
-export function MachineForm({ isOpen, onClose, onSave, editingMachine }: MachineFormProps) {
+export function MachineForm({
+  isOpen,
+  onClose,
+  onSave,
+  editingMachine,
+  showBackToOperator = false,
+  onBackToOperator
+}: MachineFormProps) {
   const [formData, setFormData] = useState<MachineData>(
     editingMachine || {
       name: '',
@@ -77,9 +84,17 @@ export function MachineForm({ isOpen, onClose, onSave, editingMachine }: Machine
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card rounded-lg shadow-lg">
         <div className="flex items-center justify-between border-b p-6">
-          <h2 className="text-xl font-semibold text-card-foreground">
-            {editingMachine ? 'Editar Máquina' : 'Nova Máquina'}
-          </h2>
+          <div className="flex items-center gap-4">
+            {showBackToOperator && onBackToOperator && (
+              <BackToOperatorButton
+                onClick={onBackToOperator}
+                variant="link"
+              />
+            )}
+            <h2 className="text-xl font-semibold text-card-foreground">
+              {editingMachine ? 'Editar Máquina' : 'Nova Máquina'}
+            </h2>
+          </div>
           <button
             onClick={onClose}
             className="rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
