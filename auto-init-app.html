@@ -251,7 +251,7 @@
             addLog('🌐 Verificando aplicação...', 'info');
             
             try {
-                const response = await fetch('http://localhost:8080');
+                const response = await fetch('http://localhost:3000');
                 if (!response.ok) {
                     throw new Error(`Servidor retornou status ${response.status}`);
                 }
