@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste WorkItem Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .log { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; border-left: 5px solid #28a745; }
+        .error { background: #f8d7da; border-left: 5px solid #dc3545; }
+        .info { background: #d1ecf1; border-left: 5px solid #17a2b8; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>�� Teste de Correção do CompleteWorkItem</h1>
+    <p>Este teste verifica se a correção para o problema "Operation not found" está funcionando.</p>
+    
+    <button onclick="testWorkItemParsing()">🧪 Testar Parsing de WorkItem ID</button>
+    <button onclick="clearData()">🧹 Limpar Dados</button>
+    <button onclick="createTestData()">📝 Criar Dados de Teste</button>
+    <button onclick="testCompleteWorkItem()">✅ Testar Completar WorkItem</button>
+    
+    <div id="output"></div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            output.appendChild(div);
+            console.log(message);
+        }
+
+        function testWorkItemParsing() {
+            log('🧪 Testando parsing de WorkItem IDs...', 'info');
+            
+            // Teste 1: ID BZM normal
+            const bzmId = '1755712770917-1755712769047-1755712769047-bzm';
+            const parts1 = bzmId.split('-');
+            log(`ID BZM: ${bzmId}`, 'info');
+            log(`Parts: ${JSON.stringify(parts1)}`, 'info');
+            
+            if (parts1.length >= 3) {
+                const [orderId, lineId, ...operationParts] = parts1;
+                const operationId = operationParts.join('-');
+                log(`✅ Parsed - Order: ${orderId}, Line: ${lineId}, Operation: ${operationId}`, 'success');
+            } else {
+                log(`❌ Parse failed for BZM ID`, 'error');
+            }
+            
+            // Teste 2: ID normal sem sufixo
+            const normalId = '1755712770917-1755712769047-1755712769048';
+            const parts2 = normalId.split('-');
+            log(`ID Normal: ${normalId}`, 'info');
+            log(`Parts: ${JSON.stringify(parts2)}`, 'info');
+            
+            if (parts2.length >= 3) {
+                const [orderId, lineId, ...operationParts] = parts2;
+                const operationId = operationParts.join('-');
+                log(`✅ Parsed - Order: ${orderId}, Line: ${lineId}, Operation: ${operationId}`, 'success');
+            } else {
+                log(`❌ Parse failed for Normal ID`, 'error');
+            }
+        }
+
+        function clearData() {
+            log('🧹 Limpando todos os dados...', 'info');
+            if (typeof window.clearProductionData === 'function') {
+                window.clearProductionData();
+                log('✅ Dados limpos via função global', 'success');
+            } else {
+                localStorage.removeItem('factoryControl_production');
+                log('✅ Dados limpos via localStorage', 'success');
+            }
+        }
+
+        function createTestData() {
+            log('📝 Criando dados de teste...', 'info');
+            
+            const testData = {
+                productionOrders: [
+                    {
+                        id: '1755712770917',
+                        orderNumber: 'OP-TEST-001',
+                        customer: { name: 'Cliente Teste', contact: 'test@example.com' },
+                        status: 'in_progress',
+                        priority: 'high',
+                        expectedDeliveryDate: new Date().toISOString(),
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                        lines: [
+                            {
+                                id: '1755712769047',
+                                foamType: {
+                                    id: '1',
+                                    name: 'Espuma D20',
+                                    density: 20,
+                                    hardness: 'Macia',
+                                    color: 'Branca',
+                                    specifications: 'Teste',
+                                    pricePerM3: 45.00,
+                                    stockColor: '#f8f9fa'
+                                },
+                                quantity: 10,
+                                completedQuantity: 0,
+                                status: 'pending',
+                                priority: 1,
+                                initialDimensions: { length: 2000, width: 1200, height: 1000 },
+                                finalDimensions: { length: 1000, width: 600, height: 500 },
+                                cuttingOperations: [
+                                    {
+                                        id: '1755712769047-bzm',
+                                        machineId: '1',
+                                        inputDimensions: { length: 2000, width: 1200, height: 1000 },
+                                        outputDimensions: { length: 1000, width: 600, height: 500 },
+                                        quantity: 10,
+                                        completedQuantity: 0,
+                                        estimatedTime: 30,
+                                        status: 'pending',
+                                        observations: 'Operação BZM de teste'
+                                    },
+                                    {
+                                        id: '1755712769048',
+                                        machineId: '2',
+                                        inputDimensions: { length: 1000, width: 600, height: 500 },
+                                        outputDimensions: { length: 500, width: 300, height: 250 },
+                                        quantity: 10,
+                                        completedQuantity: 0,
+                                        estimatedTime: 45,
+                                        status: 'pending',
+                                        observations: 'Operação normal de teste'
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                productSheets: [],
+                chatMessages: [],
+                operatorSessions: [],
+                foamBlocks: [],
+                stockMovements: []
+            };
+
+            localStorage.setItem('factoryControl_production', JSON.stringify(testData));
+            log('✅ Dados de teste criados com sucesso!', 'success');
+            log('- 1 ordem com ID: 1755712770917', 'info');
+            log('- 1 linha com ID: 1755712769047', 'info');
+            log('- 2 operações: 1755712769047-bzm e 1755712769048', 'info');
+        }
+
+        async function testCompleteWorkItem() {
+            log('✅ Testando completar WorkItem...', 'info');
+            
+            // Teste com a operação BZM que estava falhando
+            const workItemId = '1755712770917-1755712769047-1755712769047-bzm';
+            
+            try {
+                if (typeof window.productionService === 'object' && 
+                    typeof window.productionService.completeWorkItem === 'function') {
+                    
+                    log(`🎯 Tentando completar WorkItem: ${workItemId}`, 'info');
+                    await window.productionService.completeWorkItem(workItemId, 1, 'Teste via script');
+                    log('✅ WorkItem completado com sucesso!', 'success');
+                } else {
+                    log('❌ productionService não está disponível', 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro ao completar WorkItem: ${error.message}`, 'error');
+                log(`Detalhes: ${error.toString()}`, 'error');
+            }
+        }
+
+        // Inicializar
+        log('🚀 Teste de correção do WorkItem carregado', 'success');
+        log('Clique nos botões acima para testar as funcionalidades', 'info');
+    </script>
+</body>
+</html>
