@@ -19,12 +19,14 @@ import { MaintenanceRequest, Machine } from '@/types/production';
 import { maintenanceService } from '@/services/maintenanceService';
 import { productionService } from '@/services/productionService';
 import { cn } from '@/lib/utils';
+import { BackToOperatorButton } from './BackToOperatorButton';
 
 interface MachineMaintenanceHistoryProps {
   machineId?: string;
+  onBackToOperator?: () => void;
 }
 
-export function MachineMaintenanceHistory({ machineId }: MachineMaintenanceHistoryProps) {
+export function MachineMaintenanceHistory({ machineId, onBackToOperator }: MachineMaintenanceHistoryProps) {
   const [machines, setMachines] = useState<Machine[]>([]);
   const [selectedMachine, setSelectedMachine] = useState<string>(machineId || '');
   const [maintenanceHistory, setMaintenanceHistory] = useState<MaintenanceRequest[]>([]);
