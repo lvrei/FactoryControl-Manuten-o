@@ -4,7 +4,6 @@ import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "@/components/Layout";
-import { PWAInstall, PWAStatus } from "@/components/PWAInstall";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Dashboard from "./pages/Dashboard";
@@ -29,7 +28,6 @@ console.log('🚀 FactoryControl App carregando...');
 console.log('📱 User Agent:', navigator.userAgent);
 console.log('🔒 Secure Context:', window.isSecureContext);
 console.log('🌐 Location:', location.href);
-console.log('🔧 Service Workers disponível:', 'serviceWorker' in navigator);
 
 const App = () => {
   console.log('✅ App component renderizando...');
@@ -49,44 +47,40 @@ const App = () => {
               </ProtectedRoute>
             }>
               <Route index element={<Dashboard />} />
-              <Route path="production" element={<ProductionNew />} />
               <Route path="production-old" element={<Production />} />
-              <Route path="test-production" element={<TestProduction />} />
+              <Route path="production" element={<ProductionNew />} />
               <Route path="stock" element={<Stock />} />
               <Route path="equipment" element={<Equipment />} />
               <Route path="quality" element={<Quality />} />
               <Route path="maintenance" element={<MaintenanceComplete />} />
-              <Route path="team" element={
-                <ProtectedRoute requiredRole="supervisor">
-                  <Team />
-                </ProtectedRoute>
-              } />
+              <Route path="team" element={<Team />} />
               <Route path="planning" element={<Planning />} />
               <Route path="alerts" element={<AlertsSimple />} />
+              <Route path="test-production" element={<TestProduction />} />
             </Route>
 
-            {/* Protected Operator Route */}
-            <Route path="operator" element={
+            {/* Operator Portal - Standalone Route */}
+            <Route path="/operator" element={
               <ProtectedRoute requiredRole="operator">
                 <OperatorPortal />
               </ProtectedRoute>
             } />
 
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
-
-          {/* PWA Components - Stable Version */}
-          <PWAInstall />
-          <PWAStatus />
         </BrowserRouter>
       </QueryClientProvider>
     </ErrorBoundary>
   );
 };
 
-console.log('📦 App definido, preparando renderização...');
+const container = document.getElementById("root");
+if (!container) {
+  throw new Error("Root element not found");
+}
 
-createRoot(document.getElementById("root")!).render(<App />);
+const root = createRoot(container);
+root.render(<App />);
 
-console.log('🎯 App renderizado com sucesso!');
+console.log('🎯 FactoryControl App inicializado com sucesso!');
