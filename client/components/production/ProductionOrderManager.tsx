@@ -621,9 +621,9 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                                         }}
                                         className="w-full px-2 py-1 border rounded bg-background text-sm"
                                       >
-                                        {machines.map(machine => (
+                                        {(machines || []).filter(machine => machine && machine.id && machine.name).map(machine => (
                                           <option key={machine.id} value={machine.id}>
-                                            {machine.name} ({machine.type})
+                                            {machine.name} ({machine.type || 'N/A'})
                                           </option>
                                         ))}
                                       </select>
