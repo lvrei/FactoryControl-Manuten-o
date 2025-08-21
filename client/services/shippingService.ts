@@ -107,6 +107,14 @@ class ShippingService {
             return false;
           }
         }
+        if (filters.status) {
+          if (filters.status === 'ready' && !item.readyForShipping) {
+            return false;
+          }
+          if (filters.status === 'shipped' && item.readyForShipping) {
+            return false;
+          }
+        }
         return true;
       });
     }
