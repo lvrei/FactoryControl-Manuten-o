@@ -273,79 +273,41 @@ class ShippingService {
       ['']
     ];
 
-    // TABELA PRINCIPAL COM TODOS OS DADOS ORGANIZADOS POR LINHA
+    // TABELA PRINCIPAL SIMPLIFICADA
     const materialTable = [
-      // Cabeçalho da tabela principal
+      // Cabeçalho simples
       [
-        'Nº',
-        'Cliente', 
-        'Ordem Produção',
-        'Tipo Espuma',
-        'Quantidade',
-        'Comprimento (mm)',
-        'Largura (mm)', 
-        'Altura (mm)',
-        'Volume (m³)',
-        'Peso (kg)',
-        'Código Barras',
-        'Data Adição',
-        'Método Registo',
-        'Observações'
+        'nº',
+        'Cliente',
+        'OP',
+        'Tipo',
+        'Qtd',
+        'Comp',
+        'Larg',
+        'Alt',
+        'Vol',
+        'Peso',
+        'Código',
+        'Data',
+        'Obs'
       ],
-      
-      // Separador visual
-      [
-        '═══',
-        '═══════════════',
-        '══════════════════',
-        '═══════════════',
-        '══════════',
-        '═══════════════',
-        '═══════════════',
-        '═══════════════', 
-        '═══════════',
-        '═════════',
-        '═══════════════',
-        '═══════════════',
-        '═══════════════',
-        '═══════════════'
-      ],
-      
-      // Dados do material - uma linha por item com todos os detalhes
+
+      // Dados do material - formato simples
       ...load.items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
         item.orderNumber,
         item.foamType,
-        `${item.quantity} un`,
+        item.quantity.toString(),
         item.dimensions.length.toString(),
         item.dimensions.width.toString(),
         item.dimensions.height.toString(),
-        item.volume.toFixed(3),
-        (item.weight || 0).toFixed(2),
-        item.barcodeId || 'N/A',
-        new Date(item.addedToLoadAt).toLocaleString('pt-BR'),
-        item.scannedAt ? 'Scanner' : 'Manual',
-        item.operatorNotes || 'Sem observações'
-      ]),
-      
-      // Separador final
-      [
-        '═══',
-        '═══════════════',
-        '══════════════════',
-        '═══════════════',
-        '══════════',
-        '═══════════════',
-        '═══════════════',
-        '═══════════════',
-        '═══════════',
-        '═════════',
-        '═══════════════',
-        '═══════════════',
-        '═══════════════',
-        '═══════════════'
-      ]
+        item.volume.toFixed(2),
+        (item.weight || 0).toFixed(1),
+        item.barcodeId || '',
+        new Date(item.addedToLoadAt).toLocaleDateString('pt-BR'),
+        item.operatorNotes || ''
+      ])
     ];
 
     // RODAPÉ
