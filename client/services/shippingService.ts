@@ -211,7 +211,7 @@ class ShippingService {
     // Mark items as shipped in production orders
     for (const item of load.items) {
       try {
-        await productionService.markItemAsShipped(item.orderId, item.lineId, item.quantity);
+        await productionService.markOrderLineAsShipped(item.orderId, item.lineId);
       } catch (error) {
         console.error('Error marking item as shipped:', error);
       }
@@ -357,7 +357,7 @@ class ShippingService {
 
     // TABELA PRINCIPAL - cada cabeçalho numa célula individual
     const materialTable = [
-      // Linha de cabeçalho - cada item numa célula separada
+      // Linha de cabe��alho - cada item numa célula separada
       [
         'nº',
         'Cliente',
