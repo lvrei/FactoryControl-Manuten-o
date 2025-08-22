@@ -680,8 +680,11 @@ class ProductionService {
 
       order.updatedAt = new Date().toISOString();
       this.saveData(data);
-      
-      console.log('✅ Linha marcada como enviada:', lineId);
+
+      console.log('✅ Linha marcada como enviada:', lineId, 'Status da linha:', line.status);
+      if (allShipped) {
+        console.log('✅ Toda a ordem foi enviada:', orderId, 'Status da ordem:', order.status);
+      }
     } catch (error) {
       console.error('❌ Erro ao marcar como enviada:', error);
     }
