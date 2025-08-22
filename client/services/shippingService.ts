@@ -341,23 +341,23 @@ class ShippingService {
     const dateString = new Date().toLocaleDateString('pt-BR');
     const timeString = new Date().toLocaleTimeString('pt-BR');
 
-    // CABEÇALHO PRINCIPAL
+    // CABEÇALHO PRINCIPAL (cada item numa célula separada)
     const headerInfo = [
-      ['=== RELATÓRIO DE MATERIAL DISPONÍVEL PARA EXPEDIÇÃO ==='],
+      ['RELATÓRIO DE MATERIAL DISPONÍVEL PARA EXPEDIÇÃO'],
       [''],
-      [`Data de Exportação: ${dateString} às ${timeString}`],
-      [`Total de Linhas de Produção: ${items.length}`],
-      [`Quantidade Total de Peças: ${items.reduce((sum, item) => sum + item.quantity, 0)}`],
-      [`Volume Total: ${items.reduce((sum, item) => sum + item.volume, 0).toFixed(3)} m³`],
-      [`Peso Total: ${items.reduce((sum, item) => sum + (item.weight || 0), 0).toFixed(2)} kg`],
+      ['Data de Exportação', `${dateString} às ${timeString}`],
+      ['Total de Linhas de Produção', items.length.toString()],
+      ['Quantidade Total de Peças', items.reduce((sum, item) => sum + item.quantity, 0).toString()],
+      ['Volume Total (m³)', items.reduce((sum, item) => sum + item.volume, 0).toFixed(3)],
+      ['Peso Total (kg)', items.reduce((sum, item) => sum + (item.weight || 0), 0).toFixed(2)],
       [''],
-      ['=== IDENTIFICAÇÃO E DETALHES DO MATERIAL ==='],
+      ['IDENTIFICAÇÃO E DETALHES DO MATERIAL'],
       ['']
     ];
 
-    // TABELA PRINCIPAL SIMPLIFICADA
+    // TABELA PRINCIPAL - cada cabeçalho numa célula individual
     const materialTable = [
-      // Cabeçalho simples
+      // Linha de cabeçalho - cada item numa célula separada
       [
         'nº',
         'Cliente',
@@ -374,7 +374,7 @@ class ShippingService {
         'Estado'
       ],
 
-      // Dados do material - formato simples
+      // Dados do material - cada campo numa célula separada
       ...items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
@@ -392,12 +392,11 @@ class ShippingService {
       ])
     ];
 
-    // RODAPÉ
+    // RODAPÉ (cada item numa célula separada)
     const footerInfo = [
       [''],
-      ['=== INFORMAÇÕES DO SISTEMA ==='],
-      [`Sistema: FactoryControl - Gestão de Produção`],
-      [`Formato: CSV - Lista de Material Disponível`]
+      ['Sistema', 'FactoryControl - Gestão de Produção'],
+      ['Formato', 'CSV - Lista de Material Disponível']
     ];
 
     // COMBINAR TODAS AS SECÇÕES
