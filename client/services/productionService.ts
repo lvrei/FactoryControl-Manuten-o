@@ -365,7 +365,7 @@ class ProductionService {
         for (const line of order.lines || []) {
           if (line.status === 'completed') continue;
 
-          for (const operation of line.operations || []) {
+          for (const operation of line.cuttingOperations || []) {
             if (operation.status === 'completed') continue;
             if (machineId && operation.machineId !== machineId) continue;
 
@@ -375,19 +375,19 @@ class ProductionService {
               orderNumber: order.orderNumber,
               lineId: line.id,
               operationId: operation.id,
-              operationType: operation.type,
-              operationName: operation.name,
+              operationType: 'cutting',
+              operationName: `Corte ${line.foamType.name}`,
               machineId: operation.machineId,
               foamType: line.foamType,
-              dimensions: line.dimensions,
-              quantity: line.quantity,
-              remainingQuantity: line.quantity - (operation.completedQuantity || 0),
+              dimensions: operation.outputDimensions,
+              quantity: operation.quantity,
+              remainingQuantity: operation.quantity - (operation.completedQuantity || 0),
               priority: order.priority,
-              dueDate: order.dueDate,
+              dueDate: order.expectedDeliveryDate,
               customer: order.customer,
               status: operation.status || 'pending',
               estimatedTime: operation.estimatedTime,
-              notes: operation.notes
+              notes: operation.observations || ''
             });
           }
         }
