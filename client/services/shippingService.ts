@@ -1,4 +1,4 @@
-import { ShippableItem, ShipmentLoad, ShippedItem, ShippingFilters, BarcodeScanner } from '@/types/production';
+import { ShippableItem, ShipmentLoad, ShippedItem, BarcodeScanner, ShippingFilters } from '@/types/production';
 import { productionService } from './productionService';
 import { labelService } from './labelService';
 
@@ -99,22 +99,6 @@ class ShippingService {
         if (filters.foamType && !item.foamType.toLowerCase().includes(filters.foamType.toLowerCase())) {
           return false;
         }
-        if (filters.dateRange) {
-          const itemDate = new Date(item.completedAt);
-          const startDate = new Date(filters.dateRange.start);
-          const endDate = new Date(filters.dateRange.end);
-          if (itemDate < startDate || itemDate > endDate) {
-            return false;
-          }
-        }
-        if (filters.status) {
-          if (filters.status === 'ready' && !item.readyForShipping) {
-            return false;
-          }
-          if (filters.status === 'shipped' && item.readyForShipping) {
-            return false;
-          }
-        }
         return true;
       });
     }
@@ -122,27 +106,21 @@ class ShippingService {
     return items;
   }
 
-  async getShippableItemByBarcode(barcodeId: string): Promise<ShippableItem | null> {
-    const { shippableItems } = this.getStoredData();
-    return shippableItems.find(item => item.barcodeId === barcodeId) || null;
-  }
-
-  // Load management
+  // Create new load for operator
   async createNewLoad(operatorId: string, operatorName: string): Promise<ShipmentLoad> {
     const { loads } = this.getStoredData();
     
-    const loadNumber = this.generateLoadNumber();
     const newLoad: ShipmentLoad = {
       id: Date.now().toString(),
-      loadNumber,
+      loadNumber: `CARGA-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${String(loads.length + 1).padStart(3, '0')}`,
       operatorId,
       operatorName,
       startTime: new Date().toISOString(),
       status: 'loading',
       items: [],
-      totalWeight: 0,
+      totalItems: 0,
       totalVolume: 0,
-      totalItems: 0
+      totalWeight: 0
     };
 
     loads.push(newLoad);
@@ -151,128 +129,98 @@ class ShippingService {
     return newLoad;
   }
 
+  // Get current load for operator
   async getCurrentLoad(operatorId: string): Promise<ShipmentLoad | null> {
     const { loads } = this.getStoredData();
-    return loads.find(load => 
-      load.operatorId === operatorId && load.status === 'loading'
-    ) || null;
+    return loads.find(load => load.operatorId === operatorId && load.status === 'loading') || null;
   }
 
-  async addItemToLoad(loadId: string, shippableItem: ShippableItem, operatorNotes?: string, scannedAt?: string): Promise<ShipmentLoad> {
-    const { loads } = this.getStoredData();
-    const loadIndex = loads.findIndex(load => load.id === loadId);
-    
-    if (loadIndex === -1) {
-      throw new Error('Load not found');
-    }
-
-    const shippedItem: ShippedItem = {
-      id: Date.now().toString(),
-      shippableItemId: shippableItem.id,
-      orderId: shippableItem.orderId,
-      orderNumber: shippableItem.orderNumber,
-      lineId: shippableItem.lineId,
-      operationId: shippableItem.operationId,
-      barcodeId: shippableItem.barcodeId,
-      customerName: shippableItem.customerName,
-      foamType: shippableItem.foamType,
-      quantity: shippableItem.quantity,
-      dimensions: shippableItem.dimensions,
-      weight: shippableItem.weight,
-      volume: shippableItem.volume,
-      addedToLoadAt: new Date().toISOString(),
-      scannedAt,
-      operatorNotes
-    };
-
-    loads[loadIndex].items.push(shippedItem);
-    
-    // Update totals
-    loads[loadIndex].totalItems = loads[loadIndex].items.length;
-    loads[loadIndex].totalWeight = loads[loadIndex].items.reduce((sum, item) => sum + (item.weight || 0), 0);
-    loads[loadIndex].totalVolume = loads[loadIndex].items.reduce((sum, item) => sum + item.volume, 0);
-    
-    this.saveLoads(loads);
-
-    // Remove item from shippable items (it's now shipped)
-    await this.markItemAsShipped(shippableItem.id);
-    
-    return loads[loadIndex];
-  }
-
-  async removeItemFromLoad(loadId: string, shippedItemId: string): Promise<ShipmentLoad> {
-    const { loads } = this.getStoredData();
-    const loadIndex = loads.findIndex(load => load.id === loadId);
-    
-    if (loadIndex === -1) {
-      throw new Error('Load not found');
-    }
-
-    const itemIndex = loads[loadIndex].items.findIndex(item => item.id === shippedItemId);
-    if (itemIndex === -1) {
-      throw new Error('Item not found in load');
-    }
-
-    const removedItem = loads[loadIndex].items[itemIndex];
-    loads[loadIndex].items.splice(itemIndex, 1);
-    
-    // Update totals
-    loads[loadIndex].totalItems = loads[loadIndex].items.length;
-    loads[loadIndex].totalWeight = loads[loadIndex].items.reduce((sum, item) => sum + (item.weight || 0), 0);
-    loads[loadIndex].totalVolume = loads[loadIndex].items.reduce((sum, item) => sum + item.volume, 0);
-    
-    this.saveLoads(loads);
-
-    // Add item back to shippable items
-    await this.markItemAsAvailable(removedItem);
-    
-    return loads[loadIndex];
-  }
-
-  async completeLoad(loadId: string, truckPlate?: string, driverName?: string, notes?: string): Promise<ShipmentLoad> {
-    const { loads } = this.getStoredData();
-    const loadIndex = loads.findIndex(load => load.id === loadId);
-    
-    if (loadIndex === -1) {
-      throw new Error('Load not found');
-    }
-
-    loads[loadIndex].status = 'completed';
-    loads[loadIndex].endTime = new Date().toISOString();
-    loads[loadIndex].truckPlate = truckPlate;
-    loads[loadIndex].driverName = driverName;
-    loads[loadIndex].notes = notes;
-    
-    this.saveLoads(loads);
-
-    // Mark all production order lines as completed in production service
-    await this.markProductionOrderLinesAsCompleted(loads[loadIndex]);
-
-    // Remove shipped items from available shippable items
-    await this.removeShippedItemsFromAvailable(loads[loadIndex]);
-
-    return loads[loadIndex];
-  }
-
+  // Get loads (with optional limit)
   async getLoads(limit?: number): Promise<ShipmentLoad[]> {
     const { loads } = this.getStoredData();
-    const sortedLoads = loads.sort((a, b) => 
-      new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
-    );
-    
+    const sortedLoads = loads.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime());
     return limit ? sortedLoads.slice(0, limit) : sortedLoads;
   }
 
-  async getLoadById(loadId: string): Promise<ShipmentLoad | null> {
+  // Add item to load
+  async addItemToLoad(loadId: string, item: ShippableItem, operatorNotes?: string, scannedAt?: string): Promise<ShipmentLoad> {
     const { loads } = this.getStoredData();
-    return loads.find(load => load.id === loadId) || null;
+    const load = loads.find(l => l.id === loadId);
+    
+    if (!load) {
+      throw new Error('Load not found');
+    }
+
+    // Check if item is already in load
+    const existingItem = load.items.find(i => i.id === item.id);
+    if (existingItem) {
+      throw new Error('Item already in load');
+    }
+
+    const shippedItem: ShippedItem = {
+      ...item,
+      addedToLoadAt: new Date().toISOString(),
+      scannedAt: scannedAt,
+      operatorNotes: operatorNotes
+    };
+
+    load.items.push(shippedItem);
+    load.totalItems = load.items.length;
+    load.totalVolume = load.items.reduce((sum, i) => sum + i.volume, 0);
+    load.totalWeight = load.items.reduce((sum, i) => sum + (i.weight || 0), 0);
+
+    this.saveLoads(loads);
+    return load;
   }
 
-  // Barcode scanner functionality
+  // Remove item from load
+  async removeItemFromLoad(loadId: string, shippedItemId: string): Promise<ShipmentLoad> {
+    const { loads } = this.getStoredData();
+    const load = loads.find(l => l.id === loadId);
+    
+    if (!load) {
+      throw new Error('Load not found');
+    }
+
+    load.items = load.items.filter(item => item.id !== shippedItemId);
+    load.totalItems = load.items.length;
+    load.totalVolume = load.items.reduce((sum, i) => sum + i.volume, 0);
+    load.totalWeight = load.items.reduce((sum, i) => sum + (i.weight || 0), 0);
+
+    this.saveLoads(loads);
+    return load;
+  }
+
+  // Complete load
+  async completeLoad(loadId: string, truckPlate?: string, driverName?: string, notes?: string): Promise<void> {
+    const { loads } = this.getStoredData();
+    const load = loads.find(l => l.id === loadId);
+    
+    if (!load) {
+      throw new Error('Load not found');
+    }
+
+    load.status = 'completed';
+    load.endTime = new Date().toISOString();
+    load.truckPlate = truckPlate;
+    load.driverName = driverName;
+    load.notes = notes;
+
+    this.saveLoads(loads);
+
+    // Mark items as shipped in production orders
+    for (const item of load.items) {
+      try {
+        await productionService.markItemAsShipped(item.orderId, item.lineId, item.quantity);
+      } catch (error) {
+        console.error('Error marking item as shipped:', error);
+      }
+    }
+  }
+
+  // Barcode scanning methods
   startBarcodeScanning(): BarcodeScanner {
     this.scannerState.isScanning = true;
-    this.scannerState.lastScannedCode = undefined;
-    this.scannerState.lastScannedAt = undefined;
     return { ...this.scannerState };
   }
 
@@ -282,96 +230,160 @@ class ShippingService {
   }
 
   async processBarcodeScanned(barcodeId: string): Promise<{ item: ShippableItem | null; error?: string }> {
-    this.scannerState.lastScannedCode = barcodeId;
-    this.scannerState.lastScannedAt = new Date().toISOString();
-
     try {
-      const item = await this.getShippableItemByBarcode(barcodeId);
+      const items = await this.getShippableItems();
+      const matchingItem = items.find(item => item.barcodeId === barcodeId);
       
-      if (!item) {
+      if (!matchingItem) {
         return { 
           item: null, 
-          error: `Material com código ${barcodeId} não encontrado ou já expedido` 
+          error: `Material não encontrado para o código: ${barcodeId}` 
         };
       }
 
-      return { item };
+      return { item: matchingItem };
     } catch (error) {
       return { 
         item: null, 
-        error: error instanceof Error ? error.message : 'Erro ao processar código de barras' 
+        error: 'Erro ao processar código de barras' 
       };
     }
   }
 
-  getScannerState(): BarcodeScanner {
-    return { ...this.scannerState };
-  }
-
-  // Export functionality
+  // IMPROVED Export functionality with better organized tables
   exportLoadToCSV(load: ShipmentLoad): void {
     const dateString = new Date().toLocaleDateString('pt-BR');
     const timeString = new Date().toLocaleTimeString('pt-BR');
 
-    // Cabeçalho com informações da carga
+    // Calcular totais por cliente
+    const customerTotals = load.items.reduce((acc, item) => {
+      if (!acc[item.customerName]) {
+        acc[item.customerName] = { items: 0, volume: 0, weight: 0, quantity: 0 };
+      }
+      acc[item.customerName].items++;
+      acc[item.customerName].volume += item.volume;
+      acc[item.customerName].weight += (item.weight || 0);
+      acc[item.customerName].quantity += item.quantity;
+      return acc;
+    }, {} as Record<string, any>);
+
+    // 1. CABEÇALHO PRINCIPAL
     const headerInfo = [
-      ['=== RELATÓRIO DE CARGA DE EXPEDIÇÃO ==='],
+      ['=== RELATÓRIO DE EXPEDIÇÃO - CARGA DE MATERIAL ==='],
       [''],
-      [`Carga Nº: ${load.loadNumber}`],
-      [`Operador: ${load.operatorName}`],
-      [`Placa Camião: ${load.truckPlate || 'N/A'}`],
-      [`Motorista: ${load.driverName || 'N/A'}`],
-      [`Início Carregamento: ${new Date(load.startTime).toLocaleString('pt-BR')}`],
-      [`Fim Carregamento: ${load.endTime ? new Date(load.endTime).toLocaleString('pt-BR') : 'Em andamento'}`],
-      [`Estado: ${load.status === 'completed' ? 'Completa' : load.status === 'loading' ? 'A carregar' : 'Cancelada'}`],
+      ['INFORMAÇÕES DA CARGA'],
+      ['──────────────────────'],
+      [`Número da Carga: ${load.loadNumber}`],
+      [`Operador Responsável: ${load.operatorName}`],
+      [`Data/Hora Início: ${new Date(load.startTime).toLocaleString('pt-BR')}`],
+      [`Data/Hora Conclusão: ${load.endTime ? new Date(load.endTime).toLocaleString('pt-BR') : 'Em andamento'}`],
+      [`Estado da Carga: ${load.status === 'completed' ? 'COMPLETA' : load.status === 'loading' ? 'EM CARREGAMENTO' : 'CANCELADA'}`],
       [''],
-      [`Total de Itens: ${load.totalItems}`],
+      ['INFORMAÇÕES DO TRANSPORTE'],
+      ['──────────────────────────'],
+      [`Matrícula do Camião: ${load.truckPlate || 'Não informado'}`],
+      [`Nome do Motorista: ${load.driverName || 'Não informado'}`],
+      [`Observações: ${load.notes || 'Nenhuma observação registada'}`],
+      [''],
+      ['TOTAIS GERAIS DA CARGA'],
+      ['─────────────────────────'],
+      [`Total de Linhas: ${load.totalItems} linhas`],
       [`Volume Total: ${load.totalVolume.toFixed(3)} m³`],
-      [`Peso Total: ${load.totalWeight.toFixed(2)} kg`],
-      [`Observações: ${load.notes || 'Nenhuma'}`],
+      [`Peso Total Estimado: ${load.totalWeight.toFixed(2)} kg`],
       [''],
-      ['=== IDENTIFICAÇÃO E DETALHES DO MATERIAL ==='],
-      [''],
-      ['╔══════════════════════════════════════════════════════════════════════════════════════╗'],
-      ['║                        TABELA DE IDENTIFICAÇÃO DO MATERIAL                          ║'],
-      ['╚══════════════════════════════════════════════════════════════════════════════════════╝'],
       ['']
     ];
 
-    // Dados dos itens
-    const itemsData = [
-      ['#', 'Cliente', 'OP', 'Tipo Espuma', 'Qtd', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso (kg)', 'Código Barras', 'Data Adiç��o', 'Observações'],
+    // 2. RESUMO POR CLIENTE
+    const clientSummary = [
+      ['=== RESUMO POR CLIENTE ==='],
+      [''],
+      ['Cliente', 'Linhas', 'Peças', 'Volume (m³)', 'Peso (kg)'],
+      ['═════════════════════════════════════════════════════��══════════'],
+      ...Object.entries(customerTotals).map(([customer, stats]: [string, any]) => [
+        customer,
+        stats.items.toString(),
+        stats.quantity.toString(),
+        stats.volume.toFixed(3),
+        stats.weight.toFixed(2)
+      ]),
+      ['════════════════════════════════════════════════════════════════'],
+      [''],
+      ['']
+    ];
+
+    // 3. IDENTIFICAÇÃO DO CLIENTE E ORDEM
+    const clientOrderInfo = [
+      ['=== IDENTIFICAÇÃO DO CLIENTE E ORDENS ==='],
+      [''],
+      ['Nº', 'Cliente', 'Ordem de Produção', 'Tipo de Espuma', 'Quantidade'],
+      ['══════════════════════════════════════════════════════════════════════════'],
       ...load.items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
         item.orderNumber,
         item.foamType,
-        item.quantity.toString(),
+        `${item.quantity} unidades`
+      ]),
+      ['══════════════════════════════════════════════════════════════════════════'],
+      [''],
+      ['']
+    ];
+
+    // 4. ESPECIFICAÇÕES TÉCNICAS
+    const technicalSpecs = [
+      ['=== ESPECIFICAÇÕES TÉCNICAS DO MATERIAL ==='],
+      [''],
+      ['Nº', 'OP', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso Estimado (kg)'],
+      ['════════════════════════════════════════════════════════════════════════════════════════════'],
+      ...load.items.map((item, index) => [
+        (index + 1).toString(),
+        item.orderNumber,
         item.dimensions.length.toString(),
         item.dimensions.width.toString(),
         item.dimensions.height.toString(),
         item.volume.toFixed(3),
-        (item.weight || 0).toFixed(2),
+        (item.weight || 0).toFixed(2)
+      ]),
+      ['════════════════════════════════════════════════════════════════════════════════════════════'],
+      [''],
+      ['']
+    ];
+
+    // 5. CONTROLO E RASTREABILIDADE
+    const trackingInfo = [
+      ['=== CONTROLO E RASTREABILIDADE ==='],
+      [''],
+      ['Nº', 'OP', 'Código de Barras', 'Data Adição à Carga', 'Modo Adição', 'Observações'],
+      ['════════════════════════════════════════════════════════════════════════════════════════════════════'],
+      ...load.items.map((item, index) => [
+        (index + 1).toString(),
+        item.orderNumber,
         item.barcodeId || 'N/A',
         new Date(item.addedToLoadAt).toLocaleString('pt-BR'),
-        item.operatorNotes || ''
-      ])
+        item.scannedAt ? 'Scanner' : 'Manual',
+        item.operatorNotes || 'Sem observações'
+      ]),
+      ['════════════════════════════════════════════════════════════════════════════════════════════════════'],
+      [''],
+      ['']
     ];
 
-    // Adicionar separador visual final à tabela
-    itemsData.push(['────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────']);
-
-    // Rodapé com totais
+    // 6. RODAPÉ
     const footerInfo = [
+      ['=== INFORMAÇÕES DO SISTEMA ==='],
       [''],
-      ['=== RESUMO FINAL ==='],
       [`Data de Exportação: ${dateString} às ${timeString}`],
       [`Sistema: FactoryControl - Gestão de Produção`],
-      [`Exportado por: ${load.operatorName}`]
+      [`Relatório gerado por: ${load.operatorName}`],
+      [`Formato: CSV - Saída de Material`],
+      [''],
+      ['Este documento serve como comprovativo de expedição do material listado.'],
+      ['Guarde este ficheiro para controlo interno e auditoria.']
     ];
 
-    // Combinar todos os dados
-    const allData = [...headerInfo, ...itemsData, ...footerInfo];
+    // Combinar todas as secções
+    const allData = [...headerInfo, ...clientSummary, ...clientOrderInfo, ...technicalSpecs, ...trackingInfo, ...footerInfo];
 
     const csvContent = allData.map(row =>
       row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
@@ -409,91 +421,144 @@ class ShippingService {
       return acc;
     }, {} as Record<string, any>);
 
-    // Cabeçalho com informações gerais
+    // Estatísticas por tipo de espuma
+    const foamTypeStats = items.reduce((acc, item) => {
+      if (!acc[item.foamType]) {
+        acc[item.foamType] = { items: 0, volume: 0, weight: 0, quantity: 0 };
+      }
+      acc[item.foamType].items++;
+      acc[item.foamType].volume += item.volume;
+      acc[item.foamType].weight += (item.weight || 0);
+      acc[item.foamType].quantity += item.quantity;
+      return acc;
+    }, {} as Record<string, any>);
+
+    // 1. CABEÇALHO
     const headerInfo = [
       ['=== RELATÓRIO DE MATERIAL DISPONÍVEL PARA EXPEDIÇÃO ==='],
       [''],
+      ['INFORMAÇÕES GERAIS'],
+      ['───────────────────'],
       [`Data de Exportação: ${dateString} às ${timeString}`],
       [`Total de Linhas de Produção: ${totalItems}`],
       [`Quantidade Total de Peças: ${totalQuantity}`],
       [`Volume Total: ${totalVolume.toFixed(3)} m³`],
-      [`Peso Total: ${totalWeight.toFixed(2)} kg`],
+      [`Peso Total Estimado: ${totalWeight.toFixed(2)} kg`],
       [''],
-      ['=== RESUMO POR CLIENTE ===']
+      ['']
     ];
 
-    // Adicionar estatísticas por cliente
-    const customerStatsData = [
+    // 2. RESUMO POR CLIENTE
+    const customerSummary = [
+      ['=== RESUMO POR CLIENTE ==='],
+      [''],
       ['Cliente', 'Linhas', 'Peças', 'Volume (m³)', 'Peso (kg)'],
+      ['════════════════════════════════════════════════════════════════'],
       ...Object.entries(customerStats).map(([customer, stats]: [string, any]) => [
         customer,
         stats.items.toString(),
         stats.quantity.toString(),
         stats.volume.toFixed(3),
         stats.weight.toFixed(2)
-      ])
-    ];
-
-    // Dados detalhados dos itens
-    const detailsHeader = [
+      ]),
+      ['════════════════════════════════════════════════════════════════'],
       [''],
-      ['=== MATERIAL DISPONÍVEL PARA EXPEDIÇÃO ==='],
-      [''],
-      ['╔══════════════════════════════════════════════════════════════════════════════════════╗'],
-      ['║                        LISTAGEM DETALHADA DO MATERIAL                                ║'],
-      ['╚════════════════════════════════════════════════════════════════════��═════════════════╝'],
       ['']
     ];
 
-    const itemsData = [
-      ['────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'],
-      ['#', 'CLIENTE', 'ORDEM PROD.', 'TIPO ESPUMA', 'QTD', 'COMP.(mm)', 'LARG.(mm)', 'ALT.(mm)', 'VOL.(m³)', 'PESO(kg)', 'CÓDIGO BARRAS', 'DATA CONCLUSÃO', 'PRONTO EXP.'],
-      ['────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────'],
+    // 3. RESUMO POR TIPO DE ESPUMA
+    const foamTypeSummary = [
+      ['=== RESUMO POR TIPO DE ESPUMA ==='],
+      [''],
+      ['Tipo de Espuma', 'Linhas', 'Peças', 'Volume (m³)', 'Peso (kg)'],
+      ['══════════════════════════════════════��════════════════════════════════'],
+      ...Object.entries(foamTypeStats).map(([foamType, stats]: [string, any]) => [
+        foamType,
+        stats.items.toString(),
+        stats.quantity.toString(),
+        stats.volume.toFixed(3),
+        stats.weight.toFixed(2)
+      ]),
+      ['═══════════════════════════════════════════════════════════════════════'],
+      [''],
+      ['']
+    ];
+
+    // 4. IDENTIFICAÇÃO DETALHADA DO MATERIAL
+    const detailsHeader = [
+      ['=== LISTAGEM DETALHADA DO MATERIAL ==='],
+      [''],
+      ['Nº', 'Cliente', 'Ordem Produção', 'Tipo Espuma', 'Quantidade'],
+      ['══════════════════════════════════════════════════════════════════════════'],
       ...items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
         item.orderNumber,
         item.foamType,
-        item.quantity.toString(),
+        `${item.quantity} unidades`
+      ]),
+      ['════════════════════════���═════════════════════════════════════════════════'],
+      [''],
+      ['']
+    ];
+
+    // 5. ESPECIFICAÇÕES TÉCNICAS
+    const technicalDetails = [
+      ['=== ESPECIFICAÇÕES TÉCNICAS ==='],
+      [''],
+      ['Nº', 'OP', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso (kg)'],
+      ['════════════════════════════════════════════════════════════════════════════════════════════'],
+      ...items.map((item, index) => [
+        (index + 1).toString(),
+        item.orderNumber,
         item.dimensions.length.toString(),
         item.dimensions.width.toString(),
         item.dimensions.height.toString(),
         item.volume.toFixed(3),
-        (item.weight || 0).toFixed(2),
+        (item.weight || 0).toFixed(2)
+      ]),
+      ['════════════════════════════════════════════════════════════════════════════════════════════'],
+      [''],
+      ['']
+    ];
+
+    // 6. CONTROLO E RASTREABILIDADE
+    const trackingDetails = [
+      ['=== CONTROLO E RASTREABILIDADE ==='],
+      [''],
+      ['Nº', 'OP', 'Código de Barras', 'Data Conclusão', 'Estado Expedição'],
+      ['══════════════════════════════════════════════════════════════════════════════════'],
+      ...items.map((item, index) => [
+        (index + 1).toString(),
+        item.orderNumber,
         item.barcodeId || 'N/A',
         new Date(item.completedAt).toLocaleString('pt-BR'),
-        item.readyForShipping ? 'Sim' : 'Não'
-      ])
+        item.readyForShipping ? 'Pronto para expedição' : 'Não disponível'
+      ]),
+      ['══════════════════════════════════════════════════════════════════════════════════'],
+      [''],
+      ['']
     ];
 
-    // Adicionar separador visual final
-    itemsData.push(['────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────']);
-
-    // Rodapé
+    // 7. RODAPÉ
     const footerInfo = [
-      [''],
       ['=== INFORMAÇÕES DO SISTEMA ==='],
-      [`Sistema: FactoryControl - Gestão de Produção de Espuma`],
-      [`Módulo: Expedição de Material`],
-      [`Filtros Aplicados: ${items.length < totalItems ? 'Sim (lista filtrada)' : 'Nenhum (lista completa)'}`],
-      [`Status: Material pronto para carregamento`]
+      [''],
+      [`Sistema: FactoryControl - Gestão de Produção`],
+      [`Formato: CSV - Lista de Material Disponível`],
+      [''],
+      ['Este documento contém a listagem completa do material pronto para expedição.'],
+      ['Use esta informação para planeamento de cargas e gestão de stock.']
     ];
 
-    // Combinar todos os dados
-    const allData = [
-      ...headerInfo,
-      [''],
-      ...customerStatsData,
-      ...detailsHeader,
-      ...itemsData,
-      ...footerInfo
-    ];
+    // Combinar todas as secções
+    const allData = [...headerInfo, ...customerSummary, ...foamTypeSummary, ...detailsHeader, ...technicalDetails, ...trackingDetails, ...footerInfo];
 
     const csvContent = allData.map(row =>
       row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
     ).join('\n');
 
-    // Add BOM for proper encoding in Excel
+    // Add BOM for proper encoding
     const csvContentWithBOM = '\uFEFF' + csvContent;
 
     const blob = new Blob([csvContentWithBOM], { type: 'text/csv;charset=utf-8;' });
@@ -502,77 +567,8 @@ class ShippingService {
     link.download = `Material_Disponivel_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   }
-
-  // Private helper methods
-  private generateLoadNumber(): string {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const sequence = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
-    return `CG-${year}${month}${day}-${sequence}`;
-  }
-
-  private async markItemAsShipped(shippableItemId: string): Promise<void> {
-    const { shippableItems } = this.getStoredData();
-    const filteredItems = shippableItems.filter(item => item.id !== shippableItemId);
-    this.saveShippableItems(filteredItems);
-  }
-
-  private async markItemAsAvailable(shippedItem: ShippedItem): Promise<void> {
-    const { shippableItems } = this.getStoredData();
-    
-    const shippableItem: ShippableItem = {
-      id: shippedItem.shippableItemId,
-      orderId: shippedItem.orderId,
-      orderNumber: shippedItem.orderNumber,
-      lineId: shippedItem.lineId,
-      operationId: shippedItem.operationId,
-      barcodeId: shippedItem.barcodeId,
-      customerName: shippedItem.customerName,
-      foamType: shippedItem.foamType,
-      quantity: shippedItem.quantity,
-      dimensions: shippedItem.dimensions,
-      completedAt: shippedItem.addedToLoadAt,
-      readyForShipping: true,
-      volume: shippedItem.volume,
-      weight: shippedItem.weight
-    };
-
-    shippableItems.push(shippableItem);
-    this.saveShippableItems(shippableItems);
-  }
-
-  private async markProductionOrderLinesAsCompleted(load: ShipmentLoad): Promise<void> {
-    try {
-      // For each item in the load, mark the corresponding production order line as shipped
-      for (const item of load.items) {
-        await productionService.markOrderLineAsShipped(item.orderId, item.lineId);
-      }
-    } catch (error) {
-      console.error('Error marking production order lines as completed:', error);
-    }
-  }
-
-  private async removeShippedItemsFromAvailable(load: ShipmentLoad): Promise<void> {
-    try {
-      const { shippableItems } = this.getStoredData();
-
-      // Get IDs of items that were shipped in this load
-      const shippedItemIds = load.items.map(item => item.shippableItemId);
-
-      // Remove shipped items from available list
-      const updatedItems = shippableItems.filter(item =>
-        !shippedItemIds.includes(item.id)
-      );
-
-      this.saveShippableItems(updatedItems);
-      console.log(`✅ Removed ${shippedItemIds.length} shipped items from available list`);
-
-    } catch (error) {
-      console.error('❌ Error removing shipped items from available list:', error);
-    }
-  }
 }
 
-export const shippingService = new ShippingService();
+// Create and export singleton instance
+const shippingService = new ShippingService();
+export { shippingService };

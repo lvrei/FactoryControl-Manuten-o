@@ -470,16 +470,43 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                 ) : (
                   <table className="w-full">
                     <thead className="border-b bg-muted/50">
-                      <tr>
-                        <th className="text-left p-3 font-medium">OP</th>
-                        <th className="text-left p-3 font-medium">Cliente</th>
-                        <th className="text-left p-3 font-medium">Tipo</th>
-                        <th className="text-left p-3 font-medium">Qtd</th>
-                        <th className="text-left p-3 font-medium">Dimensões</th>
-                        <th className="text-left p-3 font-medium">Volume</th>
-                        <th className="text-left p-3 font-medium">Código</th>
-                        <th className="text-left p-3 font-medium">Concluído</th>
-                        <th className="text-left p-3 font-medium">Ações</th>
+                      <tr className="text-xs">
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>ORDEM</div>
+                          <div>PRODUÇÃO</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>CLIENTE</div>
+                          <div>DESTINO</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>TIPO</div>
+                          <div>ESPUMA</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>QUANT.</div>
+                          <div>PEÇAS</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>DIMENSÕES</div>
+                          <div>C×L×A (mm)</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>VOLUME</div>
+                          <div>TOTAL (m³)</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>CÓDIGO</div>
+                          <div>BARRAS</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>DATA</div>
+                          <div>CONCLUSÃO</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>ACÇÕES</div>
+                          <div>CARGA</div>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
