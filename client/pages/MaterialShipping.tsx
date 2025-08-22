@@ -536,15 +536,22 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                             {new Date(item.completedAt).toLocaleDateString('pt-BR')}
                           </td>
                           <td className="p-3">
-                            <button
-                              onClick={() => handleAddItemToLoad(item)}
-                              disabled={!currentLoad}
-                              className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                              title={!currentLoad ? 'Crie uma nova carga primeiro' : 'Adicionar à carga'}
-                            >
-                              <Plus className="h-3 w-3" />
-                              Adicionar
-                            </button>
+                            {isItemInCurrentLoad(item.id) ? (
+                              <span className="flex items-center gap-1 px-3 py-1 text-sm bg-green-600 text-white rounded">
+                                <CheckCircle className="h-3 w-3" />
+                                Na Carga
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleAddItemToLoad(item)}
+                                disabled={!currentLoad}
+                                className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                title={!currentLoad ? 'Crie uma nova carga primeiro' : 'Adicionar à carga'}
+                              >
+                                <Plus className="h-3 w-3" />
+                                Adicionar
+                              </button>
+                            )}
                           </td>
                         </tr>
                       ))}
