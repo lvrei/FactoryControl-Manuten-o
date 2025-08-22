@@ -250,140 +250,115 @@ class ShippingService {
     }
   }
 
-  // IMPROVED Export functionality with better organized tables
+  // SIMPLIFIED Export functionality with single organized table
   exportLoadToCSV(load: ShipmentLoad): void {
     const dateString = new Date().toLocaleDateString('pt-BR');
     const timeString = new Date().toLocaleTimeString('pt-BR');
 
-    // Calcular totais por cliente
-    const customerTotals = load.items.reduce((acc, item) => {
-      if (!acc[item.customerName]) {
-        acc[item.customerName] = { items: 0, volume: 0, weight: 0, quantity: 0 };
-      }
-      acc[item.customerName].items++;
-      acc[item.customerName].volume += item.volume;
-      acc[item.customerName].weight += (item.weight || 0);
-      acc[item.customerName].quantity += item.quantity;
-      return acc;
-    }, {} as Record<string, any>);
-
-    // 1. CABEÇALHO PRINCIPAL
+    // CABEÇALHO COM INFORMAÇÕES DA CARGA
     const headerInfo = [
       ['=== RELATÓRIO DE EXPEDIÇÃO - CARGA DE MATERIAL ==='],
       [''],
-      ['INFORMAÇÕES DA CARGA'],
-      ['──────────────────────'],
-      [`Número da Carga: ${load.loadNumber}`],
-      [`Operador Responsável: ${load.operatorName}`],
-      [`Data/Hora Início: ${new Date(load.startTime).toLocaleString('pt-BR')}`],
-      [`Data/Hora Conclusão: ${load.endTime ? new Date(load.endTime).toLocaleString('pt-BR') : 'Em andamento'}`],
-      [`Estado da Carga: ${load.status === 'completed' ? 'COMPLETA' : load.status === 'loading' ? 'EM CARREGAMENTO' : 'CANCELADA'}`],
+      [`Carga Nº: ${load.loadNumber}`],
+      [`Operador: ${load.operatorName}`],
+      [`Matrícula Camião: ${load.truckPlate || 'N/A'}`],
+      [`Motorista: ${load.driverName || 'N/A'}`],
+      [`Início: ${new Date(load.startTime).toLocaleString('pt-BR')}`],
+      [`Conclusão: ${load.endTime ? new Date(load.endTime).toLocaleString('pt-BR') : 'Em andamento'}`],
+      [`Estado: ${load.status === 'completed' ? 'Completa' : load.status === 'loading' ? 'A carregar' : 'Cancelada'}`],
+      [`Total de Itens: ${load.totalItems} | Volume: ${load.totalVolume.toFixed(3)} m³ | Peso: ${load.totalWeight.toFixed(2)} kg`],
+      [`Observações: ${load.notes || 'Nenhuma'}`],
       [''],
-      ['INFORMAÇÕES DO TRANSPORTE'],
-      ['──────────────────────────'],
-      [`Matrícula do Camião: ${load.truckPlate || 'Não informado'}`],
-      [`Nome do Motorista: ${load.driverName || 'Não informado'}`],
-      [`Observações: ${load.notes || 'Nenhuma observação registada'}`],
-      [''],
-      ['TOTAIS GERAIS DA CARGA'],
-      ['─────────────────────────'],
-      [`Total de Linhas: ${load.totalItems} linhas`],
-      [`Volume Total: ${load.totalVolume.toFixed(3)} m³`],
-      [`Peso Total Estimado: ${load.totalWeight.toFixed(2)} kg`],
-      [''],
+      ['=== IDENTIFICAÇÃO E DETALHES DO MATERIAL ==='],
       ['']
     ];
 
-    // 2. RESUMO POR CLIENTE
-    const clientSummary = [
-      ['=== RESUMO POR CLIENTE ==='],
-      [''],
-      ['Cliente', 'Linhas', 'Peças', 'Volume (m³)', 'Peso (kg)'],
-      ['═════════════════════════════════════════════════════��══════════'],
-      ...Object.entries(customerTotals).map(([customer, stats]: [string, any]) => [
-        customer,
-        stats.items.toString(),
-        stats.quantity.toString(),
-        stats.volume.toFixed(3),
-        stats.weight.toFixed(2)
-      ]),
-      ['════════════════════════════════════════════════════════════════'],
-      [''],
-      ['']
-    ];
-
-    // 3. IDENTIFICAÇÃO DO CLIENTE E ORDEM
-    const clientOrderInfo = [
-      ['=== IDENTIFICAÇÃO DO CLIENTE E ORDENS ==='],
-      [''],
-      ['Nº', 'Cliente', 'Ordem de Produção', 'Tipo de Espuma', 'Quantidade'],
-      ['══════════════════════════════════════════════════════════════════════════'],
+    // TABELA PRINCIPAL COM TODOS OS DADOS ORGANIZADOS POR LINHA
+    const materialTable = [
+      // Cabeçalho da tabela principal
+      [
+        'Nº',
+        'Cliente', 
+        'Ordem Produção',
+        'Tipo Espuma',
+        'Quantidade',
+        'Comprimento (mm)',
+        'Largura (mm)', 
+        'Altura (mm)',
+        'Volume (m³)',
+        'Peso (kg)',
+        'Código Barras',
+        'Data Adição',
+        'Método Registo',
+        'Observações'
+      ],
+      
+      // Separador visual
+      [
+        '═══',
+        '═══════════════',
+        '══════════════════',
+        '═══════════════',
+        '══════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════', 
+        '═══════════',
+        '═════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════'
+      ],
+      
+      // Dados do material - uma linha por item com todos os detalhes
       ...load.items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
         item.orderNumber,
         item.foamType,
-        `${item.quantity} unidades`
-      ]),
-      ['══════════════════════════════════════════════════════════════════════════'],
-      [''],
-      ['']
-    ];
-
-    // 4. ESPECIFICAÇÕES TÉCNICAS
-    const technicalSpecs = [
-      ['=== ESPECIFICAÇÕES TÉCNICAS DO MATERIAL ==='],
-      [''],
-      ['Nº', 'OP', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso Estimado (kg)'],
-      ['════════════════════════════════════════════════════════════════════════════════════════════'],
-      ...load.items.map((item, index) => [
-        (index + 1).toString(),
-        item.orderNumber,
+        `${item.quantity} un`,
         item.dimensions.length.toString(),
         item.dimensions.width.toString(),
         item.dimensions.height.toString(),
         item.volume.toFixed(3),
-        (item.weight || 0).toFixed(2)
-      ]),
-      ['════════════════════════════════════════════════════════════════════════════════════════════'],
-      [''],
-      ['']
-    ];
-
-    // 5. CONTROLO E RASTREABILIDADE
-    const trackingInfo = [
-      ['=== CONTROLO E RASTREABILIDADE ==='],
-      [''],
-      ['Nº', 'OP', 'Código de Barras', 'Data Adição à Carga', 'Modo Adição', 'Observações'],
-      ['════════════════════════════════════════════════════════════════════════════════════════════════════'],
-      ...load.items.map((item, index) => [
-        (index + 1).toString(),
-        item.orderNumber,
+        (item.weight || 0).toFixed(2),
         item.barcodeId || 'N/A',
         new Date(item.addedToLoadAt).toLocaleString('pt-BR'),
         item.scannedAt ? 'Scanner' : 'Manual',
         item.operatorNotes || 'Sem observações'
       ]),
-      ['════════════════════════════════════════════════════════════════════════════════════════════════════'],
-      [''],
-      ['']
+      
+      // Separador final
+      [
+        '═══',
+        '═══════════════',
+        '══════════════════',
+        '═══════════════',
+        '══════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════',
+        '═════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════'
+      ]
     ];
 
-    // 6. RODAPÉ
+    // RODAPÉ
     const footerInfo = [
-      ['=== INFORMAÇÕES DO SISTEMA ==='],
       [''],
+      ['=== TOTAIS E INFORMAÇÕES FINAIS ==='],
       [`Data de Exportação: ${dateString} às ${timeString}`],
       [`Sistema: FactoryControl - Gestão de Produção`],
-      [`Relatório gerado por: ${load.operatorName}`],
-      [`Formato: CSV - Saída de Material`],
-      [''],
-      ['Este documento serve como comprovativo de expedição do material listado.'],
-      ['Guarde este ficheiro para controlo interno e auditoria.']
+      [`Relatório gerado por: ${load.operatorName}`]
     ];
 
-    // Combinar todas as secções
-    const allData = [...headerInfo, ...clientSummary, ...clientOrderInfo, ...technicalSpecs, ...trackingInfo, ...footerInfo];
+    // COMBINAR TODAS AS SECÇÕES
+    const allData = [...headerInfo, ...materialTable, ...footerInfo];
 
     const csvContent = allData.map(row =>
       row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
@@ -403,156 +378,101 @@ class ShippingService {
     const dateString = new Date().toLocaleDateString('pt-BR');
     const timeString = new Date().toLocaleTimeString('pt-BR');
 
-    // Calcular totais
-    const totalItems = items.length;
-    const totalVolume = items.reduce((sum, item) => sum + item.volume, 0);
-    const totalWeight = items.reduce((sum, item) => sum + (item.weight || 0), 0);
-    const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0);
-
-    // Estatísticas por cliente
-    const customerStats = items.reduce((acc, item) => {
-      if (!acc[item.customerName]) {
-        acc[item.customerName] = { items: 0, volume: 0, weight: 0, quantity: 0 };
-      }
-      acc[item.customerName].items++;
-      acc[item.customerName].volume += item.volume;
-      acc[item.customerName].weight += (item.weight || 0);
-      acc[item.customerName].quantity += item.quantity;
-      return acc;
-    }, {} as Record<string, any>);
-
-    // Estatísticas por tipo de espuma
-    const foamTypeStats = items.reduce((acc, item) => {
-      if (!acc[item.foamType]) {
-        acc[item.foamType] = { items: 0, volume: 0, weight: 0, quantity: 0 };
-      }
-      acc[item.foamType].items++;
-      acc[item.foamType].volume += item.volume;
-      acc[item.foamType].weight += (item.weight || 0);
-      acc[item.foamType].quantity += item.quantity;
-      return acc;
-    }, {} as Record<string, any>);
-
-    // 1. CABEÇALHO
+    // CABEÇALHO PRINCIPAL
     const headerInfo = [
       ['=== RELATÓRIO DE MATERIAL DISPONÍVEL PARA EXPEDIÇÃO ==='],
       [''],
-      ['INFORMAÇÕES GERAIS'],
-      ['───────────────────'],
       [`Data de Exportação: ${dateString} às ${timeString}`],
-      [`Total de Linhas de Produção: ${totalItems}`],
-      [`Quantidade Total de Peças: ${totalQuantity}`],
-      [`Volume Total: ${totalVolume.toFixed(3)} m³`],
-      [`Peso Total Estimado: ${totalWeight.toFixed(2)} kg`],
+      [`Total de Linhas de Produção: ${items.length}`],
+      [`Quantidade Total de Peças: ${items.reduce((sum, item) => sum + item.quantity, 0)}`],
+      [`Volume Total: ${items.reduce((sum, item) => sum + item.volume, 0).toFixed(3)} m³`],
+      [`Peso Total: ${items.reduce((sum, item) => sum + (item.weight || 0), 0).toFixed(2)} kg`],
       [''],
+      ['=== IDENTIFICAÇÃO E DETALHES DO MATERIAL ==='],
       ['']
     ];
 
-    // 2. RESUMO POR CLIENTE
-    const customerSummary = [
-      ['=== RESUMO POR CLIENTE ==='],
-      [''],
-      ['Cliente', 'Linhas', 'Peças', 'Volume (m³)', 'Peso (kg)'],
-      ['════════════════════════════════════════════════════════════════'],
-      ...Object.entries(customerStats).map(([customer, stats]: [string, any]) => [
-        customer,
-        stats.items.toString(),
-        stats.quantity.toString(),
-        stats.volume.toFixed(3),
-        stats.weight.toFixed(2)
-      ]),
-      ['════════════════════════════════════════════════════════════════'],
-      [''],
-      ['']
-    ];
-
-    // 3. RESUMO POR TIPO DE ESPUMA
-    const foamTypeSummary = [
-      ['=== RESUMO POR TIPO DE ESPUMA ==='],
-      [''],
-      ['Tipo de Espuma', 'Linhas', 'Peças', 'Volume (m³)', 'Peso (kg)'],
-      ['══════════════════════════════════════��════════════════════════════════'],
-      ...Object.entries(foamTypeStats).map(([foamType, stats]: [string, any]) => [
-        foamType,
-        stats.items.toString(),
-        stats.quantity.toString(),
-        stats.volume.toFixed(3),
-        stats.weight.toFixed(2)
-      ]),
-      ['═══════════════════════════════════════════════════════════════════════'],
-      [''],
-      ['']
-    ];
-
-    // 4. IDENTIFICAÇÃO DETALHADA DO MATERIAL
-    const detailsHeader = [
-      ['=== LISTAGEM DETALHADA DO MATERIAL ==='],
-      [''],
-      ['Nº', 'Cliente', 'Ordem Produção', 'Tipo Espuma', 'Quantidade'],
-      ['══════════════════════════════════════════════════════════════════════════'],
+    // TABELA PRINCIPAL COM TODOS OS DADOS ORGANIZADOS POR LINHA
+    const materialTable = [
+      // Cabeçalho da tabela principal
+      [
+        'Nº',
+        'Cliente',
+        'Ordem Produção',
+        'Tipo Espuma',
+        'Quantidade',
+        'Comprimento (mm)',
+        'Largura (mm)',
+        'Altura (mm)',
+        'Volume (m³)',
+        'Peso (kg)',
+        'Código Barras',
+        'Data Conclusão',
+        'Estado Expedição'
+      ],
+      
+      // Separador visual
+      [
+        '═══',
+        '═══════════════',
+        '══════════════════',
+        '═══════════════',
+        '══════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════',
+        '═════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════'
+      ],
+      
+      // Dados do material - uma linha por item com todos os detalhes
       ...items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
         item.orderNumber,
         item.foamType,
-        `${item.quantity} unidades`
-      ]),
-      ['════════════════════════���═════════════════════════════════════════════════'],
-      [''],
-      ['']
-    ];
-
-    // 5. ESPECIFICAÇÕES TÉCNICAS
-    const technicalDetails = [
-      ['=== ESPECIFICAÇÕES TÉCNICAS ==='],
-      [''],
-      ['Nº', 'OP', 'Comprimento (mm)', 'Largura (mm)', 'Altura (mm)', 'Volume (m³)', 'Peso (kg)'],
-      ['════════════════════════════════════════════════════════════════════════════════════════════'],
-      ...items.map((item, index) => [
-        (index + 1).toString(),
-        item.orderNumber,
+        `${item.quantity} un`,
         item.dimensions.length.toString(),
         item.dimensions.width.toString(),
         item.dimensions.height.toString(),
         item.volume.toFixed(3),
-        (item.weight || 0).toFixed(2)
-      ]),
-      ['════════════════════════════════════════════════════════════════════════════════════════════'],
-      [''],
-      ['']
-    ];
-
-    // 6. CONTROLO E RASTREABILIDADE
-    const trackingDetails = [
-      ['=== CONTROLO E RASTREABILIDADE ==='],
-      [''],
-      ['Nº', 'OP', 'Código de Barras', 'Data Conclusão', 'Estado Expedição'],
-      ['══════════════════════════════════════════════════════════════════════════════════'],
-      ...items.map((item, index) => [
-        (index + 1).toString(),
-        item.orderNumber,
+        (item.weight || 0).toFixed(2),
         item.barcodeId || 'N/A',
         new Date(item.completedAt).toLocaleString('pt-BR'),
-        item.readyForShipping ? 'Pronto para expedição' : 'Não disponível'
+        item.readyForShipping ? 'Pronto' : 'Não disponível'
       ]),
-      ['══════════════════════════════════════════════════════════════════════════════════'],
-      [''],
-      ['']
+      
+      // Separador final
+      [
+        '═══',
+        '═══════════════',
+        '══════════════════',
+        '═══════════════',
+        '══════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════',
+        '═════════',
+        '═══════════════',
+        '═══════════════',
+        '═══════════════'
+      ]
     ];
 
-    // 7. RODAPÉ
+    // RODAPÉ
     const footerInfo = [
+      [''],
       ['=== INFORMAÇÕES DO SISTEMA ==='],
-      [''],
       [`Sistema: FactoryControl - Gestão de Produção`],
-      [`Formato: CSV - Lista de Material Disponível`],
-      [''],
-      ['Este documento contém a listagem completa do material pronto para expedição.'],
-      ['Use esta informação para planeamento de cargas e gestão de stock.']
+      [`Formato: CSV - Lista de Material Disponível`]
     ];
 
-    // Combinar todas as secções
-    const allData = [...headerInfo, ...customerSummary, ...foamTypeSummary, ...detailsHeader, ...technicalDetails, ...trackingDetails, ...footerInfo];
+    // COMBINAR TODAS AS SECÇÕES
+    const allData = [...headerInfo, ...materialTable, ...footerInfo];
 
     const csvContent = allData.map(row =>
       row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')
