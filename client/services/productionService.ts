@@ -415,14 +415,17 @@ class ProductionService {
       this.ensureInitialized();
       console.log('🔧 Completando item:', workItemId, 'Qtd:', completedQuantity);
 
-      // Parse robusto do ID (suporta operation IDs com hífens)
+      // Parse robusto do ID (suporta order IDs com OP- prefix)
       const parts = workItemId.split('-');
-      if (parts.length < 3) {
+      if (parts.length < 4) {
         throw new Error(`ID inválido: ${workItemId}`);
       }
 
-      const [orderId, lineId, ...operationParts] = parts;
-      const operationId = operationParts.join('-'); // Reconstitui operation ID com hífens
+      // Reconstruct orderId with OP- prefix
+      const orderId = `${parts[0]}-${parts[1]}`; // "OP-1755848529731"
+      const lineId = parts[2]; // "1755848526881"
+      const operationParts = parts.slice(3); // ["1755848526881", "bzm"]
+      const operationId = operationParts.join('-'); // "1755848526881-bzm"
       
       console.log('📋 Parsed:', { orderId, lineId, operationId });
 
