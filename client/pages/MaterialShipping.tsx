@@ -57,8 +57,8 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
   const loadData = async () => {
     try {
       setLoading(true);
-      
-      // Generate and load shippable items
+
+      // Always regenerate shippable items to ensure fresh data (excludes shipped items)
       await shippingService.generateShippableItems();
       const items = await shippingService.getShippableItems();
       setShippableItems(items);
