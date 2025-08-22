@@ -430,13 +430,19 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                     <div>
                       <div className="flex items-center justify-between mb-2">
                         <div className="font-medium text-green-800">Material encontrado!</div>
-                        <button
-                          onClick={() => handleAddItemToLoad(scanResult.item!, true)}
-                          disabled={!currentLoad}
-                          className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
-                        >
-                          Adicionar à Carga
-                        </button>
+                        {isItemInCurrentLoad(scanResult.item!.id) ? (
+                          <span className="px-3 py-1 text-sm bg-orange-600 text-white rounded">
+                            Já na Carga
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleAddItemToLoad(scanResult.item!, true)}
+                            disabled={!currentLoad}
+                            className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
+                          >
+                            Adicionar à Carga
+                          </button>
+                        )}
                       </div>
                       <div className="grid gap-2 text-sm text-green-700">
                         <div><strong>OP:</strong> {scanResult.item.orderNumber}</div>
