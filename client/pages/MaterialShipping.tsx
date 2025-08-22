@@ -184,7 +184,7 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
       setShowCompleteModal(false);
       setLoadCompletionData({ truckPlate: '', driverName: '', notes: '' });
       
-      // Refresh data
+      // Force refresh of all data including shippable items
       await loadData();
       setActiveTab('history');
       
