@@ -27,9 +27,10 @@ class ShippingService {
     localStorage.setItem(this.loadStorageKey, JSON.stringify(loads));
   }
 
-  // Generate available items for shipping based on completed production
+  // Generate available items for shipping based on completed production (always fresh data)
   async generateShippableItems(): Promise<ShippableItem[]> {
     try {
+      // Always get fresh data from production service
       const orders = await productionService.getProductionOrders();
       const labels = await labelService.getLabels();
       const shippableItems: ShippableItem[] = [];
