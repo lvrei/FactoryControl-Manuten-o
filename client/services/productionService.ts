@@ -369,25 +369,31 @@ class ProductionService {
             if (operation.status === 'completed') continue;
             if (machineId && operation.machineId !== machineId) continue;
 
+            // Find machine details
+            const machine = this.mockMachines.find(m => m.id === operation.machineId);
+
+            // Convert priority string to number
+            const priorityMap = { low: 1, medium: 5, high: 8, urgent: 10 };
+
             workItems.push({
               id: `${order.id}-${line.id}-${operation.id}`,
               orderId: order.id,
               orderNumber: order.orderNumber,
               lineId: line.id,
               operationId: operation.id,
-              operationType: 'cutting',
-              operationName: `Corte ${line.foamType.name}`,
-              machineId: operation.machineId,
-              foamType: line.foamType,
-              dimensions: operation.outputDimensions,
+              customer: order.customer.name,
+              foamType: line.foamType.name,
+              inputDimensions: operation.inputDimensions,
+              outputDimensions: operation.outputDimensions,
               quantity: operation.quantity,
               remainingQuantity: operation.quantity - (operation.completedQuantity || 0),
-              priority: order.priority,
-              dueDate: order.expectedDeliveryDate,
-              customer: order.customer,
-              status: operation.status || 'pending',
+              machineId: operation.machineId,
+              machineName: machine?.name || 'Máquina Desconhecida',
+              machineType: machine?.type || 'UNKNOWN',
+              priority: priorityMap[order.priority] || 5,
+              expectedDeliveryDate: order.expectedDeliveryDate,
               estimatedTime: operation.estimatedTime,
-              notes: operation.observations || ''
+              observations: operation.observations || ''
             });
           }
         }
