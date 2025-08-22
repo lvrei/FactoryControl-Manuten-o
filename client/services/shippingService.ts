@@ -255,27 +255,29 @@ class ShippingService {
     const dateString = new Date().toLocaleDateString('pt-BR');
     const timeString = new Date().toLocaleTimeString('pt-BR');
 
-    // CABEÇALHO COM INFORMAÇÕES DA CARGA
+    // INFORMAÇÕES DA CARGA (cada item numa célula separada)
     const headerInfo = [
-      ['=== RELATÓRIO DE EXPEDIÇÃO - CARGA DE MATERIAL ==='],
+      ['RELATÓRIO DE EXPEDIÇÃO - CARGA DE MATERIAL'],
       [''],
-      [`Carga Nº: ${load.loadNumber}`],
-      [`Operador: ${load.operatorName}`],
-      [`Matrícula Camião: ${load.truckPlate || 'N/A'}`],
-      [`Motorista: ${load.driverName || 'N/A'}`],
-      [`Início: ${new Date(load.startTime).toLocaleString('pt-BR')}`],
-      [`Conclusão: ${load.endTime ? new Date(load.endTime).toLocaleString('pt-BR') : 'Em andamento'}`],
-      [`Estado: ${load.status === 'completed' ? 'Completa' : load.status === 'loading' ? 'A carregar' : 'Cancelada'}`],
-      [`Total de Itens: ${load.totalItems} | Volume: ${load.totalVolume.toFixed(3)} m³ | Peso: ${load.totalWeight.toFixed(2)} kg`],
-      [`Observações: ${load.notes || 'Nenhuma'}`],
+      ['Carga Nº', load.loadNumber],
+      ['Operador', load.operatorName],
+      ['Matrícula Camião', load.truckPlate || 'N/A'],
+      ['Motorista', load.driverName || 'N/A'],
+      ['Início', new Date(load.startTime).toLocaleString('pt-BR')],
+      ['Conclusão', load.endTime ? new Date(load.endTime).toLocaleString('pt-BR') : 'Em andamento'],
+      ['Estado', load.status === 'completed' ? 'Completa' : load.status === 'loading' ? 'A carregar' : 'Cancelada'],
+      ['Total de Itens', load.totalItems.toString()],
+      ['Volume Total (m³)', load.totalVolume.toFixed(3)],
+      ['Peso Total (kg)', load.totalWeight.toFixed(2)],
+      ['Observações', load.notes || 'Nenhuma'],
       [''],
-      ['=== IDENTIFICAÇÃO E DETALHES DO MATERIAL ==='],
+      ['IDENTIFICAÇÃO E DETALHES DO MATERIAL'],
       ['']
     ];
 
-    // TABELA PRINCIPAL SIMPLIFICADA
+    // TABELA PRINCIPAL - cada cabeçalho numa célula individual
     const materialTable = [
-      // Cabeçalho simples
+      // Linha de cabeçalho - cada item numa célula separada
       [
         'nº',
         'Cliente',
@@ -292,7 +294,7 @@ class ShippingService {
         'Obs'
       ],
 
-      // Dados do material - formato simples
+      // Dados do material - cada campo numa célula separada
       ...load.items.map((item, index) => [
         (index + 1).toString(),
         item.customerName,
@@ -310,13 +312,12 @@ class ShippingService {
       ])
     ];
 
-    // RODAPÉ
+    // RODAPÉ (cada item numa célula separada)
     const footerInfo = [
       [''],
-      ['=== TOTAIS E INFORMAÇÕES FINAIS ==='],
-      [`Data de Exportação: ${dateString} às ${timeString}`],
-      [`Sistema: FactoryControl - Gestão de Produção`],
-      [`Relatório gerado por: ${load.operatorName}`]
+      ['Data de Exportação', `${dateString} às ${timeString}`],
+      ['Sistema', 'FactoryControl - Gestão de Produção'],
+      ['Relatório gerado por', load.operatorName]
     ];
 
     // COMBINAR TODAS AS SECÇÕES
