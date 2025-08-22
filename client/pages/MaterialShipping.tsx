@@ -143,7 +143,11 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
       }
     } catch (error) {
       console.error('Error adding item to load:', error);
-      alert('Erro ao adicionar item à carga');
+      if (error.message === 'Item already in load') {
+        alert('Este item já foi adicionado à carga atual.');
+      } else {
+        alert('Erro ao adicionar item à carga: ' + error.message);
+      }
     }
   };
 
