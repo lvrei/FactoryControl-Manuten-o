@@ -203,18 +203,23 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
     shippingService.exportLoadToCSV(load);
   };
 
+  // Helper function to check if item is already in current load
+  const isItemInCurrentLoad = (itemId: string): boolean => {
+    return currentLoad?.items.some(loadItem => loadItem.id === itemId) || false;
+  };
+
   // Filter items
   const customers = Array.from(new Set(shippableItems.map(item => item.customerName)));
-  
+
   const filteredItems = shippableItems.filter(item => {
-    const matchesSearch = 
+    const matchesSearch =
       item.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.foamType.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (item.barcodeId && item.barcodeId.toLowerCase().includes(searchTerm.toLowerCase()));
-    
+
     const matchesCustomer = selectedCustomer === 'all' || item.customerName === selectedCustomer;
-    
+
     return matchesSearch && matchesCustomer;
   });
 
