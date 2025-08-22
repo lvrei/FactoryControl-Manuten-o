@@ -41,11 +41,13 @@ class ShippingService {
             op => op.status === 'completed' && op.completedQuantity >= op.quantity
           );
 
-          // Additional checks: line must be completed and have reached full quantity
+          // Additional checks: line must be completed and have reached full quantity, but not shipped yet
           const lineFullyCompleted = line.status === 'completed' &&
                                    line.completedQuantity >= line.quantity;
 
-          if (allOperationsCompleted && lineFullyCompleted && line.completedQuantity > 0) {
+          const notShippedYet = line.status !== 'shipped';
+
+          if (allOperationsCompleted && lineFullyCompleted && notShippedYet && line.completedQuantity > 0) {
             // Find matching label for this item
             const matchingLabel = labels.find(label => 
               label.orderId === order.id && label.lineId === line.id
@@ -357,7 +359,7 @@ class ShippingService {
 
     // TABELA PRINCIPAL - cada cabeçalho numa célula individual
     const materialTable = [
-      // Linha de cabe��alho - cada item numa célula separada
+      // Linha de cabeçalho - cada item numa célula separada
       [
         'nº',
         'Cliente',
