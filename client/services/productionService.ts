@@ -400,8 +400,8 @@ class ProductionService {
       }
 
       return workItems.sort((a, b) => {
-        const priorityWeight = { urgent: 3, high: 2, medium: 1, low: 0 };
-        return (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0);
+        // Sort by priority (higher number = higher priority)
+        return (b.priority || 0) - (a.priority || 0);
       });
     } catch (error) {
       console.error('❌ Erro ao buscar itens de trabalho:', error);
