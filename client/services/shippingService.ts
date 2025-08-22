@@ -218,6 +218,12 @@ class ShippingService {
         console.error('Error marking item as shipped:', error);
       }
     }
+
+    // Remove shipped items from shippable items list
+    const { shippableItems } = this.getStoredData();
+    const shippedItemIds = load.items.map(item => item.id);
+    const remainingItems = shippableItems.filter(item => !shippedItemIds.includes(item.id));
+    this.saveShippableItems(remainingItems);
   }
 
   // Barcode scanning methods
