@@ -488,7 +488,7 @@ class ProductionService {
       }
 
       // Atualizar linha
-      const totalCompleted = line.operations?.reduce((sum, op) => sum + (op.completedQuantity || 0), 0) || 0;
+      const totalCompleted = line.cuttingOperations?.reduce((sum, op) => sum + (op.completedQuantity || 0), 0) || 0;
       line.completedQuantity = Math.min(totalCompleted, line.quantity);
       line.status = line.completedQuantity >= line.quantity ? 'completed' : 'in_progress';
 
