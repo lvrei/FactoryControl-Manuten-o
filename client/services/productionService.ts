@@ -360,7 +360,7 @@ class ProductionService {
       const workItems: OperatorWorkItem[] = [];
 
       for (const order of orders) {
-        if (order.status === 'completed' || order.status === 'cancelled') continue;
+        if (order.status === 'completed' || order.status === 'cancelled' || order.status === 'shipped') continue;
 
         for (const line of order.lines || []) {
           if (line.status === 'completed') continue;
