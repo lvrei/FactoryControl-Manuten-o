@@ -733,14 +733,35 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                 ) : (
                   <table className="w-full">
                     <thead className="border-b bg-muted/50">
-                      <tr>
-                        <th className="text-left p-3 font-medium">Carga</th>
-                        <th className="text-left p-3 font-medium">Operador</th>
-                        <th className="text-left p-3 font-medium">Status</th>
-                        <th className="text-left p-3 font-medium">Itens</th>
-                        <th className="text-left p-3 font-medium">Volume</th>
-                        <th className="text-left p-3 font-medium">Data</th>
-                        <th className="text-left p-3 font-medium">Ações</th>
+                      <tr className="text-xs">
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>NÚMERO</div>
+                          <div>CARGA</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>OPERADOR</div>
+                          <div>RESPONSÁVEL</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>ESTADO</div>
+                          <div>EXPEDIÇÃO</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>TOTAL</div>
+                          <div>ITENS</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>VOLUME</div>
+                          <div>TOTAL (m³)</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>DATA</div>
+                          <div>EXPEDIÇÃO</div>
+                        </th>
+                        <th className="text-left p-3 font-medium text-muted-foreground">
+                          <div>RELATÓRIO</div>
+                          <div>EXPORTAR</div>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
