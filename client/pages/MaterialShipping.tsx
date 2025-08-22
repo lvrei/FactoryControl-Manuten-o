@@ -621,15 +621,39 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                     ) : (
                       <table className="w-full">
                         <thead className="border-b bg-muted/50">
-                          <tr>
-                            <th className="text-left p-3 font-medium">OP</th>
-                            <th className="text-left p-3 font-medium">Cliente</th>
-                            <th className="text-left p-3 font-medium">Tipo</th>
-                            <th className="text-left p-3 font-medium">Qtd</th>
-                            <th className="text-left p-3 font-medium">Volume</th>
-                            <th className="text-left p-3 font-medium">Adicionado</th>
-                            <th className="text-left p-3 font-medium">Scanner</th>
-                            <th className="text-left p-3 font-medium">Ações</th>
+                          <tr className="text-xs">
+                            <th className="text-left p-3 font-medium text-muted-foreground">
+                              <div>ORDEM</div>
+                              <div>PRODUÇÃO</div>
+                            </th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">
+                              <div>CLIENTE</div>
+                              <div>DESTINO</div>
+                            </th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">
+                              <div>TIPO</div>
+                              <div>MATERIAL</div>
+                            </th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">
+                              <div>QUANT.</div>
+                              <div>PEÇAS</div>
+                            </th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">
+                              <div>VOLUME</div>
+                              <div>TOTAL (m³)</div>
+                            </th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">
+                              <div>HORA</div>
+                              <div>ADIÇÃO</div>
+                            </th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">
+                              <div>MÉTODO</div>
+                              <div>REGISTO</div>
+                            </th>
+                            <th className="text-left p-3 font-medium text-muted-foreground">
+                              <div>ACÇÕES</div>
+                              <div>REMOVER</div>
+                            </th>
                           </tr>
                         </thead>
                         <tbody>
