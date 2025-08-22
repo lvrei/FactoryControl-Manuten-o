@@ -447,18 +447,18 @@ class ProductionService {
       }
 
       // Encontrar operação (estratégias múltiplas)
-      let operation = line.operations?.find(op => op.id === operationId);
-      
+      let operation = line.cuttingOperations?.find(op => op.id === operationId);
+
       if (!operation) {
         // Estratégia 2: toString()
-        operation = line.operations?.find(op => op.id?.toString() === operationId);
+        operation = line.cuttingOperations?.find(op => op.id?.toString() === operationId);
       }
-      
+
       if (!operation) {
         // Estratégia 3: índice numérico
         const numericIndex = parseInt(operationId);
-        if (!isNaN(numericIndex) && line.operations && line.operations[numericIndex]) {
-          operation = line.operations[numericIndex];
+        if (!isNaN(numericIndex) && line.cuttingOperations && line.cuttingOperations[numericIndex]) {
+          operation = line.cuttingOperations[numericIndex];
         }
       }
 
