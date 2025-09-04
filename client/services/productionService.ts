@@ -520,9 +520,11 @@ class ProductionService {
       }
 
       // Atualizar linha
-      const totalCompleted = line.cuttingOperations?.reduce((sum, op) => sum + (op.completedQuantity || 0), 0) || 0;
-      line.completedQuantity = Math.min(totalCompleted, line.quantity);
-      line.status = line.completedQuantity >= line.quantity ? 'completed' : 'in_progress';
+    const opCompletions = (line.cuttingOperations || []).map(op => op.completedQuantity || 0);
+    const minCompleted = opCompletions.length > 0 ? Math.min(...opCompletions) : 0;
+    line.completedQuantity = Math.min(minCompleted, line.quantity);
+    const allOpsCompleted = (line.cuttingOperations || []).every(op => (op.status === 'completed') && (op.completedQuantity || 0) >= (op.quantity || 0));
+    line.status = allOpsCompleted ? 'completed' : 'in_progress';
 
       // Atualizar ordem
       const allLinesCompleted = order.lines?.every(l => l.status === 'completed') || false;
@@ -718,7 +720,7 @@ class ProductionService {
         console.log('✅ Toda a ordem foi enviada:', orderId, 'Status da ordem:', order.status);
       }
     } catch (error) {
-      console.error('❌ Erro ao marcar como enviada:', error);
+      console.error('�� Erro ao marcar como enviada:', error);
     }
   }
 
