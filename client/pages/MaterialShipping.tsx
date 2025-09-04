@@ -3,6 +3,8 @@ import {
   Package,
   Search,
   Scan,
+  Camera as CameraIcon,
+  StopCircle,
   Plus,
   Truck,
   Download,
@@ -20,6 +22,7 @@ import {
   Ruler,
   FileBarChart
 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { ShippableItem, ShipmentLoad, ShippedItem, BarcodeScanner } from '@/types/production';
 import { shippingService } from '@/services/shippingService';
 import { cn } from '@/lib/utils';
@@ -48,10 +51,27 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
     notes: ''
   });
 
+  // Camera scanning state
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const scanTimerRef = useRef<number | null>(null);
+  const [cameraSupported, setCameraSupported] = useState<boolean>(false);
+  const [cameraActive, setCameraActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Feature detection for BarcodeDetector and mediaDevices
+    const hasDetector = typeof (window as any).BarcodeDetector !== 'undefined';
+    const hasMedia = !!navigator.mediaDevices?.getUserMedia;
+    setCameraSupported(hasDetector && hasMedia);
+  }, []);
+
   useEffect(() => {
     loadData();
     const interval = setInterval(loadData, 10000); // Refresh every 10 seconds
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      stopCamera();
+    };
   }, []);
 
   const loadData = async () => {
@@ -98,6 +118,58 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
   const handleStopScanning = () => {
     const scannerState = shippingService.stopBarcodeScanning();
     setScanner(scannerState);
+  };
+
+  // Camera scanning helpers
+  const stopCamera = () => {
+    if (scanTimerRef.current) {
+      window.clearInterval(scanTimerRef.current);
+      scanTimerRef.current = null;
+    }
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current = null;
+    }
+    setCameraActive(false);
+  };
+
+  const startCamera = async () => {
+    if (!cameraSupported) {
+      alert('Leitura por câmera não suportada neste dispositivo/navegador.');
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+      }
+      setCameraActive(true);
+
+      const Detector = (window as any).BarcodeDetector;
+      const detector = new Detector({ formats: ['code_128', 'ean_13', 'ean_8', 'qr_code', 'upc_a', 'upc_e'] });
+
+      scanTimerRef.current = window.setInterval(async () => {
+        try {
+          if (!videoRef.current) return;
+          const barcodes = await detector.detect(videoRef.current);
+          if (barcodes && barcodes.length > 0) {
+            const value = (barcodes[0].rawValue || '').toString().trim();
+            if (value) {
+              stopCamera();
+              const state = shippingService.stopBarcodeScanning();
+              setScanner(state);
+              await handleBarcodeInput(value);
+            }
+          }
+        } catch (err) {
+          // ignore transient detector errors
+        }
+      }, 300);
+    } catch (err) {
+      alert('Não foi possível aceder à câmera. Verifique permissões.');
+    }
   };
 
   const handleBarcodeInput = async (barcodeId: string) => {
@@ -400,14 +472,51 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                   </div>
                 )}
               </div>
-              
+
+              {/* Camera controls */}
+              <div className="flex flex-wrap gap-3 mb-3">
+                <button
+                  onClick={startCamera}
+                  disabled={!cameraSupported || cameraActive}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
+                    cameraActive ? 'bg-gray-200 text-gray-600' : 'bg-blue-600 text-white hover:bg-blue-700',
+                  )}
+                  title={!cameraSupported ? 'Câmera não suportada' : 'Ativar câmera'}
+                >
+                  <CameraIcon className="h-4 w-4" />
+                  Ativar Câmera
+                </button>
+                <button
+                  onClick={stopCamera}
+                  disabled={!cameraActive}
+                  className={cn(
+                    "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
+                    !cameraActive ? 'bg-gray-200 text-gray-600' : 'bg-red-600 text-white hover:bg-red-700',
+                  )}
+                >
+                  <StopCircle className="h-4 w-4" />
+                  Parar
+                </button>
+                {!cameraSupported && (
+                  <span className="text-xs text-muted-foreground">Este dispositivo/navegador não suporta leitura por câmera. Use o campo abaixo.</span>
+                )}
+              </div>
+
+              {cameraActive && (
+                <div className="relative overflow-hidden rounded-lg border mb-3">
+                  <video ref={videoRef} className="w-full max-h-64 object-cover" playsInline muted />
+                  <div className="absolute inset-0 border-2 border-white/70 rounded-lg pointer-events-none m-6" />
+                </div>
+              )}
+
               <div className="flex gap-3">
                 <input
                   type="text"
                   placeholder="Digite ou escaneie o código de barras..."
                   value={scannerInput}
                   onChange={(e) => setScannerInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleBarcodeInput(scannerInput)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleBarcodeInput(scannerInput)}
                   className="flex-1 px-3 py-2 border rounded-lg bg-background"
                 />
                 <button
