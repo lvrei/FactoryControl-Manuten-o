@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Package,
   Search,
@@ -22,7 +22,6 @@ import {
   Ruler,
   FileBarChart
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
 import { ShippableItem, ShipmentLoad, ShippedItem, BarcodeScanner } from '@/types/production';
 import { shippingService } from '@/services/shippingService';
 import { cn } from '@/lib/utils';
