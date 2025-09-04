@@ -310,7 +310,7 @@ class ProductionService {
     try {
       this.ensureInitialized();
       const data = this.getStoredData();
-      
+
       // Se não há máquinas salvas, usar mock e salvar
       if (!data?.machines || !Array.isArray(data.machines) || data.machines.length === 0) {
         const dataToSave = { ...data, machines: this.mockMachines };
@@ -322,6 +322,38 @@ class ProductionService {
     } catch (error) {
       console.error('❌ Erro ao buscar máquinas:', error);
       return this.mockMachines;
+    }
+  }
+
+  // Atualizar status da máquina (usado pela manutenção)
+  async updateMachineStatus(machineId: string, status: Machine['status']): Promise<void> {
+    try {
+      this.ensureInitialized();
+      const data = this.getStoredData() || {};
+
+      if (!Array.isArray(data.machines) || data.machines.length === 0) {
+        data.machines = [...this.mockMachines];
+      }
+
+      const machineIndex = data.machines.findIndex((m: Machine) => m.id === machineId);
+      if (machineIndex !== -1) {
+        data.machines[machineIndex].status = status;
+        if (status === 'maintenance') {
+          data.machines[machineIndex].currentOperator = null;
+        }
+      } else {
+        const mock = this.mockMachines.find(m => m.id === machineId);
+        if (mock) {
+          data.machines.push({ ...mock, status, currentOperator: status === 'maintenance' ? null : mock.currentOperator });
+        }
+      }
+
+      data.lastUpdated = new Date().toISOString();
+      this.saveData(data);
+      console.log('🔧 Status da máquina atualizado:', machineId, '→', status);
+    } catch (error) {
+      console.error('❌ Erro ao atualizar status da máquina:', error);
+      throw error;
     }
   }
 
