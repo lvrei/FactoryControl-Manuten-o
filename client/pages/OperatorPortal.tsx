@@ -35,12 +35,14 @@ import { maintenanceService } from '@/services/maintenanceService';
 import { MessageNotificationContainer } from '@/components/MessageNotification';
 import { cn } from '@/lib/utils';
 import { BackToOperatorButton } from '@/components/BackToOperatorButton';
+import { useNavigate } from 'react-router-dom';
 
 interface OperatorPortalProps {
   onClose?: () => void;
 }
 
 function OperatorPortal({ onClose }: OperatorPortalProps) {
+  const navigate = useNavigate();
   const [machines, setMachines] = useState<Machine[]>([]);
   const [workItems, setWorkItems] = useState<OperatorWorkItem[]>([]);
   const [currentSession, setCurrentSession] = useState<OperatorSession | null>(null);
@@ -415,14 +417,23 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
               <h1 className="text-3xl font-bold text-foreground">Portal do Operador</h1>
               <p className="text-muted-foreground">Sistema de produção - Corte de espuma</p>
             </div>
-            {onClose && (
+            <div className="flex gap-2">
+              {onClose && (
+                <button
+                  onClick={onClose}
+                  className="px-4 py-2 border rounded-lg hover:bg-muted"
+                >
+                  Voltar
+                </button>
+              )}
               <button
-                onClick={onClose}
-                className="px-4 py-2 border rounded-lg hover:bg-muted"
+                onClick={() => navigate('/')}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                title="Voltar ao Escritório"
               >
-                Voltar
+                Voltar ao Escritório
               </button>
-            )}
+            </div>
           </div>
 
           {/* Identificação do Operador */}
@@ -591,6 +602,13 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
           </div>
           
           <div className="flex gap-2">
+            <button
+              onClick={() => navigate('/')}
+              className="px-3 py-2 border rounded-lg hover:bg-muted"
+              title="Voltar ao Escritório"
+            >
+              Escritório
+            </button>
             {/* Printer Status */}
             <button
               onClick={() => setShowPrinterSetup(true)}
