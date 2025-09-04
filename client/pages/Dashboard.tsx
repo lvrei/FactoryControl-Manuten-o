@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import {
   Factory,
-  TrendingUp,
   AlertTriangle,
   CheckCircle,
-  Clock,
   Users,
   Package,
   Settings,
@@ -13,75 +11,52 @@ import {
   Timer,
   AlertCircle
 } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { productionService } from '@/services/productionService';
 import { maintenanceService } from '@/services/maintenanceService';
 import { ProductionOrder, Machine, MachineDowntime, MaintenanceRequest } from '@/types/production';
 import { MaintenancePopupContainer } from '@/components/MaintenancePopup';
 
 export default function Dashboard() {
-  const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>([]);
-  const [machines, setMachines] = useState<Machine[]>([]);
-  const [machineDowntime, setMachineDowntime] = useState<MachineDowntime[]>([]);
-  const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadData();
-    const interval = setInterval(loadData, 30000); // Atualizar a cada 30 segundos
-    return () => clearInterval(interval);
-  }, []);
+  const ordersQuery = useQuery<ProductionOrder[]>({
+    queryKey: ['productionOrders'],
+    queryFn: () => productionService.getProductionOrders(),
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+  });
 
-  const loadData = async () => {
-    try {
-      const [orders, machinesData, downtime, requests] = await Promise.all([
-        productionService.getProductionOrders(),
-        productionService.getMachines(),
-        maintenanceService.getMachineDowntime(),
-        maintenanceService.getMaintenanceRequests()
-      ]);
+  const machinesQuery = useQuery<Machine[]>({
+    queryKey: ['machines'],
+    queryFn: () => productionService.getMachines(),
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+  });
 
-      // Verificação defensiva para garantir dados válidos
-      const safeOrders = orders.filter(order =>
-        order && typeof order === 'object' && order.id && order.lines && Array.isArray(order.lines)
-      ).map(order => ({
-        ...order,
-        lines: order.lines.filter(line =>
-          line && typeof line === 'object' && line.foamType &&
-          typeof line.foamType === 'object' && line.foamType.name
-        ).map(line => ({
-          ...line,
-          foamType: {
-            ...line.foamType,
-            color: line.foamType.color || 'N/A',
-            stockColor: line.foamType.stockColor || '#f8f9fa'
-          }
-        }))
-      }));
+  const downtimeQuery = useQuery<MachineDowntime[]>({
+    queryKey: ['machineDowntime'],
+    queryFn: () => maintenanceService.getMachineDowntime(),
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+  });
 
-      const safeMachines = machinesData.filter(machine =>
-        machine && typeof machine === 'object' && machine.id && machine.name
-      );
+  const requestsQuery = useQuery<MaintenanceRequest[]>({
+    queryKey: ['maintenanceRequests'],
+    queryFn: () => maintenanceService.getMaintenanceRequests(),
+    staleTime: 10_000,
+    refetchInterval: 30_000,
+  });
 
-      const safeDowntime = downtime.filter(dt =>
-        dt && typeof dt === 'object' && dt.id && dt.machineName
-      );
+  const loading = ordersQuery.isLoading || machinesQuery.isLoading || downtimeQuery.isLoading || requestsQuery.isLoading;
 
-      const safeRequests = requests.filter(req =>
-        req && typeof req === 'object' && req.id && req.title
-      );
+  const { productionOrders, machines, machineDowntime, maintenanceRequests } = useMemo(() => ({
+    productionOrders: ordersQuery.data || [],
+    machines: machinesQuery.data || [],
+    machineDowntime: downtimeQuery.data || [],
+    maintenanceRequests: requestsQuery.data || [],
+  }), [ordersQuery.data, machinesQuery.data, downtimeQuery.data, requestsQuery.data]);
 
-      setProductionOrders(safeOrders);
-      setMachines(safeMachines);
-      setMachineDowntime(safeDowntime);
-      setMaintenanceRequests(safeRequests);
-    } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Cálculos baseados em dados reais
   const totalOrders = productionOrders.length;
   const activeOrders = productionOrders.filter(o => o.status === 'in_progress').length;
   const completedToday = productionOrders.filter(o =>
@@ -90,14 +65,13 @@ export default function Dashboard() {
   ).length;
   const urgentOrders = productionOrders.filter(o => o.priority === 'urgent').length;
 
-  // Maintenance calculations
   const activeMachineDowntime = machineDowntime.filter(d => d.status === 'ongoing');
   const machinesInMaintenance = machines.filter(m => m.status === 'maintenance').length;
   const pendingMaintenanceRequests = maintenanceRequests.filter(r => r.status === 'pending').length;
   const criticalMaintenanceRequests = maintenanceRequests.filter(r => r.urgencyLevel === 'critical' && r.status !== 'completed').length;
 
   const activeMachines = machines.filter(m => m.status === 'busy').length;
-  const totalMachines = machines.length;
+  const totalMachines = machines.length || 1;
   
   const blocksInProduction = productionOrders
     .filter(o => o.status === 'in_progress')
@@ -356,7 +330,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              Solicitações de Manutenção
+              Solicitações de Manutenç��o
             </h3>
             <span className={`text-sm px-2 py-1 rounded-full ${
               pendingMaintenanceRequests > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
@@ -423,7 +397,11 @@ export default function Dashboard() {
       </div>
 
       {/* Maintenance Popup for Backend Team */}
-      <MaintenancePopupContainer onRequestUpdate={loadData} />
+      <MaintenancePopupContainer onRequestUpdate={() => {
+        queryClient.invalidateQueries({ queryKey: ['maintenanceRequests'] });
+        queryClient.invalidateQueries({ queryKey: ['machineDowntime'] });
+        queryClient.invalidateQueries({ queryKey: ['machines'] });
+      }} />
     </div>
   );
 }
