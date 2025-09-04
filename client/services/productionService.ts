@@ -512,7 +512,8 @@ class ProductionService {
 
       // Atualizar operação
       operation.completedQuantity = currentCompleted + completedQuantity;
-      operation.status = operation.completedQuantity >= line.quantity ? 'completed' : 'in_progress';
+      const opTargetQty = (typeof operation.quantity === 'number' && operation.quantity > 0) ? operation.quantity : line.quantity;
+      operation.status = operation.completedQuantity >= opTargetQty ? 'completed' : 'in_progress';
       operation.completedAt = new Date().toISOString();
       
       if (operatorNotes) {
@@ -720,7 +721,7 @@ class ProductionService {
         console.log('✅ Toda a ordem foi enviada:', orderId, 'Status da ordem:', order.status);
       }
     } catch (error) {
-      console.error('�� Erro ao marcar como enviada:', error);
+      console.error('❌ Erro ao marcar como enviada:', error);
     }
   }
 
