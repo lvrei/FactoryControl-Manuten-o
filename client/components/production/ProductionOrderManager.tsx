@@ -206,10 +206,12 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
     opId: string;
     machineName: string;
     machineType: string;
-    wasteLengthPct: number;
-    wasteWidthPct: number;
+    wasteWidthPctTotal: number;
+    wasteHeightPctTotal: number;
     totalHeightUsed: number;
     totalHeightAvailable: number;
+    totalWidthUsed: number;
+    totalWidthAvailable: number;
     alerts: string[];
   };
 
@@ -226,26 +228,41 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
       if (!['CAROUSEL', 'PRE_CNC', 'CNC'].includes(type)) return;
 
       const out = op.outputDimensions;
-      const wasteLengthPct = bzmDims.length > 0 ? Math.max(0, (bzmDims.length - out.length) / bzmDims.length) * 100 : 0;
-      const wasteWidthPct = bzmDims.width > 0 ? Math.max(0, (bzmDims.width - out.width) / bzmDims.width) * 100 : 0;
-
-      const totalHeightAvailable = blocks * (bzmDims.height || 0);
-      const totalHeightUsed = (op.quantity || 0) * (out.height || 0);
-
       const alerts: string[] = [];
+
+      // Unit checks for L/W
       if (out.length > bzmDims.length) alerts.push('Comprimento superior ao da BZM');
       if (out.width > bzmDims.width) alerts.push('Largura superior à da BZM');
-      if (totalHeightUsed > totalHeightAvailable) alerts.push(`Quantidade × espessura excede altura disponível (${totalHeightUsed}mm > ${totalHeightAvailable}mm)`);
+
+      // Aggregated waste for Width/Height
+      const qty = op.quantity || 0;
+      const totalWidthAvailable = blocks * (bzmDims.width || 0);
+      const totalWidthUsed = qty * (out.width || 0);
+      const totalHeightAvailable = blocks * (bzmDims.height || 0);
+      const totalHeightUsed = qty * (out.height || 0);
+
+      const wasteWidthPctTotal = totalWidthAvailable > 0
+        ? Math.max(0, (totalWidthAvailable - totalWidthUsed) / totalWidthAvailable) * 100
+        : 0;
+      const wasteHeightPctTotal = totalHeightAvailable > 0
+        ? Math.max(0, (totalHeightAvailable - totalHeightUsed) / totalHeightAvailable) * 100
+        : 0;
+
+      if (totalHeightUsed > totalHeightAvailable) {
+        alerts.push(`Quantidade × espessura excede altura disponível (${totalHeightUsed}mm > ${totalHeightAvailable}mm)`);
+      }
 
       const machineName = machines.find(m => m.id === op.machineId)?.name || 'Máquina';
       infos.push({
         opId: op.id,
         machineName,
         machineType: type,
-        wasteLengthPct,
-        wasteWidthPct,
+        wasteWidthPctTotal,
+        wasteHeightPctTotal,
         totalHeightUsed,
         totalHeightAvailable,
+        totalWidthUsed,
+        totalWidthAvailable,
         alerts
       });
     });
@@ -851,12 +868,12 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                                 </div>
                                 <div className="grid gap-2 md:grid-cols-3 mt-1">
                                   <div>
-                                    <div className="text-xs text-muted-foreground">Desperdício Comprimento</div>
-                                    <div className="font-medium">{info.wasteLengthPct.toFixed(1)}%</div>
+                                    <div className="text-xs text-muted-foreground">Desperdício Largura (total)</div>
+                                    <div className="font-medium">{info.wasteWidthPctTotal.toFixed(1)}%</div>
                                   </div>
                                   <div>
-                                    <div className="text-xs text-muted-foreground">Desperdício Largura</div>
-                                    <div className="font-medium">{info.wasteWidthPct.toFixed(1)}%</div>
+                                    <div className="text-xs text-muted-foreground">Desperdício Altura (total)</div>
+                                    <div className="font-medium">{info.wasteHeightPctTotal.toFixed(1)}%</div>
                                   </div>
                                   <div>
                                     <div className="text-xs text-muted-foreground">Altura Necessária</div>
