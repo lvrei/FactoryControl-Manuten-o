@@ -403,6 +403,26 @@ class ProductionService {
 
             // Find machine details
             const machine = this.mockMachines.find(m => m.id === operation.machineId);
+            const machineType = machine?.type || 'UNKNOWN';
+
+            // Prerequisite gating: non-BZM ops require BZM completed; CNC also requires PRE_CNC if present
+            const bzmOp = (line.cuttingOperations || []).find(op => {
+              const m = this.mockMachines.find(mm => mm.id === op.machineId);
+              return m?.type === 'BZM';
+            });
+            const preCncOp = (line.cuttingOperations || []).find(op => {
+              const m = this.mockMachines.find(mm => mm.id === op.machineId);
+              return m?.type === 'PRE_CNC';
+            });
+
+            let blocked = false;
+            if (machineType !== 'BZM' && bzmOp && bzmOp.status !== 'completed') {
+              blocked = true;
+            }
+            if (!blocked && machineType === 'CNC' && preCncOp && preCncOp.status !== 'completed') {
+              blocked = true;
+            }
+            if (blocked) continue;
 
             // Convert priority string to number
             const priorityMap = { low: 1, medium: 5, high: 8, urgent: 10 };
@@ -421,7 +441,7 @@ class ProductionService {
               remainingQuantity: operation.quantity - (operation.completedQuantity || 0),
               machineId: operation.machineId,
               machineName: machine?.name || 'Máquina Desconhecida',
-              machineType: machine?.type || 'UNKNOWN',
+              machineType: machineType,
               priority: priorityMap[order.priority] || 5,
               expectedDeliveryDate: order.expectedDeliveryDate,
               estimatedTime: operation.estimatedTime,
