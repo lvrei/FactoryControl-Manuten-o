@@ -217,8 +217,8 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
 
   const computeWasteForLine = (line: ProductionOrderLine): WasteInfo[] => {
     const infos: WasteInfo[] = [];
-    const bzmOp = (line.cuttingOperations || []).find(op => getMachineType(op.machineId) === 'BZM');
-    const bzmDims = (bzmOp?.outputDimensions) || line.finalDimensions;
+    // Sempre usar as dimensões finais da linha como saída da BZM
+    const bzmDims = line.finalDimensions;
     const blocks = line.quantity || 0;
 
     (line.cuttingOperations || []).forEach(op => {
@@ -590,10 +590,14 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                                 const newLength = Number(e.target.value);
                                 const newFinalDimensions = { ...line.finalDimensions, length: newLength };
 
-                                // Atualizar as dimensões de entrada das operações BZM, Pré-CNC e CNC
+                                // Atualizar as dimensões de entrada/saída das operações conforme a máquina
                                 const updatedOperations = line.cuttingOperations.map(op => {
                                   const machine = machines.find(m => m.id === op.machineId);
-                                  if (machine && ['BZM', 'PRE_CNC', 'CNC'].includes(machine.type)) {
+                                  if (!machine) return op;
+                                  if (machine.type === 'BZM') {
+                                    return { ...op, inputDimensions: newFinalDimensions, outputDimensions: newFinalDimensions };
+                                  }
+                                  if (machine.type === 'PRE_CNC' || machine.type === 'CNC') {
                                     return { ...op, inputDimensions: newFinalDimensions };
                                   }
                                   return op;
@@ -614,10 +618,14 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                                 const newWidth = Number(e.target.value);
                                 const newFinalDimensions = { ...line.finalDimensions, width: newWidth };
 
-                                // Atualizar as dimensões de entrada das operações BZM, Pré-CNC e CNC
+                                // Atualizar as dimensões de entrada/saída das operações conforme a máquina
                                 const updatedOperations = line.cuttingOperations.map(op => {
                                   const machine = machines.find(m => m.id === op.machineId);
-                                  if (machine && ['BZM', 'PRE_CNC', 'CNC'].includes(machine.type)) {
+                                  if (!machine) return op;
+                                  if (machine.type === 'BZM') {
+                                    return { ...op, inputDimensions: newFinalDimensions, outputDimensions: newFinalDimensions };
+                                  }
+                                  if (machine.type === 'PRE_CNC' || machine.type === 'CNC') {
                                     return { ...op, inputDimensions: newFinalDimensions };
                                   }
                                   return op;
@@ -638,10 +646,14 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                                 const newHeight = Number(e.target.value);
                                 const newFinalDimensions = { ...line.finalDimensions, height: newHeight };
 
-                                // Atualizar as dimensões de entrada das operações BZM, Pré-CNC e CNC
+                                // Atualizar as dimensões de entrada/saída das operações conforme a máquina
                                 const updatedOperations = line.cuttingOperations.map(op => {
                                   const machine = machines.find(m => m.id === op.machineId);
-                                  if (machine && ['BZM', 'PRE_CNC', 'CNC'].includes(machine.type)) {
+                                  if (!machine) return op;
+                                  if (machine.type === 'BZM') {
+                                    return { ...op, inputDimensions: newFinalDimensions, outputDimensions: newFinalDimensions };
+                                  }
+                                  if (machine.type === 'PRE_CNC' || machine.type === 'CNC') {
                                     return { ...op, inputDimensions: newFinalDimensions };
                                   }
                                   return op;
