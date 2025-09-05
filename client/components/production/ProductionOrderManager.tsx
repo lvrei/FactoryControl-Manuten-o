@@ -196,6 +196,63 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
     }, 0);
   };
 
+  // Helpers: cálculo de desperdício/aproveitamento com base na BZM
+  const getMachineType = (machineId: string) => {
+    const m = machines.find(mm => mm.id === machineId);
+    return m?.type || 'UNKNOWN';
+  };
+
+  type WasteInfo = {
+    opId: string;
+    machineName: string;
+    machineType: string;
+    wasteLengthPct: number;
+    wasteWidthPct: number;
+    totalHeightUsed: number;
+    totalHeightAvailable: number;
+    alerts: string[];
+  };
+
+  const computeWasteForLine = (line: ProductionOrderLine): WasteInfo[] => {
+    const infos: WasteInfo[] = [];
+    const bzmOp = (line.cuttingOperations || []).find(op => getMachineType(op.machineId) === 'BZM');
+    const bzmDims = (bzmOp?.outputDimensions) || line.finalDimensions;
+    const blocks = line.quantity || 0;
+
+    (line.cuttingOperations || []).forEach(op => {
+      const type = getMachineType(op.machineId);
+      if (type === 'BZM') return;
+      if (!op.outputDimensions) return;
+      if (!['CAROUSEL', 'PRE_CNC', 'CNC'].includes(type)) return;
+
+      const out = op.outputDimensions;
+      const wasteLengthPct = bzmDims.length > 0 ? Math.max(0, (bzmDims.length - out.length) / bzmDims.length) * 100 : 0;
+      const wasteWidthPct = bzmDims.width > 0 ? Math.max(0, (bzmDims.width - out.width) / bzmDims.width) * 100 : 0;
+
+      const totalHeightAvailable = blocks * (bzmDims.height || 0);
+      const totalHeightUsed = (op.quantity || 0) * (out.height || 0);
+
+      const alerts: string[] = [];
+      if (out.length > bzmDims.length) alerts.push('Comprimento superior ao da BZM');
+      if (out.width > bzmDims.width) alerts.push('Largura superior à da BZM');
+      if (totalHeightUsed > totalHeightAvailable) alerts.push(`Quantidade × espessura excede altura disponível (${totalHeightUsed}mm > ${totalHeightAvailable}mm)`);
+
+      const machineName = machines.find(m => m.id === op.machineId)?.name || 'Máquina';
+      infos.push({
+        opId: op.id,
+        machineName,
+        machineType: type,
+        wasteLengthPct,
+        wasteWidthPct,
+        totalHeightUsed,
+        totalHeightAvailable,
+        alerts
+      });
+    });
+
+    return infos;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -764,6 +821,62 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                     <div className="text-sm text-muted-foreground">Total de Operações</div>
                     <div className="text-xl font-bold">{lines.reduce((total, line) => total + line.cuttingOperations.length, 0)}</div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Resumo de Aproveitamento e Desperdício */}
+            {lines.length > 0 && (
+              <div className="border rounded-lg p-6 bg-muted/20">
+                <h3 className="text-lg font-semibold mb-4">Aproveitamento por Linha (BZM vs Operações Seguintes)</h3>
+                <div className="space-y-4">
+                  {lines.map((line, idx) => {
+                    const infos = computeWasteForLine(line);
+                    const hasDownstream = infos.length > 0;
+                    return (
+                      <div key={line.id} className="p-4 rounded-lg border bg-background">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="font-medium">Linha {idx + 1}</div>
+                          <div className="text-xs text-muted-foreground">Blocos BZM: {line.quantity}</div>
+                        </div>
+                        {!hasDownstream ? (
+                          <div className="text-sm text-muted-foreground">Apenas BZM — sem desperdício adicional calculado.</div>
+                        ) : (
+                          <div className="space-y-2">
+                            {infos.map(info => (
+                              <div key={info.opId} className="text-sm">
+                                <div className="flex items-center justify-between">
+                                  <div className="font-medium">{info.machineName} ({info.machineType})</div>
+                                  <div className="text-xs text-muted-foreground">Qtd OP: {(line.cuttingOperations || []).find(o => o.id === info.opId)?.quantity || 0}</div>
+                                </div>
+                                <div className="grid gap-2 md:grid-cols-3 mt-1">
+                                  <div>
+                                    <div className="text-xs text-muted-foreground">Desperdício Comprimento</div>
+                                    <div className="font-medium">{info.wasteLengthPct.toFixed(1)}%</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-muted-foreground">Desperdício Largura</div>
+                                    <div className="font-medium">{info.wasteWidthPct.toFixed(1)}%</div>
+                                  </div>
+                                  <div>
+                                    <div className="text-xs text-muted-foreground">Altura Necessária</div>
+                                    <div className="font-medium">{info.totalHeightUsed}mm de {info.totalHeightAvailable}mm</div>
+                                  </div>
+                                </div>
+                                {info.alerts.length > 0 && (
+                                  <ul className="mt-2 text-xs text-red-600 list-disc pl-4">
+                                    {info.alerts.map((a, i) => (
+                                      <li key={i}>{a}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
