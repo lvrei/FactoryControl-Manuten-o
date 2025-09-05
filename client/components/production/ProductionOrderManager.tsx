@@ -220,95 +220,55 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
 
   const computeWasteForLine = (line: ProductionOrderLine): WasteInfo[] => {
     const infos: WasteInfo[] = [];
-    // Base: dimensões finais da linha (equivalente à saída da BZM) e nº de blocos
+    // Base: dimensões finais da linha (saída da BZM) e nº de blocos
     const bzmDims = line.finalDimensions;
     const blocks = line.quantity || 0;
 
+    // Acumuladores para aproveitamento total da linha (somar todas as operações downstream)
     let aggLenUsed = 0, aggWidUsed = 0, aggHeiUsed = 0;
+    const unitAlerts: string[] = [];
 
     (line.cuttingOperations || []).forEach(op => {
       const type = getMachineType(op.machineId);
-      if (type === 'BZM') return;
+      if (type === 'BZM') return; // BZM é a referência
       if (!op.outputDimensions) return;
       if (!['CAROUSEL', 'PRE_CNC', 'CNC'].includes(type)) return;
 
       const out = op.outputDimensions;
-      const alerts: string[] = [];
 
-      // Unit checks for L/W/H
-      if ((out.length || 0) > (bzmDims.length || 0)) alerts.push('Comprimento superior ao da BZM');
-      if ((out.width || 0) > (bzmDims.width || 0)) alerts.push('Largura superior à da BZM');
-      if ((out.height || 0) > (bzmDims.height || 0)) alerts.push('Espessura superior à da BZM');
+      // Avisos unitários: comparar apenas medidas unitárias (não multiplicar por quantidade)
+      if ((out.length || 0) > (bzmDims.length || 0)) unitAlerts.push('Comprimento superior ao das Medidas Finais');
+      if ((out.width || 0) > (bzmDims.width || 0)) unitAlerts.push('Largura superior à das Medidas Finais');
+      // Espessura: não avisamos unitário; apenas somatório para "espessura necessária"
 
-      // Totais disponíveis (em mm) por dimensão
+      // Somatórios para desperdício (comprimento/largura) e para espessura necessária
       const qty = op.quantity || 0;
-      const totalLengthAvailable = blocks * (bzmDims.length || 0);
-      const totalWidthAvailable = blocks * (bzmDims.width || 0);
-      const totalHeightAvailable = blocks * (bzmDims.height || 0);
-
-      // Consumo desta operação
-      const totalLengthUsed = qty * (out.length || 0);
-      const totalWidthUsed = qty * (out.width || 0);
-      const totalHeightUsed = qty * (out.height || 0);
-
-      // Percentuais de desperdício por dimensão
-      const wasteLengthPctTotal = totalLengthAvailable > 0
-        ? Math.max(0, (totalLengthAvailable - totalLengthUsed) / totalLengthAvailable) * 100
-        : 0;
-      const wasteWidthPctTotal = totalWidthAvailable > 0
-        ? Math.max(0, (totalWidthAvailable - totalWidthUsed) / totalWidthAvailable) * 100
-        : 0;
-      const wasteHeightPctTotal = totalHeightAvailable > 0
-        ? Math.max(0, (totalHeightAvailable - totalHeightUsed) / totalHeightAvailable) * 100
-        : 0;
-
-      // Alertas por excesso na operação
-      if (totalLengthUsed > totalLengthAvailable) alerts.push(`Quantidade × comprimento excede o disponível (${totalLengthUsed}mm > ${totalLengthAvailable}mm)`);
-      if (totalWidthUsed > totalWidthAvailable) alerts.push(`Quantidade × largura excede a disponível (${totalWidthUsed}mm > ${totalWidthAvailable}mm)`);
-      if (totalHeightUsed > totalHeightAvailable) alerts.push(`Quantidade × espessura excede a disponível (${totalHeightUsed}mm > ${totalHeightAvailable}mm)`);
-
-      // Acumular para o total da linha
-      aggLenUsed += totalLengthUsed;
-      aggWidUsed += totalWidthUsed;
-      aggHeiUsed += totalHeightUsed;
-
-      const machineName = machines.find(m => m.id === op.machineId)?.name || 'Máquina';
-      infos.push({
-        opId: op.id,
-        machineName,
-        machineType: type,
-        wasteLengthPctTotal,
-        wasteWidthPctTotal,
-        wasteHeightPctTotal,
-        totalLengthUsed,
-        totalLengthAvailable,
-        totalHeightUsed,
-        totalHeightAvailable,
-        totalWidthUsed,
-        totalWidthAvailable,
-        alerts
-      });
+      aggLenUsed += qty * (out.length || 0);
+      aggWidUsed += qty * (out.width || 0);
+      aggHeiUsed += qty * (out.height || 0);
     });
 
-    // Adicionar um item "Total da Linha" agregando todas as operações downstream
+    // Totais disponíveis por dimensão (com base na BZM x nº de blocos)
     const totalLengthAvailable = blocks * (bzmDims.length || 0);
     const totalWidthAvailable = blocks * (bzmDims.width || 0);
     const totalHeightAvailable = blocks * (bzmDims.height || 0);
 
+    // Percentuais de desperdício (somente para cálculo de aproveitamento)
     const aggWasteLength = totalLengthAvailable > 0 ? Math.max(0, (totalLengthAvailable - aggLenUsed) / totalLengthAvailable) * 100 : 0;
     const aggWasteWidth = totalWidthAvailable > 0 ? Math.max(0, (totalWidthAvailable - aggWidUsed) / totalWidthAvailable) * 100 : 0;
     const aggWasteHeight = totalHeightAvailable > 0 ? Math.max(0, (totalHeightAvailable - aggHeiUsed) / totalHeightAvailable) * 100 : 0;
 
-    const aggAlerts: string[] = [];
-    if (aggLenUsed > totalLengthAvailable) aggAlerts.push(`Soma (todas as operações) excede comprimento disponível (${aggLenUsed}mm > ${totalLengthAvailable}mm)`);
-    if (aggWidUsed > totalWidthAvailable) aggAlerts.push(`Soma (todas as operações) excede largura disponível (${aggWidUsed}mm > ${totalWidthAvailable}mm)`);
-    if (aggHeiUsed > totalHeightAvailable) aggAlerts.push(`Soma (todas as operações) excede espessura disponível (${aggHeiUsed}mm > ${totalHeightAvailable}mm)`);
+    // Alertas agregados: apenas espessura necessária pode exceder o disponível
+    const aggAlerts: string[] = [...unitAlerts];
+    if (aggHeiUsed > totalHeightAvailable) {
+      aggAlerts.push(`Quantidade × espessura excede a disponível (${aggHeiUsed}mm > ${totalHeightAvailable}mm)`);
+    }
 
-    // Apenas mostrar o total quando existir pelo menos uma operação downstream
+    // Se existir pelo menos uma operação downstream, retornar apenas o total da linha
     if ((line.cuttingOperations || []).some(op => ['CAROUSEL', 'PRE_CNC', 'CNC'].includes(getMachineType(op.machineId)))) {
       infos.push({
         opId: 'TOTAL_LINHA',
-        machineName: 'Total da Linha',
+        machineName: `Total da Linha`,
         machineType: 'AGREGADO',
         wasteLengthPctTotal: aggWasteLength,
         wasteWidthPctTotal: aggWasteWidth,
