@@ -254,9 +254,13 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
     const totalHeightAvailable = blocks * (bzmDims.height || 0);
 
     // Percentuais de desperdício (somente para cálculo de aproveitamento)
-    const aggWasteLength = totalLengthAvailable > 0 ? Math.max(0, (totalLengthAvailable - aggLenUsed) / totalLengthAvailable) * 100 : 0;
-    const aggWasteWidth = totalWidthAvailable > 0 ? Math.max(0, (totalWidthAvailable - aggWidUsed) / totalWidthAvailable) * 100 : 0;
-    const aggWasteHeight = totalHeightAvailable > 0 ? Math.max(0, (totalHeightAvailable - aggHeiUsed) / totalHeightAvailable) * 100 : 0;
+    const usedLenCapped = Math.min(aggLenUsed, totalLengthAvailable);
+    const usedWidCapped = Math.min(aggWidUsed, totalWidthAvailable);
+    const usedHeiCapped = Math.min(aggHeiUsed, totalHeightAvailable);
+
+    const aggWasteLength = totalLengthAvailable > 0 ? (totalLengthAvailable - usedLenCapped) / totalLengthAvailable * 100 : 0;
+    const aggWasteWidth = totalWidthAvailable > 0 ? (totalWidthAvailable - usedWidCapped) / totalWidthAvailable * 100 : 0;
+    const aggWasteHeight = totalHeightAvailable > 0 ? (totalHeightAvailable - usedHeiCapped) / totalHeightAvailable * 100 : 0;
 
     // Alertas agregados: apenas espessura necessária pode exceder o disponível
     const aggAlerts: string[] = [...unitAlerts];
