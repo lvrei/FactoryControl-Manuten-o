@@ -40,6 +40,66 @@ function ProductionNew() {
   const [loading, setLoading] = useState(true);
   
   const [activeTab, setActiveTab] = useState<'orders' | 'machines' | 'sheets'>('orders');
+
+  const getMachineName = (id: string) => machines.find(m => m.id === id)?.name || id;
+
+  const printOrder = (order: ProductionOrder) => {
+    try {
+      const win = window.open('', '_blank');
+      if (!win) return alert('Não foi possível abrir a pré-visualização de impressão');
+      const css = `
+        body { font-family: Arial, sans-serif; color: #111; }
+        h1 { margin: 0 0 8px; }
+        .meta { margin: 4px 0; font-size: 12px; color: #444; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid #ddd; padding: 6px 8px; font-size: 12px; }
+        th { background: #f5f5f5; text-align: left; }
+        .section { margin-top: 16px; }
+      `;
+
+      const linesHtml = (order.lines || []).map((line, idx) => {
+        const ops = (line.cuttingOperations || []).map(op => {
+          const out = op.outputDimensions || line.finalDimensions;
+          return `<tr>
+            <td>${getMachineName(op.machineId)}</td>
+            <td>${op.quantity || 0}</td>
+            <td>${out.length} × ${out.width} × ${out.height} mm</td>
+          </tr>`;
+        }).join('');
+        return `
+          <div class=\"section\">\n            <h3>Linha ${'${idx + 1}'}<\/h3>\n            <div class=\"meta\">Blocos BZM: <strong>${'${line.quantity}'}<\/strong> • Medidas Finais: <strong>${'${line.finalDimensions.length} × ${line.finalDimensions.width} × ${line.finalDimensions.height} mm'}<\/strong><\/div>\n            <table>\n              <thead><tr><th>Máquina<\/th><th>Qtd<\/th><th>Medidas (mm)<\/th><\/tr><\/thead>\n              <tbody>${'${ops || `<tr><td colspan=\\"3\\">Sem operações<\/td><\/tr>`}'}<\/tbody>\n            <\/table>\n          <\/div>
+        `;
+      }).join('');
+
+      const html = `<!doctype html>
+<html>
+<head>
+  <meta charset=\"utf-8\" />
+  <title>OP ${'${order.orderNumber}'}<\/title>
+  <style>${'${css}'}<\/style>
+</head>
+<body>
+  <h1>Ordem de Produção ${'${order.orderNumber}'}<\/h1>
+  <div class=\"meta\">Cliente: <strong>${'${order.customer?.name || ""}'}<\/strong><\/div>
+  <div class=\"meta\">Entrega Prevista: <strong>${'${new Date(order.expectedDeliveryDate).toLocaleDateString(\'pt-PT\')}'}<\/strong><\/div>
+  <div class=\"meta\">Prioridade: <strong>${'${order.priority}'}<\/strong> • Estado: <strong>${'${order.status}'}<\/strong><\/div>
+  <div class=\"section\">\n    <h2>Linhas<\/h2>\n    ${'${linesHtml}'}
+  <\/div>
+</body>
+</html>`;
+
+      win.document.write(html);
+      win.document.close();
+      setTimeout(() => {
+        win.focus();
+        win.print();
+        win.close();
+      }, 300);
+    } catch (e) {
+      console.error('Erro ao imprimir OP', e);
+      alert('Erro ao gerar impressão da OP');
+    }
+  };
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [showSheetsManager, setShowSheetsManager] = useState(false);
   const [showChat, setShowChat] = useState(false);
@@ -515,7 +575,7 @@ function ProductionNew() {
               <h3 className="text-lg font-medium text-card-foreground mb-2">
                 {searchTerm || filters.status?.length || filters.priority?.length
                   ? 'Nenhuma ordem encontrada'
-                  : 'Nenhuma ordem de produ��ão'
+                  : 'Nenhuma ordem de produção'
                 }
               </h3>
               <p className="text-muted-foreground">
