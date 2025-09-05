@@ -206,8 +206,11 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
     opId: string;
     machineName: string;
     machineType: string;
+    wasteLengthPctTotal: number;
     wasteWidthPctTotal: number;
     wasteHeightPctTotal: number;
+    totalLengthUsed: number;
+    totalLengthAvailable: number;
     totalHeightUsed: number;
     totalHeightAvailable: number;
     totalWidthUsed: number;
@@ -217,9 +220,11 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
 
   const computeWasteForLine = (line: ProductionOrderLine): WasteInfo[] => {
     const infos: WasteInfo[] = [];
-    // Sempre usar as dimensões finais da linha como saída da BZM
+    // Base: dimensões finais da linha (equivalente à saída da BZM) e nº de blocos
     const bzmDims = line.finalDimensions;
     const blocks = line.quantity || 0;
+
+    let aggLenUsed = 0, aggWidUsed = 0, aggHeiUsed = 0;
 
     (line.cuttingOperations || []).forEach(op => {
       const type = getMachineType(op.machineId);
@@ -230,17 +235,26 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
       const out = op.outputDimensions;
       const alerts: string[] = [];
 
-      // Unit checks for L/W
-      if (out.length > bzmDims.length) alerts.push('Comprimento superior ao da BZM');
-      if (out.width > bzmDims.width) alerts.push('Largura superior à da BZM');
+      // Unit checks for L/W/H
+      if ((out.length || 0) > (bzmDims.length || 0)) alerts.push('Comprimento superior ao da BZM');
+      if ((out.width || 0) > (bzmDims.width || 0)) alerts.push('Largura superior à da BZM');
+      if ((out.height || 0) > (bzmDims.height || 0)) alerts.push('Espessura superior à da BZM');
 
-      // Aggregated waste for Width/Height
+      // Totais disponíveis (em mm) por dimensão
       const qty = op.quantity || 0;
+      const totalLengthAvailable = blocks * (bzmDims.length || 0);
       const totalWidthAvailable = blocks * (bzmDims.width || 0);
-      const totalWidthUsed = qty * (out.width || 0);
       const totalHeightAvailable = blocks * (bzmDims.height || 0);
+
+      // Consumo desta operação
+      const totalLengthUsed = qty * (out.length || 0);
+      const totalWidthUsed = qty * (out.width || 0);
       const totalHeightUsed = qty * (out.height || 0);
 
+      // Percentuais de desperdício por dimensão
+      const wasteLengthPctTotal = totalLengthAvailable > 0
+        ? Math.max(0, (totalLengthAvailable - totalLengthUsed) / totalLengthAvailable) * 100
+        : 0;
       const wasteWidthPctTotal = totalWidthAvailable > 0
         ? Math.max(0, (totalWidthAvailable - totalWidthUsed) / totalWidthAvailable) * 100
         : 0;
@@ -248,17 +262,26 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
         ? Math.max(0, (totalHeightAvailable - totalHeightUsed) / totalHeightAvailable) * 100
         : 0;
 
-      if (totalHeightUsed > totalHeightAvailable) {
-        alerts.push(`Quantidade × espessura excede altura disponível (${totalHeightUsed}mm > ${totalHeightAvailable}mm)`);
-      }
+      // Alertas por excesso na operação
+      if (totalLengthUsed > totalLengthAvailable) alerts.push(`Quantidade × comprimento excede o disponível (${totalLengthUsed}mm > ${totalLengthAvailable}mm)`);
+      if (totalWidthUsed > totalWidthAvailable) alerts.push(`Quantidade × largura excede a disponível (${totalWidthUsed}mm > ${totalWidthAvailable}mm)`);
+      if (totalHeightUsed > totalHeightAvailable) alerts.push(`Quantidade × espessura excede a disponível (${totalHeightUsed}mm > ${totalHeightAvailable}mm)`);
+
+      // Acumular para o total da linha
+      aggLenUsed += totalLengthUsed;
+      aggWidUsed += totalWidthUsed;
+      aggHeiUsed += totalHeightUsed;
 
       const machineName = machines.find(m => m.id === op.machineId)?.name || 'Máquina';
       infos.push({
         opId: op.id,
         machineName,
         machineType: type,
+        wasteLengthPctTotal,
         wasteWidthPctTotal,
         wasteHeightPctTotal,
+        totalLengthUsed,
+        totalLengthAvailable,
         totalHeightUsed,
         totalHeightAvailable,
         totalWidthUsed,
@@ -266,6 +289,39 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
         alerts
       });
     });
+
+    // Adicionar um item "Total da Linha" agregando todas as operações downstream
+    const totalLengthAvailable = blocks * (bzmDims.length || 0);
+    const totalWidthAvailable = blocks * (bzmDims.width || 0);
+    const totalHeightAvailable = blocks * (bzmDims.height || 0);
+
+    const aggWasteLength = totalLengthAvailable > 0 ? Math.max(0, (totalLengthAvailable - aggLenUsed) / totalLengthAvailable) * 100 : 0;
+    const aggWasteWidth = totalWidthAvailable > 0 ? Math.max(0, (totalWidthAvailable - aggWidUsed) / totalWidthAvailable) * 100 : 0;
+    const aggWasteHeight = totalHeightAvailable > 0 ? Math.max(0, (totalHeightAvailable - aggHeiUsed) / totalHeightAvailable) * 100 : 0;
+
+    const aggAlerts: string[] = [];
+    if (aggLenUsed > totalLengthAvailable) aggAlerts.push(`Soma (todas as operações) excede comprimento disponível (${aggLenUsed}mm > ${totalLengthAvailable}mm)`);
+    if (aggWidUsed > totalWidthAvailable) aggAlerts.push(`Soma (todas as operações) excede largura disponível (${aggWidUsed}mm > ${totalWidthAvailable}mm)`);
+    if (aggHeiUsed > totalHeightAvailable) aggAlerts.push(`Soma (todas as operações) excede espessura disponível (${aggHeiUsed}mm > ${totalHeightAvailable}mm)`);
+
+    // Apenas mostrar o total quando existir pelo menos uma operação downstream
+    if ((line.cuttingOperations || []).some(op => ['CAROUSEL', 'PRE_CNC', 'CNC'].includes(getMachineType(op.machineId)))) {
+      infos.push({
+        opId: 'TOTAL_LINHA',
+        machineName: 'Total da Linha',
+        machineType: 'AGREGADO',
+        wasteLengthPctTotal: aggWasteLength,
+        wasteWidthPctTotal: aggWasteWidth,
+        wasteHeightPctTotal: aggWasteHeight,
+        totalLengthUsed: aggLenUsed,
+        totalLengthAvailable,
+        totalHeightUsed: aggHeiUsed,
+        totalHeightAvailable,
+        totalWidthUsed: aggWidUsed,
+        totalWidthAvailable,
+        alerts: aggAlerts,
+      });
+    }
 
     return infos;
   };
@@ -882,17 +938,21 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                                   <div className="font-medium">{info.machineName} ({info.machineType})</div>
                                   <div className="text-xs text-muted-foreground">Qtd OP: {(line.cuttingOperations || []).find(o => o.id === info.opId)?.quantity || 0}</div>
                                 </div>
-                                <div className="grid gap-2 md:grid-cols-3 mt-1">
+                                <div className="grid gap-2 md:grid-cols-4 mt-1">
+                                  <div>
+                                    <div className="text-xs text-muted-foreground">Desperdício Comprimento (total)</div>
+                                    <div className="font-medium">{info.wasteLengthPctTotal.toFixed(1)}%</div>
+                                  </div>
                                   <div>
                                     <div className="text-xs text-muted-foreground">Desperdício Largura (total)</div>
                                     <div className="font-medium">{info.wasteWidthPctTotal.toFixed(1)}%</div>
                                   </div>
                                   <div>
-                                    <div className="text-xs text-muted-foreground">Desperdício Altura (total)</div>
+                                    <div className="text-xs text-muted-foreground">Desperdício Espessura (total)</div>
                                     <div className="font-medium">{info.wasteHeightPctTotal.toFixed(1)}%</div>
                                   </div>
                                   <div>
-                                    <div className="text-xs text-muted-foreground">Altura Necessária</div>
+                                    <div className="text-xs text-muted-foreground">Espessura Necessária</div>
                                     <div className="font-medium">{info.totalHeightUsed}mm de {info.totalHeightAvailable}mm</div>
                                   </div>
                                 </div>
