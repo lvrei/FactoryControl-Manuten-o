@@ -31,49 +31,86 @@ class ShippingService {
   async generateShippableItems(): Promise<ShippableItem[]> {
     try {
       // Always get fresh data from production service
-      const orders = await productionService.getProductionOrders();
-      const labels = await labelService.getLabels();
+      const [orders, labels, machines] = await Promise.all([
+        productionService.getProductionOrders(),
+        labelService.getLabels(),
+        productionService.getMachines()
+      ]);
+      const machineById = new Map(machines.map(m => [m.id, m]));
       const shippableItems: ShippableItem[] = [];
+
+      // Define a simple process priority: BZM (0) -> PRE_CNC/CAROUSEL (1) -> CNC (2)
+      const typePriority: Record<string, number> = { BZM: 0, PRE_CNC: 1, CAROUSEL: 1, CNC: 2 };
 
       for (const order of orders) {
         for (const line of order.lines) {
-          // Check if all cutting operations for this line are completed
-          const allOperationsCompleted = line.cuttingOperations.every(
-            op => op.status === 'completed' && op.completedQuantity >= op.quantity
-          );
+          const ops = Array.isArray(line.cuttingOperations) ? line.cuttingOperations : [];
+          if (ops.length === 0) continue;
 
-          // Additional checks: line must be completed and have reached full quantity, but not shipped yet
-          const lineFullyCompleted = line.status === 'completed' &&
-                                   line.completedQuantity >= line.quantity;
+          // Classify operations by machine type
+          const opsWithType = ops.map(op => {
+            const machine = machineById.get(op.machineId);
+            const type = machine?.type || 'UNKNOWN';
+            return { op, type, priority: typePriority[type] ?? -1 };
+          });
 
-          const notShippedYet = line.status !== 'shipped';
+          const hasNonBZM = opsWithType.some(o => o.type !== 'BZM');
+          const bzmOp = opsWithType.find(o => o.type === 'BZM')?.op;
 
-          if (allOperationsCompleted && lineFullyCompleted && notShippedYet && line.completedQuantity > 0) {
-            // Find matching label for this item
-            const matchingLabel = labels.find(label => 
-              label.orderId === order.id && label.lineId === line.id
-            );
+          // Determine terminal operation (highest priority)
+          const terminal = opsWithType
+            .filter(o => o.priority >= 0)
+            .sort((a, b) => b.priority - a.priority)[0];
 
-            const volume = (line.finalDimensions.length * line.finalDimensions.width * line.finalDimensions.height * line.completedQuantity) / 1000000000;
+          // Decide shipping readiness and quantities
+          if (!hasNonBZM) {
+            // Only BZM in the line: ship blocks after BZM completes
+            if (bzmOp && bzmOp.status === 'completed' && (bzmOp.completedQuantity || 0) > 0 && line.status !== 'shipped') {
+              const matchingLabel = labels.find(label => label.orderId === order.id && label.lineId === line.id);
+              const qty = bzmOp.completedQuantity || 0;
+              const dims = bzmOp.outputDimensions || line.finalDimensions;
+              const volume = (dims.length * dims.width * dims.height * qty) / 1000000000;
 
-            const shippableItem: ShippableItem = {
+              shippableItems.push({
+                id: `${order.id}-${line.id}`,
+                orderId: order.id,
+                orderNumber: order.orderNumber,
+                lineId: line.id,
+                operationId: bzmOp.id,
+                barcodeId: matchingLabel?.barcodeId,
+                customerName: order.customer.name,
+                foamType: line.foamType.name,
+                quantity: qty,
+                dimensions: dims,
+                completedAt: bzmOp.completedAt || new Date().toISOString(),
+                readyForShipping: true,
+                volume,
+                weight: volume * (line.foamType.density || 25)
+              });
+            }
+          } else if (terminal && terminal.op.status === 'completed' && (terminal.op.completedQuantity || 0) > 0 && line.status !== 'shipped') {
+            // There are downstream operations: ship based on terminal operation outputs
+            const matchingLabel = labels.find(label => label.orderId === order.id && label.lineId === line.id);
+            const qty = terminal.op.completedQuantity || 0;
+            const dims = terminal.op.outputDimensions || line.finalDimensions;
+            const volume = (dims.length * dims.width * dims.height * qty) / 1000000000;
+
+            shippableItems.push({
               id: `${order.id}-${line.id}`,
               orderId: order.id,
               orderNumber: order.orderNumber,
               lineId: line.id,
-              operationId: line.cuttingOperations[line.cuttingOperations.length - 1]?.id || '',
+              operationId: terminal.op.id,
               barcodeId: matchingLabel?.barcodeId,
               customerName: order.customer.name,
               foamType: line.foamType.name,
-              quantity: line.completedQuantity,
-              dimensions: line.finalDimensions,
-              completedAt: line.cuttingOperations[line.cuttingOperations.length - 1]?.completedAt || new Date().toISOString(),
+              quantity: qty,
+              dimensions: dims,
+              completedAt: terminal.op.completedAt || new Date().toISOString(),
               readyForShipping: true,
-              volume: volume,
-              weight: volume * (line.foamType.density || 25) // Estimate weight based on density
-            };
-
-            shippableItems.push(shippableItem);
+              volume,
+              weight: volume * (line.foamType.density || 25)
+            });
           }
         }
       }
