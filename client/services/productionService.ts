@@ -533,7 +533,6 @@ class ProductionService {
 
       // Atualizar operação
       operation.completedQuantity = currentCompleted + completedQuantity;
-      const opTargetQty = (typeof operation.quantity === 'number' && operation.quantity > 0) ? operation.quantity : line.quantity;
       operation.status = operation.completedQuantity >= opTargetQty ? 'completed' : 'in_progress';
       operation.completedAt = new Date().toISOString();
       
