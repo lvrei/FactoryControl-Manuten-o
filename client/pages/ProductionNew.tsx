@@ -67,24 +67,33 @@ function ProductionNew() {
           </tr>`;
         }).join('');
         return `
-          <div class=\"section\">\n            <h3>Linha ${'${idx + 1}'}<\/h3>\n            <div class=\"meta\">Blocos BZM: <strong>${'${line.quantity}'}<\/strong> • Medidas Finais: <strong>${'${line.finalDimensions.length} × ${line.finalDimensions.width} × ${line.finalDimensions.height} mm'}<\/strong><\/div>\n            <table>\n              <thead><tr><th>Máquina<\/th><th>Qtd<\/th><th>Medidas (mm)<\/th><\/tr><\/thead>\n              <tbody>${'${ops || `<tr><td colspan=\\"3\\">Sem operações<\/td><\/tr>`}'}<\/tbody>\n            <\/table>\n          <\/div>
+          <div class="section">
+            <h3>Linha ${idx + 1}</h3>
+            <div class="meta">Blocos BZM: <strong>${line.quantity}</strong> • Medidas Finais: <strong>${line.finalDimensions.length} × ${line.finalDimensions.width} × ${line.finalDimensions.height} mm</strong></div>
+            <table>
+              <thead><tr><th>Máquina</th><th>Qtd</th><th>Medidas (mm)</th></tr></thead>
+              <tbody>${ops || `<tr><td colspan="3">Sem operações</td></tr>`}</tbody>
+            </table>
+          </div>
         `;
       }).join('');
 
       const html = `<!doctype html>
 <html>
 <head>
-  <meta charset=\"utf-8\" />
-  <title>OP ${'${order.orderNumber}'}<\/title>
-  <style>${'${css}'}<\/style>
+  <meta charset="utf-8" />
+  <title>OP ${order.orderNumber}</title>
+  <style>${css}</style>
 </head>
 <body>
-  <h1>Ordem de Produção ${'${order.orderNumber}'}<\/h1>
-  <div class=\"meta\">Cliente: <strong>${'${order.customer?.name || ""}'}<\/strong><\/div>
-  <div class=\"meta\">Entrega Prevista: <strong>${'${new Date(order.expectedDeliveryDate).toLocaleDateString(\'pt-PT\')}'}<\/strong><\/div>
-  <div class=\"meta\">Prioridade: <strong>${'${order.priority}'}<\/strong> • Estado: <strong>${'${order.status}'}<\/strong><\/div>
-  <div class=\"section\">\n    <h2>Linhas<\/h2>\n    ${'${linesHtml}'}
-  <\/div>
+  <h1>Ordem de Produção ${order.orderNumber}</h1>
+  <div class="meta">Cliente: <strong>${order.customer?.name || ''}</strong></div>
+  <div class="meta">Entrega Prevista: <strong>${new Date(order.expectedDeliveryDate).toLocaleDateString('pt-PT')}</strong></div>
+  <div class="meta">Prioridade: <strong>${order.priority}</strong> • Estado: <strong>${order.status}</strong></div>
+  <div class="section">
+    <h2>Linhas</h2>
+    ${linesHtml}
+  </div>
 </body>
 </html>`;
 
