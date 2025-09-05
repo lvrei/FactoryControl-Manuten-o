@@ -19,7 +19,8 @@ import {
   Play,
   Pause,
   Square,
-  Trash2
+  Trash2,
+  Printer
 } from 'lucide-react';
 import { ProductionOrder, Machine, OperatorSession, ProductionFilters } from '@/types/production';
 import { productionService } from '@/services/productionService';
@@ -514,7 +515,7 @@ function ProductionNew() {
               <h3 className="text-lg font-medium text-card-foreground mb-2">
                 {searchTerm || filters.status?.length || filters.priority?.length
                   ? 'Nenhuma ordem encontrada'
-                  : 'Nenhuma ordem de produção'
+                  : 'Nenhuma ordem de produ��ão'
                 }
               </h3>
               <p className="text-muted-foreground">
