@@ -702,6 +702,10 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
                                           if (selectedMachine && ['BZM', 'PRE_CNC', 'CNC'].includes(selectedMachine.type)) {
                                             updates.inputDimensions = line.finalDimensions;
                                           }
+                                          // Se for BZM, a saída também acompanha as dimensões finais da linha
+                                          if (selectedMachine && selectedMachine.type === 'BZM') {
+                                            updates.outputDimensions = line.finalDimensions;
+                                          }
 
                                           updateOperation(line.id, operation.id, updates);
                                         }}
