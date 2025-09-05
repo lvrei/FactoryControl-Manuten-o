@@ -554,6 +554,14 @@ function ProductionNew() {
                           )}
                           
                           <button
+                            onClick={() => printOrder(order)}
+                            className="p-1 text-blue-600 hover:text-blue-700"
+                            title="Imprimir OP"
+                          >
+                            <Printer className="h-4 w-4" />
+                          </button>
+
+                          <button
                             onClick={() => deleteOrder(order.id)}
                             className="p-1 text-red-600 hover:text-red-700"
                             title="Excluir"
