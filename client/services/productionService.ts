@@ -520,8 +520,9 @@ class ProductionService {
 
       // Validações
       const currentCompleted = operation.completedQuantity || 0;
-      const remaining = line.quantity - currentCompleted;
-      
+      const opTargetQty = (typeof operation.quantity === 'number' && operation.quantity > 0) ? operation.quantity : line.quantity;
+      const remaining = opTargetQty - currentCompleted;
+
       if (completedQuantity > remaining) {
         throw new Error(`Quantidade excede o restante: ${completedQuantity} > ${remaining}`);
       }
