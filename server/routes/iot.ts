@@ -7,7 +7,7 @@ export const iotRouter = express.Router();
 iotRouter.use(express.json({ limit: '2mb' }));
 iotRouter.use(express.urlencoded({ extended: true }));
 
-const useDb = () => isDbConfigured() && process.env.NODE_ENV === 'production';
+const useDb = () => isDbConfigured();
 
 const mem = {
   sensors: [] as any[],
