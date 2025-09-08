@@ -131,10 +131,59 @@ productionRouter.delete('/orders/:id', async (req, res) => {
 // Machines CRUD
 productionRouter.get('/machines', async (_req, res) => {
   try {
-    const { rows } = await query(`SELECT id, name, type, status,
+    let { rows } = await query(`SELECT id, name, type, status,
       max_length_mm, max_width_mm, max_height_mm, cutting_precision,
       current_operator, last_maintenance, operating_hours, specifications
       FROM machines ORDER BY name`);
+
+    // Seed default machines if empty (first run after Neon migration)
+    if (!rows || rows.length === 0) {
+      const defaults = [
+        {
+          id: 'bzm-001', name: 'BZM-01', type: 'BZM', status: 'available',
+          max_length_mm: 4200, max_width_mm: 2000, max_height_mm: 2000,
+          cutting_precision: 1.0, current_operator: null,
+          last_maintenance: new Date().toISOString(), operating_hours: 1250,
+          specifications: 'Corte Inicial'
+        },
+        {
+          id: 'carousel-001', name: 'Carrossel-01', type: 'CAROUSEL', status: 'busy',
+          max_length_mm: 2500, max_width_mm: 1800, max_height_mm: 1500,
+          cutting_precision: 2.0, current_operator: 'João Silva',
+          last_maintenance: new Date().toISOString(), operating_hours: 980,
+          specifications: 'Coxins'
+        },
+        {
+          id: 'pre-cnc-001', name: 'Pré-CNC-01', type: 'PRE_CNC', status: 'available',
+          max_length_mm: 2500, max_width_mm: 1500, max_height_mm: 1200,
+          cutting_precision: 1.0, current_operator: null,
+          last_maintenance: new Date().toISOString(), operating_hours: 1680,
+          specifications: 'Pré-processamento'
+        },
+        {
+          id: 'cnc-001', name: 'CNC-01', type: 'CNC', status: 'maintenance',
+          max_length_mm: 1200, max_width_mm: 1200, max_height_mm: 600,
+          cutting_precision: 0.5, current_operator: null,
+          last_maintenance: new Date().toISOString(), operating_hours: 2150,
+          specifications: 'Acabamento'
+        }
+      ];
+
+      for (const m of defaults) {
+        await query(`INSERT INTO machines (id, name, type, status, max_length_mm, max_width_mm, max_height_mm, cutting_precision, current_operator, last_maintenance, operating_hours, specifications)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
+          ON CONFLICT (id) DO NOTHING`, [
+          m.id, m.name, m.type, m.status, m.max_length_mm, m.max_width_mm, m.max_height_mm, m.cutting_precision,
+          m.current_operator, m.last_maintenance, m.operating_hours, m.specifications
+        ]);
+      }
+      const seeded = await query(`SELECT id, name, type, status,
+        max_length_mm, max_width_mm, max_height_mm, cutting_precision,
+        current_operator, last_maintenance, operating_hours, specifications
+        FROM machines ORDER BY name`);
+      rows = seeded.rows;
+    }
+
     res.json(rows.map(r => ({
       id: r.id,
       name: r.name,
