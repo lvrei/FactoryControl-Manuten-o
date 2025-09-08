@@ -5,6 +5,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { handleDemo } from "./routes/demo";
+import { productionRouter } from "./routes/production";
 
 export function createServer() {
   const app = express();
@@ -65,12 +66,7 @@ export function createServer() {
   app.get("/api/demo", handleDemo);
 
   // Production API (Neon)
-  try {
-    const { productionRouter } = await import('./routes/production');
-    app.use('/api', productionRouter);
-  } catch (e) {
-    console.warn('Production API not loaded:', (e as any)?.message);
-  }
+  app.use('/api', productionRouter);
 
   // Health check
   app.get("/api/health", (_req, res) => {
