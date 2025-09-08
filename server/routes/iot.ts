@@ -449,3 +449,16 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
     return res.json({ ok: true, alertsCreated: created });
   }
 });
+
+iotRouter.get('/iot/status', async (_req, res) => {
+  try {
+    const configured = isDbConfigured();
+    let connected = false;
+    try { await query('SELECT 1'); connected = true; } catch {}
+    const schema = await query<{ exists: boolean }>(`SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name='iot') AS exists`);
+    const tables = await query<{ name: string }>(`SELECT table_name AS name FROM information_schema.tables WHERE table_schema='iot' ORDER BY 1`);
+    res.json({ configured, connected, schemaExists: !!schema.rows[0]?.exists, tables: tables.rows.map(r=>r.name) });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
