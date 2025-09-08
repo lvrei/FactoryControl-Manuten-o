@@ -25,13 +25,13 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 // Debug logging
-console.log('🚀 FactoryControl App carregando...');
-console.log('📱 User Agent:', navigator.userAgent);
-console.log('🔒 Secure Context:', window.isSecureContext);
-console.log('🌐 Location:', location.href);
+console.log("🚀 FactoryControl App carregando...");
+console.log("📱 User Agent:", navigator.userAgent);
+console.log("🔒 Secure Context:", window.isSecureContext);
+console.log("🌐 Location:", location.href);
 
 const App = () => {
-  console.log('✅ App component renderizando...');
+  console.log("✅ App component renderizando...");
 
   return (
     <ErrorBoundary>
@@ -42,11 +42,14 @@ const App = () => {
             <Route path="/login" element={<Login />} />
 
             {/* Protected Backend Routes */}
-            <Route path="/" element={
-              <ProtectedRoute requiredRole="operator">
-                <Layout />
-              </ProtectedRoute>
-            }>
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute requiredRole="operator">
+                  <Layout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<Dashboard />} />
               <Route path="production-old" element={<Production />} />
               <Route path="production" element={<ProductionNew />} />
@@ -62,11 +65,14 @@ const App = () => {
             </Route>
 
             {/* Operator Portal - Standalone Route */}
-            <Route path="/operator" element={
-              <ProtectedRoute requiredRole="operator">
-                <OperatorPortal />
-              </ProtectedRoute>
-            } />
+            <Route
+              path="/operator"
+              element={
+                <ProtectedRoute requiredRole="operator">
+                  <OperatorPortal />
+                </ProtectedRoute>
+              }
+            />
 
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
@@ -85,4 +91,4 @@ if (!container) {
 const root = createRoot(container);
 root.render(<App />);
 
-console.log('🎯 FactoryControl App inicializado com sucesso!');
+console.log("🎯 FactoryControl App inicializado com sucesso!");

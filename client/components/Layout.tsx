@@ -12,7 +12,7 @@ import {
   Bell,
   Menu,
   X,
-  Warehouse
+  Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 // import { PWADebug } from "./PWADebug"; // Temporarily disabled
@@ -26,7 +26,12 @@ interface LayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "🆕 Produção", href: "/production", icon: Factory, isNew: true },
-  { name: "🔄 Portal Operador", href: "/operator", icon: Users, isOperator: true },
+  {
+    name: "🔄 Portal Operador",
+    href: "/operator",
+    icon: Users,
+    isOperator: true,
+  },
   { name: "Stock", href: "/stock", icon: Warehouse },
   { name: "Equipamentos", href: "/equipment", icon: Activity },
   { name: "Qualidade", href: "/quality", icon: Package },
@@ -66,8 +71,12 @@ export function Layout({ children }: LayoutProps) {
                 <Factory className="h-5 w-5 text-primary-foreground" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-lg font-semibold text-foreground">FactoryControl</h1>
-                <p className="text-xs text-muted-foreground">Sistema de Gestão Industrial</p>
+                <h1 className="text-lg font-semibold text-foreground">
+                  FactoryControl
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  Sistema de Gestão Industrial
+                </p>
               </div>
             </div>
           </div>
@@ -80,17 +89,21 @@ export function Layout({ children }: LayoutProps) {
 
             <div className="hidden sm:flex items-center gap-3 rounded-lg bg-muted p-2">
               <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                {userSession?.username?.charAt(0).toUpperCase() || 'U'}
+                {userSession?.username?.charAt(0).toUpperCase() || "U"}
               </div>
               <div className="text-sm">
-                <p className="font-medium text-foreground">{userSession?.username || 'Utilizador'}</p>
-                <p className="text-xs text-muted-foreground">{userSession?.role || 'Sem sessão'}</p>
+                <p className="font-medium text-foreground">
+                  {userSession?.username || "Utilizador"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {userSession?.role || "Sem sessão"}
+                </p>
               </div>
               <button
                 onClick={async () => {
-                  if (confirm('Terminar sessão?')) {
+                  if (confirm("Terminar sessão?")) {
                     await authService.logout();
-                    navigate('/login');
+                    navigate("/login");
                   }
                 }}
                 className="ml-2 p-1 text-muted-foreground hover:text-foreground"
@@ -106,7 +119,10 @@ export function Layout({ children }: LayoutProps) {
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <div className="fixed inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)} />
+          <div
+            className="fixed inset-0 bg-black/50"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
           <div className="fixed left-0 top-0 bottom-0 w-64 bg-card mobile-modal">
             <div className="flex items-center justify-between p-4 border-b">
               <h2 className="text-lg font-semibold">Menu</h2>
@@ -129,7 +145,7 @@ export function Layout({ children }: LayoutProps) {
                         "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-colors btn-mobile",
                         isActive
                           ? "bg-primary text-primary-foreground"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )
                     }
                   >
@@ -156,7 +172,7 @@ export function Layout({ children }: LayoutProps) {
                     "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )
                 }
               >
@@ -188,9 +204,7 @@ export function Layout({ children }: LayoutProps) {
               className={({ isActive }) =>
                 cn(
                   "flex flex-col items-center gap-1 p-2 text-xs font-medium transition-colors btn-mobile",
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  isActive ? "text-primary" : "text-muted-foreground",
                 )
               }
             >
