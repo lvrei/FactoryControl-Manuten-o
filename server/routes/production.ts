@@ -1,7 +1,7 @@
-import { Router } from 'express';
+import express from 'express';
 import { query } from '../db';
 
-export const productionRouter = Router();
+export const productionRouter = express.Router();
 
 // Orders CRUD (nested)
 productionRouter.get('/orders', async (_req, res) => {
