@@ -4,7 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
-import { handleDemo } from "./routes/demo";
+// Lazy loaded below to avoid ESM/CJS interop issues
 import { isDbConfigured, query } from "./db";
 
 export function createServer() {
