@@ -8,6 +8,10 @@ if (!connectionString) {
   console.warn('DATABASE_URL not set. Server DB operations will be disabled.');
 }
 
+export function isDbConfigured(): boolean {
+  return !!connectionString;
+}
+
 export const pool = connectionString
   ? new Pool({ connectionString, ssl: { rejectUnauthorized: false } })
   : (null as unknown as pg.Pool);
