@@ -62,7 +62,14 @@ export function createServer() {
     res.json({ message: ping });
   });
 
-  app.get("/api/demo", handleDemo);
+  app.get("/api/demo", async (req, res, next) => {
+    try {
+      const { handleDemo } = await import('./routes/demo');
+      return handleDemo(req, res);
+    } catch (e) {
+      next(e);
+    }
+  });
 
   // DB status endpoint
   app.get('/api/db-status', async (_req, res) => {
