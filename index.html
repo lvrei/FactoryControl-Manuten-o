@@ -92,10 +92,6 @@
                 });
               });
 
-              // Check for updates periodically (every 30 seconds)
-              setInterval(() => {
-                registration.update();
-              }, 30000);
             })
             .catch(function(err) {
               console.error('❌ ServiceWorker registration failed:', err);
