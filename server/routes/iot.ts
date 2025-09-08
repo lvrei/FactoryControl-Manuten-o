@@ -18,6 +18,7 @@ const mem = {
 
 async function ensureIotTables() {
   if (!useDb()) return;
+  await query(`CREATE SCHEMA IF NOT EXISTS iot`);
   // Sensors table
   await query(`CREATE TABLE IF NOT EXISTS iot.sensors (
     id TEXT PRIMARY KEY,
