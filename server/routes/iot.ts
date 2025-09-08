@@ -1,7 +1,8 @@
 import { Router } from 'express';
+import express from 'express';
 import { query } from '../db';
 
-export const iotRouter = Router();
+export const iotRouter = express.Router();
 
 async function ensureIotTables() {
   // Sensors table
