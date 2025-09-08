@@ -37,7 +37,7 @@ async function ensureIotTables() {
     metric TEXT NOT NULL,
     unit TEXT,
     scale NUMERIC DEFAULT 1,
-    offset NUMERIC DEFAULT 0,
+    offset_value NUMERIC DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
   )`);
   await query(
@@ -154,9 +154,9 @@ iotRouter.post("/sensors/bind", async (req, res) => {
       return res.json({ id });
     }
     await query(
-      `INSERT INTO sensor_bindings (id, sensor_id, machine_id, metric, unit, scale, offset)
+      `INSERT INTO sensor_bindings (id, sensor_id, machine_id, metric, unit, scale, offset_value)
       VALUES ($1,$2,$3,$4,$5,COALESCE($6,1),COALESCE($7,0))
-      ON CONFLICT (id) DO UPDATE SET sensor_id=EXCLUDED.sensor_id, machine_id=EXCLUDED.machine_id, metric=EXCLUDED.metric, unit=EXCLUDED.unit, scale=EXCLUDED.scale, offset=EXCLUDED.offset`,
+      ON CONFLICT (id) DO UPDATE SET sensor_id=EXCLUDED.sensor_id, machine_id=EXCLUDED.machine_id, metric=EXCLUDED.metric, unit=EXCLUDED.unit, scale=EXCLUDED.scale, offset_value=EXCLUDED.offset_value`,
       [
         id,
         b.sensorId,
@@ -337,7 +337,7 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
       scale: number;
       offset: number;
     }>(
-      `SELECT id, machine_id, scale::float8, offset::float8 FROM sensor_bindings WHERE sensor_id = $1 AND metric = $2`,
+      `SELECT id, machine_id, scale::float8, offset_value::float8 AS offset FROM sensor_bindings WHERE sensor_id = $1 AND metric = $2`,
       [sensorId, metric],
     );
 
