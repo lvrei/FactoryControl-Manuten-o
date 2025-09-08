@@ -3,6 +3,131 @@ import { query } from '../db';
 
 export const productionRouter = Router();
 
+// Orders CRUD (nested)
+productionRouter.get('/orders', async (_req, res) => {
+  try {
+    const ordersRes = await query(`SELECT * FROM production_orders ORDER BY created_at DESC`);
+    const linesRes = await query(`SELECT * FROM production_order_lines`);
+    const opsRes = await query(`SELECT * FROM cutting_operations`);
+
+    const linesByOrder = new Map<string, any[]>();
+    for (const l of linesRes.rows) {
+      const arr = linesByOrder.get(l.order_id) || [];
+      arr.push(l);
+      linesByOrder.set(l.order_id, arr);
+    }
+    const opsByLine = new Map<string, any[]>();
+    for (const o of opsRes.rows) {
+      const arr = opsByLine.get(o.line_id) || [];
+      arr.push(o);
+      opsByLine.set(o.line_id, arr);
+    }
+
+    const result = ordersRes.rows.map((o:any) => ({
+      id: o.id,
+      orderNumber: o.order_number,
+      customer: { id: o.customer_name, name: o.customer_name, contact: '' },
+      expectedDeliveryDate: o.expected_delivery_date,
+      status: o.status,
+      priority: o.priority,
+      totalVolume: Number(o.total_volume || 0),
+      estimatedCost: Number(o.estimated_cost || 0),
+      notes: o.notes || '',
+      createdBy: o.created_by || 'Admin',
+      createdAt: o.created_at,
+      updatedAt: o.updated_at,
+      completedAt: o.completed_at,
+      shippedAt: o.shipped_at,
+      lines: (linesByOrder.get(o.id) || []).map((l:any) => ({
+        id: l.id,
+        foamType: { id: l.foam_type_name || 'foam', name: l.foam_type_name || 'Espuma', density: 0, hardness: '', color: '', specifications: '', pricePerM3: 0 },
+        initialDimensions: { length: l.final_length_mm, width: l.final_width_mm, height: l.final_height_mm },
+        finalDimensions: { length: l.final_length_mm, width: l.final_width_mm, height: l.final_height_mm },
+        quantity: l.quantity || 0,
+        completedQuantity: l.completed_quantity || 0,
+        cuttingOperations: (opsByLine.get(l.id) || []).map((op:any) => ({
+          id: op.id,
+          machineId: op.machine_id,
+          inputDimensions: { length: op.input_length_mm||0, width: op.input_width_mm||0, height: op.input_height_mm||0 },
+          outputDimensions: { length: op.output_length_mm||0, width: op.output_width_mm||0, height: op.output_height_mm||0 },
+          quantity: op.quantity||0,
+          completedQuantity: op.completed_quantity||0,
+          estimatedTime: op.estimated_time||0,
+          status: op.status || 'pending',
+          observations: op.observations || ''
+        })),
+        status: l.status || 'pending',
+        priority: 5,
+        shippedAt: l.shipped_at
+      }))
+    }));
+
+    res.json(result);
+  } catch (e:any) {
+    console.error('GET /orders error', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+productionRouter.post('/orders', async (req, res) => {
+  try {
+    const o = req.body;
+    const id = o.id || `OP-${Date.now()}`;
+    await query(`INSERT INTO production_orders (id, order_number, customer_name, expected_delivery_date, status, priority, total_volume, estimated_cost, notes, created_by, created_at, updated_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,now(),now())
+      ON CONFLICT (id) DO NOTHING`, [
+      id, o.orderNumber, o.customer?.name || '', o.expectedDeliveryDate, o.status || 'created', o.priority || 'medium', o.totalVolume || 0, o.estimatedCost || 0, o.notes || '', o.createdBy || 'Admin'
+    ]);
+
+    for (const line of (o.lines || [])) {
+      const lineId = line.id || `${Date.now()}-${Math.random().toString(36).slice(2,7)}`;
+      await query(`INSERT INTO production_order_lines (id, order_id, foam_type_name, final_length_mm, final_width_mm, final_height_mm, quantity, status, completed_quantity)
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        ON CONFLICT (id) DO NOTHING`, [
+        lineId, id, line.foamType?.name || 'Espuma', line.finalDimensions.length, line.finalDimensions.width, line.finalDimensions.height, line.quantity || 0, line.status || 'pending', line.completedQuantity || 0
+      ]);
+      for (const op of (line.cuttingOperations || [])) {
+        const opId = op.id || `${Date.now()}-op`;
+        await query(`INSERT INTO cutting_operations (id, line_id, machine_id, input_length_mm, input_width_mm, input_height_mm, output_length_mm, output_width_mm, output_height_mm, quantity, completed_quantity, status, estimated_time, observations)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+          ON CONFLICT (id) DO NOTHING`, [
+          opId, lineId, op.machineId, op.inputDimensions.length, op.inputDimensions.width, op.inputDimensions.height, op.outputDimensions.length, op.outputDimensions.width, op.outputDimensions.height, op.quantity||0, op.completedQuantity||0, op.status||'pending', op.estimatedTime||0, op.observations||''
+        ]);
+      }
+    }
+
+    res.json({ id });
+  } catch (e:any) {
+    console.error('POST /orders error', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+productionRouter.patch('/orders/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const o = req.body;
+    await query(`UPDATE production_orders SET order_number=COALESCE($2,order_number), customer_name=COALESCE($3,customer_name), expected_delivery_date=COALESCE($4,expected_delivery_date), status=COALESCE($5,status), priority=COALESCE($6,priority), total_volume=COALESCE($7,total_volume), estimated_cost=COALESCE($8,estimated_cost), notes=COALESCE($9,notes), updated_at=now() WHERE id=$1`, [
+      id, o.orderNumber, o.customer?.name, o.expectedDeliveryDate, o.status, o.priority, o.totalVolume, o.estimatedCost, o.notes
+    ]);
+    res.json({ ok: true });
+  } catch (e:any) {
+    console.error('PATCH /orders/:id error', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+productionRouter.delete('/orders/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    await query(`DELETE FROM production_orders WHERE id=$1`, [id]);
+    res.json({ ok: true });
+  } catch (e:any) {
+    console.error('DELETE /orders/:id error', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // Machines CRUD
 productionRouter.get('/machines', async (_req, res) => {
   try {
