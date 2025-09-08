@@ -36,8 +36,8 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         log('Static assets cached successfully');
-        // Ativar imediatamente o novo SW
-        return self.skipWaiting();
+        // Não ativar imediatamente; atualizar na próxima abertura
+        // self.skipWaiting();
       })
       .catch((error) => {
         log('Error caching static assets:', error);
@@ -62,8 +62,8 @@ self.addEventListener('activate', (event) => {
           })
         );
       }),
-      // Assumir controle de todas as abas
-      self.clients.claim()
+      // Não assumir controle imediato; deixa para próxima navegação
+      // self.clients.claim()
     ])
     .then(() => {
       log('Service Worker activated successfully');
