@@ -308,62 +308,59 @@ class ProductionService {
   // Métodos públicos - Máquinas (com validação defensiva)
   async getMachines(): Promise<Machine[]> {
     try {
+      // Tentar via API (Neon)
+      const resp = await fetch('/api/machines');
+      if (resp.ok) {
+        const list = await resp.json();
+        return list as Machine[];
+      }
+      throw new Error('API machines falhou');
+    } catch (error) {
+      console.warn('⚠️ Falha API /api/machines, usando localStorage:', (error as any)?.message);
       this.ensureInitialized();
       const data = this.getStoredData();
-
-      // Se não há máquinas salvas, usar mock e salvar
       if (!data?.machines || !Array.isArray(data.machines) || data.machines.length === 0) {
         const dataToSave = { ...data, machines: this.mockMachines };
         this.saveData(dataToSave);
         return this.mockMachines;
       }
-
       return data.machines;
-    } catch (error) {
-      console.error('❌ Erro ao buscar máquinas:', error);
-      return this.mockMachines;
     }
   }
 
   // Criar máquina
   async createMachine(machine: Pick<Machine, 'name' | 'type' | 'status' | 'maxDimensions' | 'cuttingPrecision'>): Promise<Machine> {
     try {
+      const resp = await fetch('/api/machines', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(machine) });
+      if (!resp.ok) throw new Error('API createMachine falhou');
+      const { id } = await resp.json();
+      return { id, currentOperator: null, lastMaintenance: new Date().toISOString(), operatingHours: 0, specifications: '', ...machine } as Machine;
+    } catch (error) {
+      console.warn('⚠️ Falha API createMachine, usando localStorage:', (error as any)?.message);
       this.ensureInitialized();
       const data = this.getStoredData() || {};
       const machines: Machine[] = Array.isArray(data.machines) && data.machines.length > 0 ? data.machines : [...this.mockMachines];
-
-      const newMachine: Machine = {
-        id: `${machine.type.toLowerCase()}-${Date.now()}`,
-        name: machine.name,
-        type: machine.type,
-        status: machine.status || 'available',
-        maxDimensions: machine.maxDimensions,
-        cuttingPrecision: machine.cuttingPrecision,
-        currentOperator: null,
-        lastMaintenance: new Date().toISOString(),
-        operatingHours: 0,
-        specifications: ''
-      };
-
+      const newMachine: Machine = { id: `${machine.type.toLowerCase()}-${Date.now()}`, name: machine.name, type: machine.type, status: machine.status || 'available', maxDimensions: machine.maxDimensions, cuttingPrecision: machine.cuttingPrecision, currentOperator: null, lastMaintenance: new Date().toISOString(), operatingHours: 0, specifications: '' };
       data.machines = [...machines, newMachine];
       data.lastUpdated = new Date().toISOString();
       this.saveData(data);
       return newMachine;
-    } catch (error) {
-      console.error('❌ Erro ao criar máquina:', error);
-      throw error;
     }
   }
 
   // Atualizar máquina (nome, tipo, status, capacidades...)
   async updateMachine(machineId: string, updates: Partial<Machine>): Promise<Machine> {
     try {
+      const resp = await fetch(`/api/machines/${machineId}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) });
+      if (!resp.ok) throw new Error('API updateMachine falhou');
+      // retornar merge local
+      const current = (await this.getMachines()).find(m => m.id === machineId) as Machine | undefined;
+      return { ...(current || { id: machineId } as any), ...updates } as Machine;
+    } catch (error) {
+      console.warn('⚠️ Falha API updateMachine, usando localStorage:', (error as any)?.message);
       this.ensureInitialized();
       const data = this.getStoredData() || {};
-      if (!Array.isArray(data.machines) || data.machines.length === 0) {
-        data.machines = [...this.mockMachines];
-      }
-
+      if (!Array.isArray(data.machines) || data.machines.length === 0) data.machines = [...this.mockMachines];
       const idx = data.machines.findIndex((m: Machine) => m.id === machineId);
       if (idx === -1) {
         const mock = this.mockMachines.find(m => m.id === machineId);
@@ -372,62 +369,45 @@ class ProductionService {
       } else {
         data.machines[idx] = { ...data.machines[idx], ...updates };
       }
-
       data.lastUpdated = new Date().toISOString();
       this.saveData(data);
       return data.machines.find((m: Machine) => m.id === machineId)!;
-    } catch (error) {
-      console.error('❌ Erro ao atualizar máquina:', error);
-      throw error;
     }
   }
 
   // Excluir máquina
   async deleteMachine(machineId: string): Promise<void> {
     try {
+      const resp = await fetch(`/api/machines/${machineId}`, { method: 'DELETE' });
+      if (!resp.ok) throw new Error('API deleteMachine falhou');
+    } catch (error) {
+      console.warn('⚠️ Falha API deleteMachine, usando localStorage:', (error as any)?.message);
       this.ensureInitialized();
       const data = this.getStoredData() || {};
-      if (!Array.isArray(data.machines) || data.machines.length === 0) {
-        data.machines = [...this.mockMachines];
-      }
+      if (!Array.isArray(data.machines) || data.machines.length === 0) data.machines = [...this.mockMachines];
       data.machines = data.machines.filter((m: Machine) => m.id !== machineId);
       data.lastUpdated = new Date().toISOString();
       this.saveData(data);
-    } catch (error) {
-      console.error('❌ Erro ao excluir máquina:', error);
-      throw error;
     }
   }
 
   // Atualizar status da máquina (usado pela manutenção)
   async updateMachineStatus(machineId: string, status: Machine['status']): Promise<void> {
     try {
+      await this.updateMachine(machineId, { status });
+      console.log('🔧 Status da máquina atualizado (API):', machineId, '→', status);
+    } catch (error) {
+      console.warn('⚠️ Falha API updateMachineStatus, fallback local:', (error as any)?.message);
       this.ensureInitialized();
       const data = this.getStoredData() || {};
-
-      if (!Array.isArray(data.machines) || data.machines.length === 0) {
-        data.machines = [...this.mockMachines];
-      }
-
+      if (!Array.isArray(data.machines) || data.machines.length === 0) data.machines = [...this.mockMachines];
       const machineIndex = data.machines.findIndex((m: Machine) => m.id === machineId);
       if (machineIndex !== -1) {
         data.machines[machineIndex].status = status;
-        if (status === 'maintenance') {
-          data.machines[machineIndex].currentOperator = null;
-        }
-      } else {
-        const mock = this.mockMachines.find(m => m.id === machineId);
-        if (mock) {
-          data.machines.push({ ...mock, status, currentOperator: status === 'maintenance' ? null : mock.currentOperator });
-        }
+        if (status === 'maintenance') data.machines[machineIndex].currentOperator = null;
       }
-
       data.lastUpdated = new Date().toISOString();
       this.saveData(data);
-      console.log('🔧 Status da máquina atualizado:', machineId, '→', status);
-    } catch (error) {
-      console.error('❌ Erro ao atualizar status da máquina:', error);
-      throw error;
     }
   }
 
