@@ -83,8 +83,14 @@ export function createServer() {
           app.use('/api', productionRouter);
         })
         .catch((e) => console.warn('Production API not loaded:', (e as any)?.message));
+
+      import('./routes/iot')
+        .then(({ iotRouter }) => {
+          app.use('/api', iotRouter);
+        })
+        .catch((e) => console.warn('IoT API not loaded:', (e as any)?.message));
     } catch (e) {
-      console.warn('Production API not loaded:', (e as any)?.message);
+      console.warn('APIs not loaded:', (e as any)?.message);
     }
   } else {
     console.warn('DATABASE_URL não definido. API de produção desativada.');
