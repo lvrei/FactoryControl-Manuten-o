@@ -101,6 +101,10 @@ async function ensureIotTables(): Promise<boolean> {
       `CREATE INDEX IF NOT EXISTS idx_iot_alerts_machine ON iot.alerts(machine_id)`,
     );
 
+    // Ensure FK points to iot.sensor_rules even if table was previously created incorrectly
+    await query(`ALTER TABLE iot.alerts DROP CONSTRAINT IF EXISTS alerts_rule_id_fkey`);
+    await query(`ALTER TABLE iot.alerts ADD CONSTRAINT alerts_rule_id_fkey FOREIGN KEY (rule_id) REFERENCES iot.sensor_rules(id) ON DELETE SET NULL`);
+
     return true;
   } catch (e: any) {
     console.error('ensureIotTables error:', e);
