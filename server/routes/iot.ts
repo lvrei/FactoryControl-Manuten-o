@@ -195,7 +195,7 @@ iotRouter.get("/rules", async (_req, res) => {
       return res.json(data);
     }
     const { rows } = await query(
-      `SELECT * FROM sensor_rules WHERE enabled = true ORDER BY created_at DESC`,
+      `SELECT * FROM iot.sensor_rules WHERE enabled = true ORDER BY created_at DESC`,
     );
     const data = rows.map((r:any) => ({
       id: r.id,
@@ -346,7 +346,7 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
         Number(value) * (Number(b as any).scale ?? 1) +
         (Number((b as any).offset) ?? 0);
       const rules = await query<any>(
-        `SELECT * FROM sensor_rules WHERE enabled = true AND machine_id = $1 AND (sensor_id IS NULL OR sensor_id = $2) AND metric = $3`,
+        `SELECT * FROM iot.sensor_rules WHERE enabled = true AND machine_id = $1 AND (sensor_id IS NULL OR sensor_id = $2) AND metric = $3`,
         [b.machine_id, sensorId, metric],
       );
 
