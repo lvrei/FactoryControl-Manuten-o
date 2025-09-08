@@ -46,11 +46,20 @@ async function ensureIotTables(): Promise<boolean> {
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
   )`);
 
+      // Check if public.machines exists to avoid FK creation failures
+      const machinesExists = await query<{ exists: boolean }>(
+        `SELECT EXISTS (
+           SELECT 1 FROM information_schema.tables
+           WHERE table_schema = 'public' AND table_name = 'machines'
+         ) AS exists`
+      );
+      const hasMachines = !!machinesExists.rows[0]?.exists;
+
       // Sensor bindings (sensor -> machine + metric)
       await query(`CREATE TABLE IF NOT EXISTS iot.sensor_bindings (
     id TEXT PRIMARY KEY,
     sensor_id TEXT NOT NULL REFERENCES iot.sensors(id) ON DELETE CASCADE,
-    machine_id TEXT NOT NULL REFERENCES public.machines(id) ON DELETE CASCADE,
+    machine_id TEXT NOT NULL${hasMachines ? ' REFERENCES public.machines(id) ON DELETE CASCADE' : ''},
     metric TEXT NOT NULL,
     unit TEXT,
     scale NUMERIC DEFAULT 1,
@@ -67,7 +76,7 @@ async function ensureIotTables(): Promise<boolean> {
       // Rules (thresholds and priorities)
       await query(`CREATE TABLE IF NOT EXISTS iot.sensor_rules (
     id TEXT PRIMARY KEY,
-    machine_id TEXT NOT NULL REFERENCES public.machines(id) ON DELETE CASCADE,
+    machine_id TEXT NOT NULL${hasMachines ? ' REFERENCES public.machines(id) ON DELETE CASCADE' : ''},
     sensor_id TEXT REFERENCES iot.sensors(id) ON DELETE SET NULL,
     metric TEXT NOT NULL,
     operator TEXT NOT NULL,
@@ -89,7 +98,7 @@ async function ensureIotTables(): Promise<boolean> {
       // Alerts
       await query(`CREATE TABLE IF NOT EXISTS iot.alerts (
     id TEXT PRIMARY KEY,
-    machine_id TEXT NOT NULL REFERENCES public.machines(id) ON DELETE CASCADE,
+    machine_id TEXT NOT NULL${hasMachines ? ' REFERENCES public.machines(id) ON DELETE CASCADE' : ''},
     rule_id TEXT REFERENCES iot.sensor_rules(id) ON DELETE SET NULL,
     sensor_id TEXT REFERENCES iot.sensors(id) ON DELETE SET NULL,
     metric TEXT NOT NULL,
@@ -123,6 +132,19 @@ async function ensureIotTables(): Promise<boolean> {
         } catch (e: any) {
           if (e?.code !== '42710') throw e;
         }
+      }
+
+      // If machines table appears later, attempt to attach FKs safely
+      if (hasMachines) {
+        try {
+          await query(`ALTER TABLE iot.sensor_rules ADD CONSTRAINT IF NOT EXISTS sensor_rules_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE` as any);
+        } catch {}
+        try {
+          await query(`ALTER TABLE iot.sensor_bindings ADD CONSTRAINT IF NOT EXISTS sensor_bindings_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE` as any);
+        } catch {}
+        try {
+          await query(`ALTER TABLE iot.alerts ADD CONSTRAINT IF NOT EXISTS alerts_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE` as any);
+        } catch {}
       }
 
       return true;
