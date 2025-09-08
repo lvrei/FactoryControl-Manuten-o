@@ -65,8 +65,16 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
-  // Production API (Neon)
-  app.use('/api', productionRouter);
+  // Production API (Neon) - dynamic and optional
+  try {
+    import('./routes/production')
+      .then(({ productionRouter }) => {
+        app.use('/api', productionRouter);
+      })
+      .catch((e) => console.warn('Production API not loaded:', (e as any)?.message));
+  } catch (e) {
+    console.warn('Production API not loaded:', (e as any)?.message);
+  }
 
   // Health check
   app.get("/api/health", (_req, res) => {
