@@ -160,6 +160,15 @@ async function ensureIotTables(): Promise<boolean> {
       return true;
     } catch (e: any) {
       console.error('ensureIotTables error:', e);
+      try {
+        const chk = await query<{ n: number }>(
+          `SELECT COUNT(*)::int AS n FROM information_schema.tables WHERE table_schema='iot' AND table_name IN ('sensors','sensor_bindings','sensor_rules','alerts')`
+        );
+        if ((chk.rows[0]?.n || 0) >= 4) {
+          console.warn('IoT tables already present; continuing without migration.');
+          return true;
+        }
+      } catch {}
       return false;
     }
   })();
