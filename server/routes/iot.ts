@@ -7,6 +7,8 @@ export const iotRouter = express.Router();
 iotRouter.use(express.json({ limit: '2mb' }));
 iotRouter.use(express.urlencoded({ extended: true }));
 
+const useDb = () => isDbConfigured() && process.env.NODE_ENV === 'production';
+
 const mem = {
   sensors: [] as any[],
   bindings: [] as any[],
@@ -15,7 +17,7 @@ const mem = {
 };
 
 async function ensureIotTables() {
-  if (!isDbConfigured()) return;
+  if (!useDb()) return;
   // Sensors table
   await query(`CREATE TABLE IF NOT EXISTS sensors (
     id TEXT PRIMARY KEY,
@@ -95,7 +97,7 @@ function genId(prefix: string) {
 iotRouter.get("/sensors", async (_req, res) => {
   try {
     await ensureIotTables();
-    if (!isDbConfigured()) {
+    if (!useDb()) {
       return res.json(mem.sensors);
     }
     const { rows } = await query(
@@ -146,7 +148,7 @@ iotRouter.post("/sensors/bind", async (req, res) => {
     await ensureIotTables();
     const b = req.body;
     const id = b.id || genId("bind");
-    if (!isDbConfigured()) {
+    if (!useDb()) {
       mem.bindings = mem.bindings.filter((x) => x.id !== id);
       mem.bindings.push({ id, sensor_id: b.sensorId, machine_id: b.machineId, metric: b.metric, unit: b.unit, scale: b.scale ?? 1, offset: b.offset ?? 0, created_at: new Date().toISOString() });
       return res.json({ id });
@@ -176,7 +178,7 @@ iotRouter.post("/sensors/bind", async (req, res) => {
 iotRouter.get("/rules", async (_req, res) => {
   try {
     await ensureIotTables();
-    if (!isDbConfigured()) {
+    if (!useDb()) {
       const data = mem.rules.filter((r:any) => r.enabled !== false).map((r:any) => ({
         id: r.id,
         machineId: r.machine_id,
