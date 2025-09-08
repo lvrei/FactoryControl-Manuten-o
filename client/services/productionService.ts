@@ -209,99 +209,90 @@ class ProductionService {
   }
 
   // Métodos públicos - Ordens de Produção
+  private notifyOnce(key: string, message: string) {
+    try {
+      const k = `fc_notify_${key}`;
+      if (!sessionStorage.getItem(k)) {
+        alert(message);
+        sessionStorage.setItem(k, '1');
+      }
+    } catch {}
+  }
+
   async getProductionOrders(filters?: ProductionFilters): Promise<ProductionOrder[]> {
     try {
-      this.ensureInitialized();
-      const data = this.getStoredData();
-      let orders = data?.productionOrders || [];
-
+      const resp = await fetch('/api/orders');
+      if (!resp.ok) throw new Error('API orders falhou');
+      let orders: ProductionOrder[] = await resp.json();
       if (filters) {
         orders = orders.filter(order => {
-          // Handle status filter (can be string or array)
-          if (filters.status) {
-            const statusArray = Array.isArray(filters.status) ? filters.status : [filters.status];
-            if (statusArray.length > 0 && !statusArray.includes(order.status)) return false;
-          }
-
-          // Handle priority filter (can be string or array)
-          if (filters.priority) {
-            const priorityArray = Array.isArray(filters.priority) ? filters.priority : [filters.priority];
-            if (priorityArray.length > 0 && !priorityArray.includes(order.priority)) return false;
-          }
-
+          if (filters.status && filters.status.length && !filters.status.includes(order.status)) return false;
+          if (filters.priority && filters.priority.length && !filters.priority.includes(order.priority)) return false;
           if (filters.customer && !order.customer.name.toLowerCase().includes(filters.customer.toLowerCase())) return false;
-          if (filters.orderNumber && !order.orderNumber.toLowerCase().includes(filters.orderNumber.toLowerCase())) return false;
+          if ((filters as any).orderNumber && !order.orderNumber.toLowerCase().includes((filters as any).orderNumber.toLowerCase())) return false;
           return true;
         });
       }
-
       return orders;
     } catch (error) {
-      console.error('❌ Erro ao buscar ordens:', error);
-      return [];
+      console.warn('⚠️ Falha API /api/orders, usando localStorage');
+      this.notifyOnce('api_fallback', 'Ligação ao servidor indisponível. A trabalhar em modo offline (local).');
+      this.ensureInitialized();
+      const data = this.getStoredData();
+      return data?.productionOrders || [];
     }
   }
 
   async createProductionOrder(order: Omit<ProductionOrder, 'id' | 'createdAt' | 'updatedAt'>): Promise<ProductionOrder> {
     try {
+      const resp = await fetch('/api/orders', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(order) });
+      if (!resp.ok) throw new Error('API create order falhou');
+      const { id } = await resp.json();
+      return { ...order, id, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as ProductionOrder;
+    } catch (error) {
+      console.warn('⚠️ Falha API create order, usando localStorage');
+      this.notifyOnce('api_fallback', 'Ligação ao servidor indisponível. A trabalhar em modo offline (local).');
       this.ensureInitialized();
       const data = this.getStoredData() || { productionOrders: [] };
-      
-      const newOrder: ProductionOrder = {
-        ...order,
-        id: `OP-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        status: order.status || 'created'
-      };
-
+      const newOrder: ProductionOrder = { ...order, id: `OP-${Date.now()}`, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), status: order.status || 'created' };
       data.productionOrders = [...(data.productionOrders || []), newOrder];
       this.saveData(data);
-      
-      console.log('✅ Ordem criada:', newOrder.orderNumber);
       return newOrder;
-    } catch (error) {
-      console.error('❌ Erro ao criar ordem:', error);
-      throw error;
     }
   }
 
   async updateProductionOrder(id: string, updates: Partial<ProductionOrder>): Promise<ProductionOrder> {
     try {
+      const resp = await fetch(`/api/orders/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updates) });
+      if (!resp.ok) throw new Error('API update order falhou');
+      const current = (await this.getProductionOrders()).find(o => o.id === id) as ProductionOrder | undefined;
+      return { ...(current || { id } as any), ...updates } as ProductionOrder;
+    } catch (error) {
+      console.warn('⚠️ Falha API update order, usando localStorage');
+      this.notifyOnce('api_fallback', 'Ligação ao servidor indisponível. A trabalhar em modo offline (local).');
       this.ensureInitialized();
       const data = this.getStoredData();
       if (!data?.productionOrders) throw new Error('Dados não encontrados');
-
-      const orderIndex = data.productionOrders.findIndex(o => o.id === id);
+      const orderIndex = data.productionOrders.findIndex((o: ProductionOrder) => o.id === id);
       if (orderIndex === -1) throw new Error('Ordem não encontrada');
-
-      data.productionOrders[orderIndex] = {
-        ...data.productionOrders[orderIndex],
-        ...updates,
-        updatedAt: new Date().toISOString()
-      };
-
+      data.productionOrders[orderIndex] = { ...data.productionOrders[orderIndex], ...updates, updatedAt: new Date().toISOString() };
       this.saveData(data);
-      console.log('✅ Ordem atualizada:', id);
       return data.productionOrders[orderIndex];
-    } catch (error) {
-      console.error('❌ Erro ao atualizar ordem:', error);
-      throw error;
     }
   }
 
   async deleteProductionOrder(id: string): Promise<void> {
     try {
+      const resp = await fetch(`/api/orders/${id}`, { method: 'DELETE' });
+      if (!resp.ok) throw new Error('API delete order falhou');
+    } catch (error) {
+      console.warn('⚠️ Falha API delete order, usando localStorage');
+      this.notifyOnce('api_fallback', 'Ligação ao servidor indisponível. A trabalhar em modo offline (local).');
       this.ensureInitialized();
       const data = this.getStoredData();
       if (!data?.productionOrders) return;
-
-      data.productionOrders = data.productionOrders.filter(o => o.id !== id);
+      data.productionOrders = data.productionOrders.filter((o: ProductionOrder) => o.id !== id);
       this.saveData(data);
-      console.log('✅ Ordem deletada:', id);
-    } catch (error) {
-      console.error('❌ Erro ao deletar ordem:', error);
-      throw error;
     }
   }
 
