@@ -5,7 +5,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { handleDemo } from "./routes/demo";
-import { productionRouter } from "./routes/production";
+import { isDbConfigured, query } from "./db";
 
 export function createServer() {
   const app = express();
@@ -40,17 +40,16 @@ export function createServer() {
 
   // Rate limiting
   const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100, // máximo 100 requests por IP por janela
-    message: {
-      success: false,
-      message: 'Muitas tentativas. Tente novamente em 15 minutos.'
-    },
+    windowMs: 15 * 60 * 1000,
+    max: process.env.NODE_ENV === 'production' ? 3000 : 100000,
+    message: { success: false, message: 'Muitas tentativas. Tente novamente mais tarde.' },
     standardHeaders: true,
     legacyHeaders: false,
   });
 
-  app.use(limiter);
+  if (process.env.NODE_ENV === 'production') {
+    app.use(limiter);
+  }
 
   // Body parsing middleware
   app.use(express.json({ limit: '10mb' }));
@@ -65,15 +64,30 @@ export function createServer() {
 
   app.get("/api/demo", handleDemo);
 
+  // DB status endpoint
+  app.get('/api/db-status', async (_req, res) => {
+    if (!isDbConfigured()) return res.json({ configured: false, connected: false });
+    try {
+      await query('SELECT 1');
+      res.json({ configured: true, connected: true });
+    } catch (e:any) {
+      res.status(500).json({ configured: true, connected: false, error: e.message });
+    }
+  });
+
   // Production API (Neon) - dynamic and optional
-  try {
-    import('./routes/production')
-      .then(({ productionRouter }) => {
-        app.use('/api', productionRouter);
-      })
-      .catch((e) => console.warn('Production API not loaded:', (e as any)?.message));
-  } catch (e) {
-    console.warn('Production API not loaded:', (e as any)?.message);
+  if (isDbConfigured()) {
+    try {
+      import('./routes/production')
+        .then(({ productionRouter }) => {
+          app.use('/api', productionRouter);
+        })
+        .catch((e) => console.warn('Production API not loaded:', (e as any)?.message));
+    } catch (e) {
+      console.warn('Production API not loaded:', (e as any)?.message);
+    }
+  } else {
+    console.warn('DATABASE_URL não definido. API de produção desativada.');
   }
 
   // Health check
