@@ -33,6 +33,7 @@ const navigation = [
   { name: "Manutenção", href: "/maintenance", icon: Settings },
   { name: "Equipa", href: "/team", icon: Users },
   { name: "Planejamento", href: "/planning", icon: Calendar },
+  { name: "Sensores", href: "/sensors", icon: Settings },
   { name: "Alertas", href: "/alerts", icon: AlertTriangle },
 ];
 
