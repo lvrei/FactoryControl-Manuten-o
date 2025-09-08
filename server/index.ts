@@ -115,6 +115,11 @@ export function createServer() {
     }
   } else {
     console.warn("DATABASE_URL não definido. API de produção desativada.");
+    import("./routes/iot")
+      .then(({ iotRouter }) => {
+        app.use("/api", iotRouter);
+      })
+      .catch((e) => console.warn("IoT API not loaded:", (e as any)?.message));
   }
 
   // Health check
