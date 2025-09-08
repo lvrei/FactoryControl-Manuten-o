@@ -16,23 +16,27 @@ const mem = {
   alerts: [] as any[],
 };
 
+let iotInitPromise: Promise<boolean> | null = null;
+
 async function ensureIotTables(): Promise<boolean> {
   if (!useDb()) return false;
-  try {
-    // Ensure schema exists (avoid rare IF NOT EXISTS race/unique errors)
-    const exists = await query<{ exists: boolean }>(
-      `SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'iot') AS exists`,
-    );
-    if (!exists.rows[0]?.exists) {
-      try {
-        await query(`CREATE SCHEMA iot`);
-      } catch (e: any) {
-        if (e?.code !== '42P06' && e?.code !== '23505') throw e;
+  if (iotInitPromise) return iotInitPromise;
+  iotInitPromise = (async () => {
+    try {
+      // Ensure schema exists (avoid rare IF NOT EXISTS race/unique errors)
+      const exists = await query<{ exists: boolean }>(
+        `SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'iot') AS exists`,
+      );
+      if (!exists.rows[0]?.exists) {
+        try {
+          await query(`CREATE SCHEMA iot`);
+        } catch (e: any) {
+          if (e?.code !== '42P06' && e?.code !== '23505') throw e;
+        }
       }
-    }
 
-    // Sensors table
-    await query(`CREATE TABLE IF NOT EXISTS iot.sensors (
+      // Sensors table
+      await query(`CREATE TABLE IF NOT EXISTS iot.sensors (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
@@ -42,8 +46,8 @@ async function ensureIotTables(): Promise<boolean> {
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
   )`);
 
-    // Sensor bindings (sensor -> machine + metric)
-    await query(`CREATE TABLE IF NOT EXISTS iot.sensor_bindings (
+      // Sensor bindings (sensor -> machine + metric)
+      await query(`CREATE TABLE IF NOT EXISTS iot.sensor_bindings (
     id TEXT PRIMARY KEY,
     sensor_id TEXT NOT NULL REFERENCES iot.sensors(id) ON DELETE CASCADE,
     machine_id TEXT NOT NULL REFERENCES public.machines(id) ON DELETE CASCADE,
@@ -53,15 +57,15 @@ async function ensureIotTables(): Promise<boolean> {
     offset_value NUMERIC DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
   )`);
-    await query(
-      `CREATE INDEX IF NOT EXISTS idx_iot_sensor_bindings_sensor ON iot.sensor_bindings(sensor_id)`,
-    );
-    await query(
-      `CREATE INDEX IF NOT EXISTS idx_iot_sensor_bindings_machine ON iot.sensor_bindings(machine_id)`,
-    );
+      await query(
+        `CREATE INDEX IF NOT EXISTS idx_iot_sensor_bindings_sensor ON iot.sensor_bindings(sensor_id)`,
+      );
+      await query(
+        `CREATE INDEX IF NOT EXISTS idx_iot_sensor_bindings_machine ON iot.sensor_bindings(machine_id)`,
+      );
 
-    // Rules (thresholds and priorities)
-    await query(`CREATE TABLE IF NOT EXISTS iot.sensor_rules (
+      // Rules (thresholds and priorities)
+      await query(`CREATE TABLE IF NOT EXISTS iot.sensor_rules (
     id TEXT PRIMARY KEY,
     machine_id TEXT NOT NULL REFERENCES public.machines(id) ON DELETE CASCADE,
     sensor_id TEXT REFERENCES iot.sensors(id) ON DELETE SET NULL,
@@ -75,15 +79,15 @@ async function ensureIotTables(): Promise<boolean> {
     enabled BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
   )`);
-    await query(
-      `CREATE INDEX IF NOT EXISTS idx_iot_sensor_rules_machine ON iot.sensor_rules(machine_id)`,
-    );
-    await query(
-      `CREATE INDEX IF NOT EXISTS idx_iot_sensor_rules_sensor ON iot.sensor_rules(sensor_id)`,
-    );
+      await query(
+        `CREATE INDEX IF NOT EXISTS idx_iot_sensor_rules_machine ON iot.sensor_rules(machine_id)`,
+      );
+      await query(
+        `CREATE INDEX IF NOT EXISTS idx_iot_sensor_rules_sensor ON iot.sensor_rules(sensor_id)`,
+      );
 
-    // Alerts
-    await query(`CREATE TABLE IF NOT EXISTS iot.alerts (
+      // Alerts
+      await query(`CREATE TABLE IF NOT EXISTS iot.alerts (
     id TEXT PRIMARY KEY,
     machine_id TEXT NOT NULL REFERENCES public.machines(id) ON DELETE CASCADE,
     rule_id TEXT REFERENCES iot.sensor_rules(id) ON DELETE SET NULL,
@@ -96,20 +100,40 @@ async function ensureIotTables(): Promise<boolean> {
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     resolved_at TIMESTAMP WITH TIME ZONE
   )`);
-    await query(`CREATE INDEX IF NOT EXISTS idx_iot_alerts_status ON iot.alerts(status)`);
-    await query(
-      `CREATE INDEX IF NOT EXISTS idx_iot_alerts_machine ON iot.alerts(machine_id)`,
-    );
+      await query(`CREATE INDEX IF NOT EXISTS idx_iot_alerts_status ON iot.alerts(status)`);
+      await query(
+        `CREATE INDEX IF NOT EXISTS idx_iot_alerts_machine ON iot.alerts(machine_id)`,
+      );
 
-    // Ensure FK points to iot.sensor_rules even if table was previously created incorrectly
-    await query(`ALTER TABLE iot.alerts DROP CONSTRAINT IF EXISTS alerts_rule_id_fkey`);
-    await query(`ALTER TABLE iot.alerts ADD CONSTRAINT alerts_rule_id_fkey FOREIGN KEY (rule_id) REFERENCES iot.sensor_rules(id) ON DELETE SET NULL`);
+      // Ensure FK points to iot.sensor_rules only if missing or wrong
+      const fk = await query<{ ref_schema: string; ref_table: string }>(
+        `SELECT ccu.table_schema AS ref_schema, ccu.table_name AS ref_table
+         FROM information_schema.table_constraints tc
+         JOIN information_schema.referential_constraints rc
+           ON rc.constraint_name = tc.constraint_name AND rc.constraint_schema = tc.constraint_schema
+         JOIN information_schema.constraint_column_usage ccu
+           ON ccu.constraint_name = rc.unique_constraint_name AND ccu.constraint_schema = rc.unique_constraint_schema
+         WHERE tc.constraint_schema = 'iot' AND tc.table_name = 'alerts' AND tc.constraint_type = 'FOREIGN KEY' AND tc.constraint_name = 'alerts_rule_id_fkey'`
+      );
+      const needsFix = fk.rows.length === 0 || fk.rows[0].ref_schema !== 'iot' || fk.rows[0].ref_table !== 'sensor_rules';
+      if (needsFix) {
+        try {
+          await query(`ALTER TABLE iot.alerts DROP CONSTRAINT IF EXISTS alerts_rule_id_fkey`);
+          await query(`ALTER TABLE iot.alerts ADD CONSTRAINT alerts_rule_id_fkey FOREIGN KEY (rule_id) REFERENCES iot.sensor_rules(id) ON DELETE SET NULL`);
+        } catch (e: any) {
+          if (e?.code !== '42710') throw e;
+        }
+      }
 
-    return true;
-  } catch (e: any) {
-    console.error('ensureIotTables error:', e);
-    return false;
-  }
+      return true;
+    } catch (e: any) {
+      console.error('ensureIotTables error:', e);
+      return false;
+    }
+  })();
+  const ok = await iotInitPromise;
+  if (!ok) iotInitPromise = null;
+  return ok;
 }
 
 function genId(prefix: string) {
