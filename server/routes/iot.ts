@@ -184,32 +184,25 @@ function genId(prefix: string) {
 // Sensors
 iotRouter.get("/sensors", async (_req, res) => {
   try {
-    const ok = await ensureIotTables();
-    if (!ok) {
-      return res.json(mem.sensors);
-    }
+    await ensureIotTables();
     const { rows } = await query(
       `SELECT * FROM iot.sensors ORDER BY created_at DESC`,
     );
-    res.json(rows);
+    return res.json(rows);
   } catch (e: any) {
-    console.error("GET /sensors error", e);
-    res.status(500).json({ error: e.message });
+    console.warn("GET /sensors falling back to memory:", e?.message);
+    return res.json(mem.sensors);
   }
 });
 
 iotRouter.post("/sensors", async (req, res) => {
+  const s = req.body || {};
+  if (!s || typeof s !== 'object' || !('name' in s) || !('type' in s) || !('protocol' in s)) {
+    return res.status(400).json({ error: 'Dados inválidos do sensor' });
+  }
+  const id = (s as any).id || genId("sensor");
   try {
-    const ok = await ensureIotTables();
-    const s = req.body || {};
-    if (!s || typeof s !== 'object' || !('name' in s) || !('type' in s) || !('protocol' in s)) {
-      return res.status(400).json({ error: 'Dados inválidos do sensor' });
-    }
-    const id = (s as any).id || genId("sensor");
-    if (!ok) {
-      mem.sensors.unshift({ id, ...s, created_at: new Date().toISOString() });
-      return res.json({ id });
-    }
+    await ensureIotTables();
     await query(
       `INSERT INTO iot.sensors (id, name, type, protocol, address, metadata)
       VALUES ($1,$2,$3,$4,$5,COALESCE($6,'{}'::jsonb))
@@ -223,24 +216,20 @@ iotRouter.post("/sensors", async (req, res) => {
         s.metadata ? JSON.stringify(s.metadata) : "{}",
       ],
     );
-    res.json({ id });
+    return res.json({ id });
   } catch (e: any) {
-    console.error("POST /sensors error", e);
-    res.status(500).json({ error: e.message });
+    console.warn("POST /sensors falling back to memory:", e?.message);
+    mem.sensors.unshift({ id, ...s, created_at: new Date().toISOString() });
+    return res.json({ id });
   }
 });
 
 // Bind sensor to machine + metric
 iotRouter.post("/sensors/bind", async (req, res) => {
+  const b = req.body;
+  const id = b.id || genId("bind");
   try {
-    const ok = await ensureIotTables();
-    const b = req.body;
-    const id = b.id || genId("bind");
-    if (!ok) {
-      mem.bindings = mem.bindings.filter((x) => x.id !== id);
-      mem.bindings.push({ id, sensor_id: b.sensorId, machine_id: b.machineId, metric: b.metric, unit: b.unit, scale: b.scale ?? 1, offset: b.offset ?? 0, created_at: new Date().toISOString() });
-      return res.json({ id });
-    }
+    await ensureIotTables();
     await query(
       `INSERT INTO iot.sensor_bindings (id, sensor_id, machine_id, metric, unit, scale, offset_value)
       VALUES ($1,$2,$3,$4,$5,COALESCE($6,1),COALESCE($7,0))
@@ -255,33 +244,19 @@ iotRouter.post("/sensors/bind", async (req, res) => {
         b.offset ?? 0,
       ],
     );
-    res.json({ id });
+    return res.json({ id });
   } catch (e: any) {
-    console.error("POST /sensors/bind error", e);
-    res.status(500).json({ error: e.message });
+    console.warn("POST /sensors/bind falling back to memory:", e?.message);
+    mem.bindings = mem.bindings.filter((x) => x.id !== id);
+    mem.bindings.push({ id, sensor_id: b.sensorId, machine_id: b.machineId, metric: b.metric, unit: b.unit, scale: b.scale ?? 1, offset: b.offset ?? 0, created_at: new Date().toISOString() });
+    return res.json({ id });
   }
 });
 
 // Rules
 iotRouter.get("/rules", async (_req, res) => {
   try {
-    const ok = await ensureIotTables();
-    if (!ok) {
-      const data = mem.rules.filter((r:any) => r.enabled !== false).map((r:any) => ({
-        id: r.id,
-        machineId: r.machine_id,
-        sensorId: r.sensor_id,
-        metric: r.metric,
-        operator: r.operator,
-        minValue: r.min_value,
-        maxValue: r.max_value,
-        thresholdValue: r.threshold_value,
-        priority: r.priority,
-        message: r.message,
-        enabled: r.enabled,
-      }));
-      return res.json(data);
-    }
+    await ensureIotTables();
     const { rows } = await query(
       `SELECT * FROM iot.sensor_rules WHERE enabled = true ORDER BY created_at DESC`,
     );
@@ -298,24 +273,31 @@ iotRouter.get("/rules", async (_req, res) => {
       message: r.message,
       enabled: r.enabled,
     }));
-    res.json(data);
+    return res.json(data);
   } catch (e: any) {
-    console.error("GET /rules error", e);
-    res.status(500).json({ error: e.message });
+    console.warn("GET /rules falling back to memory:", e?.message);
+    const data = mem.rules.filter((r:any) => r.enabled !== false).map((r:any) => ({
+      id: r.id,
+      machineId: r.machine_id,
+      sensorId: r.sensor_id,
+      metric: r.metric,
+      operator: r.operator,
+      minValue: r.min_value,
+      maxValue: r.max_value,
+      thresholdValue: r.threshold_value,
+      priority: r.priority,
+      message: r.message,
+      enabled: r.enabled,
+    }));
+    return res.json(data);
   }
 });
 
 iotRouter.post("/rules", async (req, res) => {
+  const r = req.body;
+  const id = r.id || genId("rule");
   try {
-    const ok = await ensureIotTables();
-    const r = req.body;
-    const id = r.id || genId("rule");
-    if (!ok) {
-      const entry = { id, machine_id: r.machineId, sensor_id: r.sensorId || null, metric: r.metric, operator: r.operator, min_value: r.minValue ?? null, max_value: r.maxValue ?? null, threshold_value: r.thresholdValue ?? null, priority: r.priority || 'medium', message: r.message || 'Alerta de sensor', enabled: r.enabled !== false };
-      mem.rules = mem.rules.filter((x:any) => x.id !== id);
-      mem.rules.push(entry);
-      return res.json({ id });
-    }
+    await ensureIotTables();
     await query(
       `INSERT INTO iot.sensor_rules (id, machine_id, sensor_id, metric, operator, min_value, max_value, threshold_value, priority, message, enabled)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,COALESCE($11,true))
@@ -334,91 +316,59 @@ iotRouter.post("/rules", async (req, res) => {
         r.enabled,
       ],
     );
-    res.json({ id });
+    return res.json({ id });
   } catch (e: any) {
-    console.error("POST /rules error", e);
-    res.status(500).json({ error: e.message });
+    console.warn("POST /rules falling back to memory:", e?.message);
+    const entry = { id, machine_id: r.machineId, sensor_id: r.sensorId || null, metric: r.metric, operator: r.operator, min_value: r.minValue ?? null, max_value: r.maxValue ?? null, threshold_value: r.thresholdValue ?? null, priority: r.priority || 'medium', message: r.message || 'Alerta de sensor', enabled: r.enabled !== false };
+    mem.rules = mem.rules.filter((x:any) => x.id !== id);
+    mem.rules.push(entry);
+    return res.json({ id });
   }
 });
 
 // Alerts
 iotRouter.get("/alerts", async (req, res) => {
+  const status = req.query.status as string | undefined;
   try {
-    const ok = await ensureIotTables();
-    const status = req.query.status as string | undefined;
-    if (!ok) {
-      const list = status ? mem.alerts.filter((a:any)=>a.status===status) : mem.alerts;
-      return res.json(list.sort((a:any,b:any)=> (a.created_at > b.created_at ? -1 : 1)));
-    }
+    await ensureIotTables();
     const { rows } = await query(
       `SELECT * FROM iot.alerts ${status ? `WHERE status = $1` : ""} ORDER BY created_at DESC`,
       status ? [status] : (undefined as any),
     );
-    res.json(rows);
+    return res.json(rows);
   } catch (e: any) {
-    console.error("GET /alerts error", e);
-    res.status(500).json({ error: e.message });
+    console.warn("GET /alerts falling back to memory:", e?.message);
+    const list = status ? mem.alerts.filter((a:any)=>a.status===status) : mem.alerts;
+    return res.json(list.sort((a:any,b:any)=> (a.created_at > b.created_at ? -1 : 1)));
   }
 });
 
 iotRouter.post("/alerts/:id/ack", async (req, res) => {
+  const id = req.params.id;
   try {
-    const ok = await ensureIotTables();
-    const id = req.params.id;
-    if (!ok) {
-      mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'acknowledged' } : a);
-      return res.json({ ok: true });
-    }
-    await query(`UPDATE iot.alerts SET status = 'acknowledged' WHERE id = $1`, [
-      id,
-    ]);
-    res.json({ ok: true });
+    await ensureIotTables();
+    await query(`UPDATE iot.alerts SET status = 'acknowledged' WHERE id = $1`, [ id ]);
+    return res.json({ ok: true });
   } catch (e: any) {
-    console.error("POST /alerts/:id/ack error", e);
-    res.status(500).json({ error: e.message });
+    console.warn("POST /alerts/:id/ack falling back to memory:", e?.message);
+    mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'acknowledged' } : a);
+    return res.json({ ok: true });
   }
 });
 
 // Ingest readings (from OPC-UA/MQTT/HTTP gateways)
 iotRouter.post("/sensors/ingest", async (req, res) => {
+  const { sensorId, metric, value, timestamp } = req.body as {
+    sensorId: string;
+    metric: string;
+    value: number;
+    timestamp?: string;
+  };
+
+  // Try DB path first
   try {
-    const ok = await ensureIotTables();
-    const { sensorId, metric, value, timestamp } = req.body as {
-      sensorId: string;
-      metric: string;
-      value: number;
-      timestamp?: string;
-    };
-
+    await ensureIotTables();
     let created = 0;
-    if (!ok) {
-      const binds = mem.bindings.filter((b:any)=> b.sensor_id === sensorId && b.metric === metric);
-      for (const b of binds) {
-        const adjusted = Number(value) * (Number(b.scale) ?? 1) + (Number(b.offset) ?? 0);
-        const rules = mem.rules.filter((r:any)=> r.enabled !== false && r.machine_id === b.machine_id && r.metric === metric && (r.sensor_id == null || r.sensor_id === sensorId));
-        for (const r of rules) {
-          let violated = false;
-          if (r.operator === 'range') {
-            if (r.min_value != null && adjusted < Number(r.min_value)) violated = true;
-            if (r.max_value != null && adjusted > Number(r.max_value)) violated = true;
-          } else if (r.operator === 'gt') {
-            violated = adjusted > Number(r.threshold_value);
-          } else if (r.operator === 'lt') {
-            violated = adjusted < Number(r.threshold_value);
-          } else if (r.operator === 'eq') {
-            violated = adjusted === Number(r.threshold_value);
-          }
-          if (violated) {
-            const alertId = genId('alert');
-            mem.alerts.unshift({ id: alertId, machine_id: b.machine_id, rule_id: r.id, sensor_id: sensorId, metric, value: adjusted, status: 'active', priority: r.priority, message: r.message, created_at: timestamp || new Date().toISOString() });
-            created++;
-          }
-        }
-      }
-      return res.json({ ok: true, alertsCreated: created });
-    }
-
-    // Find bindings and related rules
     const binds = await query<{
       id: string;
       machine_id: string;
@@ -430,31 +380,25 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
     );
 
     for (const b of binds.rows) {
-      const adjusted =
-        Number(value) * (Number(b as any).scale ?? 1) +
-        (Number((b as any).offset) ?? 0);
+      const adjusted = Number(value) * (Number((b as any).scale) ?? 1) + (Number((b as any).offset) ?? 0);
       const rules = await query<any>(
         `SELECT * FROM iot.sensor_rules WHERE enabled = true AND machine_id = $1 AND (sensor_id IS NULL OR sensor_id = $2) AND metric = $3`,
         [b.machine_id, sensorId, metric],
       );
-
       for (const r of rules.rows) {
         let violated = false;
-        if (r.operator === "range") {
-          if (r.min_value != null && adjusted < Number(r.min_value))
-            violated = true;
-          if (r.max_value != null && adjusted > Number(r.max_value))
-            violated = true;
-        } else if (r.operator === "gt") {
+        if (r.operator === 'range') {
+          if (r.min_value != null && adjusted < Number(r.min_value)) violated = true;
+          if (r.max_value != null && adjusted > Number(r.max_value)) violated = true;
+        } else if (r.operator === 'gt') {
           violated = adjusted > Number(r.threshold_value);
-        } else if (r.operator === "lt") {
+        } else if (r.operator === 'lt') {
           violated = adjusted < Number(r.threshold_value);
-        } else if (r.operator === "eq") {
+        } else if (r.operator === 'eq') {
           violated = adjusted === Number(r.threshold_value);
         }
-
         if (violated) {
-          const alertId = genId("alert");
+          const alertId = genId('alert');
           await query(
             `INSERT INTO iot.alerts (id, machine_id, rule_id, sensor_id, metric, value, status, priority, message, created_at)
             VALUES ($1,$2,$3,$4,$5,$6,'active',$7,$8,COALESCE($9, now()))`,
@@ -474,10 +418,34 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
         }
       }
     }
-
-    res.json({ ok: true, alertsCreated: created });
+    return res.json({ ok: true, alertsCreated: created });
   } catch (e: any) {
-    console.error("POST /sensors/ingest error", e);
-    res.status(500).json({ error: e.message });
+    console.warn("/sensors/ingest falling back to memory:", e?.message);
+    // Fallback to memory path
+    let created = 0;
+    const binds = mem.bindings.filter((b:any)=> b.sensor_id === sensorId && b.metric === metric);
+    for (const b of binds) {
+      const adjusted = Number(value) * (Number(b.scale) ?? 1) + (Number(b.offset) ?? 0);
+      const rules = mem.rules.filter((r:any)=> r.enabled !== false && r.machine_id === b.machine_id && r.metric === metric && (r.sensor_id == null || r.sensor_id === sensorId));
+      for (const r of rules) {
+        let violated = false;
+        if (r.operator === 'range') {
+          if (r.min_value != null && adjusted < Number(r.min_value)) violated = true;
+          if (r.max_value != null && adjusted > Number(r.max_value)) violated = true;
+        } else if (r.operator === 'gt') {
+          violated = adjusted > Number(r.threshold_value);
+        } else if (r.operator === 'lt') {
+          violated = adjusted < Number(r.threshold_value);
+        } else if (r.operator === 'eq') {
+          violated = adjusted === Number(r.threshold_value);
+        }
+        if (violated) {
+          const alertId = genId('alert');
+          mem.alerts.unshift({ id: alertId, machine_id: b.machine_id, rule_id: r.id, sensor_id: sensorId, metric, value: adjusted, status: 'active', priority: r.priority, message: r.message, created_at: timestamp || new Date().toISOString() });
+          created++;
+        }
+      }
+    }
+    return res.json({ ok: true, alertsCreated: created });
   }
 });
