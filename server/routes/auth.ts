@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import express from 'express';
 import bcrypt from 'bcryptjs';
 import { 
   generateTokens, 
@@ -9,7 +9,7 @@ import {
   AuthRequest 
 } from '../middleware/auth';
 
-const router = Router();
+const router = express.Router();
 
 // Configurações de cookies
 const COOKIE_OPTIONS = {
