@@ -3,6 +3,10 @@ import { isDbConfigured, query } from "../db";
 
 export const iotRouter = express.Router();
 
+// Ensure JSON parsing even if app-level middleware is altered
+iotRouter.use(express.json({ limit: '2mb' }));
+iotRouter.use(express.urlencoded({ extended: true }));
+
 const mem = {
   sensors: [] as any[],
   bindings: [] as any[],
@@ -107,8 +111,11 @@ iotRouter.get("/sensors", async (_req, res) => {
 iotRouter.post("/sensors", async (req, res) => {
   try {
     await ensureIotTables();
-    const s = req.body;
-    const id = s.id || genId("sensor");
+    const s = req.body || {};
+    if (!s || typeof s !== 'object' || !('name' in s) || !('type' in s) || !('protocol' in s)) {
+      return res.status(400).json({ error: 'Dados inválidos do sensor' });
+    }
+    const id = (s as any).id || genId("sensor");
     if (!isDbConfigured()) {
       mem.sensors.unshift({ id, ...s, created_at: new Date().toISOString() });
       return res.json({ id });
