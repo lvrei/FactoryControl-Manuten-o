@@ -1,7 +1,9 @@
 import express from "express";
-import { query } from "../db";
+import { isDbConfigured, query } from "../db";
 
 export const iotRouter = express.Router();
+
+const memSensors: any[] = [];
 
 async function ensureIotTables() {
   // Sensors table
@@ -83,6 +85,9 @@ function genId(prefix: string) {
 iotRouter.get("/sensors", async (_req, res) => {
   try {
     await ensureIotTables();
+    if (!isDbConfigured()) {
+      return res.json(memSensors);
+    }
     const { rows } = await query(
       `SELECT * FROM sensors ORDER BY created_at DESC`,
     );
@@ -98,6 +103,10 @@ iotRouter.post("/sensors", async (req, res) => {
     await ensureIotTables();
     const s = req.body;
     const id = s.id || genId("sensor");
+    if (!isDbConfigured()) {
+      memSensors.unshift({ id, ...s, created_at: new Date().toISOString() });
+      return res.json({ id });
+    }
     await query(
       `INSERT INTO sensors (id, name, type, protocol, address, metadata)
       VALUES ($1,$2,$3,$4,$5,COALESCE($6,'{}'::jsonb))
