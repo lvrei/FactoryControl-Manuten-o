@@ -136,15 +136,25 @@ async function ensureIotTables(): Promise<boolean> {
 
       // If machines table appears later, attempt to attach FKs safely
       if (hasMachines) {
-        try {
-          await query(`ALTER TABLE iot.sensor_rules ADD CONSTRAINT IF NOT EXISTS sensor_rules_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE` as any);
-        } catch {}
-        try {
-          await query(`ALTER TABLE iot.sensor_bindings ADD CONSTRAINT IF NOT EXISTS sensor_bindings_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE` as any);
-        } catch {}
-        try {
-          await query(`ALTER TABLE iot.alerts ADD CONSTRAINT IF NOT EXISTS alerts_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE` as any);
-        } catch {}
+        const existingConstraint = async (name: string) => {
+          const r = await query<{ exists: boolean }>(
+            `SELECT EXISTS (
+               SELECT 1 FROM information_schema.table_constraints
+               WHERE constraint_schema = 'iot' AND constraint_name = $1
+             ) AS exists`,
+            [name]
+          );
+          return !!r.rows[0]?.exists;
+        };
+        if (!(await existingConstraint('sensor_rules_machine_fk'))) {
+          await query(`ALTER TABLE iot.sensor_rules ADD CONSTRAINT sensor_rules_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`);
+        }
+        if (!(await existingConstraint('sensor_bindings_machine_fk'))) {
+          await query(`ALTER TABLE iot.sensor_bindings ADD CONSTRAINT sensor_bindings_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`);
+        }
+        if (!(await existingConstraint('alerts_machine_fk'))) {
+          await query(`ALTER TABLE iot.alerts ADD CONSTRAINT alerts_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`);
+        }
       }
 
       return true;
