@@ -47,50 +47,33 @@
 
       // Enhanced PWA registration with better mobile support
       if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw-test.js', {
-            scope: '/'
-          })
-            .then(function(registration) {
-              console.log('✅ Test ServiceWorker registered:', registration.scope);
-              return navigator.serviceWorker.register('/sw.js', {
-                scope: '/'
-              });
-            })
-            .then(function(registration) {
-              console.log('✅ Main ServiceWorker registered:', registration.scope);
-              console.log('✅ ServiceWorker registered successfully:', registration.scope);
-
-              // Check for updates more aggressively
-              registration.addEventListener('updatefound', function() {
-                const newWorker = registration.installing;
-                console.log('🔄 New ServiceWorker installing...');
-
-                newWorker.addEventListener('statechange', function() {
-                  console.log('ServiceWorker state changed to:', newWorker.state);
-
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('🆕 New version available');
-
-                    // Auto-update for mobile devices
-                    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-                    if (isMobile) {
-                      // Auto-reload on mobile for smoother experience
-                      setTimeout(() => {
-                        newWorker.postMessage({ type: 'SKIP_WAITING' });
-                        window.location.reload();
-                      }, 1000);
-                    } else {
-                      // Ask permission on desktop
-                      if (confirm('Nova versão disponível! Recarregar para atualizar?')) {
-                        newWorker.postMessage({ type: 'SKIP_WAITING' });
-                        window.location.reload();
+        const isLocalDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+        if (isLocalDev) {
+          console.log('⚠️ SW desativado em desenvolvimento local');
+        } else {
+          window.addEventListener('load', function() {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+              .then(function(registration) {
+                console.log('✅ ServiceWorker registered:', registration.scope);
+                registration.addEventListener('updatefound', function() {
+                  const newWorker = registration.installing;
+                  if (!newWorker) return;
+                  newWorker.addEventListener('statechange', function() {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      const key = 'fc_sw_notified_once';
+                      if (!sessionStorage.getItem(key)) {
+                        console.log('🆕 Nova versão disponível. Será aplicada no próximo arranque.');
+                        sessionStorage.setItem(key, '1');
                       }
                     }
-                  }
+                  });
                 });
+              })
+              .catch(function(err) {
+                console.error('❌ ServiceWorker registration failed:', err);
               });
+          });
+        }
 
             })
             .catch(function(err) {
