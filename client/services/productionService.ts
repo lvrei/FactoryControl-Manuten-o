@@ -325,6 +325,80 @@ class ProductionService {
     }
   }
 
+  // Criar máquina
+  async createMachine(machine: Pick<Machine, 'name' | 'type' | 'status' | 'maxDimensions' | 'cuttingPrecision'>): Promise<Machine> {
+    try {
+      this.ensureInitialized();
+      const data = this.getStoredData() || {};
+      const machines: Machine[] = Array.isArray(data.machines) && data.machines.length > 0 ? data.machines : [...this.mockMachines];
+
+      const newMachine: Machine = {
+        id: `${machine.type.toLowerCase()}-${Date.now()}`,
+        name: machine.name,
+        type: machine.type,
+        status: machine.status || 'available',
+        maxDimensions: machine.maxDimensions,
+        cuttingPrecision: machine.cuttingPrecision,
+        currentOperator: null,
+        lastMaintenance: new Date().toISOString(),
+        operatingHours: 0,
+        specifications: ''
+      };
+
+      data.machines = [...machines, newMachine];
+      data.lastUpdated = new Date().toISOString();
+      this.saveData(data);
+      return newMachine;
+    } catch (error) {
+      console.error('❌ Erro ao criar máquina:', error);
+      throw error;
+    }
+  }
+
+  // Atualizar máquina (nome, tipo, status, capacidades...)
+  async updateMachine(machineId: string, updates: Partial<Machine>): Promise<Machine> {
+    try {
+      this.ensureInitialized();
+      const data = this.getStoredData() || {};
+      if (!Array.isArray(data.machines) || data.machines.length === 0) {
+        data.machines = [...this.mockMachines];
+      }
+
+      const idx = data.machines.findIndex((m: Machine) => m.id === machineId);
+      if (idx === -1) {
+        const mock = this.mockMachines.find(m => m.id === machineId);
+        if (!mock) throw new Error('Máquina não encontrada');
+        data.machines.push({ ...mock, ...updates });
+      } else {
+        data.machines[idx] = { ...data.machines[idx], ...updates };
+      }
+
+      data.lastUpdated = new Date().toISOString();
+      this.saveData(data);
+      return data.machines.find((m: Machine) => m.id === machineId)!;
+    } catch (error) {
+      console.error('❌ Erro ao atualizar máquina:', error);
+      throw error;
+    }
+  }
+
+  // Excluir máquina
+  async deleteMachine(machineId: string): Promise<void> {
+    try {
+      this.ensureInitialized();
+      const data = this.getStoredData() || {};
+      if (!Array.isArray(data.machines) || data.machines.length === 0) {
+        data.machines = [...this.mockMachines];
+      }
+      data.machines = data.machines.filter((m: Machine) => m.id !== machineId);
+      data.lastUpdated = new Date().toISOString();
+      this.saveData(data);
+    } catch (error) {
+      console.error('❌ Erro ao excluir máquina:', error);
+      throw error;
+    }
+  }
+
   // Atualizar status da máquina (usado pela manutenção)
   async updateMachineStatus(machineId: string, status: Machine['status']): Promise<void> {
     try {
