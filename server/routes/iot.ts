@@ -3,9 +3,15 @@ import { isDbConfigured, query } from "../db";
 
 export const iotRouter = express.Router();
 
-const memSensors: any[] = [];
+const mem = {
+  sensors: [] as any[],
+  bindings: [] as any[],
+  rules: [] as any[],
+  alerts: [] as any[],
+};
 
 async function ensureIotTables() {
+  if (!isDbConfigured()) return;
   // Sensors table
   await query(`CREATE TABLE IF NOT EXISTS sensors (
     id TEXT PRIMARY KEY,
@@ -86,7 +92,7 @@ iotRouter.get("/sensors", async (_req, res) => {
   try {
     await ensureIotTables();
     if (!isDbConfigured()) {
-      return res.json(memSensors);
+      return res.json(mem.sensors);
     }
     const { rows } = await query(
       `SELECT * FROM sensors ORDER BY created_at DESC`,
@@ -104,7 +110,7 @@ iotRouter.post("/sensors", async (req, res) => {
     const s = req.body;
     const id = s.id || genId("sensor");
     if (!isDbConfigured()) {
-      memSensors.unshift({ id, ...s, created_at: new Date().toISOString() });
+      mem.sensors.unshift({ id, ...s, created_at: new Date().toISOString() });
       return res.json({ id });
     }
     await query(
@@ -133,6 +139,11 @@ iotRouter.post("/sensors/bind", async (req, res) => {
     await ensureIotTables();
     const b = req.body;
     const id = b.id || genId("bind");
+    if (!isDbConfigured()) {
+      mem.bindings = mem.bindings.filter((x) => x.id !== id);
+      mem.bindings.push({ id, sensor_id: b.sensorId, machine_id: b.machineId, metric: b.metric, unit: b.unit, scale: b.scale ?? 1, offset: b.offset ?? 0, created_at: new Date().toISOString() });
+      return res.json({ id });
+    }
     await query(
       `INSERT INTO sensor_bindings (id, sensor_id, machine_id, metric, unit, scale, offset)
       VALUES ($1,$2,$3,$4,$5,COALESCE($6,1),COALESCE($7,0))
@@ -158,10 +169,39 @@ iotRouter.post("/sensors/bind", async (req, res) => {
 iotRouter.get("/rules", async (_req, res) => {
   try {
     await ensureIotTables();
+    if (!isDbConfigured()) {
+      const data = mem.rules.filter((r:any) => r.enabled !== false).map((r:any) => ({
+        id: r.id,
+        machineId: r.machine_id,
+        sensorId: r.sensor_id,
+        metric: r.metric,
+        operator: r.operator,
+        minValue: r.min_value,
+        maxValue: r.max_value,
+        thresholdValue: r.threshold_value,
+        priority: r.priority,
+        message: r.message,
+        enabled: r.enabled,
+      }));
+      return res.json(data);
+    }
     const { rows } = await query(
       `SELECT * FROM sensor_rules WHERE enabled = true ORDER BY created_at DESC`,
     );
-    res.json(rows);
+    const data = rows.map((r:any) => ({
+      id: r.id,
+      machineId: r.machine_id,
+      sensorId: r.sensor_id,
+      metric: r.metric,
+      operator: r.operator,
+      minValue: r.min_value,
+      maxValue: r.max_value,
+      thresholdValue: r.threshold_value,
+      priority: r.priority,
+      message: r.message,
+      enabled: r.enabled,
+    }));
+    res.json(data);
   } catch (e: any) {
     console.error("GET /rules error", e);
     res.status(500).json({ error: e.message });
@@ -173,6 +213,12 @@ iotRouter.post("/rules", async (req, res) => {
     await ensureIotTables();
     const r = req.body;
     const id = r.id || genId("rule");
+    if (!isDbConfigured()) {
+      const entry = { id, machine_id: r.machineId, sensor_id: r.sensorId || null, metric: r.metric, operator: r.operator, min_value: r.minValue ?? null, max_value: r.maxValue ?? null, threshold_value: r.thresholdValue ?? null, priority: r.priority || 'medium', message: r.message || 'Alerta de sensor', enabled: r.enabled !== false };
+      mem.rules = mem.rules.filter((x:any) => x.id !== id);
+      mem.rules.push(entry);
+      return res.json({ id });
+    }
     await query(
       `INSERT INTO sensor_rules (id, machine_id, sensor_id, metric, operator, min_value, max_value, threshold_value, priority, message, enabled)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,COALESCE($11,true))
@@ -203,6 +249,10 @@ iotRouter.get("/alerts", async (req, res) => {
   try {
     await ensureIotTables();
     const status = req.query.status as string | undefined;
+    if (!isDbConfigured()) {
+      const list = status ? mem.alerts.filter((a:any)=>a.status===status) : mem.alerts;
+      return res.json(list.sort((a:any,b:any)=> (a.created_at > b.created_at ? -1 : 1)));
+    }
     const { rows } = await query(
       `SELECT * FROM alerts ${status ? `WHERE status = $1` : ""} ORDER BY created_at DESC`,
       status ? [status] : (undefined as any),
@@ -218,6 +268,10 @@ iotRouter.post("/alerts/:id/ack", async (req, res) => {
   try {
     await ensureIotTables();
     const id = req.params.id;
+    if (!isDbConfigured()) {
+      mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'acknowledged' } : a);
+      return res.json({ ok: true });
+    }
     await query(`UPDATE alerts SET status = 'acknowledged' WHERE id = $1`, [
       id,
     ]);
@@ -239,6 +293,34 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
       timestamp?: string;
     };
 
+    let created = 0;
+    if (!isDbConfigured()) {
+      const binds = mem.bindings.filter((b:any)=> b.sensor_id === sensorId && b.metric === metric);
+      for (const b of binds) {
+        const adjusted = Number(value) * (Number(b.scale) ?? 1) + (Number(b.offset) ?? 0);
+        const rules = mem.rules.filter((r:any)=> r.enabled !== false && r.machine_id === b.machine_id && r.metric === metric && (r.sensor_id == null || r.sensor_id === sensorId));
+        for (const r of rules) {
+          let violated = false;
+          if (r.operator === 'range') {
+            if (r.min_value != null && adjusted < Number(r.min_value)) violated = true;
+            if (r.max_value != null && adjusted > Number(r.max_value)) violated = true;
+          } else if (r.operator === 'gt') {
+            violated = adjusted > Number(r.threshold_value);
+          } else if (r.operator === 'lt') {
+            violated = adjusted < Number(r.threshold_value);
+          } else if (r.operator === 'eq') {
+            violated = adjusted === Number(r.threshold_value);
+          }
+          if (violated) {
+            const alertId = genId('alert');
+            mem.alerts.unshift({ id: alertId, machine_id: b.machine_id, rule_id: r.id, sensor_id: sensorId, metric, value: adjusted, status: 'active', priority: r.priority, message: r.message, created_at: timestamp || new Date().toISOString() });
+            created++;
+          }
+        }
+      }
+      return res.json({ ok: true, alertsCreated: created });
+    }
+
     // Find bindings and related rules
     const binds = await query<{
       id: string;
@@ -250,7 +332,6 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
       [sensorId, metric],
     );
 
-    let created = 0;
     for (const b of binds.rows) {
       const adjusted =
         Number(value) * (Number(b as any).scale ?? 1) +
