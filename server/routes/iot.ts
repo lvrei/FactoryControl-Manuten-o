@@ -118,7 +118,7 @@ iotRouter.post("/sensors", async (req, res) => {
       return res.status(400).json({ error: 'Dados inválidos do sensor' });
     }
     const id = (s as any).id || genId("sensor");
-    if (!isDbConfigured()) {
+    if (!useDb()) {
       mem.sensors.unshift({ id, ...s, created_at: new Date().toISOString() });
       return res.json({ id });
     }
@@ -222,7 +222,7 @@ iotRouter.post("/rules", async (req, res) => {
     await ensureIotTables();
     const r = req.body;
     const id = r.id || genId("rule");
-    if (!isDbConfigured()) {
+    if (!useDb()) {
       const entry = { id, machine_id: r.machineId, sensor_id: r.sensorId || null, metric: r.metric, operator: r.operator, min_value: r.minValue ?? null, max_value: r.maxValue ?? null, threshold_value: r.thresholdValue ?? null, priority: r.priority || 'medium', message: r.message || 'Alerta de sensor', enabled: r.enabled !== false };
       mem.rules = mem.rules.filter((x:any) => x.id !== id);
       mem.rules.push(entry);
@@ -258,7 +258,7 @@ iotRouter.get("/alerts", async (req, res) => {
   try {
     await ensureIotTables();
     const status = req.query.status as string | undefined;
-    if (!isDbConfigured()) {
+    if (!useDb()) {
       const list = status ? mem.alerts.filter((a:any)=>a.status===status) : mem.alerts;
       return res.json(list.sort((a:any,b:any)=> (a.created_at > b.created_at ? -1 : 1)));
     }
@@ -277,7 +277,7 @@ iotRouter.post("/alerts/:id/ack", async (req, res) => {
   try {
     await ensureIotTables();
     const id = req.params.id;
-    if (!isDbConfigured()) {
+    if (!useDb()) {
       mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'acknowledged' } : a);
       return res.json({ ok: true });
     }
@@ -303,7 +303,7 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
     };
 
     let created = 0;
-    if (!isDbConfigured()) {
+    if (!useDb()) {
       const binds = mem.bindings.filter((b:any)=> b.sensor_id === sensorId && b.metric === metric);
       for (const b of binds) {
         const adjusted = Number(value) * (Number(b.scale) ?? 1) + (Number(b.offset) ?? 0);
