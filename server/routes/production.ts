@@ -131,6 +131,7 @@ productionRouter.delete('/orders/:id', async (req, res) => {
 // Machines CRUD
 productionRouter.get('/machines', async (_req, res) => {
   try {
+    await query(`UPDATE machines SET current_operator = NULL WHERE id = 'carousel-001' AND current_operator = 'João Silva'`);
     let { rows } = await query(`SELECT id, name, type, status,
       max_length_mm, max_width_mm, max_height_mm, cutting_precision,
       current_operator, last_maintenance, operating_hours, specifications
@@ -149,7 +150,7 @@ productionRouter.get('/machines', async (_req, res) => {
         {
           id: 'carousel-001', name: 'Carrossel-01', type: 'CAROUSEL', status: 'busy',
           max_length_mm: 2500, max_width_mm: 1800, max_height_mm: 1500,
-          cutting_precision: 2.0, current_operator: 'João Silva',
+          cutting_precision: 2.0, current_operator: null,
           last_maintenance: new Date().toISOString(), operating_hours: 980,
           specifications: 'Coxins'
         },

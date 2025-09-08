@@ -77,7 +77,7 @@ class ProductionService {
       status: 'busy',
       maxDimensions: { length: 2500, width: 1800, height: 1500 },
       cuttingPrecision: 2.0,
-      currentOperator: 'João Silva',
+      currentOperator: null,
       lastMaintenance: new Date().toISOString(),
       operatingHours: 980,
       specifications: 'Coxins'
@@ -194,7 +194,7 @@ class ProductionService {
           );
         }
         
-        // Limpar sessões antigas
+        // Limpar sess��es antigas
         if (data.operatorSessions) {
           data.operatorSessions = data.operatorSessions.filter(
             session => new Date(session.startTime) > cutoffDate
