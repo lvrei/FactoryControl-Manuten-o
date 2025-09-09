@@ -38,9 +38,9 @@ export default function AlertsSimple() {
   const urlParams = new URLSearchParams(window.location.search);
   const initialTab = urlParams.get('tab') || 'alerts';
   const selectedMachineFromURL = urlParams.get('machine');
-  const [activeTab, setActiveTab] = useState<'alerts' | 'maintenance' | 'history' | 'analytics' | 'rules'>(
-    (initialTab === 'history' || initialTab === 'maintenance' || initialTab === 'analytics' || initialTab === 'rules')
-      ? initialTab as any
+  const [activeTab, setActiveTab] = useState<'alerts' | 'iot_history' | 'maintenance' | 'history' | 'analytics' | 'rules'>(
+    (initialTab === 'history' || initialTab === 'maintenance' || initialTab === 'analytics' || initialTab === 'rules' || initialTab === 'iot_history')
+      ? (initialTab as any)
       : 'alerts'
   );
   const [maintenanceRequests, setMaintenanceRequests] = useState<MaintenanceRequest[]>([]);
@@ -50,6 +50,8 @@ export default function AlertsSimple() {
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const [showWorkSheet, setShowWorkSheet] = useState(false);
   const [iotAlerts, setIotAlerts] = useState<IoTAlert[]>([]);
+  const [iotHistory, setIotHistory] = useState<IoTAlert[]>([]);
+  const [iotHistoryStatus, setIotHistoryStatus] = useState<'all' | 'active' | 'acknowledged' | 'resolved'>('all');
 
   useEffect(() => {
     loadMaintenanceData();
@@ -66,6 +68,20 @@ export default function AlertsSimple() {
     const t = setInterval(loadAlerts, 10000);
     return () => { cancelled = true; clearInterval(t); };
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== 'iot_history') return;
+    let cancelled = false;
+    const loadHistory = async () => {
+      try {
+        const list = await iotService.listAlerts();
+        if (!cancelled) setIotHistory(list || []);
+      } catch {}
+    };
+    loadHistory();
+    const t = setInterval(loadHistory, 30000);
+    return () => { cancelled = true; clearInterval(t); };
+  }, [activeTab]);
 
   const loadMaintenanceData = async () => {
     try {
@@ -228,6 +244,17 @@ export default function AlertsSimple() {
           Alertas (0)
         </button>
         <button
+          onClick={() => handleTabClick('iot_history')}
+          className={cn(
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            activeTab === 'iot_history'
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
+          )}
+        >
+          Histórico IoT
+        </button>
+        <button
           onClick={() => handleTabClick('maintenance')}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
@@ -299,6 +326,55 @@ export default function AlertsSimple() {
                 ))}
               </div>
             )}
+          </div>
+        )}
+
+        {activeTab === 'iot_history' && (
+          <div className="rounded-lg border bg-card p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold">Histórico de Alertas IoT</h3>
+              <select
+                value={iotHistoryStatus}
+                onChange={(e) => setIotHistoryStatus(e.target.value as any)}
+                className="rounded border px-2 py-1 text-sm"
+              >
+                <option value="all">Todos</option>
+                <option value="active">Ativos</option>
+                <option value="acknowledged">Reconhecidos</option>
+                <option value="resolved">Resolvidos</option>
+              </select>
+            </div>
+            {(() => {
+              const list = iotHistoryStatus === 'all' ? iotHistory : iotHistory.filter(a => a.status === iotHistoryStatus);
+              if (!list || list.length === 0) {
+                return (
+                  <div className="text-center py-10">
+                    <Clock className="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm text-muted-foreground">Sem histórico encontrado</p>
+                  </div>
+                );
+              }
+              return (
+                <div className="space-y-2 max-h-[480px] overflow-auto">
+                  {list.map((a) => (
+                    <div key={a.id} className="p-3 rounded border flex items-start gap-3">
+                      <div className={cn("text-xs uppercase px-2 py-1 rounded", a.status === 'active' ? 'bg-red-600 text-white' : a.status === 'acknowledged' ? 'bg-amber-500 text-white' : 'bg-green-600 text-white')}>
+                        {a.status}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium text-sm">Máquina: {a.machine_id}</div>
+                          <div className={cn("text-xs uppercase px-2 py-1 rounded", a.priority === 'critical' ? 'bg-red-600 text-white' : a.priority === 'high' ? 'bg-orange-600 text-white' : a.priority === 'medium' ? 'bg-amber-500 text-white' : 'bg-gray-500 text-white')}>{a.priority}</div>
+                        </div>
+                        <div className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleString()}</div>
+                        <div className="text-xs text-muted-foreground">{a.metric}: {a.value}</div>
+                        {a.message && <div className="text-xs mt-1">{a.message}</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 
