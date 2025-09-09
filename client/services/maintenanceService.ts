@@ -6,6 +6,23 @@ class MaintenanceService {
   private maintenanceAlertsKey = 'factoryControl_maintenanceAlerts';
   private machineDowntimeKey = 'factoryControl_machineDowntime';
 
+  // DB-backed Scheduled Maintenances (plans)
+  async getMaintenancePlans(): Promise<any[]> {
+    try { const r = await fetch('/api/maintenance/plans'); if (r.ok) return r.json(); } catch {}
+    return [];
+  }
+  async createMaintenancePlan(plan: any): Promise<string> {
+    const r = await fetch('/api/maintenance/plans', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(plan) });
+    if (!r.ok) throw new Error('Falha ao criar manutenção'); const j = await r.json(); return j.id;
+  }
+  async updateMaintenancePlan(id: string, patch: any): Promise<void> {
+    const r = await fetch(`/api/maintenance/plans/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+    if (!r.ok) throw new Error('Falha ao atualizar manutenção');
+  }
+  async deleteMaintenancePlan(id: string): Promise<void> {
+    const r = await fetch(`/api/maintenance/plans/${id}`, { method: 'DELETE' }); if (!r.ok) throw new Error('Falha ao apagar manutenção');
+  }
+
   // Maintenance Requests
   async createMaintenanceRequest(requestData: Omit<MaintenanceRequest, 'id' | 'requestedAt' | 'status' | 'priority'>): Promise<MaintenanceRequest> {
     const priority = this.calculatePriority(requestData.urgencyLevel);
