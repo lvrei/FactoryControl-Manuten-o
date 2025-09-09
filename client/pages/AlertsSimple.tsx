@@ -241,7 +241,7 @@ export default function AlertsSimple() {
               : "text-muted-foreground hover:text-foreground"
           )}
         >
-          Alertas (0)
+          Alertas ({iotAlerts.length})
         </button>
         <button
           onClick={() => handleTabClick('iot_history')}
