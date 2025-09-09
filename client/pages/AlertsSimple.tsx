@@ -29,6 +29,9 @@ import { MaintenanceRequest, MaintenanceAlert, MachineDowntime } from '@/types/p
 import { MaintenancePopupContainer } from '@/components/MaintenancePopup';
 import { MaintenanceWorkSheet } from '@/components/MaintenanceWorkSheet';
 import { MachineMaintenanceHistory } from '@/components/MachineMaintenanceHistory';
+import { iotService, type Alert as IoTAlert } from '@/services/iotService';
+import { IoTAlertPopupContainer } from '@/components/IoTAlertPopup';
+import { authService } from '@/services/authService';
 
 export default function AlertsSimple() {
   // Check URL parameters
