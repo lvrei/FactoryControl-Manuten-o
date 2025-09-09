@@ -338,6 +338,22 @@ export default function Team() {
         role: newEmployee.role || undefined,
         accessLevel: newEmployee.accessLevel || undefined,
       } as any);
+
+      // Se acesso foi concedido ou credenciais alteradas, garantir conta no auth local
+      if (newEmployee.hasSystemAccess && newEmployee.username) {
+        try {
+          await authService.upsertUser({
+            username: newEmployee.username,
+            name: newEmployee.name || updatedEmployee.name,
+            email: newEmployee.email || updatedEmployee.email,
+            password: newEmployee.password || undefined,
+            role: newEmployee.role as any,
+            accessLevel: newEmployee.accessLevel,
+            isActive: true,
+          } as any);
+        } catch {}
+      }
+
       const refreshed = await employeesService.list();
       setEmployeesList(refreshed as any);
     } catch (e) {
