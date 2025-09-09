@@ -8,7 +8,7 @@ async function ensureExtrasTables() {
   if (extrasInit) return extrasInit;
   extrasInit = (async () => {
     try {
-      await query(`CREATE TABLE IF NOT EXISTS foam_types (
+      await query(`CREATE TABLE IF NOT EXISTS public.foam_types (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         density INT NOT NULL,
@@ -19,10 +19,10 @@ async function ensureExtrasTables() {
         stock_color TEXT,
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
-      await query(`CREATE TABLE IF NOT EXISTS product_sheets (
+      await query(`CREATE TABLE IF NOT EXISTS public.product_sheets (
         id TEXT PRIMARY KEY,
         internal_reference TEXT NOT NULL,
-        foam_type_id TEXT REFERENCES foam_types(id) ON DELETE SET NULL,
+        foam_type_id TEXT REFERENCES public.foam_types(id) ON DELETE SET NULL,
         standard_length INT,
         standard_width INT,
         standard_height INT,
@@ -42,7 +42,7 @@ async function ensureExtrasTables() {
 productionRouter.get('/foam-types', async (_req, res) => {
   try {
     await ensureExtrasTables();
-    const { rows } = await query(`SELECT * FROM foam_types ORDER BY created_at DESC`);
+    const { rows } = await query(`SELECT * FROM public.foam_types ORDER BY created_at DESC`);
     return res.json(rows.map(r => ({
       id: r.id,
       name: r.name,
@@ -65,7 +65,7 @@ productionRouter.post('/foam-types', async (req, res) => {
   const d = req.body || {}; const id = d.id || genId('foam');
   try {
     await ensureExtrasTables();
-    await query(`INSERT INTO foam_types (id, name, density, hardness, color, specifications, price_per_m3, stock_color)
+    await query(`INSERT INTO public.foam_types (id, name, density, hardness, color, specifications, price_per_m3, stock_color)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (id) DO NOTHING`, [
       id, d.name, d.density, d.hardness || null, d.color || null, d.specifications || null, d.pricePerM3 ?? null, d.stockColor || null
     ]);
@@ -80,7 +80,7 @@ productionRouter.patch('/foam-types/:id', async (req, res) => {
   const id = req.params.id; const d = req.body || {};
   try {
     await ensureExtrasTables();
-    await query(`UPDATE foam_types SET name=COALESCE($2,name), density=COALESCE($3,density), hardness=COALESCE($4,hardness), color=COALESCE($5,color), specifications=COALESCE($6,specifications), price_per_m3=COALESCE($7,price_per_m3), stock_color=COALESCE($8,stock_color) WHERE id=$1`, [
+    await query(`UPDATE public.foam_types SET name=COALESCE($2,name), density=COALESCE($3,density), hardness=COALESCE($4,hardness), color=COALESCE($5,color), specifications=COALESCE($6,specifications), price_per_m3=COALESCE($7,price_per_m3), stock_color=COALESCE($8,stock_color) WHERE id=$1`, [
       id, d.name, d.density, d.hardness, d.color, d.specifications, d.pricePerM3, d.stockColor
     ]);
     res.json({ ok: true });
@@ -94,7 +94,7 @@ productionRouter.delete('/foam-types/:id', async (req, res) => {
   const id = req.params.id;
   try {
     await ensureExtrasTables();
-    await query(`DELETE FROM foam_types WHERE id=$1`, [id]);
+    await query(`DELETE FROM public.foam_types WHERE id=$1`, [id]);
     res.json({ ok: true });
   } catch (e: any) {
     console.error('DELETE /foam-types/:id error', e);
@@ -107,7 +107,7 @@ productionRouter.get('/product-sheets', async (_req, res) => {
   try {
     await ensureExtrasTables();
     const { rows } = await query(`SELECT ps.*, ft.name as foam_name, ft.density as foam_density, ft.hardness as foam_hardness, ft.color as foam_color, ft.specifications as foam_specs, ft.price_per_m3 as foam_price, ft.stock_color as foam_stock_color
-      FROM product_sheets ps LEFT JOIN foam_types ft ON ft.id = ps.foam_type_id ORDER BY ps.created_at DESC`);
+      FROM public.product_sheets ps LEFT JOIN public.foam_types ft ON ft.id = ps.foam_type_id ORDER BY ps.created_at DESC`);
     return res.json(rows.map(r => ({
       id: r.id,
       internalReference: r.internal_reference,
@@ -137,8 +137,8 @@ productionRouter.post('/product-sheets', async (req, res) => {
   const d = req.body || {}; const id = d.id || genId('ps');
   try {
     await ensureExtrasTables();
-    await query(`INSERT INTO product_sheets (id, internal_reference, foam_type_id, standard_length, standard_width, standard_height, description, documents, photos) VALUES ($1,$2,$3,$4,$5,$6,$7,COALESCE($8,'[]'::jsonb),COALESCE($9,'[]'::jsonb)) ON CONFLICT (id) DO NOTHING`, [
-      id, d.internalReference, d.foamTypeId || d.foamType?.id || null, d.standardDimensions?.length ?? null, d.standardDimensions?.width ?? null, d.standardDimensions?.height ?? null, d.description || null, d.documents ? JSON.stringify(d.documents) : '[]', d.photos ? JSON.stringify(d.photos) : '[]'
+    await query(`INSERT INTO public.product_sheets (id, internal_reference, foam_type_id, standard_length, standard_width, standard_height, description, documents, photos) VALUES ($1,$2,$3,$4,$5,$6,$7,COALESCE($8::jsonb,'[]'::jsonb),COALESCE($9::jsonb,'[]'::jsonb)) ON CONFLICT (id) DO NOTHING`, [
+      id, d.internalReference, d.foamTypeId || d.foamType?.id || null, d.standardDimensions?.length ?? null, d.standardDimensions?.width ?? null, d.standardDimensions?.height ?? null, d.description || null, d.documents ? JSON.stringify(d.documents) : null, d.photos ? JSON.stringify(d.photos) : null
     ]);
     res.json({ id });
   } catch (e: any) {
@@ -151,8 +151,8 @@ productionRouter.patch('/product-sheets/:id', async (req, res) => {
   const id = req.params.id; const d = req.body || {};
   try {
     await ensureExtrasTables();
-    await query(`UPDATE product_sheets SET internal_reference=COALESCE($2,internal_reference), foam_type_id=COALESCE($3,foam_type_id), standard_length=COALESCE($4,standard_length), standard_width=COALESCE($5,standard_width), standard_height=COALESCE($6,standard_height), description=COALESCE($7,description), documents=COALESCE($8,documents), photos=COALESCE($9,photos) WHERE id=$1`, [
-      id, d.internalReference, d.foamTypeId || d.foamType?.id, d.standardDimensions?.length, d.standardDimensions?.width, d.standardDimensions?.height, d.description, d.documents ? JSON.stringify(d.documents) : undefined, d.photos ? JSON.stringify(d.photos) : undefined
+    await query(`UPDATE public.product_sheets SET internal_reference=COALESCE($2,internal_reference), foam_type_id=COALESCE($3,foam_type_id), standard_length=COALESCE($4,standard_length), standard_width=COALESCE($5,standard_width), standard_height=COALESCE($6,standard_height), description=COALESCE($7,description), documents=COALESCE($8::jsonb,documents), photos=COALESCE($9::jsonb,photos) WHERE id=$1`, [
+      id, d.internalReference, d.foamTypeId || d.foamType?.id, d.standardDimensions?.length, d.standardDimensions?.width, d.standardDimensions?.height, d.description, d.documents ? JSON.stringify(d.documents) : null, d.photos ? JSON.stringify(d.photos) : null
     ]);
     res.json({ ok: true });
   } catch (e: any) {
@@ -165,7 +165,7 @@ productionRouter.delete('/product-sheets/:id', async (req, res) => {
   const id = req.params.id;
   try {
     await ensureExtrasTables();
-    await query(`DELETE FROM product_sheets WHERE id=$1`, [id]);
+    await query(`DELETE FROM public.product_sheets WHERE id=$1`, [id]);
     res.json({ ok: true });
   } catch (e: any) {
     console.error('DELETE /product-sheets/:id error', e);
