@@ -8,7 +8,7 @@ async function ensureExtrasTables() {
   if (extrasInit) return extrasInit;
   extrasInit = (async () => {
     try {
-      // Create base tables
+      // Base tables
       await query(`CREATE TABLE IF NOT EXISTS public.foam_types (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -33,6 +33,32 @@ async function ensureExtrasTables() {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
+      // Foam blocks table
+      await query(`CREATE TABLE IF NOT EXISTS public.foam_blocks (
+        id TEXT PRIMARY KEY,
+        production_number TEXT NOT NULL,
+        foam_type_id TEXT REFERENCES public.foam_types(id) ON DELETE SET NULL,
+        length_mm INT,
+        width_mm INT,
+        height_mm INT,
+        volume NUMERIC,
+        weight NUMERIC,
+        production_date TIMESTAMPTZ,
+        block_number TEXT,
+        warehouse TEXT,
+        status TEXT,
+        quality_status TEXT,
+        non_conformities JSONB DEFAULT '[]'::jsonb,
+        comments TEXT,
+        received_date TIMESTAMPTZ DEFAULT now(),
+        received_by TEXT,
+        reserved_for TEXT,
+        consumed_date TIMESTAMPTZ,
+        consumed_by TEXT,
+        photos JSONB DEFAULT '[]'::jsonb,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
       // Ensure columns exist (idempotent migrations)
       await query(`ALTER TABLE public.foam_types
         ADD COLUMN IF NOT EXISTS hardness TEXT,
@@ -50,6 +76,29 @@ async function ensureExtrasTables() {
         ADD COLUMN IF NOT EXISTS standard_height INT,
         ADD COLUMN IF NOT EXISTS description TEXT,
         ADD COLUMN IF NOT EXISTS documents JSONB DEFAULT '[]'::jsonb,
+        ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'::jsonb,
+        ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now()`);
+
+      await query(`ALTER TABLE public.foam_blocks
+        ADD COLUMN IF NOT EXISTS production_number TEXT,
+        ADD COLUMN IF NOT EXISTS foam_type_id TEXT,
+        ADD COLUMN IF NOT EXISTS length_mm INT,
+        ADD COLUMN IF NOT EXISTS width_mm INT,
+        ADD COLUMN IF NOT EXISTS height_mm INT,
+        ADD COLUMN IF NOT EXISTS volume NUMERIC,
+        ADD COLUMN IF NOT EXISTS weight NUMERIC,
+        ADD COLUMN IF NOT EXISTS production_date TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS block_number TEXT,
+        ADD COLUMN IF NOT EXISTS warehouse TEXT,
+        ADD COLUMN IF NOT EXISTS status TEXT,
+        ADD COLUMN IF NOT EXISTS quality_status TEXT,
+        ADD COLUMN IF NOT EXISTS non_conformities JSONB DEFAULT '[]'::jsonb,
+        ADD COLUMN IF NOT EXISTS comments TEXT,
+        ADD COLUMN IF NOT EXISTS received_date TIMESTAMPTZ DEFAULT now(),
+        ADD COLUMN IF NOT EXISTS received_by TEXT,
+        ADD COLUMN IF NOT EXISTS reserved_for TEXT,
+        ADD COLUMN IF NOT EXISTS consumed_date TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS consumed_by TEXT,
         ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'::jsonb,
         ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now()`);
     } catch (e) {
@@ -249,6 +298,187 @@ productionRouter.delete("/product-sheets/:id", async (req, res) => {
     res.json({ ok: true });
   } catch (e: any) {
     console.error("DELETE /product-sheets/:id error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Foam Blocks
+productionRouter.get("/foam-blocks", async (req, res) => {
+  try {
+    await ensureExtrasTables();
+    const conditions: string[] = [];
+    const params: any[] = [];
+    let idx = 1;
+    if (req.query.warehouse && req.query.warehouse !== 'all') { conditions.push(`b.warehouse = $${idx++}`); params.push(req.query.warehouse); }
+    if (req.query.status) { conditions.push(`b.status = $${idx++}`); params.push(req.query.status); }
+    if (req.query.qualityStatus) { conditions.push(`b.quality_status = $${idx++}`); params.push(req.query.qualityStatus); }
+    if (req.query.foamType) { conditions.push(`ft.name ILIKE $${idx++}`); params.push(`%${req.query.foamType}%`); }
+    if (req.query.productionNumber) { conditions.push(`b.production_number ILIKE $${idx++}`); params.push(`%${req.query.productionNumber}%`); }
+    if (req.query.blockNumber) { conditions.push(`b.block_number ILIKE $${idx++}`); params.push(`%${req.query.blockNumber}%`); }
+    if (req.query.startDate && req.query.endDate) { conditions.push(`b.production_date BETWEEN $${idx++} AND $${idx++}`); params.push(req.query.startDate, req.query.endDate); }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const { rows } = await query(`
+      SELECT b.*, ft.name AS foam_name, ft.density AS foam_density, ft.hardness AS foam_hardness,
+             ft.color AS foam_color, ft.specifications AS foam_specs, ft.price_per_m3 AS foam_price, ft.stock_color AS foam_stock_color
+      FROM public.foam_blocks b
+      LEFT JOIN public.foam_types ft ON ft.id = b.foam_type_id
+      ${where}
+      ORDER BY b.created_at DESC
+    `, params);
+
+    return res.json(rows.map(r => ({
+      id: r.id,
+      productionNumber: r.production_number,
+      foamType: {
+        id: r.foam_type_id,
+        name: r.foam_name || '',
+        density: r.foam_density || 0,
+        hardness: r.foam_hardness || '',
+        color: r.foam_color || '',
+        specifications: r.foam_specs || '',
+        pricePerM3: Number(r.foam_price || 0),
+        stockColor: r.foam_stock_color || '#f8f9fa'
+      },
+      dimensions: { length: r.length_mm || 0, width: r.width_mm || 0, height: r.height_mm || 0 },
+      volume: Number(r.volume || 0),
+      weight: r.weight != null ? Number(r.weight) : undefined,
+      productionDate: r.production_date ? r.production_date.toISOString() : null,
+      blockNumber: r.block_number,
+      warehouse: r.warehouse,
+      status: r.status,
+      qualityStatus: r.quality_status,
+      nonConformities: r.non_conformities || [],
+      comments: r.comments || '',
+      receivedDate: r.received_date ? r.received_date.toISOString() : null,
+      receivedBy: r.received_by || '',
+      reservedFor: r.reserved_for || undefined,
+      consumedDate: r.consumed_date ? r.consumed_date.toISOString() : undefined,
+      consumedBy: r.consumed_by || undefined,
+      photos: r.photos || []
+    })));
+  } catch (e: any) {
+    console.error('GET /foam-blocks error', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+productionRouter.post("/foam-blocks", async (req, res) => {
+  const d = req.body || {}; const id = d.id || genId('fblk');
+  try {
+    await ensureExtrasTables();
+    const volume = (d.dimensions?.length || 0) * (d.dimensions?.width || 0) * (d.dimensions?.height || 0) / 1_000_000;
+    await query(`INSERT INTO public.foam_blocks (id, production_number, foam_type_id, length_mm, width_mm, height_mm, volume, weight, production_date, block_number, warehouse, status, quality_status, non_conformities, comments, received_date, received_by, reserved_for, consumed_date, consumed_by, photos)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,COALESCE($14::jsonb,'[]'::jsonb),$15, now(), $16, $17, $18, $19, COALESCE($20::jsonb,'[]'::jsonb))
+      ON CONFLICT (id) DO NOTHING`, [
+      id,
+      d.productionNumber,
+      d.foamType?.id || d.foamTypeId || null,
+      d.dimensions?.length ?? null,
+      d.dimensions?.width ?? null,
+      d.dimensions?.height ?? null,
+      volume,
+      d.weight ?? null,
+      d.productionDate ?? null,
+      d.blockNumber ?? null,
+      d.warehouse ?? null,
+      d.status ?? 'available',
+      d.qualityStatus ?? 'pending',
+      d.nonConformities ? JSON.stringify(d.nonConformities) : null,
+      d.comments || null,
+      d.receivedBy || null,
+      d.reservedFor || null,
+      d.consumedDate || null,
+      d.consumedBy || null,
+      d.photos ? JSON.stringify(d.photos) : null
+    ]);
+    res.json({ id });
+  } catch (e: any) {
+    console.error('POST /foam-blocks error', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+productionRouter.patch("/foam-blocks/:id", async (req, res) => {
+  const id = req.params.id; const d = req.body || {};
+  try {
+    await ensureExtrasTables();
+    const volume = (d.dimensions?.length || d.length_mm || 0) * (d.dimensions?.width || d.width_mm || 0) * (d.dimensions?.height || d.height_mm || 0) / 1_000_000;
+    await query(`UPDATE public.foam_blocks SET
+      production_number = COALESCE($2, production_number),
+      foam_type_id = COALESCE($3, foam_type_id),
+      length_mm = COALESCE($4, length_mm),
+      width_mm = COALESCE($5, width_mm),
+      height_mm = COALESCE($6, height_mm),
+      volume = COALESCE($7, volume),
+      weight = COALESCE($8, weight),
+      production_date = COALESCE($9, production_date),
+      block_number = COALESCE($10, block_number),
+      warehouse = COALESCE($11, warehouse),
+      status = COALESCE($12, status),
+      quality_status = COALESCE($13, quality_status),
+      non_conformities = COALESCE($14::jsonb, non_conformities),
+      comments = COALESCE($15, comments),
+      received_by = COALESCE($16, received_by),
+      reserved_for = COALESCE($17, reserved_for),
+      consumed_date = COALESCE($18, consumed_date),
+      consumed_by = COALESCE($19, consumed_by),
+      photos = COALESCE($20::jsonb, photos)
+      WHERE id=$1`, [
+      id,
+      d.productionNumber,
+      d.foamType?.id || d.foamTypeId,
+      d.dimensions?.length ?? d.length_mm,
+      d.dimensions?.width ?? d.width_mm,
+      d.dimensions?.height ?? d.height_mm,
+      isNaN(volume) || volume===0 ? null : volume,
+      d.weight,
+      d.productionDate,
+      d.blockNumber,
+      d.warehouse,
+      d.status,
+      d.qualityStatus,
+      d.nonConformities ? JSON.stringify(d.nonConformities) : null,
+      d.comments,
+      d.receivedBy,
+      d.reservedFor,
+      d.consumedDate,
+      d.consumedBy,
+      d.photos ? JSON.stringify(d.photos) : null
+    ]);
+    res.json({ ok: true });
+  } catch (e: any) {
+    console.error('PATCH /foam-blocks/:id error', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+productionRouter.delete("/foam-blocks/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    await ensureExtrasTables();
+    await query(`DELETE FROM public.foam_blocks WHERE id=$1`, [id]);
+    res.json({ ok: true });
+  } catch (e: any) {
+    console.error('DELETE /foam-blocks/:id error', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+productionRouter.get('/stock/summary', async (_req, res) => {
+  try {
+    await ensureExtrasTables();
+    const total = await query(`SELECT COUNT(*)::int AS blocks, COALESCE(SUM(volume),0)::float8 AS total_volume FROM public.foam_blocks`);
+    const byWarehouse = await query(`SELECT warehouse, COUNT(*)::int AS blocks, COALESCE(SUM(volume),0)::float8 AS volume FROM public.foam_blocks GROUP BY warehouse`);
+    const byStatus = await query(`SELECT status, COUNT(*)::int AS blocks FROM public.foam_blocks GROUP BY status`);
+    return res.json({
+      totalBlocks: total.rows[0]?.blocks || 0,
+      totalVolume: Number(total.rows[0]?.total_volume || 0),
+      byWarehouse: byWarehouse.rows,
+      byStatus: byStatus.rows
+    });
+  } catch (e:any) {
+    console.error('GET /stock/summary error', e);
     res.status(500).json({ error: e.message });
   }
 });
