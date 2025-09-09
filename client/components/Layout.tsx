@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 // import { PWADebug } from "./PWADebug"; // Temporarily disabled
 import { authService } from "@/services/authService";
 import { LoginSession } from "@/types/production";
+import { APP_VERSION } from "@/version";
 
 interface LayoutProps {
   children?: ReactNode;
