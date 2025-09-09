@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { X, Download, FileText, BarChart3, TrendingUp, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import jsPDF from 'jspdf';
+import { maintenanceService } from '@/services/maintenanceService';
+import { MaintenanceRequest, MachineDowntime } from '@/types/production';
 
 interface Machine {
   id: string;
@@ -28,6 +30,9 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
     types: [] as string[],
     status: 'all'
   });
+  const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
+  const [downtimes, setDowntimes] = useState<MachineDowntime[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const reportTypes = [
     { 
@@ -76,6 +81,26 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
     }
   }, [initialEquipment]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const load = async () => {
+      setLoading(true);
+      try {
+        const [reqs, dts] = await Promise.all([
+          maintenanceService.getMaintenanceRequests(),
+          maintenanceService.getMachineDowntime()
+        ]);
+        setRequests(reqs);
+        setDowntimes(dts);
+      } catch (e) {
+        console.error('Erro ao carregar dados de manutenção', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    load();
+  }, [isOpen]);
+
   const generatePDFReport = () => {
     const doc = new jsPDF();
     const selectedMachine = machines.find(m => m.id === selectedEquipment);
@@ -121,30 +146,22 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
 
+      const total = requests.length;
+      const completed = requests.filter(r=> r.status==='completed').length;
+      const pending = requests.filter(r=> r.status!=='completed' && r.status!=='cancelled').length;
+      const critical = requests.filter(r=> r.urgencyLevel==='critical').length;
+      const activeDowntime = downtimes.filter(d=> d.status==='ongoing').length;
+
       const summaryData = [
-        'Total de Manutenções Realizadas: 47',
-        'Manutenções Preventivas: 31 (66%)',
-        'Manutenções Corretivas: 16 (34%)',
-        'Tempo Médio de Execução: 2.3 horas',
-        'Taxa de Eficiência: 94.2%',
-        'Custo Total: €12.450',
-        'Equipamentos com Maior Necessidade:'
+        `Total de Solicitações: ${total}`,
+        `Concluídas: ${completed}`,
+        `Pendentes: ${pending}`,
+        `Críticas: ${critical}`,
+        `Paragens Ativas: ${activeDowntime}`,
       ];
 
       summaryData.forEach((line, index) => {
         doc.text(line, 25, yPosition + (index * 8));
-      });
-
-      yPosition += summaryData.length * 8 + 10;
-
-      const equipmentStats = [
-        '• Torno CNC-001: 8 manutenções',
-        '• Fresadora FR-023: 6 manutenções',
-        '• Prensa PR-015: 5 manutenções'
-      ];
-
-      equipmentStats.forEach((line, index) => {
-        doc.text(line, 30, yPosition + (index * 8));
       });
 
     } else if (reportType === 'detailed') {
@@ -250,35 +267,15 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
 
-      const equipmentData = [
-        'Informações do Equipamento:',
-        '',
-        `Nome: ${equipmentInfo}`,
-        'Localização: Área de Produção A',
-        'Ano de Fabricação: 2019',
-        'Último Serviço: 15/01/2024',
-        'Próxima Manutenção: 15/04/2024',
-        '',
-        'Histórico de Manutenções (Últimos 6 meses):',
-        '• 15/01/2024 - Manutenção Preventiva - €89',
-        '• 20/11/2023 - Troca de filtros - €45',
-        '• 18/09/2023 - Manutenção Corretiva - €230',
-        '• 15/07/2023 - Lubrificação geral - €35',
-        '',
-        'Estatísticas:',
-        'Total de Manutenções: 8',
-        'Custo Total: €1.890',
-        'Tempo Total de Parada: 18.5 horas',
-        'Disponibilidade: 91.7%'
-      ];
-
-      equipmentData.forEach((line, index) => {
-        if (line.startsWith('•')) {
-          doc.text(line, 30, yPosition + (index * 7));
-        } else {
-          doc.text(line, 25, yPosition + (index * 7));
-        }
-      });
+      const list = requests.filter(r => selectedEquipment==='all' ? true : r.machineId === selectedEquipment)
+                           .sort((a,b)=> new Date(b.requestedAt).getTime()-new Date(a.requestedAt).getTime())
+                           .slice(0,50);
+      doc.text(`Total de intervenções: ${list.length}`, 25, yPosition); yPosition += 8;
+      for (const r of list) {
+        const line = `${new Date(r.requestedAt).toLocaleDateString('pt-PT')} - ${r.machineName} - ${r.title} - ${r.status.toUpperCase()}`;
+        doc.text(line, 25, yPosition); yPosition += 6;
+        if (yPosition > 270) { doc.addPage(); yPosition = 20; }
+      }
 
     } else if (reportType === 'checklist') {
       doc.text('Checklist de Inspeção - Modelo DL50', 20, yPosition);
@@ -352,6 +349,13 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
   };
 
   if (!isOpen) return null;
+  if (loading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="bg-card p-6 rounded">Carregando dados do relatório...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
