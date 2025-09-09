@@ -8,6 +8,7 @@ async function ensureExtrasTables() {
   if (extrasInit) return extrasInit;
   extrasInit = (async () => {
     try {
+      // Create base tables
       await query(`CREATE TABLE IF NOT EXISTS public.foam_types (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
@@ -31,6 +32,26 @@ async function ensureExtrasTables() {
         photos JSONB DEFAULT '[]'::jsonb,
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
+
+      // Ensure columns exist (idempotent migrations)
+      await query(`ALTER TABLE public.foam_types
+        ADD COLUMN IF NOT EXISTS hardness TEXT,
+        ADD COLUMN IF NOT EXISTS color TEXT,
+        ADD COLUMN IF NOT EXISTS specifications TEXT,
+        ADD COLUMN IF NOT EXISTS price_per_m3 NUMERIC,
+        ADD COLUMN IF NOT EXISTS stock_color TEXT,
+        ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now()`);
+
+      await query(`ALTER TABLE public.product_sheets
+        ADD COLUMN IF NOT EXISTS internal_reference TEXT,
+        ADD COLUMN IF NOT EXISTS foam_type_id TEXT,
+        ADD COLUMN IF NOT EXISTS standard_length INT,
+        ADD COLUMN IF NOT EXISTS standard_width INT,
+        ADD COLUMN IF NOT EXISTS standard_height INT,
+        ADD COLUMN IF NOT EXISTS description TEXT,
+        ADD COLUMN IF NOT EXISTS documents JSONB DEFAULT '[]'::jsonb,
+        ADD COLUMN IF NOT EXISTS photos JSONB DEFAULT '[]'::jsonb,
+        ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now()`);
     } catch (e) {
       console.error('ensureExtrasTables error', e);
     }
