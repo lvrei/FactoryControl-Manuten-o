@@ -37,7 +37,7 @@ export function createServer() {
     cors({
       origin:
         process.env.NODE_ENV === "production"
-          ? ["https://yourdomain.com"] // Substituir por domínio real em produção
+          ? true // reflete a origem do pedido (ex.: *.netlify.app)
           : ["http://localhost:3000", "http://127.0.0.1:3000"],
       credentials: true,
       optionsSuccessStatus: 200,
