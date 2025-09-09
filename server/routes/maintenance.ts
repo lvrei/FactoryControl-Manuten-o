@@ -237,6 +237,40 @@ maintenanceRouter.post("/maintenance/alerts", async (req, res) => {
   }
 });
 
+maintenanceRouter.post("/maintenance/alerts/:id/ack", async (req, res) => {
+  const id = req.params.id;
+  const { acknowledgedBy } = req.body || {};
+  try {
+    await ensureTables();
+    await query(`UPDATE maintenance_alerts SET status='acknowledged', acknowledged_at = now(), acknowledged_by = COALESCE($2, acknowledged_by) WHERE id = $1`, [id, acknowledgedBy || null]);
+    return res.json({ ok: true });
+  } catch (e: any) {
+    if (isDbConfigured()) {
+      console.error("POST /maintenance/alerts/:id/ack error", e);
+      return res.status(500).json({ error: e.message });
+    }
+    mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'acknowledged', acknowledgedAt: new Date().toISOString(), acknowledgedBy } : a);
+    return res.json({ ok: true });
+  }
+});
+
+maintenanceRouter.post("/maintenance/alerts/:id/resolve", async (req, res) => {
+  const id = req.params.id;
+  const { resolvedBy } = req.body || {};
+  try {
+    await ensureTables();
+    await query(`UPDATE maintenance_alerts SET status='resolved', resolved_at = now(), resolved_by = COALESCE($2, resolved_by) WHERE id = $1`, [id, resolvedBy || null]);
+    return res.json({ ok: true });
+  } catch (e: any) {
+    if (isDbConfigured()) {
+      console.error("POST /maintenance/alerts/:id/resolve error", e);
+      return res.status(500).json({ error: e.message });
+    }
+    mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'resolved', resolvedAt: new Date().toISOString(), resolvedBy } : a);
+    return res.json({ ok: true });
+  }
+});
+
 // Downtime
 maintenanceRouter.get("/maintenance/downtime", async (_req, res) => {
   try {
