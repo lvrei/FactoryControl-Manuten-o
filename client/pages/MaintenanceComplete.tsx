@@ -113,10 +113,18 @@ export default function MaintenanceComplete() {
     loadData();
   }, []);
 
-  // Save maintenances to localStorage whenever it changes
+  // Save maintenances to localStorage whenever it changes (serialize safely)
   useEffect(() => {
-    if (maintenances.length > 0 || localStorage.getItem('factorycontrol-maintenances')) {
-      localStorage.setItem('factorycontrol-maintenances', JSON.stringify(maintenances));
+    try {
+      if (maintenances.length > 0 || localStorage.getItem('factorycontrol-maintenances')) {
+        const serializable = maintenances.map(m => ({
+          ...m,
+          photos: Array.isArray(m.photos) ? (m.photos as any[]).map((p: any) => (typeof p === 'string' ? p : p?.name || 'foto')) : []
+        }));
+        localStorage.setItem('factorycontrol-maintenances', JSON.stringify(serializable));
+      }
+    } catch (e) {
+      console.error('Erro a guardar manutenções no storage:', e);
     }
   }, [maintenances]);
 
