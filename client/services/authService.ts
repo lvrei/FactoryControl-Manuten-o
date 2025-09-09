@@ -13,6 +13,7 @@ export interface LoginSession {
  */
 class AuthService {
   private storageKey = 'factoryControl_auth';
+  private usersKey = 'factoryControl_users';
   private currentUser: LoginSession | null = null;
 
   // Login com credenciais (versão simples para teste)
@@ -147,6 +148,26 @@ class AuthService {
     } catch (error) {
       console.warn('⚠️ Falha na inicialização do auth:', error);
       return false;
+    }
+  }
+
+  // Criar utilizador (persistência local para testes)
+  async createUser(user: { username: string; name: string; email?: string; password: string; role: LoginSession['role'] | 'quality'; accessLevel?: 'full'|'limited'|'readonly'; isActive?: boolean }): Promise<void> {
+    const users = this.getUsers();
+    if (users.find((u: any) => u.username === user.username)) {
+      throw new Error('Utilizador já existe');
+    }
+    const newUser = { ...user, id: `${user.username}-${Date.now()}`, createdAt: new Date().toISOString() };
+    users.push(newUser);
+    localStorage.setItem(this.usersKey, JSON.stringify(users));
+  }
+
+  getUsers(): any[] {
+    try {
+      const raw = localStorage.getItem(this.usersKey);
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
     }
   }
 
