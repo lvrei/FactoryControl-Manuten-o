@@ -292,7 +292,12 @@ export default function Team() {
       supervisor: employee.supervisor,
       currentAssignment: employee.currentAssignment,
       machineOperatingLicense: employee.machineOperatingLicense.join(', '),
-      certifications: employee.certifications.join(', ')
+      certifications: employee.certifications.join(', '),
+      hasSystemAccess: !!employee.hasSystemAccess,
+      username: employee.username || '',
+      role: (employee.role || 'operator') as any,
+      accessLevel: (employee.accessLevel || 'limited') as any,
+      password: ''
     });
     setShowAddEmployee(true);
   };
@@ -328,7 +333,11 @@ export default function Team() {
         machineOperatingLicense: updatedEmployee.machineOperatingLicense,
         supervisor: updatedEmployee.supervisor,
         currentAssignment: updatedEmployee.currentAssignment,
-      });
+        hasSystemAccess: newEmployee.hasSystemAccess,
+        username: newEmployee.username || undefined,
+        role: newEmployee.role || undefined,
+        accessLevel: newEmployee.accessLevel || undefined,
+      } as any);
       const refreshed = await employeesService.list();
       setEmployeesList(refreshed as any);
     } catch (e) {
