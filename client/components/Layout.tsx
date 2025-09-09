@@ -202,12 +202,14 @@ export function Layout({ children }: LayoutProps) {
             src="/logo.png"
             alt="Logo"
             className="h-5 w-auto opacity-70"
-            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).style.display = "none";
+            }}
           />
           <small className="text-[11px]">
-            Desenvolvido por: <span className="font-medium text-foreground/80">Gil Rei</span>
-            <span className="mx-2">•</span>
-            v{APP_VERSION}
+            Desenvolvido por:{" "}
+            <span className="font-medium text-foreground/80">Gil Rei</span>
+            <span className="mx-2">•</span>v{APP_VERSION}
           </small>
         </div>
       </footer>
