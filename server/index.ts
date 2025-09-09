@@ -115,13 +115,17 @@ export function createServer() {
         .then(({ maintenanceRouter }) => {
           app.use("/api", maintenanceRouter);
         })
-        .catch((e) => console.warn("Maintenance API not loaded:", (e as any)?.message));
+        .catch((e) =>
+          console.warn("Maintenance API not loaded:", (e as any)?.message),
+        );
 
       import("./routes/employees")
         .then(({ employeesRouter }) => {
           app.use("/api", employeesRouter);
         })
-        .catch((e) => console.warn("Employees API not loaded:", (e as any)?.message));
+        .catch((e) =>
+          console.warn("Employees API not loaded:", (e as any)?.message),
+        );
     } catch (e) {
       console.warn("APIs not loaded:", (e as any)?.message);
     }
@@ -136,12 +140,16 @@ export function createServer() {
       .then(({ maintenanceRouter }) => {
         app.use("/api", maintenanceRouter);
       })
-      .catch((e) => console.warn("Maintenance API not loaded:", (e as any)?.message));
+      .catch((e) =>
+        console.warn("Maintenance API not loaded:", (e as any)?.message),
+      );
     import("./routes/employees")
       .then(({ employeesRouter }) => {
         app.use("/api", employeesRouter);
       })
-      .catch((e) => console.warn("Employees API not loaded:", (e as any)?.message));
+      .catch((e) =>
+        console.warn("Employees API not loaded:", (e as any)?.message),
+      );
   }
 
   // Health check

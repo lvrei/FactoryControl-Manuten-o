@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { 
-  Users, 
-  User, 
-  Clock, 
+import {
+  Users,
+  User,
+  Clock,
   Calendar,
   Plus,
   Search,
@@ -22,7 +22,7 @@ import {
   TrendingUp,
   BrainCircuit,
   ClipboardList,
-  Building2
+  Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/authService";
@@ -34,8 +34,8 @@ interface Employee {
   name: string;
   position: string;
   department: string;
-  shift: 'morning' | 'afternoon' | 'night';
-  status: 'present' | 'absent' | 'vacation' | 'training';
+  shift: "morning" | "afternoon" | "night";
+  status: "present" | "absent" | "vacation" | "training";
   email: string;
   phone: string;
   hireDate: string;
@@ -50,15 +50,15 @@ interface Employee {
   lastPresenceUpdate?: string;
   // User access fields
   username?: string;
-  role?: 'admin' | 'supervisor' | 'operator' | 'quality' | 'maintenance';
-  accessLevel?: 'full' | 'limited' | 'readonly';
+  role?: "admin" | "supervisor" | "operator" | "quality" | "maintenance";
+  accessLevel?: "full" | "limited" | "readonly";
   password?: string;
   hasSystemAccess?: boolean;
 }
 
 interface ShiftSchedule {
   id: string;
-  shift: 'morning' | 'afternoon' | 'night';
+  shift: "morning" | "afternoon" | "night";
   date: string;
   startTime: string;
   endTime: string;
@@ -73,14 +73,14 @@ interface ShiftAssignment {
   employeeName: string;
   position: string;
   station: string;
-  status: 'scheduled' | 'present' | 'absent' | 'late';
+  status: "scheduled" | "present" | "absent" | "late";
 }
 
 interface Training {
   id: string;
   title: string;
-  type: 'safety' | 'technical' | 'quality' | 'compliance';
-  status: 'scheduled' | 'in_progress' | 'completed';
+  type: "safety" | "technical" | "quality" | "compliance";
+  status: "scheduled" | "in_progress" | "completed";
   startDate: string;
   duration: number;
   instructor: string;
@@ -97,52 +97,68 @@ const shiftSchedules: ShiftSchedule[] = [];
 const trainings: Training[] = [];
 
 const statusConfig = {
-  present: { color: "text-success bg-success/10", label: "Presente", icon: CheckCircle },
-  absent: { color: "text-destructive bg-destructive/10", label: "Ausente", icon: UserX },
+  present: {
+    color: "text-success bg-success/10",
+    label: "Presente",
+    icon: CheckCircle,
+  },
+  absent: {
+    color: "text-destructive bg-destructive/10",
+    label: "Ausente",
+    icon: UserX,
+  },
   vacation: { color: "text-info bg-info/10", label: "Férias", icon: Calendar },
-  training: { color: "text-warning bg-warning/10", label: "Formação", icon: BookOpen }
+  training: {
+    color: "text-warning bg-warning/10",
+    label: "Formação",
+    icon: BookOpen,
+  },
 };
 
 const shiftConfig = {
   morning: { label: "Manhã", color: "text-info", time: "06:00 - 14:00" },
   afternoon: { label: "Tarde", color: "text-warning", time: "14:00 - 22:00" },
-  night: { label: "Noite", color: "text-purple-600", time: "22:00 - 06:00" }
+  night: { label: "Noite", color: "text-purple-600", time: "22:00 - 06:00" },
 };
 
 const trainingTypeConfig = {
   safety: { label: "Segurança", color: "text-destructive bg-destructive/10" },
   technical: { label: "Técnico", color: "text-info bg-info/10" },
   quality: { label: "Qualidade", color: "text-success bg-success/10" },
-  compliance: { label: "Compliance", color: "text-warning bg-warning/10" }
+  compliance: { label: "Compliance", color: "text-warning bg-warning/10" },
 };
 
 const foamCuttingPositions = [
-  'Operador BZM',
-  'Operador Carrossel',
-  'Operador Pré-CNC',
-  'Operador CNC',
-  'Técnico de Qualidade de Espuma',
-  'Supervisor de Produção',
-  'Responsável de Stock',
-  'Técnico de Manutenção de Máquinas de Corte'
+  "Operador BZM",
+  "Operador Carrossel",
+  "Operador Pré-CNC",
+  "Operador CNC",
+  "Técnico de Qualidade de Espuma",
+  "Supervisor de Produção",
+  "Responsável de Stock",
+  "Técnico de Manutenção de Máquinas de Corte",
 ];
 
 const foamCuttingDepartments = [
-  'Corte BZM',
-  'Carrossel',
-  'Pré-CNC',
-  'CNC',
-  'Qualidade',
-  'Stock/Armazém',
-  'Supervisão',
-  'Manutenção'
+  "Corte BZM",
+  "Carrossel",
+  "Pré-CNC",
+  "CNC",
+  "Qualidade",
+  "Stock/Armazém",
+  "Supervisão",
+  "Manutenção",
 ];
 
 export default function Team() {
-  const [activeTab, setActiveTab] = useState<'employees' | 'schedule' | 'training' | 'presence'>('employees');
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [activeTab, setActiveTab] = useState<
+    "employees" | "schedule" | "training" | "presence"
+  >("employees");
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null,
+  );
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [employeesList, setEmployeesList] = useState<Employee[]>(employees);
@@ -153,7 +169,7 @@ export default function Team() {
         const list = await employeesService.list();
         setEmployeesList(list as any);
       } catch (e) {
-        console.error('Erro ao carregar funcionários:', e);
+        console.error("Erro ao carregar funcionários:", e);
         setEmployeesList([]);
       }
     };
@@ -161,50 +177,74 @@ export default function Team() {
   }, []);
 
   const [newEmployee, setNewEmployee] = useState({
-    name: '',
-    position: '',
-    department: 'Corte BZM',
-    shift: 'morning' as 'morning' | 'afternoon' | 'night',
-    email: '',
-    phone: '',
-    skills: '',
-    supervisor: '',
-    currentAssignment: '',
-    machineOperatingLicense: '',
-    certifications: '',
+    name: "",
+    position: "",
+    department: "Corte BZM",
+    shift: "morning" as "morning" | "afternoon" | "night",
+    email: "",
+    phone: "",
+    skills: "",
+    supervisor: "",
+    currentAssignment: "",
+    machineOperatingLicense: "",
+    certifications: "",
     // System access fields
     hasSystemAccess: false,
-    username: '',
-    role: 'operator' as 'admin' | 'supervisor' | 'operator' | 'quality' | 'maintenance',
-    accessLevel: 'limited' as 'full' | 'limited' | 'readonly',
-    password: ''
+    username: "",
+    role: "operator" as
+      | "admin"
+      | "supervisor"
+      | "operator"
+      | "quality"
+      | "maintenance",
+    accessLevel: "limited" as "full" | "limited" | "readonly",
+    password: "",
   });
 
-  const filteredEmployees = employeesList.filter(employee => {
-    const matchesSearch = employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         employee.department.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || employee.status === statusFilter;
+  const filteredEmployees = employeesList.filter((employee) => {
+    const matchesSearch =
+      employee.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.position.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      employee.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus =
+      statusFilter === "all" || employee.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const totalEmployees = employeesList.length;
-  const presentEmployees = employeesList.filter(e => e.status === 'present').length;
-  const absentEmployees = employeesList.filter(e => e.status === 'absent').length;
-  const trainingEmployees = employeesList.filter(e => e.status === 'training').length;
+  const presentEmployees = employeesList.filter(
+    (e) => e.status === "present",
+  ).length;
+  const absentEmployees = employeesList.filter(
+    (e) => e.status === "absent",
+  ).length;
+  const trainingEmployees = employeesList.filter(
+    (e) => e.status === "training",
+  ).length;
 
-  const avgProductivity = employeesList.length > 0 ? employeesList.reduce((sum, e) => sum + e.productivityScore, 0) / employeesList.length : 0;
-  const avgAttendance = employeesList.length > 0 ? employeesList.reduce((sum, e) => sum + e.attendanceRate, 0) / employeesList.length : 0;
+  const avgProductivity =
+    employeesList.length > 0
+      ? employeesList.reduce((sum, e) => sum + e.productivityScore, 0) /
+        employeesList.length
+      : 0;
+  const avgAttendance =
+    employeesList.length > 0
+      ? employeesList.reduce((sum, e) => sum + e.attendanceRate, 0) /
+        employeesList.length
+      : 0;
 
   // Funções CRUD para funcionários
   const handleAddEmployee = async () => {
     if (!newEmployee.name || !newEmployee.position) {
-      alert('Preencha pelo menos nome e cargo');
+      alert("Preencha pelo menos nome e cargo");
       return;
     }
 
-    if (newEmployee.hasSystemAccess && (!newEmployee.username || !newEmployee.password)) {
-      alert('Para acesso ao sistema, preencha utilizador e palavra-passe');
+    if (
+      newEmployee.hasSystemAccess &&
+      (!newEmployee.username || !newEmployee.password)
+    ) {
+      alert("Para acesso ao sistema, preencha utilizador e palavra-passe");
       return;
     }
 
@@ -215,13 +255,22 @@ export default function Team() {
         position: newEmployee.position,
         department: newEmployee.department,
         shift: newEmployee.shift,
-        status: 'absent',
+        status: "absent",
         email: newEmployee.email,
         phone: newEmployee.phone,
-        hireDate: new Date().toISOString().split('T')[0],
-        skills: newEmployee.skills.split(',').map(s => s.trim()).filter(s => s),
-        certifications: newEmployee.certifications.split(',').map(s => s.trim()).filter(s => s),
-        machineOperatingLicense: newEmployee.machineOperatingLicense.split(',').map(s => s.trim()).filter(s => s),
+        hireDate: new Date().toISOString().split("T")[0],
+        skills: newEmployee.skills
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s),
+        certifications: newEmployee.certifications
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s),
+        machineOperatingLicense: newEmployee.machineOperatingLicense
+          .split(",")
+          .map((s) => s.trim())
+          .filter((s) => s),
         currentAssignment: newEmployee.currentAssignment,
         supervisor: newEmployee.supervisor,
         productivityScore: 85,
@@ -231,7 +280,7 @@ export default function Team() {
         hasSystemAccess: newEmployee.hasSystemAccess,
         username: newEmployee.username,
         role: newEmployee.role,
-        accessLevel: newEmployee.accessLevel
+        accessLevel: newEmployee.accessLevel,
       };
 
       // Persist in DB
@@ -260,22 +309,51 @@ export default function Team() {
       });
 
       // Create system user if access is granted (local helper)
-      if (newEmployee.hasSystemAccess && newEmployee.username && newEmployee.password) {
-        try { await authService.createUser({ username: newEmployee.username, name: newEmployee.name, email: newEmployee.email, password: newEmployee.password, role: newEmployee.role, accessLevel: newEmployee.accessLevel, isActive: true }); } catch {}
+      if (
+        newEmployee.hasSystemAccess &&
+        newEmployee.username &&
+        newEmployee.password
+      ) {
+        try {
+          await authService.createUser({
+            username: newEmployee.username,
+            name: newEmployee.name,
+            email: newEmployee.email,
+            password: newEmployee.password,
+            role: newEmployee.role,
+            accessLevel: newEmployee.accessLevel,
+            isActive: true,
+          });
+        } catch {}
       }
 
       const refreshed = await employeesService.list();
       setEmployeesList(refreshed as any);
       setNewEmployee({
-        name: '', position: '', department: 'Corte BZM', shift: 'morning',
-        email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
-        machineOperatingLicense: '', certifications: '',
-        hasSystemAccess: false, username: '', role: 'operator', accessLevel: 'limited', password: ''
+        name: "",
+        position: "",
+        department: "Corte BZM",
+        shift: "morning",
+        email: "",
+        phone: "",
+        skills: "",
+        supervisor: "",
+        currentAssignment: "",
+        machineOperatingLicense: "",
+        certifications: "",
+        hasSystemAccess: false,
+        username: "",
+        role: "operator",
+        accessLevel: "limited",
+        password: "",
       });
       setShowAddEmployee(false);
     } catch (error) {
-      console.error('Erro ao criar funcionário:', error);
-      alert('Erro ao criar funcionário: ' + (error instanceof Error ? error.message : 'Erro desconhecido'));
+      console.error("Erro ao criar funcionário:", error);
+      alert(
+        "Erro ao criar funcionário: " +
+          (error instanceof Error ? error.message : "Erro desconhecido"),
+      );
     }
   };
 
@@ -288,16 +366,16 @@ export default function Team() {
       shift: employee.shift,
       email: employee.email,
       phone: employee.phone,
-      skills: employee.skills.join(', '),
+      skills: employee.skills.join(", "),
       supervisor: employee.supervisor,
       currentAssignment: employee.currentAssignment,
-      machineOperatingLicense: employee.machineOperatingLicense.join(', '),
-      certifications: employee.certifications.join(', '),
+      machineOperatingLicense: employee.machineOperatingLicense.join(", "),
+      certifications: employee.certifications.join(", "),
       hasSystemAccess: !!employee.hasSystemAccess,
-      username: employee.username || '',
-      role: (employee.role || 'operator') as any,
-      accessLevel: (employee.accessLevel || 'limited') as any,
-      password: ''
+      username: employee.username || "",
+      role: (employee.role || "operator") as any,
+      accessLevel: (employee.accessLevel || "limited") as any,
+      password: "",
     });
     setShowAddEmployee(true);
   };
@@ -313,11 +391,20 @@ export default function Team() {
       shift: newEmployee.shift,
       email: newEmployee.email,
       phone: newEmployee.phone,
-      skills: newEmployee.skills.split(',').map(s => s.trim()).filter(s => s),
-      certifications: newEmployee.certifications.split(',').map(s => s.trim()).filter(s => s),
-      machineOperatingLicense: newEmployee.machineOperatingLicense.split(',').map(s => s.trim()).filter(s => s),
+      skills: newEmployee.skills
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s),
+      certifications: newEmployee.certifications
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s),
+      machineOperatingLicense: newEmployee.machineOperatingLicense
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s),
       supervisor: newEmployee.supervisor,
-      currentAssignment: newEmployee.currentAssignment
+      currentAssignment: newEmployee.currentAssignment,
     };
 
     try {
@@ -357,32 +444,52 @@ export default function Team() {
       const refreshed = await employeesService.list();
       setEmployeesList(refreshed as any);
     } catch (e) {
-      console.error('Erro ao atualizar funcionário', e);
-      alert('Erro ao atualizar funcionário');
+      console.error("Erro ao atualizar funcionário", e);
+      alert("Erro ao atualizar funcionário");
     }
 
     setEditingEmployee(null);
     setNewEmployee({
-      name: '', position: '', department: 'Corte BZM', shift: 'morning',
-      email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
-      machineOperatingLicense: '', certifications: ''
+      name: "",
+      position: "",
+      department: "Corte BZM",
+      shift: "morning",
+      email: "",
+      phone: "",
+      skills: "",
+      supervisor: "",
+      currentAssignment: "",
+      machineOperatingLicense: "",
+      certifications: "",
     });
     setShowAddEmployee(false);
   };
 
   const handleDeleteEmployee = async (id: string) => {
-    if (!confirm('Tem certeza que deseja remover este funcionário?')) return;
-    try { await employeesService.remove(id); const refreshed = await employeesService.list(); setEmployeesList(refreshed as any); }
-    catch (e) { console.error('Erro ao remover', e); alert('Erro ao remover funcionário'); }
-  };
-
-  const markPresence = async (employeeId: string, status: 'present' | 'absent') => {
+    if (!confirm("Tem certeza que deseja remover este funcionário?")) return;
     try {
-      await employeesService.update(employeeId, { status, lastPresenceUpdate: new Date().toISOString() } as any);
+      await employeesService.remove(id);
       const refreshed = await employeesService.list();
       setEmployeesList(refreshed as any);
     } catch (e) {
-      console.error('Erro ao marcar presença', e);
+      console.error("Erro ao remover", e);
+      alert("Erro ao remover funcionário");
+    }
+  };
+
+  const markPresence = async (
+    employeeId: string,
+    status: "present" | "absent",
+  ) => {
+    try {
+      await employeesService.update(employeeId, {
+        status,
+        lastPresenceUpdate: new Date().toISOString(),
+      } as any);
+      const refreshed = await employeesService.list();
+      setEmployeesList(refreshed as any);
+    } catch (e) {
+      console.error("Erro ao marcar presença", e);
     }
   };
 
@@ -391,12 +498,15 @@ export default function Team() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Gestão de Equipa</h1>
+          <h1 className="text-3xl font-bold text-foreground">
+            Gestão de Equipa
+          </h1>
           <p className="text-muted-foreground">
-            Controle de funcionários, turnos e formações - Indústria de Corte de Espuma
+            Controle de funcionários, turnos e formações - Indústria de Corte de
+            Espuma
           </p>
         </div>
-        
+
         <button
           onClick={() => setShowAddEmployee(true)}
           className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 flex items-center gap-2"
@@ -412,7 +522,9 @@ export default function Team() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold text-card-foreground">{totalEmployees}</p>
+              <p className="text-2xl font-bold text-card-foreground">
+                {totalEmployees}
+              </p>
             </div>
             <Users className="h-6 w-6 text-muted-foreground" />
           </div>
@@ -421,8 +533,12 @@ export default function Team() {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Presentes</p>
-              <p className="text-2xl font-bold text-success">{presentEmployees}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Presentes
+              </p>
+              <p className="text-2xl font-bold text-success">
+                {presentEmployees}
+              </p>
             </div>
             <UserCheck className="h-6 w-6 text-success" />
           </div>
@@ -431,8 +547,12 @@ export default function Team() {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Ausentes</p>
-              <p className="text-2xl font-bold text-destructive">{absentEmployees}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Ausentes
+              </p>
+              <p className="text-2xl font-bold text-destructive">
+                {absentEmployees}
+              </p>
             </div>
             <UserX className="h-6 w-6 text-destructive" />
           </div>
@@ -441,8 +561,12 @@ export default function Team() {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Formação</p>
-              <p className="text-2xl font-bold text-warning">{trainingEmployees}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Formação
+              </p>
+              <p className="text-2xl font-bold text-warning">
+                {trainingEmployees}
+              </p>
             </div>
             <BookOpen className="h-6 w-6 text-warning" />
           </div>
@@ -451,8 +575,12 @@ export default function Team() {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Produtividade</p>
-              <p className="text-2xl font-bold text-card-foreground">{avgProductivity.toFixed(1)}%</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Produtividade
+              </p>
+              <p className="text-2xl font-bold text-card-foreground">
+                {avgProductivity.toFixed(1)}%
+              </p>
             </div>
             <TrendingUp className="h-6 w-6 text-success" />
           </div>
@@ -461,8 +589,12 @@ export default function Team() {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Frequência</p>
-              <p className="text-2xl font-bold text-card-foreground">{avgAttendance.toFixed(1)}%</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Frequência
+              </p>
+              <p className="text-2xl font-bold text-card-foreground">
+                {avgAttendance.toFixed(1)}%
+              </p>
             </div>
             <Calendar className="h-6 w-6 text-info" />
           </div>
@@ -472,45 +604,45 @@ export default function Team() {
       {/* Tabs */}
       <div className="flex rounded-lg bg-muted p-1">
         <button
-          onClick={() => setActiveTab('employees')}
+          onClick={() => setActiveTab("employees")}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-            activeTab === 'employees'
+            activeTab === "employees"
               ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           Funcionários ({employeesList.length})
         </button>
         <button
-          onClick={() => setActiveTab('presence')}
+          onClick={() => setActiveTab("presence")}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-            activeTab === 'presence'
+            activeTab === "presence"
               ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           Controle de Presença
         </button>
         <button
-          onClick={() => setActiveTab('schedule')}
+          onClick={() => setActiveTab("schedule")}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-            activeTab === 'schedule'
+            activeTab === "schedule"
               ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           Escalas ({shiftSchedules.length})
         </button>
         <button
-          onClick={() => setActiveTab('training')}
+          onClick={() => setActiveTab("training")}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-            activeTab === 'training'
+            activeTab === "training"
               ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           Formações ({trainings.length})
@@ -518,16 +650,18 @@ export default function Team() {
       </div>
 
       {/* Content */}
-      {activeTab === 'employees' ? (
+      {activeTab === "employees" ? (
         <div className="grid gap-6 lg:grid-cols-3">
           {/* Employee List */}
           <div className="lg:col-span-2">
             <div className="rounded-lg border bg-card">
               <div className="border-b p-4">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-card-foreground">Lista de Funcionários</h3>
+                  <h3 className="text-lg font-semibold text-card-foreground">
+                    Lista de Funcionários
+                  </h3>
                 </div>
-                
+
                 <div className="flex gap-2">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -539,7 +673,7 @@ export default function Team() {
                       className="w-full rounded-lg border border-input bg-background pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     />
                   </div>
-                  
+
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -553,14 +687,17 @@ export default function Team() {
                   </select>
                 </div>
               </div>
-              
+
               <div className="max-h-96 overflow-y-auto">
                 {filteredEmployees.length === 0 ? (
                   <div className="p-8 text-center">
                     <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-card-foreground mb-2">Nenhum Funcionário Cadastrado</h3>
+                    <h3 className="text-lg font-semibold text-card-foreground mb-2">
+                      Nenhum Funcionário Cadastrado
+                    </h3>
                     <p className="text-muted-foreground mb-4">
-                      Adicione funcionários para começar a gerir a sua equipa de corte de espuma
+                      Adicione funcionários para começar a gerir a sua equipa de
+                      corte de espuma
                     </p>
                     <button
                       onClick={() => setShowAddEmployee(true)}
@@ -573,14 +710,14 @@ export default function Team() {
                   filteredEmployees.map((employee) => {
                     const config = statusConfig[employee.status];
                     const StatusIcon = config.icon;
-                    
+
                     return (
                       <div
                         key={employee.id}
                         onClick={() => setSelectedEmployee(employee)}
                         className={cn(
                           "border-b p-4 cursor-pointer hover:bg-muted/50 transition-colors",
-                          selectedEmployee?.id === employee.id && "bg-muted/50"
+                          selectedEmployee?.id === employee.id && "bg-muted/50",
                         )}
                       >
                         <div className="flex items-center justify-between mb-2">
@@ -589,22 +726,32 @@ export default function Team() {
                               <User className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <p className="font-medium text-card-foreground">{employee.name}</p>
-                              <p className="text-sm text-muted-foreground">{employee.position}</p>
+                              <p className="font-medium text-card-foreground">
+                                {employee.name}
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                {employee.position}
+                              </p>
                             </div>
                           </div>
-                          <div className={cn("flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", config.color)}>
+                          <div
+                            className={cn(
+                              "flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
+                              config.color,
+                            )}
+                          >
                             <StatusIcon className="h-3 w-3" />
                             {config.label}
                           </div>
                         </div>
-                        
+
                         <div className="flex items-center justify-between text-sm">
                           <span className="text-muted-foreground">
-                            {employee.department} • {shiftConfig[employee.shift].label}
+                            {employee.department} •{" "}
+                            {shiftConfig[employee.shift].label}
                           </span>
                           <span className="text-muted-foreground">
-                            {employee.currentAssignment || 'Não atribuído'}
+                            {employee.currentAssignment || "Não atribuído"}
                           </span>
                         </div>
                       </div>
@@ -621,7 +768,9 @@ export default function Team() {
               <div className="space-y-4">
                 <div className="rounded-lg border bg-card p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-card-foreground">Detalhes do Funcionário</h3>
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      Detalhes do Funcionário
+                    </h3>
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleEditEmployee(selectedEmployee)}
@@ -631,7 +780,9 @@ export default function Team() {
                         <Edit className="h-4 w-4" />
                       </button>
                       <button
-                        onClick={() => handleDeleteEmployee(selectedEmployee.id)}
+                        onClick={() =>
+                          handleDeleteEmployee(selectedEmployee.id)
+                        }
                         className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg"
                         title="Excluir funcionário"
                       >
@@ -645,42 +796,65 @@ export default function Team() {
                       <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-2">
                         <User className="h-8 w-8 text-primary" />
                       </div>
-                      <h4 className="font-medium text-card-foreground">{selectedEmployee.name}</h4>
-                      <p className="text-muted-foreground">{selectedEmployee.position}</p>
+                      <h4 className="font-medium text-card-foreground">
+                        {selectedEmployee.name}
+                      </h4>
+                      <p className="text-muted-foreground">
+                        {selectedEmployee.position}
+                      </p>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{selectedEmployee.email || 'Não informado'}</span>
+                        <span className="text-muted-foreground">
+                          {selectedEmployee.email || "Não informado"}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{selectedEmployee.phone || 'Não informado'}</span>
+                        <span className="text-muted-foreground">
+                          {selectedEmployee.phone || "Não informado"}
+                        </span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Building2 className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-muted-foreground">{selectedEmployee.currentAssignment || 'Não atribuído'}</span>
+                        <span className="text-muted-foreground">
+                          {selectedEmployee.currentAssignment ||
+                            "Não atribuído"}
+                        </span>
                       </div>
                     </div>
 
                     <div className="pt-4 border-t">
                       <div className="flex justify-between mb-2">
-                        <span className="text-muted-foreground">Departamento:</span>
-                        <span className="font-medium text-card-foreground">{selectedEmployee.department}</span>
+                        <span className="text-muted-foreground">
+                          Departamento:
+                        </span>
+                        <span className="font-medium text-card-foreground">
+                          {selectedEmployee.department}
+                        </span>
                       </div>
                       <div className="flex justify-between mb-2">
                         <span className="text-muted-foreground">Turno:</span>
-                        <span className="font-medium text-card-foreground">{shiftConfig[selectedEmployee.shift].label}</span>
+                        <span className="font-medium text-card-foreground">
+                          {shiftConfig[selectedEmployee.shift].label}
+                        </span>
                       </div>
                       <div className="flex justify-between mb-2">
-                        <span className="text-muted-foreground">Supervisor:</span>
-                        <span className="font-medium text-card-foreground">{selectedEmployee.supervisor || 'Não definido'}</span>
+                        <span className="text-muted-foreground">
+                          Supervisor:
+                        </span>
+                        <span className="font-medium text-card-foreground">
+                          {selectedEmployee.supervisor || "Não definido"}
+                        </span>
                       </div>
                       <div className="flex justify-between mb-2">
                         <span className="text-muted-foreground">Admissão:</span>
                         <span className="font-medium text-card-foreground">
-                          {new Date(selectedEmployee.hireDate).toLocaleDateString('pt-BR')}
+                          {new Date(
+                            selectedEmployee.hireDate,
+                          ).toLocaleDateString("pt-BR")}
                         </span>
                       </div>
                     </div>
@@ -688,30 +862,44 @@ export default function Team() {
                 </div>
 
                 <div className="rounded-lg border bg-card p-6">
-                  <h4 className="text-md font-semibold text-card-foreground mb-4">Performance</h4>
+                  <h4 className="text-md font-semibold text-card-foreground mb-4">
+                    Performance
+                  </h4>
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-muted-foreground">Produtividade</span>
-                        <span className="font-medium text-card-foreground">{selectedEmployee.productivityScore}%</span>
+                        <span className="text-muted-foreground">
+                          Produtividade
+                        </span>
+                        <span className="font-medium text-card-foreground">
+                          {selectedEmployee.productivityScore}%
+                        </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-success h-2 rounded-full transition-all"
-                          style={{ width: `${selectedEmployee.productivityScore}%` }}
+                          style={{
+                            width: `${selectedEmployee.productivityScore}%`,
+                          }}
                         ></div>
                       </div>
                     </div>
 
                     <div>
                       <div className="flex justify-between text-sm mb-2">
-                        <span className="text-muted-foreground">Frequência</span>
-                        <span className="font-medium text-card-foreground">{selectedEmployee.attendanceRate}%</span>
+                        <span className="text-muted-foreground">
+                          Frequência
+                        </span>
+                        <span className="font-medium text-card-foreground">
+                          {selectedEmployee.attendanceRate}%
+                        </span>
                       </div>
                       <div className="w-full bg-muted rounded-full h-2">
-                        <div 
+                        <div
                           className="bg-info h-2 rounded-full transition-all"
-                          style={{ width: `${selectedEmployee.attendanceRate}%` }}
+                          style={{
+                            width: `${selectedEmployee.attendanceRate}%`,
+                          }}
                         ></div>
                       </div>
                     </div>
@@ -719,45 +907,76 @@ export default function Team() {
                 </div>
 
                 <div className="rounded-lg border bg-card p-6">
-                  <h4 className="text-md font-semibold text-card-foreground mb-4">Competências</h4>
+                  <h4 className="text-md font-semibold text-card-foreground mb-4">
+                    Competências
+                  </h4>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Habilidades:</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">
+                        Habilidades:
+                      </p>
                       <div className="flex flex-wrap gap-1">
-                        {selectedEmployee.skills.length > 0 ? selectedEmployee.skills.map((skill, index) => (
-                          <span key={index} className="px-2 py-1 text-xs bg-info/10 text-info rounded">
-                            {skill}
+                        {selectedEmployee.skills.length > 0 ? (
+                          selectedEmployee.skills.map((skill, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 text-xs bg-info/10 text-info rounded"
+                            >
+                              {skill}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            Nenhuma habilidade registrada
                           </span>
-                        )) : (
-                          <span className="text-xs text-muted-foreground">Nenhuma habilidade registrada</span>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Licenças de Máquinas:</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">
+                        Licenças de Máquinas:
+                      </p>
                       <div className="flex flex-wrap gap-1">
-                        {selectedEmployee.machineOperatingLicense.length > 0 ? selectedEmployee.machineOperatingLicense.map((license, index) => (
-                          <span key={index} className="px-2 py-1 text-xs bg-warning/10 text-warning rounded flex items-center gap-1">
-                            <Shield className="h-3 w-3" />
-                            {license}
+                        {selectedEmployee.machineOperatingLicense.length > 0 ? (
+                          selectedEmployee.machineOperatingLicense.map(
+                            (license, index) => (
+                              <span
+                                key={index}
+                                className="px-2 py-1 text-xs bg-warning/10 text-warning rounded flex items-center gap-1"
+                              >
+                                <Shield className="h-3 w-3" />
+                                {license}
+                              </span>
+                            ),
+                          )
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            Nenhuma licença registrada
                           </span>
-                        )) : (
-                          <span className="text-xs text-muted-foreground">Nenhuma licença registrada</span>
                         )}
                       </div>
                     </div>
 
                     <div>
-                      <p className="text-sm font-medium text-muted-foreground mb-2">Certificações:</p>
+                      <p className="text-sm font-medium text-muted-foreground mb-2">
+                        Certificações:
+                      </p>
                       <div className="flex flex-wrap gap-1">
-                        {selectedEmployee.certifications.length > 0 ? selectedEmployee.certifications.map((cert, index) => (
-                          <span key={index} className="px-2 py-1 text-xs bg-success/10 text-success rounded flex items-center gap-1">
-                            <Award className="h-3 w-3" />
-                            {cert}
+                        {selectedEmployee.certifications.length > 0 ? (
+                          selectedEmployee.certifications.map((cert, index) => (
+                            <span
+                              key={index}
+                              className="px-2 py-1 text-xs bg-success/10 text-success rounded flex items-center gap-1"
+                            >
+                              <Award className="h-3 w-3" />
+                              {cert}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-xs text-muted-foreground">
+                            Nenhuma certificação registrada
                           </span>
-                        )) : (
-                          <span className="text-xs text-muted-foreground">Nenhuma certificação registrada</span>
                         )}
                       </div>
                     </div>
@@ -767,7 +986,9 @@ export default function Team() {
             ) : (
               <div className="rounded-lg border bg-card p-8 text-center">
                 <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-card-foreground mb-2">Selecione um Funcionário</h3>
+                <h3 className="text-lg font-semibold text-card-foreground mb-2">
+                  Selecione um Funcionário
+                </h3>
                 <p className="text-muted-foreground">
                   Escolha um funcionário da lista para ver os detalhes
                 </p>
@@ -775,13 +996,16 @@ export default function Team() {
             )}
           </div>
         </div>
-      ) : activeTab === 'presence' ? (
+      ) : activeTab === "presence" ? (
         <div className="rounded-lg border bg-card p-6">
-          <h3 className="text-lg font-semibold text-card-foreground mb-4">Controle de Presença</h3>
+          <h3 className="text-lg font-semibold text-card-foreground mb-4">
+            Controle de Presença
+          </h3>
           <p className="text-muted-foreground mb-6">
-            Marque a presença dos funcionários para hoje ({new Date().toLocaleDateString('pt-BR')})
+            Marque a presença dos funcionários para hoje (
+            {new Date().toLocaleDateString("pt-BR")})
           </p>
-          
+
           {employeesList.length === 0 ? (
             <div className="text-center py-8">
               <ClipboardList className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -798,41 +1022,48 @@ export default function Team() {
                       <User className="h-5 w-5 text-primary" />
                     </div>
                     <div>
-                      <p className="font-medium text-card-foreground">{employee.name}</p>
-                      <p className="text-sm text-muted-foreground">{employee.position}</p>
+                      <p className="font-medium text-card-foreground">
+                        {employee.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {employee.position}
+                      </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-2">
                     <button
-                      onClick={() => markPresence(employee.id, 'present')}
+                      onClick={() => markPresence(employee.id, "present")}
                       className={cn(
                         "flex-1 px-3 py-2 text-sm rounded-lg transition-colors",
-                        employee.status === 'present'
+                        employee.status === "present"
                           ? "bg-success text-success-foreground"
-                          : "border border-success text-success hover:bg-success/10"
+                          : "border border-success text-success hover:bg-success/10",
                       )}
                     >
                       <CheckCircle className="h-4 w-4 inline mr-1" />
                       Presente
                     </button>
                     <button
-                      onClick={() => markPresence(employee.id, 'absent')}
+                      onClick={() => markPresence(employee.id, "absent")}
                       className={cn(
                         "flex-1 px-3 py-2 text-sm rounded-lg transition-colors",
-                        employee.status === 'absent'
+                        employee.status === "absent"
                           ? "bg-destructive text-destructive-foreground"
-                          : "border border-destructive text-destructive hover:bg-destructive/10"
+                          : "border border-destructive text-destructive hover:bg-destructive/10",
                       )}
                     >
                       <UserX className="h-4 w-4 inline mr-1" />
                       Ausente
                     </button>
                   </div>
-                  
+
                   {employee.lastPresenceUpdate && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      Última atualização: {new Date(employee.lastPresenceUpdate).toLocaleTimeString('pt-BR')}
+                      Última atualização:{" "}
+                      {new Date(employee.lastPresenceUpdate).toLocaleTimeString(
+                        "pt-BR",
+                      )}
                     </p>
                   )}
                 </div>
@@ -840,18 +1071,26 @@ export default function Team() {
             </div>
           )}
         </div>
-      ) : activeTab === 'schedule' ? (
+      ) : activeTab === "schedule" ? (
         <div className="rounded-lg border bg-card p-6">
-          <h3 className="text-lg font-semibold text-card-foreground mb-4">Gestão de Escalas</h3>
+          <h3 className="text-lg font-semibold text-card-foreground mb-4">
+            Gestão de Escalas
+          </h3>
           <p className="text-muted-foreground text-center py-8">
-            Sistema de escalas em desenvolvimento. Funcionalidade será implementada com base nas necessidades específicas de turnos da fábrica de corte de espuma.
+            Sistema de escalas em desenvolvimento. Funcionalidade será
+            implementada com base nas necessidades específicas de turnos da
+            fábrica de corte de espuma.
           </p>
         </div>
       ) : (
         <div className="rounded-lg border bg-card p-6">
-          <h3 className="text-lg font-semibold text-card-foreground mb-4">Gestão de Formações</h3>
+          <h3 className="text-lg font-semibold text-card-foreground mb-4">
+            Gestão de Formações
+          </h3>
           <p className="text-muted-foreground text-center py-8">
-            Sistema de formações em desenvolvimento. Incluirá formações específicas para operação de máquinas de corte de espuma, segurança e qualidade.
+            Sistema de formações em desenvolvimento. Incluirá formações
+            específicas para operação de máquinas de corte de espuma, segurança
+            e qualidade.
           </p>
         </div>
       )}
@@ -863,17 +1102,29 @@ export default function Team() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold">
-                  {editingEmployee ? 'Editar Funcionário' : 'Novo Funcionário'}
+                  {editingEmployee ? "Editar Funcionário" : "Novo Funcionário"}
                 </h3>
                 <button
                   onClick={() => {
                     setShowAddEmployee(false);
                     setEditingEmployee(null);
                     setNewEmployee({
-                      name: '', position: '', department: 'Corte BZM', shift: 'morning',
-                      email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
-                      machineOperatingLicense: '', certifications: '',
-                      hasSystemAccess: false, username: '', role: 'operator', accessLevel: 'limited', password: ''
+                      name: "",
+                      position: "",
+                      department: "Corte BZM",
+                      shift: "morning",
+                      email: "",
+                      phone: "",
+                      skills: "",
+                      supervisor: "",
+                      currentAssignment: "",
+                      machineOperatingLicense: "",
+                      certifications: "",
+                      hasSystemAccess: false,
+                      username: "",
+                      role: "operator",
+                      accessLevel: "limited",
+                      password: "",
                     });
                   }}
                   className="text-muted-foreground hover:text-foreground"
@@ -885,11 +1136,18 @@ export default function Team() {
               <div className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Nome Completo *</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Nome Completo *
+                    </label>
                     <input
                       type="text"
                       value={newEmployee.name}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="Ex: João Silva"
                       required
@@ -897,16 +1155,25 @@ export default function Team() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Cargo *</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Cargo *
+                    </label>
                     <select
                       value={newEmployee.position}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, position: e.target.value }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          position: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       required
                     >
                       <option value="">Selecione o cargo</option>
-                      {foamCuttingPositions.map(position => (
-                        <option key={position} value={position}>{position}</option>
+                      {foamCuttingPositions.map((position) => (
+                        <option key={position} value={position}>
+                          {position}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -914,23 +1181,39 @@ export default function Team() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Departamento</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Departamento
+                    </label>
                     <select
                       value={newEmployee.department}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, department: e.target.value }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          department: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                     >
-                      {foamCuttingDepartments.map(dept => (
-                        <option key={dept} value={dept}>{dept}</option>
+                      {foamCuttingDepartments.map((dept) => (
+                        <option key={dept} value={dept}>
+                          {dept}
+                        </option>
                       ))}
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Turno</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Turno
+                    </label>
                     <select
                       value={newEmployee.shift}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, shift: e.target.value as any }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          shift: e.target.value as any,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                     >
                       <option value="morning">Manhã (06:00-14:00)</option>
@@ -942,22 +1225,36 @@ export default function Team() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Email</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Email
+                    </label>
                     <input
                       type="email"
                       value={newEmployee.email}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, email: e.target.value }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          email: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="funcionario@empresa.com"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Telefone</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Telefone
+                    </label>
                     <input
                       type="tel"
                       value={newEmployee.phone}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="+351 123 456 789"
                     />
@@ -965,33 +1262,54 @@ export default function Team() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Competências Técnicas</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Competências Técnicas
+                  </label>
                   <input
                     type="text"
                     value={newEmployee.skills}
-                    onChange={(e) => setNewEmployee(prev => ({ ...prev, skills: e.target.value }))}
+                    onChange={(e) =>
+                      setNewEmployee((prev) => ({
+                        ...prev,
+                        skills: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                     placeholder="Ex: Operação BZM, Controle de qualidade (separar por vírgulas)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Licenças de Operação de Máquinas</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Licenças de Operação de Máquinas
+                  </label>
                   <input
                     type="text"
                     value={newEmployee.machineOperatingLicense}
-                    onChange={(e) => setNewEmployee(prev => ({ ...prev, machineOperatingLicense: e.target.value }))}
+                    onChange={(e) =>
+                      setNewEmployee((prev) => ({
+                        ...prev,
+                        machineOperatingLicense: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                     placeholder="Ex: BZM-01, Carrossel-01 (separar por vírgulas)"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Certificações</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Certificações
+                  </label>
                   <input
                     type="text"
                     value={newEmployee.certifications}
-                    onChange={(e) => setNewEmployee(prev => ({ ...prev, certifications: e.target.value }))}
+                    onChange={(e) =>
+                      setNewEmployee((prev) => ({
+                        ...prev,
+                        certifications: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                     placeholder="Ex: NR-12, Operador de Máquinas (separar por vírgulas)"
                   />
@@ -999,22 +1317,36 @@ export default function Team() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Supervisor</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Supervisor
+                    </label>
                     <input
                       type="text"
                       value={newEmployee.supervisor}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, supervisor: e.target.value }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          supervisor: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="Nome do supervisor"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Posto de Trabalho Atual</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Posto de Trabalho Atual
+                    </label>
                     <input
                       type="text"
                       value={newEmployee.currentAssignment}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, currentAssignment: e.target.value }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          currentAssignment: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="Ex: BZM-01, Carrossel-01"
                     />
@@ -1028,25 +1360,42 @@ export default function Team() {
                       type="checkbox"
                       id="systemAccess"
                       checked={newEmployee.hasSystemAccess}
-                      onChange={(e) => setNewEmployee(prev => ({ ...prev, hasSystemAccess: e.target.checked }))}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          hasSystemAccess: e.target.checked,
+                        }))
+                      }
                       className="rounded border-input"
                     />
-                    <label htmlFor="systemAccess" className="text-sm font-medium">
+                    <label
+                      htmlFor="systemAccess"
+                      className="text-sm font-medium"
+                    >
                       Dar acesso ao sistema FactoryControl
                     </label>
                   </div>
 
                   {newEmployee.hasSystemAccess && (
                     <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
-                      <h5 className="font-medium text-foreground">Credenciais de Acesso</h5>
+                      <h5 className="font-medium text-foreground">
+                        Credenciais de Acesso
+                      </h5>
 
                       <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                          <label className="block text-sm font-medium mb-2">Nome de Utilizador *</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Nome de Utilizador *
+                          </label>
                           <input
                             type="text"
                             value={newEmployee.username}
-                            onChange={(e) => setNewEmployee(prev => ({ ...prev, username: e.target.value }))}
+                            onChange={(e) =>
+                              setNewEmployee((prev) => ({
+                                ...prev,
+                                username: e.target.value,
+                              }))
+                            }
                             className="w-full px-3 py-2 border rounded-lg bg-background"
                             placeholder="Ex: joao.silva"
                             required={newEmployee.hasSystemAccess}
@@ -1054,11 +1403,18 @@ export default function Team() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-2">Palavra-passe *</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Palavra-passe *
+                          </label>
                           <input
                             type="password"
                             value={newEmployee.password}
-                            onChange={(e) => setNewEmployee(prev => ({ ...prev, password: e.target.value }))}
+                            onChange={(e) =>
+                              setNewEmployee((prev) => ({
+                                ...prev,
+                                password: e.target.value,
+                              }))
+                            }
                             className="w-full px-3 py-2 border rounded-lg bg-background"
                             placeholder="Palavra-passe segura"
                             required={newEmployee.hasSystemAccess}
@@ -1068,10 +1424,17 @@ export default function Team() {
 
                       <div className="grid gap-4 md:grid-cols-2">
                         <div>
-                          <label className="block text-sm font-medium mb-2">Perfil de Acesso</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Perfil de Acesso
+                          </label>
                           <select
                             value={newEmployee.role}
-                            onChange={(e) => setNewEmployee(prev => ({ ...prev, role: e.target.value as any }))}
+                            onChange={(e) =>
+                              setNewEmployee((prev) => ({
+                                ...prev,
+                                role: e.target.value as any,
+                              }))
+                            }
                             className="w-full px-3 py-2 border rounded-lg bg-background"
                           >
                             <option value="operator">Operador</option>
@@ -1083,10 +1446,17 @@ export default function Team() {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-medium mb-2">Nível de Acesso</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Nível de Acesso
+                          </label>
                           <select
                             value={newEmployee.accessLevel}
-                            onChange={(e) => setNewEmployee(prev => ({ ...prev, accessLevel: e.target.value as any }))}
+                            onChange={(e) =>
+                              setNewEmployee((prev) => ({
+                                ...prev,
+                                accessLevel: e.target.value as any,
+                              }))
+                            }
                             className="w-full px-3 py-2 border rounded-lg bg-background"
                           >
                             <option value="readonly">Apenas Leitura</option>
@@ -1097,12 +1467,29 @@ export default function Team() {
                       </div>
 
                       <div className="text-xs text-muted-foreground space-y-1">
-                        <p><strong>Perfis:</strong></p>
-                        <p>• <strong>Operador:</strong> Portal operador, visualização básica</p>
-                        <p>• <strong>Qualidade:</strong> Controle de qualidade + operador</p>
-                        <p>• <strong>Manutenção:</strong> Gestão de manutenção + anteriores</p>
-                        <p>• <strong>Supervisor:</strong> Gest��o completa exceto admin</p>
-                        <p>• <strong>Administrador:</strong> Acesso total ao sistema</p>
+                        <p>
+                          <strong>Perfis:</strong>
+                        </p>
+                        <p>
+                          • <strong>Operador:</strong> Portal operador,
+                          visualização básica
+                        </p>
+                        <p>
+                          • <strong>Qualidade:</strong> Controle de qualidade +
+                          operador
+                        </p>
+                        <p>
+                          • <strong>Manutenção:</strong> Gestão de manutenção +
+                          anteriores
+                        </p>
+                        <p>
+                          • <strong>Supervisor:</strong> Gest��o completa exceto
+                          admin
+                        </p>
+                        <p>
+                          • <strong>Administrador:</strong> Acesso total ao
+                          sistema
+                        </p>
                       </div>
                     </div>
                   )}
@@ -1115,10 +1502,22 @@ export default function Team() {
                     setShowAddEmployee(false);
                     setEditingEmployee(null);
                     setNewEmployee({
-                      name: '', position: '', department: 'Corte BZM', shift: 'morning',
-                      email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
-                      machineOperatingLicense: '', certifications: '',
-                      hasSystemAccess: false, username: '', role: 'operator', accessLevel: 'limited', password: ''
+                      name: "",
+                      position: "",
+                      department: "Corte BZM",
+                      shift: "morning",
+                      email: "",
+                      phone: "",
+                      skills: "",
+                      supervisor: "",
+                      currentAssignment: "",
+                      machineOperatingLicense: "",
+                      certifications: "",
+                      hasSystemAccess: false,
+                      username: "",
+                      role: "operator",
+                      accessLevel: "limited",
+                      password: "",
                     });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-muted"
@@ -1126,10 +1525,12 @@ export default function Team() {
                   Cancelar
                 </button>
                 <button
-                  onClick={editingEmployee ? handleUpdateEmployee : handleAddEmployee}
+                  onClick={
+                    editingEmployee ? handleUpdateEmployee : handleAddEmployee
+                  }
                   className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
                 >
-                  {editingEmployee ? 'Atualizar' : 'Adicionar'} Funcionário
+                  {editingEmployee ? "Atualizar" : "Adicionar"} Funcionário
                 </button>
               </div>
             </div>

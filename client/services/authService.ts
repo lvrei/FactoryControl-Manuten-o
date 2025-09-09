@@ -2,7 +2,7 @@
 export interface LoginSession {
   id: string;
   username: string;
-  role: 'operator' | 'supervisor' | 'admin' | 'maintenance';
+  role: "operator" | "supervisor" | "admin" | "maintenance";
   name: string;
   loginTime: string;
 }
@@ -12,14 +12,14 @@ export interface LoginSession {
  * Versão simplificada para testes sem server-side
  */
 class AuthService {
-  private storageKey = 'factoryControl_auth';
-  private usersKey = 'factoryControl_users';
+  private storageKey = "factoryControl_auth";
+  private usersKey = "factoryControl_users";
   private currentUser: LoginSession | null = null;
 
   // Login com credenciais (versão simples para teste)
   async login(username: string, password: string): Promise<LoginSession> {
     try {
-      console.log('🔐 Tentando login:', username);
+      console.log("🔐 Tentando login:", username);
 
       // 1) Verificar utilizadores criados no sistema (persistência local simples)
       const users = this.getUsers();
@@ -28,25 +28,25 @@ class AuthService {
         const session: LoginSession = {
           id: found.id || `${username}-1`,
           username,
-          role: (found.role || 'operator') as any,
+          role: (found.role || "operator") as any,
           name: found.name || username,
           loginTime: new Date().toISOString(),
         };
         this.currentUser = session;
         localStorage.setItem(this.storageKey, JSON.stringify(session));
-        console.log('✅ Login bem-sucedido (utilizador criado):', username);
+        console.log("✅ Login bem-sucedido (utilizador criado):", username);
         return session;
       }
 
       // 2) Fallback: credenciais de demonstração
       const validCredentials: Record<string, { role: string; name: string }> = {
-        'admin': { role: 'admin', name: 'Administrador' },
-        'operador': { role: 'operator', name: 'Operador Principal' },
-        'supervisor': { role: 'supervisor', name: 'Supervisor' }
+        admin: { role: "admin", name: "Administrador" },
+        operador: { role: "operator", name: "Operador Principal" },
+        supervisor: { role: "supervisor", name: "Supervisor" },
       };
 
-      if (!validCredentials[username] || password !== 'admin123') {
-        throw new Error('Credenciais inválidas');
+      if (!validCredentials[username] || password !== "admin123") {
+        throw new Error("Credenciais inválidas");
       }
 
       const userData = validCredentials[username];
@@ -61,11 +61,10 @@ class AuthService {
       this.currentUser = session;
       localStorage.setItem(this.storageKey, JSON.stringify(session));
 
-      console.log('✅ Login bem-sucedido (demo):', username);
+      console.log("✅ Login bem-sucedido (demo):", username);
       return session;
-
     } catch (error) {
-      console.error('❌ Erro no login:', error);
+      console.error("❌ Erro no login:", error);
       throw error;
     }
   }
@@ -76,9 +75,9 @@ class AuthService {
       // Limpeza local
       this.currentUser = null;
       localStorage.removeItem(this.storageKey);
-      console.log('👋 Logout concluído');
+      console.log("👋 Logout concluído");
     } catch (error) {
-      console.error('❌ Erro no logout:', error);
+      console.error("❌ Erro no logout:", error);
     }
   }
 
@@ -87,16 +86,16 @@ class AuthService {
     try {
       // Verificar se há usuário em memória ou localStorage
       if (this.currentUser) return true;
-      
+
       const stored = localStorage.getItem(this.storageKey);
       if (stored) {
         this.currentUser = JSON.parse(stored);
         return true;
       }
-      
+
       return false;
     } catch (error) {
-      console.warn('⚠️ Verificação de autenticação falhou:', error);
+      console.warn("⚠️ Verificação de autenticação falhou:", error);
       this.currentUser = null;
       localStorage.removeItem(this.storageKey);
       return false;
@@ -119,7 +118,7 @@ class AuthService {
         return user;
       }
     } catch (error) {
-      console.error('❌ Erro ao ler usuário do localStorage:', error);
+      console.error("❌ Erro ao ler usuário do localStorage:", error);
       localStorage.removeItem(this.storageKey);
     }
 
@@ -145,10 +144,10 @@ class AuthService {
 
     // Hierarquia de roles (admin > supervisor > maintenance > operator)
     const roleHierarchy: Record<string, number> = {
-      'admin': 4,
-      'supervisor': 3,
-      'maintenance': 2,
-      'operator': 1
+      admin: 4,
+      supervisor: 3,
+      maintenance: 2,
+      operator: 1,
     };
 
     const userLevel = roleHierarchy[user.role] || 0;
@@ -162,29 +161,56 @@ class AuthService {
     try {
       return await this.isAuthenticated();
     } catch (error) {
-      console.warn('⚠️ Falha na inicialização do auth:', error);
+      console.warn("⚠️ Falha na inicialização do auth:", error);
       return false;
     }
   }
 
   // Criar utilizador (persistência local para testes)
-  async createUser(user: { username: string; name: string; email?: string; password: string; role: LoginSession['role'] | 'quality'; accessLevel?: 'full'|'limited'|'readonly'; isActive?: boolean }): Promise<void> {
+  async createUser(user: {
+    username: string;
+    name: string;
+    email?: string;
+    password: string;
+    role: LoginSession["role"] | "quality";
+    accessLevel?: "full" | "limited" | "readonly";
+    isActive?: boolean;
+  }): Promise<void> {
     const users = this.getUsers();
     if (users.find((u: any) => u.username === user.username)) {
-      throw new Error('Utilizador já existe');
+      throw new Error("Utilizador já existe");
     }
-    const newUser = { ...user, id: `${user.username}-${Date.now()}`, createdAt: new Date().toISOString(), isActive: user.isActive !== false };
+    const newUser = {
+      ...user,
+      id: `${user.username}-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      isActive: user.isActive !== false,
+    };
     users.push(newUser);
     localStorage.setItem(this.usersKey, JSON.stringify(users));
   }
 
   // Upsert de utilizador (cria se não existir, atualiza se existir)
-  async upsertUser(user: { username: string; name: string; email?: string; password?: string; role?: LoginSession['role'] | 'quality'; accessLevel?: 'full'|'limited'|'readonly'; isActive?: boolean }): Promise<void> {
+  async upsertUser(user: {
+    username: string;
+    name: string;
+    email?: string;
+    password?: string;
+    role?: LoginSession["role"] | "quality";
+    accessLevel?: "full" | "limited" | "readonly";
+    isActive?: boolean;
+  }): Promise<void> {
     const users = this.getUsers();
     const idx = users.findIndex((u: any) => u.username === user.username);
     if (idx === -1) {
-      const newUser = { ...user, id: `${user.username}-${Date.now()}`, createdAt: new Date().toISOString(), isActive: user.isActive !== false };
-      if (!newUser.password) throw new Error('Palavra-passe obrigatória para novo utilizador');
+      const newUser = {
+        ...user,
+        id: `${user.username}-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        isActive: user.isActive !== false,
+      };
+      if (!newUser.password)
+        throw new Error("Palavra-passe obrigatória para novo utilizador");
       users.push(newUser);
     } else {
       users[idx] = { ...users[idx], ...user };
@@ -205,7 +231,7 @@ class AuthService {
   clearAuthData(): void {
     this.currentUser = null;
     localStorage.removeItem(this.storageKey);
-    console.log('🧹 Dados de autenticação limpos');
+    console.log("🧹 Dados de autenticação limpos");
   }
 
   // Atualizar atividade do usuário (método vazio para compatibilidade)
@@ -226,7 +252,7 @@ class AuthService {
       loginTime: user.loginTime,
       sessionDuration: user.loginTime
         ? `${Math.round((Date.now() - new Date(user.loginTime).getTime()) / 60000)} minutos`
-        : 'Desconhecido'
+        : "Desconhecido",
     };
   }
 }
@@ -238,7 +264,7 @@ const authService = new AuthService();
 authService.initialize().catch(console.warn);
 
 // Expor para debug (apenas em desenvolvimento)
-if (typeof window !== 'undefined') {
+if (typeof window !== "undefined") {
   (window as any).authService = authService;
 }
 

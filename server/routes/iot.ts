@@ -4,7 +4,7 @@ import { isDbConfigured, query } from "../db";
 export const iotRouter = express.Router();
 
 // Ensure JSON parsing even if app-level middleware is altered
-iotRouter.use(express.json({ limit: '2mb' }));
+iotRouter.use(express.json({ limit: "2mb" }));
 iotRouter.use(express.urlencoded({ extended: true }));
 
 const useDb = () => isDbConfigured();
@@ -31,7 +31,7 @@ async function ensureIotTables(): Promise<boolean> {
         try {
           await query(`CREATE SCHEMA iot`);
         } catch (e: any) {
-          if (e?.code !== '42P06' && e?.code !== '23505') throw e;
+          if (e?.code !== "42P06" && e?.code !== "23505") throw e;
         }
       }
 
@@ -51,7 +51,7 @@ async function ensureIotTables(): Promise<boolean> {
         `SELECT EXISTS (
            SELECT 1 FROM information_schema.tables
            WHERE table_schema = 'public' AND table_name = 'machines'
-         ) AS exists`
+         ) AS exists`,
       );
       const hasMachines = !!machinesExists.rows[0]?.exists;
 
@@ -59,7 +59,7 @@ async function ensureIotTables(): Promise<boolean> {
       await query(`CREATE TABLE IF NOT EXISTS iot.sensor_bindings (
     id TEXT PRIMARY KEY,
     sensor_id TEXT NOT NULL REFERENCES iot.sensors(id) ON DELETE CASCADE,
-    machine_id TEXT NOT NULL${hasMachines ? ' REFERENCES public.machines(id) ON DELETE CASCADE' : ''},
+    machine_id TEXT NOT NULL${hasMachines ? " REFERENCES public.machines(id) ON DELETE CASCADE" : ""},
     metric TEXT NOT NULL,
     unit TEXT,
     scale NUMERIC DEFAULT 1,
@@ -76,7 +76,7 @@ async function ensureIotTables(): Promise<boolean> {
       // Rules (thresholds and priorities)
       await query(`CREATE TABLE IF NOT EXISTS iot.sensor_rules (
     id TEXT PRIMARY KEY,
-    machine_id TEXT NOT NULL${hasMachines ? ' REFERENCES public.machines(id) ON DELETE CASCADE' : ''},
+    machine_id TEXT NOT NULL${hasMachines ? " REFERENCES public.machines(id) ON DELETE CASCADE" : ""},
     sensor_id TEXT REFERENCES iot.sensors(id) ON DELETE SET NULL,
     metric TEXT NOT NULL,
     operator TEXT NOT NULL,
@@ -98,7 +98,7 @@ async function ensureIotTables(): Promise<boolean> {
       // Alerts
       await query(`CREATE TABLE IF NOT EXISTS iot.alerts (
     id TEXT PRIMARY KEY,
-    machine_id TEXT NOT NULL${hasMachines ? ' REFERENCES public.machines(id) ON DELETE CASCADE' : ''},
+    machine_id TEXT NOT NULL${hasMachines ? " REFERENCES public.machines(id) ON DELETE CASCADE" : ""},
     rule_id TEXT REFERENCES iot.sensor_rules(id) ON DELETE SET NULL,
     sensor_id TEXT REFERENCES iot.sensors(id) ON DELETE SET NULL,
     metric TEXT NOT NULL,
@@ -109,7 +109,9 @@ async function ensureIotTables(): Promise<boolean> {
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
     resolved_at TIMESTAMP WITH TIME ZONE
   )`);
-      await query(`CREATE INDEX IF NOT EXISTS idx_iot_alerts_status ON iot.alerts(status)`);
+      await query(
+        `CREATE INDEX IF NOT EXISTS idx_iot_alerts_status ON iot.alerts(status)`,
+      );
       await query(
         `CREATE INDEX IF NOT EXISTS idx_iot_alerts_machine ON iot.alerts(machine_id)`,
       );
@@ -122,15 +124,22 @@ async function ensureIotTables(): Promise<boolean> {
            ON rc.constraint_name = tc.constraint_name AND rc.constraint_schema = tc.constraint_schema
          JOIN information_schema.constraint_column_usage ccu
            ON ccu.constraint_name = rc.unique_constraint_name AND ccu.constraint_schema = rc.unique_constraint_schema
-         WHERE tc.constraint_schema = 'iot' AND tc.table_name = 'alerts' AND tc.constraint_type = 'FOREIGN KEY' AND tc.constraint_name = 'alerts_rule_id_fkey'`
+         WHERE tc.constraint_schema = 'iot' AND tc.table_name = 'alerts' AND tc.constraint_type = 'FOREIGN KEY' AND tc.constraint_name = 'alerts_rule_id_fkey'`,
       );
-      const needsFix = fk.rows.length === 0 || fk.rows[0].ref_schema !== 'iot' || fk.rows[0].ref_table !== 'sensor_rules';
+      const needsFix =
+        fk.rows.length === 0 ||
+        fk.rows[0].ref_schema !== "iot" ||
+        fk.rows[0].ref_table !== "sensor_rules";
       if (needsFix) {
         try {
-          await query(`ALTER TABLE iot.alerts DROP CONSTRAINT IF EXISTS alerts_rule_id_fkey`);
-          await query(`ALTER TABLE iot.alerts ADD CONSTRAINT alerts_rule_id_fkey FOREIGN KEY (rule_id) REFERENCES iot.sensor_rules(id) ON DELETE SET NULL`);
+          await query(
+            `ALTER TABLE iot.alerts DROP CONSTRAINT IF EXISTS alerts_rule_id_fkey`,
+          );
+          await query(
+            `ALTER TABLE iot.alerts ADD CONSTRAINT alerts_rule_id_fkey FOREIGN KEY (rule_id) REFERENCES iot.sensor_rules(id) ON DELETE SET NULL`,
+          );
         } catch (e: any) {
-          if (e?.code !== '42710') throw e;
+          if (e?.code !== "42710") throw e;
         }
       }
 
@@ -142,30 +151,38 @@ async function ensureIotTables(): Promise<boolean> {
                SELECT 1 FROM information_schema.table_constraints
                WHERE constraint_schema = 'iot' AND constraint_name = $1
              ) AS exists`,
-            [name]
+            [name],
           );
           return !!r.rows[0]?.exists;
         };
-        if (!(await existingConstraint('sensor_rules_machine_fk'))) {
-          await query(`ALTER TABLE iot.sensor_rules ADD CONSTRAINT sensor_rules_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`);
+        if (!(await existingConstraint("sensor_rules_machine_fk"))) {
+          await query(
+            `ALTER TABLE iot.sensor_rules ADD CONSTRAINT sensor_rules_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`,
+          );
         }
-        if (!(await existingConstraint('sensor_bindings_machine_fk'))) {
-          await query(`ALTER TABLE iot.sensor_bindings ADD CONSTRAINT sensor_bindings_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`);
+        if (!(await existingConstraint("sensor_bindings_machine_fk"))) {
+          await query(
+            `ALTER TABLE iot.sensor_bindings ADD CONSTRAINT sensor_bindings_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`,
+          );
         }
-        if (!(await existingConstraint('alerts_machine_fk'))) {
-          await query(`ALTER TABLE iot.alerts ADD CONSTRAINT alerts_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`);
+        if (!(await existingConstraint("alerts_machine_fk"))) {
+          await query(
+            `ALTER TABLE iot.alerts ADD CONSTRAINT alerts_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`,
+          );
         }
       }
 
       return true;
     } catch (e: any) {
-      console.error('ensureIotTables error:', e);
+      console.error("ensureIotTables error:", e);
       try {
         const chk = await query<{ n: number }>(
-          `SELECT COUNT(*)::int AS n FROM information_schema.tables WHERE table_schema='iot' AND table_name IN ('sensors','sensor_bindings','sensor_rules','alerts')`
+          `SELECT COUNT(*)::int AS n FROM information_schema.tables WHERE table_schema='iot' AND table_name IN ('sensors','sensor_bindings','sensor_rules','alerts')`,
         );
         if ((chk.rows[0]?.n || 0) >= 4) {
-          console.warn('IoT tables already present; continuing without migration.');
+          console.warn(
+            "IoT tables already present; continuing without migration.",
+          );
           return true;
         }
       } catch {}
@@ -200,8 +217,14 @@ iotRouter.get("/sensors", async (_req, res) => {
 
 iotRouter.post("/sensors", async (req, res) => {
   const s = req.body || {};
-  if (!s || typeof s !== 'object' || !('name' in s) || !('type' in s) || !('protocol' in s)) {
-    return res.status(400).json({ error: 'Dados inválidos do sensor' });
+  if (
+    !s ||
+    typeof s !== "object" ||
+    !("name" in s) ||
+    !("type" in s) ||
+    !("protocol" in s)
+  ) {
+    return res.status(400).json({ error: "Dados inválidos do sensor" });
   }
   const id = (s as any).id || genId("sensor");
   try {
@@ -257,7 +280,16 @@ iotRouter.post("/sensors/bind", async (req, res) => {
       return res.status(500).json({ error: e.message });
     }
     mem.bindings = mem.bindings.filter((x) => x.id !== id);
-    mem.bindings.push({ id, sensor_id: b.sensorId, machine_id: b.machineId, metric: b.metric, unit: b.unit, scale: b.scale ?? 1, offset: b.offset ?? 0, created_at: new Date().toISOString() });
+    mem.bindings.push({
+      id,
+      sensor_id: b.sensorId,
+      machine_id: b.machineId,
+      metric: b.metric,
+      unit: b.unit,
+      scale: b.scale ?? 1,
+      offset: b.offset ?? 0,
+      created_at: new Date().toISOString(),
+    });
     return res.json({ id });
   }
 });
@@ -269,7 +301,7 @@ iotRouter.get("/rules", async (_req, res) => {
     const { rows } = await query(
       `SELECT * FROM iot.sensor_rules WHERE enabled = true ORDER BY created_at DESC`,
     );
-    const data = rows.map((r:any) => ({
+    const data = rows.map((r: any) => ({
       id: r.id,
       machineId: r.machine_id,
       sensorId: r.sensor_id,
@@ -288,19 +320,21 @@ iotRouter.get("/rules", async (_req, res) => {
       console.error("GET /rules error", e);
       return res.status(500).json({ error: e.message });
     }
-    const data = mem.rules.filter((r:any) => r.enabled !== false).map((r:any) => ({
-      id: r.id,
-      machineId: r.machine_id,
-      sensorId: r.sensor_id,
-      metric: r.metric,
-      operator: r.operator,
-      minValue: r.min_value,
-      maxValue: r.max_value,
-      thresholdValue: r.threshold_value,
-      priority: r.priority,
-      message: r.message,
-      enabled: r.enabled,
-    }));
+    const data = mem.rules
+      .filter((r: any) => r.enabled !== false)
+      .map((r: any) => ({
+        id: r.id,
+        machineId: r.machine_id,
+        sensorId: r.sensor_id,
+        metric: r.metric,
+        operator: r.operator,
+        minValue: r.min_value,
+        maxValue: r.max_value,
+        thresholdValue: r.threshold_value,
+        priority: r.priority,
+        message: r.message,
+        enabled: r.enabled,
+      }));
     return res.json(data);
   }
 });
@@ -334,8 +368,20 @@ iotRouter.post("/rules", async (req, res) => {
       console.error("POST /rules error", e);
       return res.status(500).json({ error: e.message });
     }
-    const entry = { id, machine_id: r.machineId, sensor_id: r.sensorId || null, metric: r.metric, operator: r.operator, min_value: r.minValue ?? null, max_value: r.maxValue ?? null, threshold_value: r.thresholdValue ?? null, priority: r.priority || 'medium', message: r.message || 'Alerta de sensor', enabled: r.enabled !== false };
-    mem.rules = mem.rules.filter((x:any) => x.id !== id);
+    const entry = {
+      id,
+      machine_id: r.machineId,
+      sensor_id: r.sensorId || null,
+      metric: r.metric,
+      operator: r.operator,
+      min_value: r.minValue ?? null,
+      max_value: r.maxValue ?? null,
+      threshold_value: r.thresholdValue ?? null,
+      priority: r.priority || "medium",
+      message: r.message || "Alerta de sensor",
+      enabled: r.enabled !== false,
+    };
+    mem.rules = mem.rules.filter((x: any) => x.id !== id);
     mem.rules.push(entry);
     return res.json({ id });
   }
@@ -356,8 +402,12 @@ iotRouter.get("/alerts", async (req, res) => {
       console.error("GET /alerts error", e);
       return res.status(500).json({ error: e.message });
     }
-    const list = status ? mem.alerts.filter((a:any)=>a.status===status) : mem.alerts;
-    return res.json(list.sort((a:any,b:any)=> (a.created_at > b.created_at ? -1 : 1)));
+    const list = status
+      ? mem.alerts.filter((a: any) => a.status === status)
+      : mem.alerts;
+    return res.json(
+      list.sort((a: any, b: any) => (a.created_at > b.created_at ? -1 : 1)),
+    );
   }
 });
 
@@ -365,14 +415,18 @@ iotRouter.post("/alerts/:id/ack", async (req, res) => {
   const id = req.params.id;
   try {
     await ensureIotTables();
-    await query(`UPDATE iot.alerts SET status = 'acknowledged' WHERE id = $1`, [ id ]);
+    await query(`UPDATE iot.alerts SET status = 'acknowledged' WHERE id = $1`, [
+      id,
+    ]);
     return res.json({ ok: true });
   } catch (e: any) {
     if (isDbConfigured()) {
       console.error("POST /alerts/:id/ack error", e);
       return res.status(500).json({ error: e.message });
     }
-    mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'acknowledged' } : a);
+    mem.alerts = mem.alerts.map((a: any) =>
+      a.id === id ? { ...a, status: "acknowledged" } : a,
+    );
     return res.json({ ok: true });
   }
 });
@@ -401,25 +455,29 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
     );
 
     for (const b of binds.rows) {
-      const adjusted = Number(value) * (Number((b as any).scale) ?? 1) + (Number((b as any).offset) ?? 0);
+      const adjusted =
+        Number(value) * (Number((b as any).scale) ?? 1) +
+        (Number((b as any).offset) ?? 0);
       const rules = await query<any>(
         `SELECT * FROM iot.sensor_rules WHERE enabled = true AND machine_id = $1 AND (sensor_id IS NULL OR sensor_id = $2) AND metric = $3`,
         [b.machine_id, sensorId, metric],
       );
       for (const r of rules.rows) {
         let violated = false;
-        if (r.operator === 'range') {
-          if (r.min_value != null && adjusted < Number(r.min_value)) violated = true;
-          if (r.max_value != null && adjusted > Number(r.max_value)) violated = true;
-        } else if (r.operator === 'gt') {
+        if (r.operator === "range") {
+          if (r.min_value != null && adjusted < Number(r.min_value))
+            violated = true;
+          if (r.max_value != null && adjusted > Number(r.max_value))
+            violated = true;
+        } else if (r.operator === "gt") {
           violated = adjusted > Number(r.threshold_value);
-        } else if (r.operator === 'lt') {
+        } else if (r.operator === "lt") {
           violated = adjusted < Number(r.threshold_value);
-        } else if (r.operator === 'eq') {
+        } else if (r.operator === "eq") {
           violated = adjusted === Number(r.threshold_value);
         }
         if (violated) {
-          const alertId = genId('alert');
+          const alertId = genId("alert");
           await query(
             `INSERT INTO iot.alerts (id, machine_id, rule_id, sensor_id, metric, value, status, priority, message, created_at)
             VALUES ($1,$2,$3,$4,$5,$6,'active',$7,$8,COALESCE($9, now()))`,
@@ -447,25 +505,47 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
     }
     // Fallback to memory path
     let created = 0;
-    const binds = mem.bindings.filter((b:any)=> b.sensor_id === sensorId && b.metric === metric);
+    const binds = mem.bindings.filter(
+      (b: any) => b.sensor_id === sensorId && b.metric === metric,
+    );
     for (const b of binds) {
-      const adjusted = Number(value) * (Number(b.scale) ?? 1) + (Number(b.offset) ?? 0);
-      const rules = mem.rules.filter((r:any)=> r.enabled !== false && r.machine_id === b.machine_id && r.metric === metric && (r.sensor_id == null || r.sensor_id === sensorId));
+      const adjusted =
+        Number(value) * (Number(b.scale) ?? 1) + (Number(b.offset) ?? 0);
+      const rules = mem.rules.filter(
+        (r: any) =>
+          r.enabled !== false &&
+          r.machine_id === b.machine_id &&
+          r.metric === metric &&
+          (r.sensor_id == null || r.sensor_id === sensorId),
+      );
       for (const r of rules) {
         let violated = false;
-        if (r.operator === 'range') {
-          if (r.min_value != null && adjusted < Number(r.min_value)) violated = true;
-          if (r.max_value != null && adjusted > Number(r.max_value)) violated = true;
-        } else if (r.operator === 'gt') {
+        if (r.operator === "range") {
+          if (r.min_value != null && adjusted < Number(r.min_value))
+            violated = true;
+          if (r.max_value != null && adjusted > Number(r.max_value))
+            violated = true;
+        } else if (r.operator === "gt") {
           violated = adjusted > Number(r.threshold_value);
-        } else if (r.operator === 'lt') {
+        } else if (r.operator === "lt") {
           violated = adjusted < Number(r.threshold_value);
-        } else if (r.operator === 'eq') {
+        } else if (r.operator === "eq") {
           violated = adjusted === Number(r.threshold_value);
         }
         if (violated) {
-          const alertId = genId('alert');
-          mem.alerts.unshift({ id: alertId, machine_id: b.machine_id, rule_id: r.id, sensor_id: sensorId, metric, value: adjusted, status: 'active', priority: r.priority, message: r.message, created_at: timestamp || new Date().toISOString() });
+          const alertId = genId("alert");
+          mem.alerts.unshift({
+            id: alertId,
+            machine_id: b.machine_id,
+            rule_id: r.id,
+            sensor_id: sensorId,
+            metric,
+            value: adjusted,
+            status: "active",
+            priority: r.priority,
+            message: r.message,
+            created_at: timestamp || new Date().toISOString(),
+          });
           created++;
         }
       }
@@ -474,14 +554,26 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
   }
 });
 
-iotRouter.get('/iot/status', async (_req, res) => {
+iotRouter.get("/iot/status", async (_req, res) => {
   try {
     const configured = isDbConfigured();
     let connected = false;
-    try { await query('SELECT 1'); connected = true; } catch {}
-    const schema = await query<{ exists: boolean }>(`SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name='iot') AS exists`);
-    const tables = await query<{ name: string }>(`SELECT table_name AS name FROM information_schema.tables WHERE table_schema='iot' ORDER BY 1`);
-    res.json({ configured, connected, schemaExists: !!schema.rows[0]?.exists, tables: tables.rows.map(r=>r.name) });
+    try {
+      await query("SELECT 1");
+      connected = true;
+    } catch {}
+    const schema = await query<{ exists: boolean }>(
+      `SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name='iot') AS exists`,
+    );
+    const tables = await query<{ name: string }>(
+      `SELECT table_name AS name FROM information_schema.tables WHERE table_schema='iot' ORDER BY 1`,
+    );
+    res.json({
+      configured,
+      connected,
+      schemaExists: !!schema.rows[0]?.exists,
+      tables: tables.rows.map((r) => r.name),
+    });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
