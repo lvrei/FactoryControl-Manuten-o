@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/authService";
+import { employeesService } from "@/services/employeesService";
 import { User as UserType } from "@/types/production";
 
 interface Employee {
@@ -146,6 +147,19 @@ export default function Team() {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [employeesList, setEmployeesList] = useState<Employee[]>(employees);
 
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const list = await employeesService.list();
+        setEmployeesList(list as any);
+      } catch (e) {
+        console.error('Erro ao carregar funcionários:', e);
+        setEmployeesList([]);
+      }
+    };
+    load();
+  }, []);
+
   const [newEmployee, setNewEmployee] = useState({
     name: '',
     position: '',
@@ -220,20 +234,38 @@ export default function Team() {
         accessLevel: newEmployee.accessLevel
       };
 
-      // Create system user if access is granted
+      // Persist in DB
+      await employeesService.create({
+        name: employee.name,
+        position: employee.position,
+        department: employee.department,
+        shift: employee.shift,
+        status: employee.status,
+        email: employee.email,
+        phone: employee.phone,
+        hireDate: employee.hireDate,
+        skills: employee.skills,
+        certifications: employee.certifications,
+        machineOperatingLicense: employee.machineOperatingLicense,
+        currentAssignment: employee.currentAssignment,
+        supervisor: employee.supervisor,
+        productivityScore: employee.productivityScore,
+        attendanceRate: employee.attendanceRate,
+        trainingHours: employee.trainingHours,
+        lastPresenceUpdate: employee.lastPresenceUpdate,
+        username: employee.username,
+        role: employee.role,
+        accessLevel: employee.accessLevel,
+        hasSystemAccess: !!employee.hasSystemAccess,
+      });
+
+      // Create system user if access is granted (local helper)
       if (newEmployee.hasSystemAccess && newEmployee.username && newEmployee.password) {
-        await authService.createUser({
-          username: newEmployee.username,
-          name: newEmployee.name,
-          email: newEmployee.email,
-          password: newEmployee.password,
-          role: newEmployee.role,
-          accessLevel: newEmployee.accessLevel,
-          isActive: true
-        });
+        try { await authService.createUser({ username: newEmployee.username, name: newEmployee.name, email: newEmployee.email, password: newEmployee.password, role: newEmployee.role, accessLevel: newEmployee.accessLevel, isActive: true }); } catch {}
       }
 
-      setEmployeesList(prev => [...prev, employee]);
+      const refreshed = await employeesService.list();
+      setEmployeesList(refreshed as any);
       setNewEmployee({
         name: '', position: '', department: 'Corte BZM', shift: 'morning',
         email: '', phone: '', skills: '', supervisor: '', currentAssignment: '',
@@ -265,7 +297,7 @@ export default function Team() {
     setShowAddEmployee(true);
   };
 
-  const handleUpdateEmployee = () => {
+  const handleUpdateEmployee = async () => {
     if (!editingEmployee) return;
 
     const updatedEmployee: Employee = {
@@ -283,9 +315,26 @@ export default function Team() {
       currentAssignment: newEmployee.currentAssignment
     };
 
-    setEmployeesList(prev => prev.map(emp =>
-      emp.id === editingEmployee.id ? updatedEmployee : emp
-    ));
+    try {
+      await employeesService.update(editingEmployee.id, {
+        name: updatedEmployee.name,
+        position: updatedEmployee.position,
+        department: updatedEmployee.department,
+        shift: updatedEmployee.shift,
+        email: updatedEmployee.email,
+        phone: updatedEmployee.phone,
+        skills: updatedEmployee.skills,
+        certifications: updatedEmployee.certifications,
+        machineOperatingLicense: updatedEmployee.machineOperatingLicense,
+        supervisor: updatedEmployee.supervisor,
+        currentAssignment: updatedEmployee.currentAssignment,
+      });
+      const refreshed = await employeesService.list();
+      setEmployeesList(refreshed as any);
+    } catch (e) {
+      console.error('Erro ao atualizar funcionário', e);
+      alert('Erro ao atualizar funcionário');
+    }
 
     setEditingEmployee(null);
     setNewEmployee({
@@ -296,18 +345,20 @@ export default function Team() {
     setShowAddEmployee(false);
   };
 
-  const handleDeleteEmployee = (id: string) => {
-    if (confirm('Tem certeza que deseja remover este funcionário?')) {
-      setEmployeesList(prev => prev.filter(emp => emp.id !== id));
-    }
+  const handleDeleteEmployee = async (id: string) => {
+    if (!confirm('Tem certeza que deseja remover este funcionário?')) return;
+    try { await employeesService.remove(id); const refreshed = await employeesService.list(); setEmployeesList(refreshed as any); }
+    catch (e) { console.error('Erro ao remover', e); alert('Erro ao remover funcionário'); }
   };
 
-  const markPresence = (employeeId: string, status: 'present' | 'absent') => {
-    setEmployeesList(prev => prev.map(emp =>
-      emp.id === employeeId 
-        ? { ...emp, status, lastPresenceUpdate: new Date().toISOString() }
-        : emp
-    ));
+  const markPresence = async (employeeId: string, status: 'present' | 'absent') => {
+    try {
+      await employeesService.update(employeeId, { status, lastPresenceUpdate: new Date().toISOString() } as any);
+      const refreshed = await employeesService.list();
+      setEmployeesList(refreshed as any);
+    } catch (e) {
+      console.error('Erro ao marcar presença', e);
+    }
   };
 
   return (
