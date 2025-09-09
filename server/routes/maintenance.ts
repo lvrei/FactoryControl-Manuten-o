@@ -58,6 +58,27 @@ async function ensureTables(): Promise<boolean> {
         maintenance_request_id TEXT REFERENCES maintenance_requests(id) ON DELETE SET NULL
       )`);
 
+      await query(`CREATE TABLE IF NOT EXISTS maintenance_plans (
+        id TEXT PRIMARY KEY,
+        machine_id TEXT REFERENCES machines(id) ON DELETE SET NULL,
+        machine_name TEXT,
+        type TEXT NOT NULL,
+        priority TEXT NOT NULL,
+        status TEXT NOT NULL,
+        scheduled_date TIMESTAMPTZ NOT NULL,
+        completed_date TIMESTAMPTZ,
+        estimated_cost NUMERIC,
+        actual_cost NUMERIC,
+        estimated_duration NUMERIC,
+        actual_duration NUMERIC,
+        description TEXT,
+        technician TEXT,
+        parts TEXT,
+        notes TEXT,
+        photos JSONB DEFAULT '[]'::jsonb,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
       await query(`CREATE TABLE IF NOT EXISTS machine_downtime (
         id TEXT PRIMARY KEY,
         machine_id TEXT REFERENCES machines(id) ON DELETE SET NULL,
@@ -269,6 +290,80 @@ maintenanceRouter.post("/maintenance/alerts/:id/resolve", async (req, res) => {
     mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'resolved', resolvedAt: new Date().toISOString(), resolvedBy } : a);
     return res.json({ ok: true });
   }
+});
+
+// Maintenance Plans (scheduled maintenances)
+maintenanceRouter.get("/maintenance/plans", async (_req, res) => {
+  try {
+    await ensureTables();
+    const { rows } = await query(`SELECT * FROM maintenance_plans ORDER BY scheduled_date DESC`);
+    return res.json(rows.map(r => ({
+      id: r.id,
+      machineId: r.machine_id,
+      machineName: r.machine_name,
+      type: r.type,
+      priority: r.priority,
+      status: r.status,
+      scheduledDate: r.scheduled_date,
+      completedDate: r.completed_date || undefined,
+      estimatedCost: Number(r.estimated_cost || 0),
+      actualCost: r.actual_cost != null ? Number(r.actual_cost) : undefined,
+      estimatedDuration: Number(r.estimated_duration || 0),
+      actualDuration: r.actual_duration != null ? Number(r.actual_duration) : undefined,
+      description: r.description,
+      technician: r.technician,
+      parts: r.parts,
+      notes: r.notes,
+      photos: r.photos || []
+    })));
+  } catch (e: any) {
+    if (isDbConfigured()) { console.error("GET /maintenance/plans error", e); return res.status(500).json({ error: e.message }); }
+    return res.json([]);
+  }
+});
+
+maintenanceRouter.post("/maintenance/plans", async (req, res) => {
+  const d = req.body || {}; const id = d.id || genId("mplan");
+  try {
+    await ensureTables();
+    await query(`INSERT INTO maintenance_plans (id, machine_id, machine_name, type, priority, status, scheduled_date, completed_date, estimated_cost, actual_cost, estimated_duration, actual_duration, description, technician, parts, notes, photos)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,COALESCE($17,'[]'::jsonb))
+      ON CONFLICT (id) DO NOTHING`, [
+      id, d.machineId || null, d.machineName || null, d.type, d.priority, d.status, d.scheduledDate, d.completedDate || null,
+      d.estimatedCost ?? null, d.actualCost ?? null, d.estimatedDuration ?? null, d.actualDuration ?? null, d.description || null,
+      d.technician || null, d.parts || null, d.notes || null, d.photos ? JSON.stringify(d.photos) : '[]'
+    ]);
+    return res.json({ id });
+  } catch (e: any) {
+    if (isDbConfigured()) { console.error("POST /maintenance/plans error", e); return res.status(500).json({ error: e.message }); }
+    return res.json({ id });
+  }
+});
+
+maintenanceRouter.patch("/maintenance/plans/:id", async (req, res) => {
+  const id = req.params.id; const d = req.body || {};
+  try {
+    await ensureTables();
+    await query(`UPDATE maintenance_plans SET
+      machine_id=COALESCE($2,machine_id), machine_name=COALESCE($3,machine_name), type=COALESCE($4,type), priority=COALESCE($5,priority), status=COALESCE($6,status),
+      scheduled_date=COALESCE($7,scheduled_date), completed_date=COALESCE($8,completed_date), estimated_cost=COALESCE($9,estimated_cost), actual_cost=COALESCE($10,actual_cost),
+      estimated_duration=COALESCE($11,estimated_duration), actual_duration=COALESCE($12,actual_duration), description=COALESCE($13,description),
+      technician=COALESCE($14,technician), parts=COALESCE($15,parts), notes=COALESCE($16,notes), photos=COALESCE($17,photos)
+      WHERE id=$1`, [
+      id, d.machineId, d.machineName, d.type, d.priority, d.status, d.scheduledDate, d.completedDate,
+      d.estimatedCost, d.actualCost, d.estimatedDuration, d.actualDuration, d.description, d.technician, d.parts, d.notes, d.photos ? JSON.stringify(d.photos) : undefined
+    ]);
+    return res.json({ ok: true });
+  } catch (e: any) {
+    if (isDbConfigured()) { console.error("PATCH /maintenance/plans/:id error", e); return res.status(500).json({ error: e.message }); }
+    return res.json({ ok: true });
+  }
+});
+
+maintenanceRouter.delete("/maintenance/plans/:id", async (req, res) => {
+  const id = req.params.id;
+  try { await ensureTables(); await query(`DELETE FROM maintenance_plans WHERE id=$1`, [id]); return res.json({ ok: true }); }
+  catch (e: any) { if (isDbConfigured()) { console.error("DELETE /maintenance/plans/:id error", e); return res.status(500).json({ error: e.message }); } return res.json({ ok: true }); }
 });
 
 // Downtime
