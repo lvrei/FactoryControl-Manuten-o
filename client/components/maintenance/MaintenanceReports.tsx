@@ -32,6 +32,7 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
   });
   const [requests, setRequests] = useState<MaintenanceRequest[]>([]);
   const [downtimes, setDowntimes] = useState<MachineDowntime[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   const reportTypes = [
@@ -86,12 +87,14 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
     const load = async () => {
       setLoading(true);
       try {
-        const [reqs, dts] = await Promise.all([
+        const [reqs, dts, pls] = await Promise.all([
           maintenanceService.getMaintenanceRequests(),
-          maintenanceService.getMachineDowntime()
+          maintenanceService.getMachineDowntime(),
+          maintenanceService.getMaintenancePlans()
         ]);
         setRequests(reqs);
         setDowntimes(dts);
+        setPlans(pls || []);
       } catch (e) {
         console.error('Erro ao carregar dados de manutenção', e);
       } finally {
@@ -100,6 +103,21 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
     };
     load();
   }, [isOpen]);
+
+  // Helpers to apply equipment and date filters consistently
+  const withinDate = (dateStr?: string) => {
+    if (!dateStr) return dateOption === 'all';
+    const d = new Date(dateStr);
+    if (Number.isNaN(d.getTime())) return dateOption === 'all';
+    if (dateOption === 'all') return true;
+    if (dateOption === 'since') return d >= new Date(sinceDate);
+    if (dateOption === 'range') return d >= new Date(dateRange.start) && d <= new Date(dateRange.end);
+    return true;
+  };
+  const byEquipment = (machineId?: string) => selectedEquipment === 'all' || machineId === selectedEquipment;
+  const filteredRequests = () => requests.filter(r => byEquipment(r.machineId) && withinDate(r.completedAt || r.startedAt || r.assignedAt || r.requestedAt));
+  const filteredPlans = () => (plans || []).filter((p:any) => byEquipment(p.machineId) && withinDate(p.completedDate || p.scheduledDate));
+  const filteredDowntimes = () => downtimes.filter(d => byEquipment(d.machineId) && withinDate(d.endTime || d.startTime));
 
   const generatePDFReport = () => {
     const doc = new jsPDF();
@@ -146,17 +164,22 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
 
-      const total = requests.length;
-      const completed = requests.filter(r=> r.status==='completed').length;
-      const pending = requests.filter(r=> r.status!=='completed' && r.status!=='cancelled').length;
-      const critical = requests.filter(r=> r.urgencyLevel==='critical').length;
-      const activeDowntime = downtimes.filter(d=> d.status==='ongoing').length;
+      const reqs = filteredRequests();
+      const plns = filteredPlans();
+      const dts = filteredDowntimes();
+
+      const total = reqs.length;
+      const completed = reqs.filter(r=> r.status==='completed').length;
+      const pending = reqs.filter(r=> r.status!=='completed' && r.status!=='cancelled').length;
+      const critical = reqs.filter(r=> r.urgencyLevel==='critical').length;
+      const activeDowntime = dts.filter(d=> d.status==='ongoing').length;
+      const scheduledPlanned = plns.filter((p:any)=> p.status==='scheduled').length;
+      const completedPlanned = plns.filter((p:any)=> p.status==='completed').length;
 
       const summaryData = [
-        `Total de Solicitações: ${total}`,
-        `Concluídas: ${completed}`,
-        `Pendentes: ${pending}`,
-        `Críticas: ${critical}`,
+        `Solicitações de Manutenção: ${total}`,
+        `Concluídas: ${completed} | Pendentes: ${pending} | Críticas: ${critical}`,
+        `Manutenções Programadas: ${plns.length} (Agendadas: ${scheduledPlanned}, Concluídas: ${completedPlanned})`,
         `Paragens Ativas: ${activeDowntime}`,
       ];
 
@@ -170,29 +193,41 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
 
-      const detailedData = [
-        '1. Manutenção Preventiva - Torno CNC-001',
-        '   Data: 15/01/2024 | Técnico: João Silva',
-        '   Atividades: Lubrificação, verificação de peças',
-        '   Tempo: 1.5h | Custo: €89',
-        '',
-        '2. Manutenção Corretiva - Fresadora FR-023',
-        '   Data: 18/01/2024 | Técnico: Maria Santos',
-        '   Atividades: Substituição de motor, alinhamento',
-        '   Tempo: 4h | Custo: €320',
-        '',
-        '3. Manutenção Preventiva - Prensa PR-015',
-        '   Data: 22/01/2024 | Técnico: Pedro Costa',
-        '   Atividades: Inspeção hidráulica, troca de filtros',
-        '   Tempo: 2h | Custo: €145'
-      ];
+      const reqs = filteredRequests()
+        .sort((a,b)=> new Date(b.completedAt || b.requestedAt).getTime()-new Date(a.completedAt || a.requestedAt).getTime());
+      const plns = filteredPlans()
+        .sort((a:any,b:any)=> new Date(b.completedDate || b.scheduledDate).getTime()-new Date(a.completedDate || a.scheduledDate).getTime());
 
-      detailedData.forEach((line, index) => {
-        if (line.startsWith('  ')) {
-          doc.text(line, 30, yPosition + (index * 6));
-        } else {
-          doc.text(line, 25, yPosition + (index * 6));
-        }
+      let index = 1;
+      const pageHeight = doc.internal.pageSize.height;
+      const addLine = (text: string, indent = 0) => {
+        if (yPosition > pageHeight - 20) { doc.addPage(); yPosition = 20; }
+        doc.text(text, 25 + indent, yPosition);
+        yPosition += 6;
+      };
+
+      reqs.forEach(r => {
+        const title = `${index++}. ${r.category === 'preventive' ? 'Preventiva' : 'Solicitação'} - ${r.machineName}`;
+        addLine(title);
+        const dateStr = new Date(r.completedAt || r.requestedAt).toLocaleString('pt-PT');
+        addLine(`Data: ${dateStr} | Técnico: ${r.assignedTo || '—'}`, 5);
+        addLine(`Título: ${r.title}`, 5);
+        if (r.description) addLine(`Descrição: ${r.description}`, 5);
+        const timeH = r.workHours != null ? `${r.workHours}h` : (r.actualDowntime ? `${Math.round(r.actualDowntime/60)}h` : '—');
+        addLine(`Tempo: ${timeH} | Custo: €${(r.cost || 0).toFixed(2)} | Estado: ${r.status}`, 5);
+        yPosition += 2;
+      });
+
+      plns.forEach((p:any) => {
+        const title = `${index++}. Planeada (${p.type}) - ${p.machineName || '—'}`;
+        addLine(title);
+        const dateRef = p.completedDate || p.scheduledDate;
+        addLine(`Data: ${dateRef ? new Date(dateRef).toLocaleString('pt-PT') : '—'} | Técnico: ${p.technician || '—'}`, 5);
+        if (p.description) addLine(`Descrição: ${p.description}`, 5);
+        const timeH = p.actualDuration != null ? `${p.actualDuration}h` : (p.estimatedDuration != null ? `${p.estimatedDuration}h (estim.)` : '—');
+        const costV = p.actualCost != null ? p.actualCost : (p.estimatedCost != null ? p.estimatedCost : 0);
+        addLine(`Tempo: ${timeH} | Custo: €${Number(costV).toFixed(2)} | Estado: ${p.status}`, 5);
+        yPosition += 2;
       });
 
     } else if (reportType === 'performance') {
@@ -201,30 +236,44 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
 
-      const performanceData = [
-        'Indicadores de Performance:',
-        '',
-        'Disponibilidade Média: 96.8%',
-        'Tempo Médio Entre Falhas (MTBF): 180 horas',
-        'Tempo Médio de Reparo (MTTR): 2.1 horas',
-        'Eficiência Global (OEE): 92.4%',
-        '',
-        'Equipamentos com Melhor Performance:',
-        '• Torno CNC-002: 98.5% disponibilidade',
-        '• Robot de Solda RB-007: 97.8% disponibilidade',
-        '• Fresadora FR-019: 97.2% disponibilidade',
-        '',
-        'Equipamentos com Atenção Necessária:',
-        '• Prensa PR-012: 89.3% disponibilidade',
-        '• Torno CNC-001: 91.7% disponibilidade'
-      ];
+      const dts = filteredDowntimes();
+      const completed = dts.filter(d=> d.status==='completed' && typeof d.duration === 'number');
+      const totalDowntime = completed.reduce((s,d)=> s + (d.duration || 0), 0); // minutes
+      const mttr = completed.length ? Math.round(totalDowntime / completed.length) : 0; // minutes
 
-      performanceData.forEach((line, index) => {
-        if (line.startsWith('•')) {
-          doc.text(line, 30, yPosition + (index * 8));
-        } else {
-          doc.text(line, 25, yPosition + (index * 8));
-        }
+      const now = new Date();
+      let windowStart: Date;
+      if (dateOption === 'range') windowStart = new Date(dateRange.start);
+      else if (dateOption === 'since') windowStart = new Date(sinceDate);
+      else windowStart = new Date(now.getTime() - 30*24*60*60*1000);
+      const windowMinutes = Math.max(1, Math.round((now.getTime() - windowStart.getTime())/60000));
+      const availability = Math.max(0, Math.min(100, Math.round((1 - (totalDowntime/windowMinutes)) * 100)));
+
+      const byMachine: Record<string, {name:string, downtime:number}> = {};
+      dts.forEach(d => {
+        const key = d.machineId;
+        if (!byMachine[key]) byMachine[key] = { name: d.machineName, downtime: 0 };
+        byMachine[key].downtime += d.duration || 0;
+      });
+      const topDowntime = Object.values(byMachine).sort((a,b)=> b.downtime - a.downtime).slice(0,5);
+
+      const lines: string[] = [];
+      lines.push('Indicadores de Performance:');
+      lines.push('');
+      lines.push(`Disponibilidade Média (aprox.): ${availability}%`);
+      lines.push(`MTTR (Tempo Médio de Reparo): ${Math.round(mttr)} min`);
+      const failures = completed.length || 1;
+      const mtbf = Math.round((windowMinutes - totalDowntime) / failures);
+      lines.push(`MTBF (Tempo Médio Entre Falhas): ${mtbf} min`);
+      lines.push('');
+      lines.push('Equipamentos com Maior Tempo de Paragem:');
+      topDowntime.forEach(m => lines.push(`• ${m.name || '—'}: ${Math.round(m.downtime)} min`));
+
+      const pageHeight = doc.internal.pageSize.height;
+      lines.forEach((line) => {
+        if (yPosition > pageHeight - 20) { doc.addPage(); yPosition = 20; }
+        doc.text(line.startsWith('•') ? line : line, line.startsWith('•') ? 30 : 25, yPosition);
+        yPosition += 8;
       });
 
     } else if (reportType === 'costs') {
@@ -233,32 +282,42 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
 
-      const costData = [
-        'Resumo Financeiro:',
-        '',
-        'Custo Total de Manutenções: €12.450',
-        'Custo Médio por Manutenção: €265',
-        'Custo de Peças: €7.890 (63%)',
-        'Custo de Mão-de-obra: €4.560 (37%)',
-        '',
-        'Distribuição por Tipo:',
-        '• Manutenção Preventiva: €8.200 (66%)',
-        '• Manutenção Corretiva: €4.250 (34%)',
-        '',
-        'Equipamentos com Maior Custo:',
-        '• Fresadora FR-023: €2.340',
-        '• Torno CNC-001: €1.890',
-        '• Prensa PR-015: €1.650',
-        '',
-        'Projeção Anual: €149.400'
-      ];
+      const reqs = filteredRequests();
+      const plns = filteredPlans();
 
-      costData.forEach((line, index) => {
-        if (line.startsWith('•')) {
-          doc.text(line, 30, yPosition + (index * 8));
-        } else {
-          doc.text(line, 25, yPosition + (index * 8));
-        }
+      const reqCost = reqs.reduce((s,r)=> s + (r.cost || 0), 0);
+      const planActual = plns.reduce((s:any,p:any)=> s + (p.actualCost || 0), 0);
+      const planEstimatedOnly = plns.reduce((s:any,p:any)=> s + ((p.actualCost ? 0 : (p.estimatedCost || 0))), 0);
+      const total = reqCost + planActual + planEstimatedOnly;
+      const avgPerIntervention = (reqs.length + plns.length) ? total / (reqs.length + plns.length) : 0;
+
+      const byMachineCosts: Record<string, {name: string, cost: number}> = {};
+      reqs.forEach(r => {
+        const key = r.machineId; if (!byMachineCosts[key]) byMachineCosts[key] = { name: r.machineName, cost: 0 };
+        byMachineCosts[key].cost += r.cost || 0;
+      });
+      plns.forEach((p:any) => {
+        const key = p.machineId; if (!byMachineCosts[key]) byMachineCosts[key] = { name: p.machineName, cost: 0 };
+        byMachineCosts[key].cost += p.actualCost || p.estimatedCost || 0;
+      });
+      const topCosts = Object.values(byMachineCosts).sort((a,b)=> b.cost - a.cost).slice(0,5);
+
+      const lines: string[] = [];
+      lines.push('Resumo Financeiro:');
+      lines.push('');
+      lines.push(`Custo Total: €${total.toFixed(2)}`);
+      lines.push(`Custo Médio por Intervenção: €${avgPerIntervention.toFixed(2)}`);
+      lines.push(`Solicitações (corretivas): €${reqCost.toFixed(2)}`);
+      lines.push(`Planos (atuais): €${planActual.toFixed(2)} | Planos (estimados): €${planEstimatedOnly.toFixed(2)}`);
+      lines.push('');
+      lines.push('Equipamentos com Maior Custo:');
+      topCosts.forEach(m => lines.push(`• ${m.name || '—'}: €${m.cost.toFixed(2)}`));
+
+      const pageHeight = doc.internal.pageSize.height;
+      lines.forEach((line) => {
+        if (yPosition > pageHeight - 20) { doc.addPage(); yPosition = 20; }
+        doc.text(line.startsWith('•') ? line : line, line.startsWith('•') ? 30 : 25, yPosition);
+        yPosition += 8;
       });
 
     } else if (reportType === 'equipment') {
@@ -267,14 +326,22 @@ export function MaintenanceReports({ isOpen, onClose, machines, initialEquipment
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
 
-      const list = requests.filter(r => selectedEquipment==='all' ? true : r.machineId === selectedEquipment)
-                           .sort((a,b)=> new Date(b.requestedAt).getTime()-new Date(a.requestedAt).getTime())
-                           .slice(0,50);
-      doc.text(`Total de intervenções: ${list.length}`, 25, yPosition); yPosition += 8;
-      for (const r of list) {
+      const reqs = filteredRequests().sort((a,b)=> new Date(b.requestedAt).getTime()-new Date(a.requestedAt).getTime());
+      const plns = filteredPlans().sort((a:any,b:any)=> new Date(b.scheduledDate || b.completedDate).getTime()-new Date(a.scheduledDate || a.completedDate).getTime());
+      const totalCount = reqs.length + plns.length;
+      doc.text(`Total de intervenções: ${totalCount}`, 25, yPosition); yPosition += 8;
+
+      const pageHeight = doc.internal.pageSize.height;
+      for (const r of reqs) {
         const line = `${new Date(r.requestedAt).toLocaleDateString('pt-PT')} - ${r.machineName} - ${r.title} - ${r.status.toUpperCase()}`;
         doc.text(line, 25, yPosition); yPosition += 6;
-        if (yPosition > 270) { doc.addPage(); yPosition = 20; }
+        if (yPosition > pageHeight - 20) { doc.addPage(); yPosition = 20; }
+      }
+      for (const p of plns as any[]) {
+        const ref = p.completedDate || p.scheduledDate;
+        const line = `${ref ? new Date(ref).toLocaleDateString('pt-PT') : ''} - ${p.machineName || ''} - Plano ${p.type} - ${p.status.toUpperCase()}`;
+        doc.text(line, 25, yPosition); yPosition += 6;
+        if (yPosition > pageHeight - 20) { doc.addPage(); yPosition = 20; }
       }
 
     } else if (reportType === 'checklist') {
