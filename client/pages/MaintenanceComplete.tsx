@@ -90,7 +90,7 @@ export default function MaintenanceComplete() {
         // Load maintenances from DB (maintenance plans)
         try {
           const plans = await maintenanceService.getMaintenancePlans();
-          setMaintenances((plans || []).map((p:any) => ({
+          const mapped = (plans || []).map((p:any) => ({
             id: p.id,
             machineId: p.machineId,
             machineName: p.machineName,
@@ -109,7 +109,9 @@ export default function MaintenanceComplete() {
             notes: p.notes || '',
             photos: [],
             createdAt: new Date().toISOString().split('T')[0]
-          })));
+          }));
+          // Mostrar apenas pendentes/ativas na aba Manutenções Programadas
+          setMaintenances(mapped.filter((m:any)=> m.status !== 'completed' && m.status !== 'cancelled'));
         } catch (e) {
           console.error('Erro ao carregar manutenções', e);
           setMaintenances([]);
@@ -117,7 +119,31 @@ export default function MaintenanceComplete() {
 
         // Load intervention history from maintenance service
         const interventions = await maintenanceService.getMaintenanceRequests();
-        setInterventionHistory(interventions);
+        // Adicionar manutenções programadas concluídas ao histórico
+        const completedFromPlans = (await maintenanceService.getMaintenancePlans())
+          .filter((p:any)=> p.status === 'completed')
+          .map((p:any)=> ({
+            id: `plan-${p.id}`,
+            machineId: p.machineId,
+            machineName: p.machineName || '',
+            operatorId: '',
+            operatorName: p.technician || 'Técnico',
+            urgencyLevel: (p.priority === 'critical' ? 'critical' : p.priority === 'high' ? 'high' : p.priority === 'medium' ? 'medium' : 'low'),
+            category: p.type === 'preventive' ? 'preventive' : 'other',
+            title: p.description?.slice(0,60) || `Manutenção ${p.type}`,
+            description: p.description || '',
+            reportedIssues: [],
+            status: 'completed',
+            priority: 5,
+            requestedAt: p.scheduledDate || new Date().toISOString(),
+            completedAt: p.completedDate || new Date().toISOString(),
+            technicianNotes: p.notes || '',
+            solution: undefined,
+            partsUsed: p.parts ? String(p.parts).split(',').map((s:string)=>s.trim()).filter(Boolean) : [],
+            cost: p.actualCost ?? p.estimatedCost ?? 0,
+            followUpRequired: false
+          }));
+        setInterventionHistory([...(interventions||[]), ...completedFromPlans]);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -529,7 +555,7 @@ export default function MaintenanceComplete() {
         <>
           {/* Maintenance Tab Content */}
           {activeTab === 'maintenance' && (
-            <div className="rounded-lg border bg-card overflow-hidden">
+            <div className="rounded-lg border bg-card overflow-hidden" aria-label="manutencoes-programadas-nao-concluidas">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="border-b bg-muted/50">
