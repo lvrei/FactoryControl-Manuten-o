@@ -110,6 +110,12 @@ export function createServer() {
           app.use("/api", iotRouter);
         })
         .catch((e) => console.warn("IoT API not loaded:", (e as any)?.message));
+
+      import("./routes/maintenance")
+        .then(({ maintenanceRouter }) => {
+          app.use("/api", maintenanceRouter);
+        })
+        .catch((e) => console.warn("Maintenance API not loaded:", (e as any)?.message));
     } catch (e) {
       console.warn("APIs not loaded:", (e as any)?.message);
     }
@@ -120,6 +126,11 @@ export function createServer() {
         app.use("/api", iotRouter);
       })
       .catch((e) => console.warn("IoT API not loaded:", (e as any)?.message));
+    import("./routes/maintenance")
+      .then(({ maintenanceRouter }) => {
+        app.use("/api", maintenanceRouter);
+      })
+      .catch((e) => console.warn("Maintenance API not loaded:", (e as any)?.message));
   }
 
   // Health check
