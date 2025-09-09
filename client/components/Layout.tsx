@@ -194,6 +194,23 @@ export function Layout({ children }: LayoutProps) {
         </main>
       </div>
 
+      {/* Footer with discrete branding */}
+      <footer className="border-t border-border bg-card text-muted-foreground">
+        <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-center gap-2">
+          <img
+            src="/logo.png"
+            alt="Logo"
+            className="h-5 w-auto opacity-70"
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+          />
+          <small className="text-[11px]">
+            Desenvolvido por: <span className="font-medium text-foreground/80">Gil Rei</span>
+            <span className="mx-2">•</span>
+            v{APP_VERSION}
+          </small>
+        </div>
+      </footer>
+
       {/* Mobile Bottom Navigation */}
       <nav className="mobile-nav md:hidden">
         <div className="flex justify-around items-center py-2">
