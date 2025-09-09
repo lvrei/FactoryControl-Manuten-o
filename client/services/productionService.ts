@@ -402,16 +402,18 @@ class ProductionService {
     }
   }
 
-  // Métodos públicos - Tipos de Espuma (com mapeamento defensivo)
+  // Tipos de Espuma (DB com fallback local)
   async getFoamTypes(): Promise<FoamType[]> {
     try {
+      const r = await fetch('/api/foam-types');
+      if (!r.ok) throw new Error('API foam-types falhou');
+      return r.json();
+    } catch (error) {
+      console.warn('⚠️ Falha API /api/foam-types, usando localStorage');
       this.ensureInitialized();
       const data = this.getStoredData();
-      
-      let foamTypes = data?.foamTypes || this.mockFoamTypes;
-      
-      // Mapeamento defensivo - garantir campos obrigatórios
-      foamTypes = foamTypes.map(foam => ({
+      const foamTypes = data?.foamTypes || this.mockFoamTypes;
+      return foamTypes.map(foam => ({
         id: foam.id || `foam-${Date.now()}`,
         name: foam.name || 'Espuma Sem Nome',
         density: foam.density || 20,
@@ -421,11 +423,151 @@ class ProductionService {
         pricePerM3: foam.pricePerM3 || 0,
         stockColor: foam.stockColor || '#f8f9fa'
       }));
+    }
+  }
 
-      return foamTypes;
+  async createFoamType(data: Omit<FoamType, 'id'>): Promise<string> {
+    try {
+      const r = await fetch('/api/foam-types', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      if (!r.ok) throw new Error('API criar foam-type falhou');
+      const j = await r.json(); return j.id as string;
     } catch (error) {
-      console.error('❌ Erro ao buscar tipos de espuma:', error);
-      return this.mockFoamTypes;
+      console.warn('⚠️ Falha API create foam-type, salvando local');
+      this.ensureInitialized();
+      const store = this.getStoredData() || {};
+      const list: FoamType[] = store.foamTypes || this.mockFoamTypes;
+      const id = `foam-${Date.now()}`;
+      store.foamTypes = [...list, { ...data, id }];
+      this.saveData(store);
+      return id;
+    }
+  }
+
+  async updateFoamType(id: string, patch: Partial<FoamType>): Promise<void> {
+    try {
+      const r = await fetch(`/api/foam-types/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
+      if (!r.ok) throw new Error('API atualizar foam-type falhou');
+    } catch (error) {
+      console.warn('⚠️ Falha API update foam-type, salvando local');
+      this.ensureInitialized();
+      const store = this.getStoredData() || {};
+      store.foamTypes = (store.foamTypes || this.mockFoamTypes).map((f: FoamType) => f.id === id ? { ...f, ...patch } : f);
+      this.saveData(store);
+    }
+  }
+
+  async deleteFoamType(id: string): Promise<void> {
+    try {
+      const r = await fetch(`/api/foam-types/${id}`, { method: 'DELETE' });
+      if (!r.ok) throw new Error('API apagar foam-type falhou');
+    } catch (error) {
+      console.warn('⚠️ Falha API delete foam-type, salvando local');
+      this.ensureInitialized();
+      const store = this.getStoredData() || {};
+      store.foamTypes = (store.foamTypes || this.mockFoamTypes).filter((f: FoamType) => f.id !== id);
+      this.saveData(store);
+    }
+  }
+
+  // Fichas Técnicas (DB com fallback local)
+  async getProductSheets(): Promise<ProductSheet[]> {
+    try {
+      const r = await fetch('/api/product-sheets');
+      if (!r.ok) throw new Error('API product-sheets falhou');
+      return r.json();
+    } catch (error) {
+      console.warn('⚠️ Falha API /api/product-sheets, usando localStorage');
+      this.ensureInitialized();
+      const store = this.getStoredData() || {};
+      const foams: FoamType[] = store.foamTypes || this.mockFoamTypes;
+      const sheets: any[] = store.productSheets || [];
+      return sheets.map(s => ({
+        id: s.id,
+        internalReference: s.internalReference,
+        foamType: foams.find(f => f.id === s.foamTypeId) || foams[0],
+        standardDimensions: s.standardDimensions || { length: 0, width: 0, height: 0 },
+        description: s.description || '',
+        documents: s.documents || [],
+        photos: s.photos || []
+      }));
+    }
+  }
+
+  async createProductSheet(data: Omit<ProductSheet, 'id'>): Promise<ProductSheet> {
+    try {
+      const payload = {
+        internalReference: data.internalReference,
+        foamTypeId: data.foamType.id,
+        standardDimensions: data.standardDimensions,
+        description: data.description,
+        documents: data.documents,
+        photos: data.photos
+      };
+      const r = await fetch('/api/product-sheets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!r.ok) throw new Error('API criar product-sheet falhou');
+      const { id } = await r.json();
+      return { ...data, id } as ProductSheet;
+    } catch (error) {
+      console.warn('⚠️ Falha API create product-sheet, salvando local');
+      this.ensureInitialized();
+      const store = this.getStoredData() || {};
+      const id = `ps-${Date.now()}`;
+      const entry = {
+        id,
+        internalReference: data.internalReference,
+        foamTypeId: data.foamType.id,
+        standardDimensions: data.standardDimensions,
+        description: data.description,
+        documents: data.documents,
+        photos: data.photos
+      };
+      store.productSheets = [...(store.productSheets || []), entry];
+      this.saveData(store);
+      return { ...data, id } as ProductSheet;
+    }
+  }
+
+  async updateProductSheet(id: string, data: Omit<ProductSheet, 'id'>): Promise<ProductSheet> {
+    try {
+      const payload = {
+        internalReference: data.internalReference,
+        foamTypeId: data.foamType.id,
+        standardDimensions: data.standardDimensions,
+        description: data.description,
+        documents: data.documents,
+        photos: data.photos
+      };
+      const r = await fetch(`/api/product-sheets/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (!r.ok) throw new Error('API atualizar product-sheet falhou');
+      return { ...data, id } as ProductSheet;
+    } catch (error) {
+      console.warn('⚠️ Falha API update product-sheet, salvando local');
+      this.ensureInitialized();
+      const store = this.getStoredData() || {};
+      store.productSheets = (store.productSheets || []).map((s: any) => s.id === id ? {
+        ...s,
+        internalReference: data.internalReference,
+        foamTypeId: data.foamType.id,
+        standardDimensions: data.standardDimensions,
+        description: data.description,
+        documents: data.documents,
+        photos: data.photos
+      } : s);
+      this.saveData(store);
+      return { ...data, id } as ProductSheet;
+    }
+  }
+
+  async deleteProductSheet(id: string): Promise<void> {
+    try {
+      const r = await fetch(`/api/product-sheets/${id}`, { method: 'DELETE' });
+      if (!r.ok) throw new Error('API apagar product-sheet falhou');
+    } catch (error) {
+      console.warn('⚠️ Falha API delete product-sheet, salvando local');
+      this.ensureInitialized();
+      const store = this.getStoredData() || {};
+      store.productSheets = (store.productSheets || []).filter((s: any) => s.id !== id);
+      this.saveData(store);
     }
   }
 
