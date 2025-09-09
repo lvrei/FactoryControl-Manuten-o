@@ -49,11 +49,22 @@ export default function AlertsSimple() {
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState<MaintenanceRequest | null>(null);
   const [showWorkSheet, setShowWorkSheet] = useState(false);
+  const [iotAlerts, setIotAlerts] = useState<IoTAlert[]>([]);
 
   useEffect(() => {
     loadMaintenanceData();
     const interval = setInterval(loadMaintenanceData, 30000);
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const loadAlerts = async () => {
+      try { const list = await iotService.listAlerts('active'); if (!cancelled) setIotAlerts(list || []); } catch {}
+    };
+    loadAlerts();
+    const t = setInterval(loadAlerts, 10000);
+    return () => { cancelled = true; clearInterval(t); };
   }, []);
 
   const loadMaintenanceData = async () => {
@@ -165,8 +176,8 @@ export default function AlertsSimple() {
         <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Total de Alertas</p>
-              <p className="text-2xl font-bold text-card-foreground">0</p>
+              <p className="text-sm font-medium text-muted-foreground">Alertas Ativos (IoT)</p>
+              <p className="text-2xl font-bold text-card-foreground">{iotAlerts.length}</p>
             </div>
             <Bell className="h-6 w-6 text-muted-foreground" />
           </div>
@@ -262,15 +273,32 @@ export default function AlertsSimple() {
         </button>
       </div>
 
+      <IoTAlertPopupContainer />
+
       {/* Content */}
       <div className="min-h-96">
         {activeTab === 'alerts' && (
           <div className="rounded-lg border bg-card p-6">
-            <h3 className="text-lg font-semibold mb-4">Lista de Alertas</h3>
-            <div className="text-center py-8">
-              <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Nenhum alerta ativo no momento</p>
-            </div>
+            <h3 className="text-lg font-semibold mb-4">Alertas Ativos</h3>
+            {iotAlerts.length === 0 ? (
+              <div className="text-center py-8">
+                <Bell className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Nenhum alerta ativo no momento</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {iotAlerts.map(a => (
+                  <div key={a.id} className="p-3 rounded border">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium text-sm">Máquina: {a.machine_id}</div>
+                      <div className={cn("text-xs uppercase px-2 py-1 rounded", a.priority === 'critical' ? 'bg-red-600 text-white' : 'bg-amber-500 text-white')}>{a.priority}</div>
+                    </div>
+                    <div className="text-xs text-muted-foreground">{a.metric}: {a.value}</div>
+                    {a.message && <div className="text-xs">{a.message}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
