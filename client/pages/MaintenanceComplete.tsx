@@ -87,17 +87,32 @@ export default function MaintenanceComplete() {
         const equipmentData = await productionService.getMachines();
         setMachines(equipmentData);
 
-        // Load maintenances from localStorage
-        const savedMaintenances = localStorage.getItem('factorycontrol-maintenances');
-        if (savedMaintenances) {
-          try {
-            setMaintenances(JSON.parse(savedMaintenances));
-          } catch (error) {
-            console.error('Error loading saved maintenances:', error);
-            setMaintenances(mockMaintenances);
-          }
-        } else {
-          setMaintenances(mockMaintenances);
+        // Load maintenances from DB (maintenance plans)
+        try {
+          const plans = await maintenanceService.getMaintenancePlans();
+          setMaintenances((plans || []).map((p:any) => ({
+            id: p.id,
+            machineId: p.machineId,
+            machineName: p.machineName,
+            type: p.type,
+            priority: p.priority,
+            status: p.status,
+            scheduledDate: p.scheduledDate,
+            completedDate: p.completedDate,
+            estimatedCost: p.estimatedCost ?? 0,
+            actualCost: p.actualCost,
+            estimatedDuration: p.estimatedDuration ?? 0,
+            actualDuration: p.actualDuration,
+            description: p.description || '',
+            technician: p.technician || '',
+            parts: p.parts || '',
+            notes: p.notes || '',
+            photos: [],
+            createdAt: new Date().toISOString().split('T')[0]
+          })));
+        } catch (e) {
+          console.error('Erro ao carregar manutenções', e);
+          setMaintenances([]);
         }
 
         // Load intervention history from maintenance service
@@ -113,36 +128,75 @@ export default function MaintenanceComplete() {
     loadData();
   }, []);
 
-  // Save maintenances to localStorage whenever it changes (serialize safely)
-  useEffect(() => {
-    try {
-      if (maintenances.length > 0 || localStorage.getItem('factorycontrol-maintenances')) {
-        const serializable = maintenances.map(m => ({
-          ...m,
-          photos: Array.isArray(m.photos) ? (m.photos as any[]).map((p: any) => (typeof p === 'string' ? p : p?.name || 'foto')) : []
-        }));
-        localStorage.setItem('factorycontrol-maintenances', JSON.stringify(serializable));
-      }
-    } catch (e) {
-      console.error('Erro a guardar manutenções no storage:', e);
-    }
-  }, [maintenances]);
+  // Using DB for persistence of scheduled maintenances (plans)
 
-  const handleSaveMaintenance = (maintenanceData: MaintenanceData) => {
+  const handleSaveMaintenance = async (maintenanceData: MaintenanceData) => {
     const machine = machines.find(m => m.id === maintenanceData.machineId);
     const maintenanceWithMachineName = {
       ...maintenanceData,
       machineName: machine?.name || ''
     };
 
-    if (editingMaintenance) {
-      setMaintenances(prev => prev.map(m => 
-        m.id === editingMaintenance.id ? { ...maintenanceWithMachineName, id: editingMaintenance.id } : m
-      ));
-      setEditingMaintenance(null);
-    } else {
-      const newMaintenance = { ...maintenanceWithMachineName, id: Date.now().toString() };
-      setMaintenances(prev => [...prev, newMaintenance]);
+    try {
+      if (editingMaintenance) {
+        await maintenanceService.updateMaintenancePlan(editingMaintenance.id!, {
+          machineId: maintenanceWithMachineName.machineId,
+          machineName: maintenanceWithMachineName.machineName,
+          type: maintenanceWithMachineName.type,
+          priority: maintenanceWithMachineName.priority,
+          status: maintenanceWithMachineName.status,
+          scheduledDate: maintenanceWithMachineName.scheduledDate,
+          completedDate: maintenanceWithMachineName.completedDate,
+          estimatedCost: maintenanceWithMachineName.estimatedCost,
+          actualCost: maintenanceWithMachineName.actualCost,
+          estimatedDuration: maintenanceWithMachineName.estimatedDuration,
+          actualDuration: maintenanceWithMachineName.actualDuration,
+          description: maintenanceWithMachineName.description,
+          technician: maintenanceWithMachineName.technician,
+          parts: maintenanceWithMachineName.parts,
+          notes: maintenanceWithMachineName.notes,
+        });
+        setEditingMaintenance(null);
+      } else {
+        await maintenanceService.createMaintenancePlan({
+          machineId: maintenanceWithMachineName.machineId,
+          machineName: maintenanceWithMachineName.machineName,
+          type: maintenanceWithMachineName.type,
+          priority: maintenanceWithMachineName.priority,
+          status: maintenanceWithMachineName.status,
+          scheduledDate: maintenanceWithMachineName.scheduledDate,
+          estimatedCost: maintenanceWithMachineName.estimatedCost,
+          estimatedDuration: maintenanceWithMachineName.estimatedDuration,
+          description: maintenanceWithMachineName.description,
+          technician: maintenanceWithMachineName.technician,
+          parts: maintenanceWithMachineName.parts,
+          notes: maintenanceWithMachineName.notes,
+        });
+      }
+      const plans = await maintenanceService.getMaintenancePlans();
+      setMaintenances((plans || []).map((p:any)=> ({
+        id: p.id,
+        machineId: p.machineId,
+        machineName: p.machineName,
+        type: p.type,
+        priority: p.priority,
+        status: p.status,
+        scheduledDate: p.scheduledDate,
+        completedDate: p.completedDate,
+        estimatedCost: p.estimatedCost ?? 0,
+        actualCost: p.actualCost,
+        estimatedDuration: p.estimatedDuration ?? 0,
+        actualDuration: p.actualDuration,
+        description: p.description || '',
+        technician: p.technician || '',
+        parts: p.parts || '',
+        notes: p.notes || '',
+        photos: [],
+        createdAt: new Date().toISOString().split('T')[0]
+      })));
+    } catch (e) {
+      console.error('Erro ao gravar manutenção', e);
+      alert('Erro ao gravar manutenção');
     }
   };
 
@@ -151,9 +205,34 @@ export default function MaintenanceComplete() {
     setShowMaintenanceForm(true);
   };
 
-  const handleDeleteMaintenance = (maintenance: MaintenanceData) => {
-    if (confirm(`Tem certeza que deseja excluir a manutenção "${maintenance.description}" da máquina ${maintenance.machineName}?`)) {
-      setMaintenances(prev => prev.filter(m => m.id !== maintenance.id));
+  const handleDeleteMaintenance = async (maintenance: MaintenanceData) => {
+    if (!confirm(`Tem certeza que deseja excluir a manutenção "${maintenance.description}" da máquina ${maintenance.machineName}?`)) return;
+    try {
+      await maintenanceService.deleteMaintenancePlan(maintenance.id!);
+      const plans = await maintenanceService.getMaintenancePlans();
+      setMaintenances((plans || []).map((p:any)=> ({
+        id: p.id,
+        machineId: p.machineId,
+        machineName: p.machineName,
+        type: p.type,
+        priority: p.priority,
+        status: p.status,
+        scheduledDate: p.scheduledDate,
+        completedDate: p.completedDate,
+        estimatedCost: p.estimatedCost ?? 0,
+        actualCost: p.actualCost,
+        estimatedDuration: p.estimatedDuration ?? 0,
+        actualDuration: p.actualDuration,
+        description: p.description || '',
+        technician: p.technician || '',
+        parts: p.parts || '',
+        notes: p.notes || '',
+        photos: [],
+        createdAt: new Date().toISOString().split('T')[0]
+      })));
+    } catch (e) {
+      console.error('Erro ao apagar manutenção', e);
+      alert('Erro ao apagar manutenção');
     }
   };
 
