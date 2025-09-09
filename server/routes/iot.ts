@@ -190,7 +190,10 @@ iotRouter.get("/sensors", async (_req, res) => {
     );
     return res.json(rows);
   } catch (e: any) {
-    console.warn("GET /sensors falling back to memory:", e?.message);
+    if (isDbConfigured()) {
+      console.error("GET /sensors error", e);
+      return res.status(500).json({ error: e.message });
+    }
     return res.json(mem.sensors);
   }
 });
@@ -218,7 +221,10 @@ iotRouter.post("/sensors", async (req, res) => {
     );
     return res.json({ id });
   } catch (e: any) {
-    console.warn("POST /sensors falling back to memory:", e?.message);
+    if (isDbConfigured()) {
+      console.error("POST /sensors error", e);
+      return res.status(500).json({ error: e.message });
+    }
     mem.sensors.unshift({ id, ...s, created_at: new Date().toISOString() });
     return res.json({ id });
   }
@@ -246,7 +252,10 @@ iotRouter.post("/sensors/bind", async (req, res) => {
     );
     return res.json({ id });
   } catch (e: any) {
-    console.warn("POST /sensors/bind falling back to memory:", e?.message);
+    if (isDbConfigured()) {
+      console.error("POST /sensors/bind error", e);
+      return res.status(500).json({ error: e.message });
+    }
     mem.bindings = mem.bindings.filter((x) => x.id !== id);
     mem.bindings.push({ id, sensor_id: b.sensorId, machine_id: b.machineId, metric: b.metric, unit: b.unit, scale: b.scale ?? 1, offset: b.offset ?? 0, created_at: new Date().toISOString() });
     return res.json({ id });
@@ -275,7 +284,10 @@ iotRouter.get("/rules", async (_req, res) => {
     }));
     return res.json(data);
   } catch (e: any) {
-    console.warn("GET /rules falling back to memory:", e?.message);
+    if (isDbConfigured()) {
+      console.error("GET /rules error", e);
+      return res.status(500).json({ error: e.message });
+    }
     const data = mem.rules.filter((r:any) => r.enabled !== false).map((r:any) => ({
       id: r.id,
       machineId: r.machine_id,
@@ -318,7 +330,10 @@ iotRouter.post("/rules", async (req, res) => {
     );
     return res.json({ id });
   } catch (e: any) {
-    console.warn("POST /rules falling back to memory:", e?.message);
+    if (isDbConfigured()) {
+      console.error("POST /rules error", e);
+      return res.status(500).json({ error: e.message });
+    }
     const entry = { id, machine_id: r.machineId, sensor_id: r.sensorId || null, metric: r.metric, operator: r.operator, min_value: r.minValue ?? null, max_value: r.maxValue ?? null, threshold_value: r.thresholdValue ?? null, priority: r.priority || 'medium', message: r.message || 'Alerta de sensor', enabled: r.enabled !== false };
     mem.rules = mem.rules.filter((x:any) => x.id !== id);
     mem.rules.push(entry);
@@ -337,7 +352,10 @@ iotRouter.get("/alerts", async (req, res) => {
     );
     return res.json(rows);
   } catch (e: any) {
-    console.warn("GET /alerts falling back to memory:", e?.message);
+    if (isDbConfigured()) {
+      console.error("GET /alerts error", e);
+      return res.status(500).json({ error: e.message });
+    }
     const list = status ? mem.alerts.filter((a:any)=>a.status===status) : mem.alerts;
     return res.json(list.sort((a:any,b:any)=> (a.created_at > b.created_at ? -1 : 1)));
   }
@@ -350,7 +368,10 @@ iotRouter.post("/alerts/:id/ack", async (req, res) => {
     await query(`UPDATE iot.alerts SET status = 'acknowledged' WHERE id = $1`, [ id ]);
     return res.json({ ok: true });
   } catch (e: any) {
-    console.warn("POST /alerts/:id/ack falling back to memory:", e?.message);
+    if (isDbConfigured()) {
+      console.error("POST /alerts/:id/ack error", e);
+      return res.status(500).json({ error: e.message });
+    }
     mem.alerts = mem.alerts.map((a:any)=> a.id===id ? { ...a, status: 'acknowledged' } : a);
     return res.json({ ok: true });
   }
@@ -420,7 +441,10 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
     }
     return res.json({ ok: true, alertsCreated: created });
   } catch (e: any) {
-    console.warn("/sensors/ingest falling back to memory:", e?.message);
+    if (isDbConfigured()) {
+      console.error("/sensors/ingest error", e);
+      return res.status(500).json({ error: e.message });
+    }
     // Fallback to memory path
     let created = 0;
     const binds = mem.bindings.filter((b:any)=> b.sensor_id === sensorId && b.metric === metric);
