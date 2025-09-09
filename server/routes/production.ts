@@ -124,7 +124,8 @@ productionRouter.get('/product-sheets', async (_req, res) => {
       standardDimensions: { length: r.standard_length || 0, width: r.standard_width || 0, height: r.standard_height || 0 },
       description: r.description || '',
       documents: r.documents || [],
-      photos: r.photos || []
+      photos: r.photos || [],
+      createdAt: r.created_at || null
     })));
   } catch (e: any) {
     console.error('GET /product-sheets error', e);
