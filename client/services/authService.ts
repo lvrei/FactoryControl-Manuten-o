@@ -21,7 +21,24 @@ class AuthService {
     try {
       console.log('🔐 Tentando login:', username);
 
-      // Credenciais válidas para teste
+      // 1) Verificar utilizadores criados no sistema (persistência local simples)
+      const users = this.getUsers();
+      const found = users.find((u: any) => u.username === username);
+      if (found && found.password === password) {
+        const session: LoginSession = {
+          id: found.id || `${username}-1`,
+          username,
+          role: (found.role || 'operator') as any,
+          name: found.name || username,
+          loginTime: new Date().toISOString(),
+        };
+        this.currentUser = session;
+        localStorage.setItem(this.storageKey, JSON.stringify(session));
+        console.log('✅ Login bem-sucedido (utilizador criado):', username);
+        return session;
+      }
+
+      // 2) Fallback: credenciais de demonstração
       const validCredentials: Record<string, { role: string; name: string }> = {
         'admin': { role: 'admin', name: 'Administrador' },
         'operador': { role: 'operator', name: 'Operador Principal' },
@@ -33,7 +50,7 @@ class AuthService {
       }
 
       const userData = validCredentials[username];
-      const userWithLoginTime: LoginSession = {
+      const session: LoginSession = {
         id: `${username}-1`,
         username,
         role: userData.role as any,
@@ -41,12 +58,11 @@ class AuthService {
         loginTime: new Date().toISOString(),
       };
 
-      // Salvar usuário atual
-      this.currentUser = userWithLoginTime;
-      localStorage.setItem(this.storageKey, JSON.stringify(userWithLoginTime));
+      this.currentUser = session;
+      localStorage.setItem(this.storageKey, JSON.stringify(session));
 
-      console.log('✅ Login bem-sucedido:', username);
-      return userWithLoginTime;
+      console.log('✅ Login bem-sucedido (demo):', username);
+      return session;
 
     } catch (error) {
       console.error('❌ Erro no login:', error);
