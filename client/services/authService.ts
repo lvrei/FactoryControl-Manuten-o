@@ -24,7 +24,7 @@ class AuthService {
       // 1) Verificar utilizadores criados no sistema (persistência local simples)
       const users = this.getUsers();
       const found = users.find((u: any) => u.username === username);
-      if (found && found.password === password) {
+      if (found && found.password === password && found.isActive !== false) {
         const session: LoginSession = {
           id: found.id || `${username}-1`,
           username,
@@ -173,8 +173,22 @@ class AuthService {
     if (users.find((u: any) => u.username === user.username)) {
       throw new Error('Utilizador já existe');
     }
-    const newUser = { ...user, id: `${user.username}-${Date.now()}`, createdAt: new Date().toISOString() };
+    const newUser = { ...user, id: `${user.username}-${Date.now()}`, createdAt: new Date().toISOString(), isActive: user.isActive !== false };
     users.push(newUser);
+    localStorage.setItem(this.usersKey, JSON.stringify(users));
+  }
+
+  // Upsert de utilizador (cria se não existir, atualiza se existir)
+  async upsertUser(user: { username: string; name: string; email?: string; password?: string; role?: LoginSession['role'] | 'quality'; accessLevel?: 'full'|'limited'|'readonly'; isActive?: boolean }): Promise<void> {
+    const users = this.getUsers();
+    const idx = users.findIndex((u: any) => u.username === user.username);
+    if (idx === -1) {
+      const newUser = { ...user, id: `${user.username}-${Date.now()}`, createdAt: new Date().toISOString(), isActive: user.isActive !== false };
+      if (!newUser.password) throw new Error('Palavra-passe obrigatória para novo utilizador');
+      users.push(newUser);
+    } else {
+      users[idx] = { ...users[idx], ...user };
+    }
     localStorage.setItem(this.usersKey, JSON.stringify(users));
   }
 
