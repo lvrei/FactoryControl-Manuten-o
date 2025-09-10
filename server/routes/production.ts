@@ -544,8 +544,16 @@ productionRouter.get("/stock/summary", async (_req, res) => {
 // Orders CRUD (nested)
 productionRouter.get("/orders", async (req, res) => {
   try {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    let idx = 1;
+    if (req.query.createdBy) { conditions.push(`created_by = $${idx++}`); params.push(req.query.createdBy); }
+    if (req.query.customer) { conditions.push(`customer_name ILIKE $${idx++}`); params.push(`%${req.query.customer}%`); }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
     const ordersRes = await query(
-      `SELECT * FROM production_orders ORDER BY created_at DESC`,
+      `SELECT * FROM production_orders ${where} ORDER BY created_at DESC`,
+      params
     );
     const linesRes = await query(`SELECT * FROM production_order_lines`);
     const opsRes = await query(`SELECT * FROM cutting_operations`);
