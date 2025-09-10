@@ -306,6 +306,8 @@ export default function Team() {
         role: employee.role,
         accessLevel: employee.accessLevel,
         hasSystemAccess: !!employee.hasSystemAccess,
+        factoryId: newEmployee.factoryId || undefined,
+        factoryName: newEmployee.factoryName || undefined,
       });
 
       // Create system user if access is granted (local helper)
@@ -323,6 +325,8 @@ export default function Team() {
             role: newEmployee.role,
             accessLevel: newEmployee.accessLevel,
             isActive: true,
+            factoryId: newEmployee.factoryId || undefined,
+            factoryName: newEmployee.factoryName || undefined,
           });
         } catch {}
       }
@@ -426,6 +430,8 @@ export default function Team() {
         username: newEmployee.username || undefined,
         role: newEmployee.role || undefined,
         accessLevel: newEmployee.accessLevel || undefined,
+        factoryId: newEmployee.factoryId || undefined,
+        factoryName: newEmployee.factoryName || undefined,
       } as any);
 
       // Se acesso foi concedido ou credenciais alteradas, garantir conta no auth local
@@ -439,6 +445,8 @@ export default function Team() {
             role: newEmployee.role as any,
             accessLevel: newEmployee.accessLevel,
             isActive: true,
+            ...(newEmployee.factoryId ? { factoryId: newEmployee.factoryId } : {}),
+            ...(newEmployee.factoryName ? { factoryName: newEmployee.factoryName } : {}),
           } as any);
         } catch {}
       }
