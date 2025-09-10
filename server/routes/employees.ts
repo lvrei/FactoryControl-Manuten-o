@@ -34,8 +34,12 @@ async function ensureEmployeesTables(): Promise<boolean> {
         role TEXT,
         access_level TEXT,
         has_system_access BOOLEAN DEFAULT FALSE,
-        created_at TIMESTAMPTZ DEFAULT now()
+        created_at TIMESTAMPTZ DEFAULT now(),
+        factory_id TEXT,
+        factory_name TEXT
       )`);
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS factory_id TEXT`);
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS factory_name TEXT`);
       return true;
     } catch (e) {
       console.error("ensureEmployeesTables error", e);
