@@ -163,6 +163,9 @@ export default function Team() {
   const [showAddEmployee, setShowAddEmployee] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [employeesList, setEmployeesList] = useState<Employee[]>(employees);
+  const [factories, setFactories] = useState<FactoryRecord[]>([]);
+  const [showAddFactory, setShowAddFactory] = useState(false);
+  const [newFactory, setNewFactory] = useState<{ id: string; name: string }>({ id: "", name: "" });
 
   useEffect(() => {
     const load = async () => {
