@@ -34,6 +34,9 @@ class AuthService {
           role: (found.role || "operator") as any,
           name: found.name || username,
           loginTime: new Date().toISOString(),
+          accessLevel: found.accessLevel || (found.role === 'admin' ? 'full' : 'limited'),
+          factoryId: found.factoryId,
+          factoryName: found.factoryName,
         };
         this.currentUser = session;
         localStorage.setItem(this.storageKey, JSON.stringify(session));
@@ -169,7 +172,7 @@ class AuthService {
     }
   }
 
-  // Criar utilizador (persist��ncia local para testes)
+  // Criar utilizador (persistência local para testes)
   async createUser(user: {
     username: string;
     name: string;
