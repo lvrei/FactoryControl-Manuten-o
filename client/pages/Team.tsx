@@ -170,8 +170,12 @@ export default function Team() {
   useEffect(() => {
     const load = async () => {
       try {
-        const list = await employeesService.list();
+        const [list, facs] = await Promise.all([
+          employeesService.list(),
+          factoriesService.list().catch(() => []),
+        ]);
         setEmployeesList(list as any);
+        setFactories(facs as any);
       } catch (e) {
         console.error("Erro ao carregar funcionários:", e);
         setEmployeesList([]);
