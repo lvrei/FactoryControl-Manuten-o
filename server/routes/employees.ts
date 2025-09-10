@@ -105,10 +105,10 @@ employeesRouter.post("/employees", async (req, res) => {
       `INSERT INTO employees (
       id, name, position, department, shift, status, email, phone, hire_date, skills, certifications, machine_operating_license,
       current_assignment, supervisor, productivity_score, attendance_rate, training_hours, last_presence_update,
-      username, role, access_level, has_system_access
+      username, role, access_level, has_system_access, factory_id, factory_name
     ) VALUES (
       $1,$2,$3,$4,$5,$6,$7,$8,$9,COALESCE($10,'[]'::jsonb),COALESCE($11,'[]'::jsonb),COALESCE($12,'[]'::jsonb),
-      $13,$14,COALESCE($15,0),COALESCE($16,0),COALESCE($17,0),$18,$19,$20,$21,COALESCE($22,false)
+      $13,$14,COALESCE($15,0),COALESCE($16,0),COALESCE($17,0),$18,$19,$20,$21,COALESCE($22,false),$23,$24
     ) ON CONFLICT (id) DO NOTHING`,
       [
         id,
@@ -135,6 +135,8 @@ employeesRouter.post("/employees", async (req, res) => {
         d.role || null,
         d.accessLevel || null,
         !!d.hasSystemAccess,
+        d.factoryId || null,
+        d.factoryName || null,
       ],
     );
     return res.json({ id });
