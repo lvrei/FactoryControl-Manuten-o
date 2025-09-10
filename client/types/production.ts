@@ -257,6 +257,8 @@ export interface LoginSession {
   loginTime: string;
   lastActivity: string;
   isActive: boolean;
+  factoryId?: string;
+  factoryName?: string;
 }
 
 // Print Label for Zebra ZPL
