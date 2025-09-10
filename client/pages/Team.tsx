@@ -27,6 +27,7 @@ import {
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/authService";
 import { employeesService } from "@/services/employeesService";
+import { factoriesService, type FactoryRecord } from "@/services/factoriesService";
 import { User as UserType } from "@/types/production";
 
 interface Employee {
