@@ -34,7 +34,8 @@ class AuthService {
           role: (found.role || "operator") as any,
           name: found.name || username,
           loginTime: new Date().toISOString(),
-          accessLevel: found.accessLevel || (found.role === 'admin' ? 'full' : 'limited'),
+          accessLevel:
+            found.accessLevel || (found.role === "admin" ? "full" : "limited"),
           factoryId: found.factoryId,
           factoryName: found.factoryName,
         };
@@ -62,7 +63,7 @@ class AuthService {
         role: userData.role as any,
         name: userData.name,
         loginTime: new Date().toISOString(),
-        accessLevel: userData.role === 'admin' ? 'full' : 'limited'
+        accessLevel: userData.role === "admin" ? "full" : "limited",
       };
 
       this.currentUser = session;

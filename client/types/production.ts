@@ -30,8 +30,8 @@ export interface ProductSheet {
 export interface Machine {
   id: string;
   name: string;
-  type: 'BZM' | 'CAROUSEL' | 'CNC' | 'PRE_CNC';
-  status: 'available' | 'busy' | 'maintenance' | 'offline';
+  type: "BZM" | "CAROUSEL" | "CNC" | "PRE_CNC";
+  status: "available" | "busy" | "maintenance" | "offline";
   currentOperator?: string;
   maxDimensions: {
     length: number;
@@ -58,7 +58,7 @@ export interface CuttingOperation {
   completedQuantity: number;
   estimatedTime: number; // em minutos
   actualTime?: number;
-  status: 'pending' | 'in_progress' | 'completed';
+  status: "pending" | "in_progress" | "completed";
   operatorNotes?: string;
   observations?: string; // Observações para o operador
 }
@@ -79,7 +79,7 @@ export interface ProductionOrderLine {
   quantity: number;
   completedQuantity: number;
   cuttingOperations: CuttingOperation[];
-  status: 'pending' | 'in_progress' | 'completed' | 'shipped';
+  status: "pending" | "in_progress" | "completed" | "shipped";
   priority: number; // 1-10, onde 10 é mais prioritário
   shippedAt?: string; // Date when the line was shipped
 }
@@ -94,8 +94,8 @@ export interface ProductionOrder {
   };
   expectedDeliveryDate: string;
   lines: ProductionOrderLine[];
-  status: 'created' | 'in_progress' | 'completed' | 'cancelled' | 'shipped';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: "created" | "in_progress" | "completed" | "cancelled" | "shipped";
+  priority: "low" | "medium" | "high" | "urgent";
   totalVolume: number; // volume total em m³
   estimatedCost: number;
   actualCost?: number;
@@ -136,7 +136,7 @@ export interface OperatorWorkItem {
 
 export interface ChatMessage {
   id: string;
-  from: 'backend' | 'operator';
+  from: "backend" | "operator";
   to?: string; // operador específico ou máquina específica
   machineId?: string;
   operatorId?: string;
@@ -184,9 +184,9 @@ export interface FoamBlock {
   weight?: number; // em kg
   productionDate: string;
   blockNumber: string;
-  warehouse: 'BZM' | 'LOOPER';
-  status: 'available' | 'reserved' | 'in_production' | 'consumed';
-  qualityStatus: 'pending' | 'approved' | 'rejected';
+  warehouse: "BZM" | "LOOPER";
+  status: "available" | "reserved" | "in_production" | "consumed";
+  qualityStatus: "pending" | "approved" | "rejected";
   nonConformities: string[];
   comments: string;
   receivedDate: string;
@@ -200,9 +200,9 @@ export interface FoamBlock {
 export interface StockMovement {
   id: string;
   blockId: string;
-  type: 'entry' | 'exit' | 'transfer' | 'reservation' | 'consumption';
-  fromWarehouse?: 'BZM' | 'LOOPER';
-  toWarehouse?: 'BZM' | 'LOOPER';
+  type: "entry" | "exit" | "transfer" | "reservation" | "consumption";
+  fromWarehouse?: "BZM" | "LOOPER";
+  toWarehouse?: "BZM" | "LOOPER";
   quantity: number;
   timestamp: string;
   operator: string;
@@ -213,7 +213,7 @@ export interface StockMovement {
 
 export interface WarehouseLocation {
   id: string;
-  warehouse: 'BZM' | 'LOOPER';
+  warehouse: "BZM" | "LOOPER";
   zone: string;
   position: string;
   maxCapacity: number;
@@ -222,7 +222,7 @@ export interface WarehouseLocation {
 }
 
 export interface StockFilters {
-  warehouse?: 'BZM' | 'LOOPER' | 'all';
+  warehouse?: "BZM" | "LOOPER" | "all";
   foamType?: string;
   status?: string;
   qualityStatus?: string;
@@ -241,8 +241,8 @@ export interface User {
   name: string;
   email: string;
   password: string; // In production, this should be hashed
-  role: 'admin' | 'supervisor' | 'operator' | 'quality' | 'maintenance';
-  accessLevel: 'full' | 'limited' | 'readonly';
+  role: "admin" | "supervisor" | "operator" | "quality" | "maintenance";
+  accessLevel: "full" | "limited" | "readonly";
   isActive: boolean;
   lastLogin?: string;
   assignedMachines?: string[]; // IDs of machines the operator can use
@@ -289,7 +289,7 @@ export interface PrintLabel {
 export interface MachineFile {
   id: string;
   name: string;
-  type: 'photo' | 'manual' | 'certificate' | 'maintenance' | 'other';
+  type: "photo" | "manual" | "certificate" | "maintenance" | "other";
   url: string;
   uploadedBy: string;
   uploadedAt: string;
@@ -339,7 +339,7 @@ export interface ShipmentLoad {
   driverName?: string;
   startTime: string;
   endTime?: string;
-  status: 'loading' | 'completed' | 'cancelled';
+  status: "loading" | "completed" | "cancelled";
   items: ShippedItem[];
   totalWeight: number; // kg
   totalVolume: number; // m³
@@ -384,7 +384,7 @@ export interface ShippingFilters {
     start: string;
     end: string;
   };
-  status?: 'ready' | 'shipped';
+  status?: "ready" | "shipped";
 }
 
 // Maintenance Request System
@@ -394,14 +394,20 @@ export interface MaintenanceRequest {
   machineName: string;
   operatorId: string;
   operatorName: string;
-  urgencyLevel: 'low' | 'medium' | 'high' | 'critical';
-  category: 'mechanical' | 'electrical' | 'software' | 'preventive' | 'emergency' | 'other';
+  urgencyLevel: "low" | "medium" | "high" | "critical";
+  category:
+    | "mechanical"
+    | "electrical"
+    | "software"
+    | "preventive"
+    | "emergency"
+    | "other";
   title: string;
   description: string;
   reportedIssues: string[];
   attachments?: string[];
   photos?: string[];
-  status: 'pending' | 'assigned' | 'in_progress' | 'completed' | 'cancelled';
+  status: "pending" | "assigned" | "in_progress" | "completed" | "cancelled";
   priority: number; // 1-10 based on urgency level
   estimatedDowntime?: number; // in minutes
   actualDowntime?: number;
@@ -423,13 +429,17 @@ export interface MaintenanceRequest {
 
 export interface MaintenanceAlert {
   id: string;
-  type: 'maintenance_request' | 'machine_down' | 'critical_failure' | 'overdue_maintenance';
+  type:
+    | "maintenance_request"
+    | "machine_down"
+    | "critical_failure"
+    | "overdue_maintenance";
   machineId: string;
   machineName: string;
   title: string;
   description: string;
-  urgencyLevel: 'low' | 'medium' | 'high' | 'critical';
-  status: 'active' | 'acknowledged' | 'resolved';
+  urgencyLevel: "low" | "medium" | "high" | "critical";
+  status: "active" | "acknowledged" | "resolved";
   createdAt: string;
   acknowledgedAt?: string;
   resolvedAt?: string;
@@ -444,15 +454,20 @@ export interface MachineDowntime {
   id: string;
   machineId: string;
   machineName: string;
-  reason: 'maintenance' | 'breakdown' | 'planned_maintenance' | 'quality_issue' | 'other';
+  reason:
+    | "maintenance"
+    | "breakdown"
+    | "planned_maintenance"
+    | "quality_issue"
+    | "other";
   startTime: string;
   endTime?: string;
   duration?: number; // in minutes
-  status: 'ongoing' | 'completed';
+  status: "ongoing" | "completed";
   reportedBy: string;
   resolvedBy?: string;
   description: string;
   maintenanceRequestId?: string;
-  impact: 'low' | 'medium' | 'high' | 'critical';
+  impact: "low" | "medium" | "high" | "critical";
   affectedOrders?: string[];
 }

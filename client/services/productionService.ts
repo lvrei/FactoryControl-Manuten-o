@@ -237,9 +237,12 @@ class ProductionService {
   ): Promise<ProductionOrder[]> {
     try {
       const params = new URLSearchParams();
-      if (filters?.customer) params.set('customer', filters.customer);
-      if ((filters as any)?.createdBy) params.set('createdBy', (filters as any).createdBy);
-      const resp = await fetch(`/api/orders${params.toString() ? `?${params.toString()}` : ''}`);
+      if (filters?.customer) params.set("customer", filters.customer);
+      if ((filters as any)?.createdBy)
+        params.set("createdBy", (filters as any).createdBy);
+      const resp = await fetch(
+        `/api/orders${params.toString() ? `?${params.toString()}` : ""}`,
+      );
       if (!resp.ok) throw new Error("API orders falhou");
       let orders: ProductionOrder[] = await resp.json();
       if (filters) {
@@ -270,7 +273,11 @@ class ProductionService {
               .includes((filters as any).orderNumber.toLowerCase())
           )
             return false;
-          if ((filters as any).createdBy && order.createdBy !== (filters as any).createdBy) return false;
+          if (
+            (filters as any).createdBy &&
+            order.createdBy !== (filters as any).createdBy
+          )
+            return false;
           return true;
         });
       }

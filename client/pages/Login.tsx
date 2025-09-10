@@ -5,43 +5,43 @@ import { authService } from "@/services/authService";
 import { cn } from "@/lib/utils";
 
 export default function Login() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const session = await authService.login(username, password);
-      
+
       // Redirect based on role and factory association
       if (session.factoryName || session.factoryId) {
-        navigate('/factory-orders');
-      } else if (session.role === 'operator') {
-        navigate('/operator');
+        navigate("/factory-orders");
+      } else if (session.role === "operator") {
+        navigate("/operator");
       } else {
-        navigate('/');
+        navigate("/");
       }
     } catch (error) {
-      setError(error instanceof Error ? error.message : 'Erro no login');
+      setError(error instanceof Error ? error.message : "Erro no login");
     } finally {
       setLoading(false);
     }
   };
 
-  const quickLogin = (role: 'admin' | 'operator' | 'supervisor') => {
+  const quickLogin = (role: "admin" | "operator" | "supervisor") => {
     const credentials = {
-      admin: { username: 'admin', password: 'admin123' },
-      operator: { username: 'operador', password: 'admin123' },
-      supervisor: { username: 'supervisor', password: 'admin123' }
+      admin: { username: "admin", password: "admin123" },
+      operator: { username: "operador", password: "admin123" },
+      supervisor: { username: "supervisor", password: "admin123" },
     };
-    
+
     const cred = credentials[role];
     setUsername(cred.username);
     setPassword(cred.password);
@@ -56,17 +56,23 @@ export default function Login() {
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
               <Factory className="h-7 w-7 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">FactoryControl</h1>
+            <h1 className="text-2xl font-bold text-foreground">
+              FactoryControl
+            </h1>
           </div>
           <p className="text-muted-foreground">Sistema de Gestão Industrial</p>
-          <p className="text-sm text-muted-foreground">Indústria de Corte de Espuma</p>
+          <p className="text-sm text-muted-foreground">
+            Indústria de Corte de Espuma
+          </p>
         </div>
 
         {/* Login Form */}
         <div className="rounded-lg border bg-card shadow-lg">
           <div className="p-6">
             <div className="text-center mb-6">
-              <h2 className="text-xl font-semibold text-card-foreground">Iniciar Sessão</h2>
+              <h2 className="text-xl font-semibold text-card-foreground">
+                Iniciar Sessão
+              </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Aceda ao sistema com as suas credenciais
               </p>
@@ -74,30 +80,38 @@ export default function Login() {
 
             {/* Demo Credentials */}
             <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">🔐 Credenciais de Demonstração:</h4>
+              <h4 className="text-sm font-medium text-blue-900 mb-2">
+                🔐 Credenciais de Demonstração:
+              </h4>
               <div className="space-y-1 text-xs text-blue-800">
                 <div className="flex justify-between items-center">
-                  <span><strong>Admin:</strong> admin / admin123</span>
-                  <button 
-                    onClick={() => quickLogin('admin')}
+                  <span>
+                    <strong>Admin:</strong> admin / admin123
+                  </span>
+                  <button
+                    onClick={() => quickLogin("admin")}
                     className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
                   >
                     Usar
                   </button>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span><strong>Operador:</strong> operador / admin123</span>
-                  <button 
-                    onClick={() => quickLogin('operator')}
+                  <span>
+                    <strong>Operador:</strong> operador / admin123
+                  </span>
+                  <button
+                    onClick={() => quickLogin("operator")}
                     className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
                   >
                     Usar
                   </button>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span><strong>Supervisor:</strong> supervisor / admin123</span>
-                  <button 
-                    onClick={() => quickLogin('supervisor')}
+                  <span>
+                    <strong>Supervisor:</strong> supervisor / admin123
+                  </span>
+                  <button
+                    onClick={() => quickLogin("supervisor")}
                     className="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
                   >
                     Usar
@@ -114,7 +128,9 @@ export default function Login() {
 
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Nome de Utilizador</label>
+                <label className="block text-sm font-medium mb-2">
+                  Nome de Utilizador
+                </label>
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
@@ -129,7 +145,9 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">Palavra-passe</label>
+                <label className="block text-sm font-medium mb-2">
+                  Palavra-passe
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <input
@@ -145,7 +163,11 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>

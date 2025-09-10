@@ -38,8 +38,12 @@ async function ensureEmployeesTables(): Promise<boolean> {
         factory_id TEXT,
         factory_name TEXT
       )`);
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS factory_id TEXT`);
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS factory_name TEXT`);
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS factory_id TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS factory_name TEXT`,
+      );
       return true;
     } catch (e) {
       console.error("ensureEmployeesTables error", e);
