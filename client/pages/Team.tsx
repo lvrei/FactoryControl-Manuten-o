@@ -390,6 +390,8 @@ export default function Team() {
       role: (employee.role || "operator") as any,
       accessLevel: (employee.accessLevel || "limited") as any,
       password: "",
+      factoryId: (employee as any).factoryId || "",
+      factoryName: (employee as any).factoryName || "",
     });
     setShowAddEmployee(true);
   };
