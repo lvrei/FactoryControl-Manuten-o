@@ -330,23 +330,25 @@ export default function Team() {
       const refreshed = await employeesService.list();
       setEmployeesList(refreshed as any);
       setNewEmployee({
-        name: "",
-        position: "",
-        department: "Corte BZM",
-        shift: "morning",
-        email: "",
-        phone: "",
-        skills: "",
-        supervisor: "",
-        currentAssignment: "",
-        machineOperatingLicense: "",
-        certifications: "",
-        hasSystemAccess: false,
-        username: "",
-        role: "operator",
-        accessLevel: "limited",
-        password: "",
-      });
+      name: "",
+      position: "",
+      department: "Corte BZM",
+      shift: "morning",
+      email: "",
+      phone: "",
+      skills: "",
+      supervisor: "",
+      currentAssignment: "",
+      machineOperatingLicense: "",
+      certifications: "",
+      hasSystemAccess: false,
+      username: "",
+      role: "operator",
+      accessLevel: "limited",
+      password: "",
+      factoryId: "",
+      factoryName: "",
+    });
       setShowAddEmployee(false);
     } catch (error) {
       console.error("Erro ao criar funcionário:", error);
@@ -1109,23 +1111,25 @@ export default function Team() {
                     setShowAddEmployee(false);
                     setEditingEmployee(null);
                     setNewEmployee({
-                      name: "",
-                      position: "",
-                      department: "Corte BZM",
-                      shift: "morning",
-                      email: "",
-                      phone: "",
-                      skills: "",
-                      supervisor: "",
-                      currentAssignment: "",
-                      machineOperatingLicense: "",
-                      certifications: "",
-                      hasSystemAccess: false,
-                      username: "",
-                      role: "operator",
-                      accessLevel: "limited",
-                      password: "",
-                    });
+      name: "",
+      position: "",
+      department: "Corte BZM",
+      shift: "morning",
+      email: "",
+      phone: "",
+      skills: "",
+      supervisor: "",
+      currentAssignment: "",
+      machineOperatingLicense: "",
+      certifications: "",
+      hasSystemAccess: false,
+      username: "",
+      role: "operator",
+      accessLevel: "limited",
+      password: "",
+      factoryId: "",
+      factoryName: "",
+    });
                   }}
                   className="text-muted-foreground hover:text-foreground"
                 >
@@ -1502,23 +1506,25 @@ export default function Team() {
                     setShowAddEmployee(false);
                     setEditingEmployee(null);
                     setNewEmployee({
-                      name: "",
-                      position: "",
-                      department: "Corte BZM",
-                      shift: "morning",
-                      email: "",
-                      phone: "",
-                      skills: "",
-                      supervisor: "",
-                      currentAssignment: "",
-                      machineOperatingLicense: "",
-                      certifications: "",
-                      hasSystemAccess: false,
-                      username: "",
-                      role: "operator",
-                      accessLevel: "limited",
-                      password: "",
-                    });
+      name: "",
+      position: "",
+      department: "Corte BZM",
+      shift: "morning",
+      email: "",
+      phone: "",
+      skills: "",
+      supervisor: "",
+      currentAssignment: "",
+      machineOperatingLicense: "",
+      certifications: "",
+      hasSystemAccess: false,
+      username: "",
+      role: "operator",
+      accessLevel: "limited",
+      password: "",
+      factoryId: "",
+      factoryName: "",
+    });
                   }}
                   className="px-4 py-2 border rounded-lg hover:bg-muted"
                 >
