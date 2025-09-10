@@ -1357,6 +1357,44 @@ export default function Team() {
                   </div>
                 </div>
 
+                {/* Factory association */}
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      ID da Fábrica
+                    </label>
+                    <input
+                      type="text"
+                      value={newEmployee.factoryId}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          factoryId: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Ex: fac-porto"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Nome da Fábrica
+                    </label>
+                    <input
+                      type="text"
+                      value={newEmployee.factoryName}
+                      onChange={(e) =>
+                        setNewEmployee((prev) => ({
+                          ...prev,
+                          factoryName: e.target.value,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Ex: Fábrica Porto"
+                    />
+                  </div>
+                </div>
+
                 {/* System Access */}
                 <div>
                   <div className="flex items-center gap-2 mb-4">
