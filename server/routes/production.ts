@@ -542,7 +542,7 @@ productionRouter.get("/stock/summary", async (_req, res) => {
 });
 
 // Orders CRUD (nested)
-productionRouter.get("/orders", async (_req, res) => {
+productionRouter.get("/orders", async (req, res) => {
   try {
     const ordersRes = await query(
       `SELECT * FROM production_orders ORDER BY created_at DESC`,
