@@ -15,7 +15,9 @@ async function ensureFactoriesTable(): Promise<boolean> {
         name TEXT UNIQUE NOT NULL,
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
-      await query(`CREATE UNIQUE INDEX IF NOT EXISTS factories_name_key ON factories(name)`);
+      await query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS factories_name_key ON factories(name)`,
+      );
       return true;
     } catch (e) {
       console.error("ensureFactoriesTable error", e);
@@ -28,16 +30,26 @@ async function ensureFactoriesTable(): Promise<boolean> {
 }
 
 function toId(name: string) {
-  const base = (name || "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const base = (name || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   const suffix = Math.random().toString(36).slice(2, 6);
-  return base ? `${base}-${suffix}` : `fac-${Date.now().toString(36)}-${suffix}`;
+  return base
+    ? `${base}-${suffix}`
+    : `fac-${Date.now().toString(36)}-${suffix}`;
 }
 
 factoriesRouter.get("/factories", async (_req, res) => {
   try {
     await ensureFactoriesTable();
-    const { rows } = await query(`SELECT id, name, created_at FROM factories ORDER BY name ASC`);
-    return res.json(rows.map(r => ({ id: r.id, name: r.name, createdAt: r.created_at })));
+    const { rows } = await query(
+      `SELECT id, name, created_at FROM factories ORDER BY name ASC`,
+    );
+    return res.json(
+      rows.map((r) => ({ id: r.id, name: r.name, createdAt: r.created_at })),
+    );
   } catch (e: any) {
     if (isDbConfigured()) return res.status(500).json({ error: e.message });
     return res.json([]);

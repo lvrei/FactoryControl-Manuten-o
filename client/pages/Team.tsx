@@ -27,7 +27,10 @@ import {
 import { cn } from "@/lib/utils";
 import { authService } from "@/services/authService";
 import { employeesService } from "@/services/employeesService";
-import { factoriesService, type FactoryRecord } from "@/services/factoriesService";
+import {
+  factoriesService,
+  type FactoryRecord,
+} from "@/services/factoriesService";
 import { User as UserType } from "@/types/production";
 
 interface Employee {
@@ -168,7 +171,10 @@ export default function Team() {
   const [employeesList, setEmployeesList] = useState<Employee[]>(employees);
   const [factories, setFactories] = useState<FactoryRecord[]>([]);
   const [showAddFactory, setShowAddFactory] = useState(false);
-  const [newFactory, setNewFactory] = useState<{ id: string; name: string }>({ id: "", name: "" });
+  const [newFactory, setNewFactory] = useState<{ id: string; name: string }>({
+    id: "",
+    name: "",
+  });
 
   useEffect(() => {
     const load = async () => {
@@ -1396,12 +1402,16 @@ export default function Team() {
                 {/* Associação à Fábrica */}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Fábrica</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Fábrica
+                    </label>
                     <div className="flex gap-2">
                       <select
                         value={newEmployee.factoryId}
                         onChange={(e) => {
-                          const f = factories.find((x) => x.id === e.target.value);
+                          const f = factories.find(
+                            (x) => x.id === e.target.value,
+                          );
                           setNewEmployee((prev) => ({
                             ...prev,
                             factoryId: f?.id || "",
@@ -1428,7 +1438,9 @@ export default function Team() {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Nome selecionado</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Nome selecionado
+                    </label>
                     <input
                       type="text"
                       value={newEmployee.factoryName}
@@ -1646,17 +1658,23 @@ export default function Team() {
                   <input
                     type="text"
                     value={newFactory.name}
-                    onChange={(e) => setNewFactory((p) => ({ ...p, name: e.target.value }))}
+                    onChange={(e) =>
+                      setNewFactory((p) => ({ ...p, name: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                     placeholder="Ex: Fábrica Porto"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">ID (opcional)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    ID (opcional)
+                  </label>
                   <input
                     type="text"
                     value={newFactory.id}
-                    onChange={(e) => setNewFactory((p) => ({ ...p, id: e.target.value }))}
+                    onChange={(e) =>
+                      setNewFactory((p) => ({ ...p, id: e.target.value }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                     placeholder="Ex: fabrica-porto"
                   />
