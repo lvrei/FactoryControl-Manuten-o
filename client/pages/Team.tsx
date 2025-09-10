@@ -210,6 +210,8 @@ export default function Team() {
       | "maintenance",
     accessLevel: "limited" as "full" | "limited" | "readonly",
     password: "",
+    factoryId: "",
+    factoryName: "",
   });
 
   const filteredEmployees = employeesList.filter((employee) => {
@@ -718,7 +720,7 @@ export default function Team() {
                     <option value="all">Todos</option>
                     <option value="present">Presente</option>
                     <option value="absent">Ausente</option>
-                    <option value="vacation">F��rias</option>
+                    <option value="vacation">Férias</option>
                     <option value="training">Formação</option>
                   </select>
                 </div>
