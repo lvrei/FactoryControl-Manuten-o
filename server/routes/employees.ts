@@ -157,7 +157,8 @@ employeesRouter.patch("/employees/:id", async (req, res) => {
       email=COALESCE($7,email), phone=COALESCE($8,phone), hire_date=COALESCE($9,hire_date), skills=COALESCE($10,skills), certifications=COALESCE($11,certifications),
       machine_operating_license=COALESCE($12,machine_operating_license), current_assignment=COALESCE($13,current_assignment), supervisor=COALESCE($14,supervisor),
       productivity_score=COALESCE($15,productivity_score), attendance_rate=COALESCE($16,attendance_rate), training_hours=COALESCE($17,training_hours),
-      last_presence_update=COALESCE($18,last_presence_update), username=COALESCE($19,username), role=COALESCE($20,role), access_level=COALESCE($21,access_level), has_system_access=COALESCE($22,has_system_access)
+      last_presence_update=COALESCE($18,last_presence_update), username=COALESCE($19,username), role=COALESCE($20,role), access_level=COALESCE($21,access_level), has_system_access=COALESCE($22,has_system_access),
+      factory_id=COALESCE($23,factory_id), factory_name=COALESCE($24,factory_name)
       WHERE id=$1`,
       [
         id,
@@ -184,6 +185,8 @@ employeesRouter.patch("/employees/:id", async (req, res) => {
         d.role,
         d.accessLevel,
         d.hasSystemAccess,
+        d.factoryId,
+        d.factoryName,
       ],
     );
     return res.json({ ok: true });
