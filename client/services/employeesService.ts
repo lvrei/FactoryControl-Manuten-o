@@ -21,6 +21,8 @@ export type EmployeeRecord = {
   role?: "admin" | "supervisor" | "operator" | "quality" | "maintenance";
   accessLevel?: "full" | "limited" | "readonly";
   hasSystemAccess?: boolean;
+  factoryId?: string;
+  factoryName?: string;
 };
 
 class EmployeesService {
