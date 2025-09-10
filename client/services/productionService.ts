@@ -771,29 +771,33 @@ class ProductionService {
   async getFoamBlocks(filters?: StockFilters): Promise<FoamBlock[]> {
     try {
       const params = new URLSearchParams();
-      if (filters?.warehouse) params.set('warehouse', filters.warehouse);
-      if (filters?.status) params.set('status', filters.status);
-      if (filters?.qualityStatus) params.set('qualityStatus', filters.qualityStatus);
-      if (filters?.foamType) params.set('foamType', filters.foamType);
-      if (filters?.productionNumber) params.set('productionNumber', filters.productionNumber);
-      if (filters?.blockNumber) params.set('blockNumber', filters.blockNumber);
+      if (filters?.warehouse) params.set("warehouse", filters.warehouse);
+      if (filters?.status) params.set("status", filters.status);
+      if (filters?.qualityStatus)
+        params.set("qualityStatus", filters.qualityStatus);
+      if (filters?.foamType) params.set("foamType", filters.foamType);
+      if (filters?.productionNumber)
+        params.set("productionNumber", filters.productionNumber);
+      if (filters?.blockNumber) params.set("blockNumber", filters.blockNumber);
       if (filters?.dateRange?.start && filters?.dateRange?.end) {
-        params.set('startDate', filters.dateRange.start);
-        params.set('endDate', filters.dateRange.end);
+        params.set("startDate", filters.dateRange.start);
+        params.set("endDate", filters.dateRange.end);
       }
-      const r = await fetch(`/api/foam-blocks${params.toString() ? `?${params.toString()}` : ''}`);
-      if (!r.ok) throw new Error('API foam-blocks falhou');
+      const r = await fetch(
+        `/api/foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
+      );
+      if (!r.ok) throw new Error("API foam-blocks falhou");
       return r.json();
     } catch (error) {
-      console.warn('⚠️ Falha API /api/foam-blocks, usando localStorage');
+      console.warn("⚠️ Falha API /api/foam-blocks, usando localStorage");
       this.ensureInitialized();
       const store = this.getStoredData() || {};
       const blocks: any[] = store.foamBlocks || [];
       const foams: FoamType[] = store.foamTypes || this.mockFoamTypes;
-      let list: FoamBlock[] = blocks.map((b:any) => ({
+      let list: FoamBlock[] = blocks.map((b: any) => ({
         id: b.id,
         productionNumber: b.productionNumber,
-        foamType: foams.find(f=> f.id===b.foamTypeId) || foams[0],
+        foamType: foams.find((f) => f.id === b.foamTypeId) || foams[0],
         dimensions: b.dimensions,
         volume: b.volume,
         weight: b.weight,
@@ -803,25 +807,47 @@ class ProductionService {
         status: b.status,
         qualityStatus: b.qualityStatus,
         nonConformities: b.nonConformities || [],
-        comments: b.comments || '',
+        comments: b.comments || "",
         receivedDate: b.receivedDate,
         receivedBy: b.receivedBy,
         reservedFor: b.reservedFor,
         consumedDate: b.consumedDate,
         consumedBy: b.consumedBy,
-        photos: b.photos || []
+        photos: b.photos || [],
       }));
-      if (filters?.warehouse && filters.warehouse!=='all') list = list.filter(x=> x.warehouse===filters.warehouse);
-      if (filters?.status) list = list.filter(x=> x.status===filters.status);
-      if (filters?.qualityStatus) list = list.filter(x=> x.qualityStatus===filters.qualityStatus);
-      if (filters?.foamType) list = list.filter(x=> x.foamType.name.toLowerCase().includes(filters.foamType!.toLowerCase()));
-      if (filters?.productionNumber) list = list.filter(x=> x.productionNumber.toLowerCase().includes(filters.productionNumber!.toLowerCase()));
-      if (filters?.blockNumber) list = list.filter(x=> x.blockNumber.toLowerCase().includes(filters.blockNumber!.toLowerCase()));
+      if (filters?.warehouse && filters.warehouse !== "all")
+        list = list.filter((x) => x.warehouse === filters.warehouse);
+      if (filters?.status)
+        list = list.filter((x) => x.status === filters.status);
+      if (filters?.qualityStatus)
+        list = list.filter((x) => x.qualityStatus === filters.qualityStatus);
+      if (filters?.foamType)
+        list = list.filter((x) =>
+          x.foamType.name
+            .toLowerCase()
+            .includes(filters.foamType!.toLowerCase()),
+        );
+      if (filters?.productionNumber)
+        list = list.filter((x) =>
+          x.productionNumber
+            .toLowerCase()
+            .includes(filters.productionNumber!.toLowerCase()),
+        );
+      if (filters?.blockNumber)
+        list = list.filter((x) =>
+          x.blockNumber
+            .toLowerCase()
+            .includes(filters.blockNumber!.toLowerCase()),
+        );
       return list;
     }
   }
 
-  async createFoamBlock(data: Omit<FoamBlock,'id'|'volume'|'receivedDate'> & { foamType: FoamType }): Promise<string> {
+  async createFoamBlock(
+    data: Omit<FoamBlock, "id" | "volume" | "receivedDate"> & {
+      foamType: FoamType;
+    },
+  ): Promise<string> {
     try {
       const payload = {
         productionNumber: data.productionNumber,
@@ -839,19 +865,27 @@ class ProductionService {
         reservedFor: data.reservedFor,
         consumedDate: data.consumedDate,
         consumedBy: data.consumedBy,
-        photos: data.photos
+        photos: data.photos,
       };
-      const r = await fetch('/api/foam-blocks', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      if (!r.ok) throw new Error('API criar foam-block falhou');
+      const r = await fetch("/api/foam-blocks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) throw new Error("API criar foam-block falhou");
       const j = await r.json();
       return j.id as string;
     } catch (error) {
-      console.warn('⚠️ Falha API create foam-block, salvando local');
+      console.warn("⚠️ Falha API create foam-block, salvando local");
       this.ensureInitialized();
       const store = this.getStoredData() || {};
       const list: any[] = store.foamBlocks || [];
       const id = `fblk-${Date.now()}`;
-      const volume = (data.dimensions.length * data.dimensions.width * data.dimensions.height) / 1_000_000;
+      const volume =
+        (data.dimensions.length *
+          data.dimensions.width *
+          data.dimensions.height) /
+        1_000_000;
       list.push({
         id,
         productionNumber: data.productionNumber,
@@ -871,7 +905,7 @@ class ProductionService {
         reservedFor: data.reservedFor,
         consumedDate: data.consumedDate,
         consumedBy: data.consumedBy,
-        photos: data.photos
+        photos: data.photos,
       });
       store.foamBlocks = list;
       this.saveData(store);
@@ -879,52 +913,85 @@ class ProductionService {
     }
   }
 
-  async updateFoamBlock(id: string, patch: Partial<Omit<FoamBlock,'id'|'foamType'>> & { foamType?: FoamType }): Promise<void> {
+  async updateFoamBlock(
+    id: string,
+    patch: Partial<Omit<FoamBlock, "id" | "foamType">> & {
+      foamType?: FoamType;
+    },
+  ): Promise<void> {
     try {
       const payload: any = { ...patch };
       if (patch.foamType) payload.foamTypeId = patch.foamType.id;
       delete payload.foamType;
-      const r = await fetch(`/api/foam-blocks/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      if (!r.ok) throw new Error('API atualizar foam-block falhou');
+      const r = await fetch(`/api/foam-blocks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!r.ok) throw new Error("API atualizar foam-block falhou");
     } catch (error) {
-      console.warn('⚠️ Falha API update foam-block, salvando local');
+      console.warn("⚠️ Falha API update foam-block, salvando local");
       this.ensureInitialized();
       const store = this.getStoredData() || {};
-      store.foamBlocks = (store.foamBlocks || []).map((b:any) => b.id===id ? { ...b, ...patch, foamTypeId: (patch as any).foamType ? (patch as any).foamType.id : b.foamTypeId } : b);
+      store.foamBlocks = (store.foamBlocks || []).map((b: any) =>
+        b.id === id
+          ? {
+              ...b,
+              ...patch,
+              foamTypeId: (patch as any).foamType
+                ? (patch as any).foamType.id
+                : b.foamTypeId,
+            }
+          : b,
+      );
       this.saveData(store);
     }
   }
 
   async deleteFoamBlock(id: string): Promise<void> {
     try {
-      const r = await fetch(`/api/foam-blocks/${id}`, { method: 'DELETE' });
-      if (!r.ok) throw new Error('API apagar foam-block falhou');
+      const r = await fetch(`/api/foam-blocks/${id}`, { method: "DELETE" });
+      if (!r.ok) throw new Error("API apagar foam-block falhou");
     } catch (error) {
-      console.warn('⚠️ Falha API delete foam-block, salvando local');
+      console.warn("⚠️ Falha API delete foam-block, salvando local");
       this.ensureInitialized();
       const store = this.getStoredData() || {};
-      store.foamBlocks = (store.foamBlocks || []).filter((b:any)=> b.id!==id);
+      store.foamBlocks = (store.foamBlocks || []).filter(
+        (b: any) => b.id !== id,
+      );
       this.saveData(store);
     }
   }
 
   async getStockSummary(): Promise<any> {
     try {
-      const r = await fetch('/api/stock/summary');
-      if (!r.ok) throw new Error('API stock/summary falhou');
+      const r = await fetch("/api/stock/summary");
+      if (!r.ok) throw new Error("API stock/summary falhou");
       return r.json();
     } catch (error) {
-      console.warn('⚠️ Falha API /api/stock/summary, calculando local');
+      console.warn("⚠️ Falha API /api/stock/summary, calculando local");
       const blocks = await this.getFoamBlocks();
       const totalBlocks = blocks.length;
-      const totalVolume = blocks.reduce((s,b)=> s + (b.volume || 0), 0);
+      const totalVolume = blocks.reduce((s, b) => s + (b.volume || 0), 0);
       const byWarehouse: any[] = [];
-      const mapW: Record<string,{warehouse:string,blocks:number,volume:number}> = {};
-      blocks.forEach(b=> { const k=b.warehouse; mapW[k]=mapW[k]||{warehouse:k,blocks:0,volume:0}; mapW[k].blocks++; mapW[k].volume += b.volume||0; });
+      const mapW: Record<
+        string,
+        { warehouse: string; blocks: number; volume: number }
+      > = {};
+      blocks.forEach((b) => {
+        const k = b.warehouse;
+        mapW[k] = mapW[k] || { warehouse: k, blocks: 0, volume: 0 };
+        mapW[k].blocks++;
+        mapW[k].volume += b.volume || 0;
+      });
       for (const v of Object.values(mapW)) byWarehouse.push(v);
       const byStatus: any[] = [];
-      const mapS: Record<string,{status:string,blocks:number}> = {};
-      blocks.forEach(b=> { const k=b.status; mapS[k]=mapS[k]||{status:k,blocks:0}; mapS[k].blocks++; });
+      const mapS: Record<string, { status: string; blocks: number }> = {};
+      blocks.forEach((b) => {
+        const k = b.status;
+        mapS[k] = mapS[k] || { status: k, blocks: 0 };
+        mapS[k].blocks++;
+      });
       for (const v of Object.values(mapS)) byStatus.push(v);
       return { totalBlocks, totalVolume, byWarehouse, byStatus };
     }
@@ -1470,33 +1537,38 @@ if (typeof window !== "undefined") {
 
 // Runtime safety: ensure methods exist even if older bundles import a different instance shape
 // This protects against "getFoamBlocks is not a function" during HMR or mixed bundles.
-if (typeof (productionService as any).getFoamBlocks !== 'function') {
+if (typeof (productionService as any).getFoamBlocks !== "function") {
   (productionService as any).getFoamBlocks = async (filters?: StockFilters) => {
     try {
       const params = new URLSearchParams();
-      if (filters?.warehouse) params.set('warehouse', filters.warehouse);
-      if (filters?.status) params.set('status', filters.status);
-      if (filters?.qualityStatus) params.set('qualityStatus', filters.qualityStatus);
-      if (filters?.foamType) params.set('foamType', filters.foamType);
-      if (filters?.productionNumber) params.set('productionNumber', filters.productionNumber);
-      if (filters?.blockNumber) params.set('blockNumber', filters.blockNumber);
+      if (filters?.warehouse) params.set("warehouse", filters.warehouse);
+      if (filters?.status) params.set("status", filters.status);
+      if (filters?.qualityStatus)
+        params.set("qualityStatus", filters.qualityStatus);
+      if (filters?.foamType) params.set("foamType", filters.foamType);
+      if (filters?.productionNumber)
+        params.set("productionNumber", filters.productionNumber);
+      if (filters?.blockNumber) params.set("blockNumber", filters.blockNumber);
       if (filters?.dateRange?.start && filters?.dateRange?.end) {
-        params.set('startDate', filters.dateRange.start);
-        params.set('endDate', filters.dateRange.end);
+        params.set("startDate", filters.dateRange.start);
+        params.set("endDate", filters.dateRange.end);
       }
-      const r = await fetch(`/api/foam-blocks${params.toString() ? `?${params.toString()}` : ''}`);
-      if (!r.ok) throw new Error('API foam-blocks falhou');
+      const r = await fetch(
+        `/api/foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
+      );
+      if (!r.ok) throw new Error("API foam-blocks falhou");
       return r.json();
     } catch (error) {
       try {
-        const dataRaw = localStorage.getItem('factoryControl_production');
+        const dataRaw = localStorage.getItem("factoryControl_production");
         const store = dataRaw ? JSON.parse(dataRaw) : {};
         const blocks: any[] = store.foamBlocks || [];
         const foams: FoamType[] = store.foamTypes || [];
-        let list = blocks.map((b:any) => ({
+        let list = blocks.map((b: any) => ({
           id: b.id,
           productionNumber: b.productionNumber,
-          foamType: foams.find((f:FoamType)=> f.id===b.foamTypeId) || foams[0],
+          foamType:
+            foams.find((f: FoamType) => f.id === b.foamTypeId) || foams[0],
           dimensions: b.dimensions,
           volume: b.volume,
           weight: b.weight,
@@ -1506,20 +1578,40 @@ if (typeof (productionService as any).getFoamBlocks !== 'function') {
           status: b.status,
           qualityStatus: b.qualityStatus,
           nonConformities: b.nonConformities || [],
-          comments: b.comments || '',
+          comments: b.comments || "",
           receivedDate: b.receivedDate,
           receivedBy: b.receivedBy,
           reservedFor: b.reservedFor,
           consumedDate: b.consumedDate,
           consumedBy: b.consumedBy,
-          photos: b.photos || []
+          photos: b.photos || [],
         }));
-        if (filters?.warehouse && filters.warehouse!=='all') list = list.filter((x:any)=> x.warehouse===filters.warehouse);
-        if (filters?.status) list = list.filter((x:any)=> x.status===filters.status);
-        if (filters?.qualityStatus) list = list.filter((x:any)=> x.qualityStatus===filters.qualityStatus);
-        if (filters?.foamType) list = list.filter((x:any)=> x.foamType?.name?.toLowerCase().includes(filters.foamType!.toLowerCase()));
-        if (filters?.productionNumber) list = list.filter((x:any)=> x.productionNumber?.toLowerCase().includes(filters.productionNumber!.toLowerCase()));
-        if (filters?.blockNumber) list = list.filter((x:any)=> x.blockNumber?.toLowerCase().includes(filters.blockNumber!.toLowerCase()));
+        if (filters?.warehouse && filters.warehouse !== "all")
+          list = list.filter((x: any) => x.warehouse === filters.warehouse);
+        if (filters?.status)
+          list = list.filter((x: any) => x.status === filters.status);
+        if (filters?.qualityStatus)
+          list = list.filter(
+            (x: any) => x.qualityStatus === filters.qualityStatus,
+          );
+        if (filters?.foamType)
+          list = list.filter((x: any) =>
+            x.foamType?.name
+              ?.toLowerCase()
+              .includes(filters.foamType!.toLowerCase()),
+          );
+        if (filters?.productionNumber)
+          list = list.filter((x: any) =>
+            x.productionNumber
+              ?.toLowerCase()
+              .includes(filters.productionNumber!.toLowerCase()),
+          );
+        if (filters?.blockNumber)
+          list = list.filter((x: any) =>
+            x.blockNumber
+              ?.toLowerCase()
+              .includes(filters.blockNumber!.toLowerCase()),
+          );
         return list;
       } catch {
         return [];
@@ -1528,21 +1620,41 @@ if (typeof (productionService as any).getFoamBlocks !== 'function') {
   };
 }
 
-if (typeof (productionService as any).getStockSummary !== 'function') {
+if (typeof (productionService as any).getStockSummary !== "function") {
   (productionService as any).getStockSummary = async () => {
     try {
-      const r = await fetch('/api/stock/summary');
-      if (!r.ok) throw new Error('API stock/summary falhou');
+      const r = await fetch("/api/stock/summary");
+      if (!r.ok) throw new Error("API stock/summary falhou");
       return r.json();
     } catch (error) {
-      const blocks = await (productionService as any).getFoamBlocks?.() || [];
+      const blocks = (await (productionService as any).getFoamBlocks?.()) || [];
       const totalBlocks = blocks.length;
-      const totalVolume = blocks.reduce((s:number,b:any)=> s + (b.volume || 0), 0);
-      const byWarehouseMap: Record<string,{warehouse:string,blocks:number,volume:number}> = {};
-      blocks.forEach((b:any)=>{ const k=b.warehouse; byWarehouseMap[k]=byWarehouseMap[k]||{warehouse:k,blocks:0,volume:0}; byWarehouseMap[k].blocks++; byWarehouseMap[k].volume += b.volume||0; });
+      const totalVolume = blocks.reduce(
+        (s: number, b: any) => s + (b.volume || 0),
+        0,
+      );
+      const byWarehouseMap: Record<
+        string,
+        { warehouse: string; blocks: number; volume: number }
+      > = {};
+      blocks.forEach((b: any) => {
+        const k = b.warehouse;
+        byWarehouseMap[k] = byWarehouseMap[k] || {
+          warehouse: k,
+          blocks: 0,
+          volume: 0,
+        };
+        byWarehouseMap[k].blocks++;
+        byWarehouseMap[k].volume += b.volume || 0;
+      });
       const byWarehouse = Object.values(byWarehouseMap);
-      const byStatusMap: Record<string,{status:string,blocks:number}> = {};
-      blocks.forEach((b:any)=>{ const k=b.status; byStatusMap[k]=byStatusMap[k]||{status:k,blocks:0}; byStatusMap[k].blocks++; });
+      const byStatusMap: Record<string, { status: string; blocks: number }> =
+        {};
+      blocks.forEach((b: any) => {
+        const k = b.status;
+        byStatusMap[k] = byStatusMap[k] || { status: k, blocks: 0 };
+        byStatusMap[k].blocks++;
+      });
       const byStatus = Object.values(byStatusMap);
       return { totalBlocks, totalVolume, byWarehouse, byStatus };
     }
