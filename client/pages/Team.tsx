@@ -1618,6 +1618,84 @@ export default function Team() {
           </div>
         </div>
       )}
+
+      {/* Modal: Nova Fábrica */}
+      {showAddFactory && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-background rounded-lg max-w-md w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Nova Fábrica</h3>
+                <button
+                  onClick={() => setShowAddFactory(false)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Nome</label>
+                  <input
+                    type="text"
+                    value={newFactory.name}
+                    onChange={(e) => setNewFactory((p) => ({ ...p, name: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="Ex: Fábrica Porto"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">ID (opcional)</label>
+                  <input
+                    type="text"
+                    value={newFactory.id}
+                    onChange={(e) => setNewFactory((p) => ({ ...p, id: e.target.value }))}
+                    className="w-full px-3 py-2 border rounded-lg bg-background"
+                    placeholder="Ex: fabrica-porto"
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 mt-6">
+                <button
+                  onClick={() => setShowAddFactory(false)}
+                  className="px-4 py-2 border rounded-lg hover:bg-muted"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!newFactory.name.trim()) {
+                      alert("Informe o nome da fábrica");
+                      return;
+                    }
+                    try {
+                      const created = await factoriesService.create({
+                        name: newFactory.name.trim(),
+                        id: newFactory.id.trim() || undefined,
+                      });
+                      const facs = await factoriesService.list();
+                      setFactories(facs);
+                      setNewFactory({ id: "", name: "" });
+                      setShowAddFactory(false);
+                      // Pré-selecionar recém criada no formulário se aberto
+                      setNewEmployee((prev) => ({
+                        ...prev,
+                        factoryId: created.id,
+                        factoryName: created.name,
+                      }));
+                    } catch (e: any) {
+                      alert(e?.message || "Falha ao criar fábrica");
+                    }
+                  }}
+                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                >
+                  Criar Fábrica
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
