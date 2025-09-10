@@ -62,6 +62,7 @@ class AuthService {
         role: userData.role as any,
         name: userData.name,
         loginTime: new Date().toISOString(),
+        accessLevel: userData.role === 'admin' ? 'full' : 'limited'
       };
 
       this.currentUser = session;
