@@ -55,6 +55,9 @@ interface Employee {
   accessLevel?: "full" | "limited" | "readonly";
   password?: string;
   hasSystemAccess?: boolean;
+  // Factory association
+  factoryId?: string;
+  factoryName?: string;
 }
 
 interface ShiftSchedule {
@@ -715,7 +718,7 @@ export default function Team() {
                     <option value="all">Todos</option>
                     <option value="present">Presente</option>
                     <option value="absent">Ausente</option>
-                    <option value="vacation">Férias</option>
+                    <option value="vacation">F��rias</option>
                     <option value="training">Formação</option>
                   </select>
                 </div>
