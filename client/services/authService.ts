@@ -195,6 +195,8 @@ class AuthService {
       createdAt: new Date().toISOString(),
       isActive: user.isActive !== false,
     };
+    (newUser as any).factoryId = (user as any).factoryId;
+    (newUser as any).factoryName = (user as any).factoryName;
     users.push(newUser);
     localStorage.setItem(this.usersKey, JSON.stringify(users));
   }
