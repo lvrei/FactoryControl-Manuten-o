@@ -270,6 +270,7 @@ class ProductionService {
               .includes((filters as any).orderNumber.toLowerCase())
           )
             return false;
+          if ((filters as any).createdBy && order.createdBy !== (filters as any).createdBy) return false;
           return true;
         });
       }
@@ -734,7 +735,7 @@ class ProductionService {
       if (!r.ok) throw new Error("API atualizar product-sheet falhou");
       return { ...data, id } as ProductSheet;
     } catch (error) {
-      console.warn("���️ Falha API update product-sheet, salvando local");
+      console.warn("⚠️ Falha API update product-sheet, salvando local");
       this.ensureInitialized();
       const store = this.getStoredData() || {};
       store.productSheets = (store.productSheets || []).map((s: any) =>
@@ -1491,7 +1492,7 @@ class ProductionService {
       await this.completeWorkItem(workItemId, quantity, "Teste automatizado");
       console.log("✅ Teste bem-sucedido");
     } catch (error) {
-      console.error("❌ Teste falhou:", error);
+      console.error("�� Teste falhou:", error);
     }
   }
 
