@@ -1468,4 +1468,85 @@ if (typeof window !== "undefined") {
     productionService.initializeCleanSystem();
 }
 
+// Runtime safety: ensure methods exist even if older bundles import a different instance shape
+// This protects against "getFoamBlocks is not a function" during HMR or mixed bundles.
+if (typeof (productionService as any).getFoamBlocks !== 'function') {
+  (productionService as any).getFoamBlocks = async (filters?: StockFilters) => {
+    try {
+      const params = new URLSearchParams();
+      if (filters?.warehouse) params.set('warehouse', filters.warehouse);
+      if (filters?.status) params.set('status', filters.status);
+      if (filters?.qualityStatus) params.set('qualityStatus', filters.qualityStatus);
+      if (filters?.foamType) params.set('foamType', filters.foamType);
+      if (filters?.productionNumber) params.set('productionNumber', filters.productionNumber);
+      if (filters?.blockNumber) params.set('blockNumber', filters.blockNumber);
+      if (filters?.dateRange?.start && filters?.dateRange?.end) {
+        params.set('startDate', filters.dateRange.start);
+        params.set('endDate', filters.dateRange.end);
+      }
+      const r = await fetch(`/api/foam-blocks${params.toString() ? `?${params.toString()}` : ''}`);
+      if (!r.ok) throw new Error('API foam-blocks falhou');
+      return r.json();
+    } catch (error) {
+      try {
+        const dataRaw = localStorage.getItem('factoryControl_production');
+        const store = dataRaw ? JSON.parse(dataRaw) : {};
+        const blocks: any[] = store.foamBlocks || [];
+        const foams: FoamType[] = store.foamTypes || [];
+        let list = blocks.map((b:any) => ({
+          id: b.id,
+          productionNumber: b.productionNumber,
+          foamType: foams.find((f:FoamType)=> f.id===b.foamTypeId) || foams[0],
+          dimensions: b.dimensions,
+          volume: b.volume,
+          weight: b.weight,
+          productionDate: b.productionDate,
+          blockNumber: b.blockNumber,
+          warehouse: b.warehouse,
+          status: b.status,
+          qualityStatus: b.qualityStatus,
+          nonConformities: b.nonConformities || [],
+          comments: b.comments || '',
+          receivedDate: b.receivedDate,
+          receivedBy: b.receivedBy,
+          reservedFor: b.reservedFor,
+          consumedDate: b.consumedDate,
+          consumedBy: b.consumedBy,
+          photos: b.photos || []
+        }));
+        if (filters?.warehouse && filters.warehouse!=='all') list = list.filter((x:any)=> x.warehouse===filters.warehouse);
+        if (filters?.status) list = list.filter((x:any)=> x.status===filters.status);
+        if (filters?.qualityStatus) list = list.filter((x:any)=> x.qualityStatus===filters.qualityStatus);
+        if (filters?.foamType) list = list.filter((x:any)=> x.foamType?.name?.toLowerCase().includes(filters.foamType!.toLowerCase()));
+        if (filters?.productionNumber) list = list.filter((x:any)=> x.productionNumber?.toLowerCase().includes(filters.productionNumber!.toLowerCase()));
+        if (filters?.blockNumber) list = list.filter((x:any)=> x.blockNumber?.toLowerCase().includes(filters.blockNumber!.toLowerCase()));
+        return list;
+      } catch {
+        return [];
+      }
+    }
+  };
+}
+
+if (typeof (productionService as any).getStockSummary !== 'function') {
+  (productionService as any).getStockSummary = async () => {
+    try {
+      const r = await fetch('/api/stock/summary');
+      if (!r.ok) throw new Error('API stock/summary falhou');
+      return r.json();
+    } catch (error) {
+      const blocks = await (productionService as any).getFoamBlocks?.() || [];
+      const totalBlocks = blocks.length;
+      const totalVolume = blocks.reduce((s:number,b:any)=> s + (b.volume || 0), 0);
+      const byWarehouseMap: Record<string,{warehouse:string,blocks:number,volume:number}> = {};
+      blocks.forEach((b:any)=>{ const k=b.warehouse; byWarehouseMap[k]=byWarehouseMap[k]||{warehouse:k,blocks:0,volume:0}; byWarehouseMap[k].blocks++; byWarehouseMap[k].volume += b.volume||0; });
+      const byWarehouse = Object.values(byWarehouseMap);
+      const byStatusMap: Record<string,{status:string,blocks:number}> = {};
+      blocks.forEach((b:any)=>{ const k=b.status; byStatusMap[k]=byStatusMap[k]||{status:k,blocks:0}; byStatusMap[k].blocks++; });
+      const byStatus = Object.values(byStatusMap);
+      return { totalBlocks, totalVolume, byWarehouse, byStatus };
+    }
+  };
+}
+
 export { productionService };
