@@ -20,8 +20,10 @@ export default function Login() {
     try {
       const session = await authService.login(username, password);
       
-      // Redirect based on role
-      if (session.role === 'operator') {
+      // Redirect based on role and factory association
+      if (session.factoryName || session.factoryId) {
+        navigate('/factory-orders');
+      } else if (session.role === 'operator') {
         navigate('/operator');
       } else {
         navigate('/');
