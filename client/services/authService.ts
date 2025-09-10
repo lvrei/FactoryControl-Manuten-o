@@ -182,6 +182,8 @@ class AuthService {
     role: LoginSession["role"] | "quality";
     accessLevel?: "full" | "limited" | "readonly";
     isActive?: boolean;
+    factoryId?: string;
+    factoryName?: string;
   }): Promise<void> {
     const users = this.getUsers();
     if (users.find((u: any) => u.username === user.username)) {
