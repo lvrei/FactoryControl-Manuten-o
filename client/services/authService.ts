@@ -5,6 +5,9 @@ export interface LoginSession {
   role: "operator" | "supervisor" | "admin" | "maintenance";
   name: string;
   loginTime: string;
+  accessLevel?: "full" | "limited" | "readonly";
+  factoryId?: string;
+  factoryName?: string;
 }
 
 /**
@@ -166,7 +169,7 @@ class AuthService {
     }
   }
 
-  // Criar utilizador (persistência local para testes)
+  // Criar utilizador (persist��ncia local para testes)
   async createUser(user: {
     username: string;
     name: string;
