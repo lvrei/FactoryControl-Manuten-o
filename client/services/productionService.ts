@@ -236,7 +236,10 @@ class ProductionService {
     filters?: ProductionFilters,
   ): Promise<ProductionOrder[]> {
     try {
-      const resp = await fetch("/api/orders");
+      const params = new URLSearchParams();
+      if (filters?.customer) params.set('customer', filters.customer);
+      if ((filters as any)?.createdBy) params.set('createdBy', (filters as any).createdBy);
+      const resp = await fetch(`/api/orders${params.toString() ? `?${params.toString()}` : ''}`);
       if (!resp.ok) throw new Error("API orders falhou");
       let orders: ProductionOrder[] = await resp.json();
       if (filters) {
@@ -731,7 +734,7 @@ class ProductionService {
       if (!r.ok) throw new Error("API atualizar product-sheet falhou");
       return { ...data, id } as ProductSheet;
     } catch (error) {
-      console.warn("⚠️ Falha API update product-sheet, salvando local");
+      console.warn("���️ Falha API update product-sheet, salvando local");
       this.ensureInitialized();
       const store = this.getStoredData() || {};
       store.productSheets = (store.productSheets || []).map((s: any) =>
