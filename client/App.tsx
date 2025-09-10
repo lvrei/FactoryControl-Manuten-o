@@ -62,6 +62,7 @@ const App = () => {
               <Route path="alerts" element={<AlertsSimple />} />
               <Route path="sensors" element={<SensorsPage />} />
               <Route path="test-production" element={<TestProduction />} />
+              <Route path="factory-orders" element={<FactoryOrders />} />
             </Route>
 
             {/* Operator Portal - Standalone Route */}
