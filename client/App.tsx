@@ -17,6 +17,7 @@ import Quality from "./pages/Quality";
 import MaintenanceComplete from "./pages/MaintenanceComplete";
 import Team from "./pages/Team";
 import Planning from "./pages/Planning";
+import FactoryOrders from "./pages/FactoryOrders";
 import AlertsSimple from "./pages/AlertsSimple";
 import SensorsPage from "./pages/Sensors";
 import Login from "./pages/Login";
