@@ -529,13 +529,22 @@ export default function Team() {
           </p>
         </div>
 
-        <button
-          onClick={() => setShowAddEmployee(true)}
-          className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Novo Funcionário
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowAddEmployee(true)}
+            className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Novo Funcionário
+          </button>
+          <button
+            onClick={() => setShowAddFactory(true)}
+            className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-muted flex items-center gap-2"
+          >
+            <Building2 className="h-4 w-4" />
+            Nova Fábrica
+          </button>
+        </div>
       </div>
 
       {/* Stats Cards */}
