@@ -1386,40 +1386,48 @@ export default function Team() {
                   </div>
                 </div>
 
-                {/* Factory association */}
+                {/* Associação à Fábrica */}
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      ID da Fábrica
-                    </label>
-                    <input
-                      type="text"
-                      value={newEmployee.factoryId}
-                      onChange={(e) =>
-                        setNewEmployee((prev) => ({
-                          ...prev,
-                          factoryId: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border rounded-lg bg-background"
-                      placeholder="Ex: fac-porto"
-                    />
+                    <label className="block text-sm font-medium mb-2">Fábrica</label>
+                    <div className="flex gap-2">
+                      <select
+                        value={newEmployee.factoryId}
+                        onChange={(e) => {
+                          const f = factories.find((x) => x.id === e.target.value);
+                          setNewEmployee((prev) => ({
+                            ...prev,
+                            factoryId: f?.id || "",
+                            factoryName: f?.name || "",
+                          }));
+                        }}
+                        className="w-full px-3 py-2 border rounded-lg bg-background"
+                      >
+                        <option value="">Selecione uma fábrica</option>
+                        {factories.map((f) => (
+                          <option key={f.id} value={f.id}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setShowAddFactory(true)}
+                        className="px-3 py-2 border rounded-lg bg-background hover:bg-muted"
+                        title="Criar nova fábrica"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Nome da Fábrica
-                    </label>
+                    <label className="block text-sm font-medium mb-2">Nome selecionado</label>
                     <input
                       type="text"
                       value={newEmployee.factoryName}
-                      onChange={(e) =>
-                        setNewEmployee((prev) => ({
-                          ...prev,
-                          factoryName: e.target.value,
-                        }))
-                      }
-                      className="w-full px-3 py-2 border rounded-lg bg-background"
-                      placeholder="Ex: Fábrica Porto"
+                      readOnly
+                      className="w-full px-3 py-2 border rounded-lg bg-muted/50"
+                      placeholder="—"
                     />
                   </div>
                 </div>
