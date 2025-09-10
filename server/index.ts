@@ -126,6 +126,14 @@ export function createServer() {
         .catch((e) =>
           console.warn("Employees API not loaded:", (e as any)?.message),
         );
+
+      import("./routes/factories")
+        .then(({ factoriesRouter }) => {
+          app.use("/api", factoriesRouter);
+        })
+        .catch((e) =>
+          console.warn("Factories API not loaded:", (e as any)?.message),
+        );
     } catch (e) {
       console.warn("APIs not loaded:", (e as any)?.message);
     }
