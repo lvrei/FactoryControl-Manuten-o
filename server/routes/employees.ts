@@ -86,6 +86,8 @@ employeesRouter.get("/employees", async (_req, res) => {
         accessLevel: r.access_level || undefined,
         hasSystemAccess: !!r.has_system_access,
         createdAt: r.created_at,
+        factoryId: r.factory_id || undefined,
+        factoryName: r.factory_name || undefined,
       })),
     );
   } catch (e: any) {
