@@ -20,6 +20,7 @@ import Planning from "./pages/Planning";
 import FactoryOrders from "./pages/FactoryOrders";
 import AlertsSimple from "./pages/AlertsSimple";
 import SensorsPage from "./pages/Sensors";
+import CamerasPage from "./pages/Cameras";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -62,6 +63,7 @@ const App = () => {
               <Route path="planning" element={<Planning />} />
               <Route path="alerts" element={<AlertsSimple />} />
               <Route path="sensors" element={<SensorsPage />} />
+              <Route path="cameras" element={<CamerasPage />} />
               <Route path="test-production" element={<TestProduction />} />
               <Route
                 path="factory-orders"
