@@ -20,11 +20,11 @@ import {
   Image,
   File,
   Download,
-  Eye
+  Eye,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useNavigate, useLocation } from 'react-router-dom';
-import { BackToOperatorButton } from '@/components/BackToOperatorButton';
+import { useNavigate, useLocation } from "react-router-dom";
+import { BackToOperatorButton } from "@/components/BackToOperatorButton";
 import { Machine, MachineFile } from "@/types/production";
 import { productionService } from "@/services/productionService";
 import { camerasService } from "@/services/camerasService";
@@ -48,32 +48,35 @@ export default function Equipment() {
   const location = useLocation();
 
   // Check if came from operator portal
-  const fromOperator = location.state?.fromOperator || location.search.includes('from=operator');
+  const fromOperator =
+    location.state?.fromOperator || location.search.includes("from=operator");
   const [equipment, setEquipment] = useState<EquipmentDetails[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showForm, setShowForm] = useState(false);
-  const [editingEquipment, setEditingEquipment] = useState<EquipmentDetails | null>(null);
+  const [editingEquipment, setEditingEquipment] =
+    useState<EquipmentDetails | null>(null);
   const [showFileManager, setShowFileManager] = useState(false);
-  const [selectedEquipmentForFiles, setSelectedEquipmentForFiles] = useState<EquipmentDetails | null>(null);
+  const [selectedEquipmentForFiles, setSelectedEquipmentForFiles] =
+    useState<EquipmentDetails | null>(null);
   const [cameraCounts, setCameraCounts] = useState<Record<string, number>>({});
 
   const [formData, setFormData] = useState({
-    name: '',
-    type: 'BZM' as 'BZM' | 'CAROUSEL' | 'PRE_CNC' | 'CNC',
-    status: 'available' as 'available' | 'busy' | 'maintenance' | 'offline',
-    location: '',
-    manufacturer: '',
-    model: '',
-    serialNumber: '',
+    name: "",
+    type: "BZM" as "BZM" | "CAROUSEL" | "PRE_CNC" | "CNC",
+    status: "available" as "available" | "busy" | "maintenance" | "offline",
+    location: "",
+    manufacturer: "",
+    model: "",
+    serialNumber: "",
     maxDimensions: { length: 0, width: 0, height: 0 },
     cuttingPrecision: 0,
-    installationDate: '',
-    nextMaintenance: '',
-    notes: '',
-    coverPhoto: '',
-    files: []
+    installationDate: "",
+    nextMaintenance: "",
+    notes: "",
+    coverPhoto: "",
+    files: [],
   });
 
   useEffect(() => {
@@ -91,33 +94,37 @@ export default function Equipment() {
 
       const counts: Record<string, number> = {};
       for (const cam of allCameras) {
-        if (cam.machineId) counts[cam.machineId] = (counts[cam.machineId] || 0) + 1;
+        if (cam.machineId)
+          counts[cam.machineId] = (counts[cam.machineId] || 0) + 1;
       }
       setCameraCounts(counts);
 
       // Converter para formato estendido com dados salvos no localStorage
-      const savedEquipment = localStorage.getItem('factoryControl_equipment');
+      const savedEquipment = localStorage.getItem("factoryControl_equipment");
       const equipmentDetails = savedEquipment ? JSON.parse(savedEquipment) : [];
 
-      const equipmentList: EquipmentDetails[] = machines.map(machine => {
-        const existingDetails = equipmentDetails.find((eq: any) => eq.id === machine.id);
+      const equipmentList: EquipmentDetails[] = machines.map((machine) => {
+        const existingDetails = equipmentDetails.find(
+          (eq: any) => eq.id === machine.id,
+        );
         return {
           ...machine,
-          location: existingDetails?.location || getDefaultLocation(machine.type),
-          manufacturer: existingDetails?.manufacturer || 'Fabricante Padr��o',
-          model: existingDetails?.model || machine.type + '-Model',
+          location:
+            existingDetails?.location || getDefaultLocation(machine.type),
+          manufacturer: existingDetails?.manufacturer || "Fabricante Padr��o",
+          model: existingDetails?.model || machine.type + "-Model",
           serialNumber: existingDetails?.serialNumber || `SN-${machine.id}`,
-          installationDate: existingDetails?.installationDate || '2023-01-01',
+          installationDate: existingDetails?.installationDate || "2023-01-01",
           lastMaintenance: existingDetails?.lastMaintenance,
           nextMaintenance: existingDetails?.nextMaintenance,
           operatingHours: existingDetails?.operatingHours || 0,
-          notes: existingDetails?.notes || ''
+          notes: existingDetails?.notes || "",
         };
       });
 
       setEquipment(equipmentList);
     } catch (error) {
-      console.error('Erro ao carregar equipamentos:', error);
+      console.error("Erro ao carregar equipamentos:", error);
     } finally {
       setLoading(false);
     }
@@ -125,16 +132,21 @@ export default function Equipment() {
 
   const getDefaultLocation = (type: string): string => {
     switch (type) {
-      case 'BZM': return 'Setor A - Corte Inicial';
-      case 'CAROUSEL': return 'Setor B - Coxins';
-      case 'PRE_CNC': return 'Setor C - Pré-processamento';
-      case 'CNC': return 'Setor D - Acabamento';
-      default: return 'Setor Geral';
+      case "BZM":
+        return "Setor A - Corte Inicial";
+      case "CAROUSEL":
+        return "Setor B - Coxins";
+      case "PRE_CNC":
+        return "Setor C - Pré-processamento";
+      case "CNC":
+        return "Setor D - Acabamento";
+      default:
+        return "Setor Geral";
     }
   };
 
   const saveEquipmentDetails = (equipmentList: EquipmentDetails[]) => {
-    const detailsToSave = equipmentList.map(eq => ({
+    const detailsToSave = equipmentList.map((eq) => ({
       id: eq.id,
       location: eq.location,
       manufacturer: eq.manufacturer,
@@ -144,16 +156,19 @@ export default function Equipment() {
       lastMaintenance: eq.lastMaintenance,
       nextMaintenance: eq.nextMaintenance,
       operatingHours: eq.operatingHours,
-      notes: eq.notes
+      notes: eq.notes,
     }));
-    localStorage.setItem('factoryControl_equipment', JSON.stringify(detailsToSave));
+    localStorage.setItem(
+      "factoryControl_equipment",
+      JSON.stringify(detailsToSave),
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.name || !formData.type) {
-      alert('Preencha pelo menos nome e tipo');
+      alert("Preencha pelo menos nome e tipo");
       return;
     }
 
@@ -173,7 +188,7 @@ export default function Equipment() {
           cuttingPrecision: formData.cuttingPrecision,
           installationDate: formData.installationDate,
           nextMaintenance: formData.nextMaintenance,
-          notes: formData.notes
+          notes: formData.notes,
         };
 
         // Atualizar no sistema de produção
@@ -182,11 +197,11 @@ export default function Equipment() {
           type: formData.type,
           status: formData.status,
           maxDimensions: formData.maxDimensions,
-          cuttingPrecision: formData.cuttingPrecision
+          cuttingPrecision: formData.cuttingPrecision,
         });
 
-        const updatedList = equipment.map(eq => 
-          eq.id === editingEquipment.id ? updatedEquipment : eq
+        const updatedList = equipment.map((eq) =>
+          eq.id === editingEquipment.id ? updatedEquipment : eq,
         );
         setEquipment(updatedList);
         saveEquipmentDetails(updatedList);
@@ -197,7 +212,7 @@ export default function Equipment() {
           type: formData.type,
           status: formData.status,
           maxDimensions: formData.maxDimensions,
-          cuttingPrecision: formData.cuttingPrecision
+          cuttingPrecision: formData.cuttingPrecision,
         });
 
         const newEquipment: EquipmentDetails = {
@@ -209,7 +224,7 @@ export default function Equipment() {
           installationDate: formData.installationDate,
           nextMaintenance: formData.nextMaintenance,
           operatingHours: 0,
-          notes: formData.notes
+          notes: formData.notes,
         };
 
         const updatedList = [...equipment, newEquipment];
@@ -220,8 +235,8 @@ export default function Equipment() {
       resetForm();
       setShowForm(false);
     } catch (error) {
-      console.error('Erro ao salvar equipamento:', error);
-      alert('Erro ao salvar equipamento');
+      console.error("Erro ao salvar equipamento:", error);
+      alert("Erro ao salvar equipamento");
     }
   };
 
@@ -238,23 +253,23 @@ export default function Equipment() {
       maxDimensions: eq.maxDimensions,
       cuttingPrecision: eq.cuttingPrecision,
       installationDate: eq.installationDate,
-      nextMaintenance: eq.nextMaintenance || '',
-      notes: eq.notes || ''
+      nextMaintenance: eq.nextMaintenance || "",
+      notes: eq.notes || "",
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Tem certeza que deseja excluir este equipamento?')) return;
+    if (!confirm("Tem certeza que deseja excluir este equipamento?")) return;
 
     try {
       await productionService.deleteMachine(id);
-      const updatedList = equipment.filter(eq => eq.id !== id);
+      const updatedList = equipment.filter((eq) => eq.id !== id);
       setEquipment(updatedList);
       saveEquipmentDetails(updatedList);
     } catch (error) {
-      console.error('Erro ao excluir equipamento:', error);
-      alert('Erro ao excluir equipamento');
+      console.error("Erro ao excluir equipamento:", error);
+      alert("Erro ao excluir equipamento");
     }
   };
 
@@ -268,7 +283,11 @@ export default function Equipment() {
     });
   };
 
-  const addFileToEquipment = async (equipmentId: string, file: File, type: 'photo' | 'manual' | 'certificate' | 'maintenance' | 'other') => {
+  const addFileToEquipment = async (
+    equipmentId: string,
+    file: File,
+    type: "photo" | "manual" | "certificate" | "maintenance" | "other",
+  ) => {
     try {
       const url = await handleFileUpload(file);
 
@@ -277,15 +296,15 @@ export default function Equipment() {
         name: file.name,
         type,
         url,
-        uploadedBy: 'Utilizador Atual',
+        uploadedBy: "Utilizador Atual",
         uploadedAt: new Date().toISOString(),
-        size: file.size
+        size: file.size,
       };
 
-      const updatedEquipment = equipment.map(eq =>
+      const updatedEquipment = equipment.map((eq) =>
         eq.id === equipmentId
           ? { ...eq, files: [...(eq.files || []), newFile] }
-          : eq
+          : eq,
       );
 
       setEquipment(updatedEquipment);
@@ -293,7 +312,7 @@ export default function Equipment() {
 
       return newFile;
     } catch (error) {
-      console.error('Erro ao fazer upload:', error);
+      console.error("Erro ao fazer upload:", error);
       throw error;
     }
   };
@@ -302,25 +321,23 @@ export default function Equipment() {
     try {
       const url = await handleFileUpload(file);
 
-      const updatedEquipment = equipment.map(eq =>
-        eq.id === equipmentId
-          ? { ...eq, coverPhoto: url }
-          : eq
+      const updatedEquipment = equipment.map((eq) =>
+        eq.id === equipmentId ? { ...eq, coverPhoto: url } : eq,
       );
 
       setEquipment(updatedEquipment);
       saveEquipmentDetails(updatedEquipment);
     } catch (error) {
-      console.error('Erro ao definir foto de capa:', error);
+      console.error("Erro ao definir foto de capa:", error);
       throw error;
     }
   };
 
   const removeFile = (equipmentId: string, fileId: string) => {
-    const updatedEquipment = equipment.map(eq =>
+    const updatedEquipment = equipment.map((eq) =>
       eq.id === equipmentId
-        ? { ...eq, files: eq.files?.filter(f => f.id !== fileId) || [] }
-        : eq
+        ? { ...eq, files: eq.files?.filter((f) => f.id !== fileId) || [] }
+        : eq,
     );
 
     setEquipment(updatedEquipment);
@@ -329,39 +346,67 @@ export default function Equipment() {
 
   const resetForm = () => {
     setFormData({
-      name: '', type: 'BZM', status: 'available', location: '', manufacturer: '',
-      model: '', serialNumber: '', maxDimensions: { length: 0, width: 0, height: 0 },
-      cuttingPrecision: 0, installationDate: '', nextMaintenance: '', notes: ''
+      name: "",
+      type: "BZM",
+      status: "available",
+      location: "",
+      manufacturer: "",
+      model: "",
+      serialNumber: "",
+      maxDimensions: { length: 0, width: 0, height: 0 },
+      cuttingPrecision: 0,
+      installationDate: "",
+      nextMaintenance: "",
+      notes: "",
     });
     setEditingEquipment(null);
   };
 
-  const filteredEquipment = equipment.filter(eq => {
-    const matchesSearch = eq.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         eq.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         eq.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || eq.status === statusFilter;
+  const filteredEquipment = equipment.filter((eq) => {
+    const matchesSearch =
+      eq.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      eq.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      eq.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || eq.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
   const statusConfig = {
-    available: { color: "text-green-600 bg-green-50", label: "Disponível", icon: CheckCircle },
-    busy: { color: "text-yellow-600 bg-yellow-50", label: "Em Uso", icon: Clock },
-    maintenance: { color: "text-red-600 bg-red-50", label: "Manutenção", icon: Wrench },
-    offline: { color: "text-gray-600 bg-gray-50", label: "Offline", icon: AlertTriangle }
+    available: {
+      color: "text-green-600 bg-green-50",
+      label: "Disponível",
+      icon: CheckCircle,
+    },
+    busy: {
+      color: "text-yellow-600 bg-yellow-50",
+      label: "Em Uso",
+      icon: Clock,
+    },
+    maintenance: {
+      color: "text-red-600 bg-red-50",
+      label: "Manutenção",
+      icon: Wrench,
+    },
+    offline: {
+      color: "text-gray-600 bg-gray-50",
+      label: "Offline",
+      icon: AlertTriangle,
+    },
   };
 
   const typeConfig = {
     BZM: { label: "BZM - Corte Inicial", icon: "🔪" },
     CAROUSEL: { label: "Carrossel - Coxins", icon: "🔄" },
     PRE_CNC: { label: "Pré-CNC", icon: "⚙️" },
-    CNC: { label: "CNC - Acabamento", icon: "🎯" }
+    CNC: { label: "CNC - Acabamento", icon: "🎯" },
   };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-muted-foreground">Carregando equipamentos...</div>
+        <div className="text-lg text-muted-foreground">
+          Carregando equipamentos...
+        </div>
       </div>
     );
   }
@@ -372,13 +417,12 @@ export default function Equipment() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           {fromOperator && (
-            <BackToOperatorButton
-              useRouter={true}
-              variant="header"
-            />
+            <BackToOperatorButton useRouter={true} variant="header" />
           )}
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Gestão de Equipamentos</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Gestão de Equipamentos
+            </h1>
             <p className="text-muted-foreground">
               Máquinas de corte de espuma da fábrica
             </p>
@@ -400,7 +444,9 @@ export default function Equipment() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-muted-foreground">Total</p>
-              <p className="text-2xl font-bold text-card-foreground">{equipment.length}</p>
+              <p className="text-2xl font-bold text-card-foreground">
+                {equipment.length}
+              </p>
             </div>
             <Factory className="h-6 w-6 text-muted-foreground" />
           </div>
@@ -409,9 +455,11 @@ export default function Equipment() {
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Disponível</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Disponível
+              </p>
               <p className="text-2xl font-bold text-green-600">
-                {equipment.filter(eq => eq.status === 'available').length}
+                {equipment.filter((eq) => eq.status === "available").length}
               </p>
             </div>
             <CheckCircle className="h-6 w-6 text-green-600" />
@@ -421,9 +469,11 @@ export default function Equipment() {
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Em Uso</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Em Uso
+              </p>
               <p className="text-2xl font-bold text-yellow-600">
-                {equipment.filter(eq => eq.status === 'busy').length}
+                {equipment.filter((eq) => eq.status === "busy").length}
               </p>
             </div>
             <Clock className="h-6 w-6 text-yellow-600" />
@@ -433,9 +483,11 @@ export default function Equipment() {
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Manutenção</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Manutenção
+              </p>
               <p className="text-2xl font-bold text-red-600">
-                {equipment.filter(eq => eq.status === 'maintenance').length}
+                {equipment.filter((eq) => eq.status === "maintenance").length}
               </p>
             </div>
             <Wrench className="h-6 w-6 text-red-600" />
@@ -455,7 +507,7 @@ export default function Equipment() {
             className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background"
           />
         </div>
-        
+
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -474,21 +526,31 @@ export default function Equipment() {
         {filteredEquipment.map((eq) => {
           const statusInfo = statusConfig[eq.status] || statusConfig.offline;
           const StatusIcon = statusInfo.icon;
-          
+
           return (
             <div key={eq.id} className="bg-card border rounded-lg p-6">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-lg">{typeConfig[eq.type]?.icon || "⚙️"}</span>
-                    <h3 className="text-lg font-semibold text-card-foreground flex items-center gap-2">{eq.name}
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground" title="Câmaras associadas">🎥 {cameraCounts[eq.id] || 0}</span>
+                    <span className="text-lg">
+                      {typeConfig[eq.type]?.icon || "⚙️"}
+                    </span>
+                    <h3 className="text-lg font-semibold text-card-foreground flex items-center gap-2">
+                      {eq.name}
+                      <span
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
+                        title="Câmaras associadas"
+                      >
+                        🎥 {cameraCounts[eq.id] || 0}
+                      </span>
                     </h3>
                   </div>
-                  <p className="text-sm text-muted-foreground">{typeConfig[eq.type]?.label || "Equipamento"}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {typeConfig[eq.type]?.label || "Equipamento"}
+                  </p>
                   <p className="text-xs text-muted-foreground">{eq.location}</p>
                 </div>
-                
+
                 <div className="flex gap-1">
                   <button
                     onClick={() => {
@@ -508,7 +570,9 @@ export default function Equipment() {
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
-                    onClick={() => navigate(`/alerts?tab=history&machine=${eq.id}`)}
+                    onClick={() =>
+                      navigate(`/alerts?tab=history&machine=${eq.id}`)
+                    }
                     className="p-1 text-muted-foreground hover:text-blue-600"
                     title="Ver Histórico de Manutenção"
                   >
@@ -527,26 +591,41 @@ export default function Equipment() {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Status:</span>
-                  <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", statusInfo.color)}>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
+                      statusInfo.color,
+                    )}
+                  >
                     <StatusIcon className="h-3 w-3" />
                     {statusInfo.label}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Dimensões max:</span>
+                  <span className="text-sm text-muted-foreground">
+                    Dimensões max:
+                  </span>
                   <span className="text-sm font-medium">
-                    {eq.maxDimensions.length/1000}×{eq.maxDimensions.width/1000}×{eq.maxDimensions.height/1000}m
+                    {eq.maxDimensions.length / 1000}×
+                    {eq.maxDimensions.width / 1000}×
+                    {eq.maxDimensions.height / 1000}m
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Precisão:</span>
-                  <span className="text-sm font-medium">{eq.cuttingPrecision}mm</span>
+                  <span className="text-sm text-muted-foreground">
+                    Precisão:
+                  </span>
+                  <span className="text-sm font-medium">
+                    {eq.cuttingPrecision}mm
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-muted-foreground">Fabricante:</span>
+                  <span className="text-sm text-muted-foreground">
+                    Fabricante:
+                  </span>
                   <span className="text-sm font-medium">{eq.manufacturer}</span>
                 </div>
 
@@ -558,9 +637,13 @@ export default function Equipment() {
                 {eq.nextMaintenance && (
                   <div className="pt-2 border-t">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Próxima manutenção:</span>
+                      <span className="text-xs text-muted-foreground">
+                        Próxima manutenção:
+                      </span>
                       <span className="text-xs font-medium">
-                        {new Date(eq.nextMaintenance).toLocaleDateString('pt-BR')}
+                        {new Date(eq.nextMaintenance).toLocaleDateString(
+                          "pt-BR",
+                        )}
                       </span>
                     </div>
                   </div>
@@ -569,8 +652,12 @@ export default function Equipment() {
                 {eq.currentOperator && (
                   <div className="pt-2 border-t">
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-muted-foreground">Operador atual:</span>
-                      <span className="text-xs font-medium text-primary">{eq.currentOperator}</span>
+                      <span className="text-xs text-muted-foreground">
+                        Operador atual:
+                      </span>
+                      <span className="text-xs font-medium text-primary">
+                        {eq.currentOperator}
+                      </span>
                     </div>
                   </div>
                 )}
@@ -584,16 +671,14 @@ export default function Equipment() {
         <div className="text-center py-12">
           <Factory className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
           <h3 className="text-lg font-medium text-card-foreground mb-2">
-            {searchTerm || statusFilter !== 'all'
-              ? 'Nenhum equipamento encontrado'
-              : 'Nenhum equipamento cadastrado'
-            }
+            {searchTerm || statusFilter !== "all"
+              ? "Nenhum equipamento encontrado"
+              : "Nenhum equipamento cadastrado"}
           </h3>
           <p className="text-muted-foreground">
-            {searchTerm || statusFilter !== 'all'
-              ? 'Tente ajustar os filtros de busca'
-              : 'Comece adicionando o primeiro equipamento'
-            }
+            {searchTerm || statusFilter !== "all"
+              ? "Tente ajustar os filtros de busca"
+              : "Comece adicionando o primeiro equipamento"}
           </p>
         </div>
       )}
@@ -605,7 +690,7 @@ export default function Equipment() {
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-semibold">
-                  {editingEquipment ? 'Editar Equipamento' : 'Novo Equipamento'}
+                  {editingEquipment ? "Editar Equipamento" : "Novo Equipamento"}
                 </h3>
                 <button
                   onClick={() => {
@@ -621,11 +706,18 @@ export default function Equipment() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Nome do Equipamento *</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Nome do Equipamento *
+                    </label>
                     <input
                       type="text"
                       value={formData.name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="Ex: BZM-02, Carrossel-03"
                       required
@@ -633,10 +725,17 @@ export default function Equipment() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Tipo *</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Tipo *
+                    </label>
                     <select
                       value={formData.type}
-                      onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as any }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          type: e.target.value as any,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       required
                     >
@@ -650,10 +749,17 @@ export default function Equipment() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Status</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Status
+                    </label>
                     <select
                       value={formData.status}
-                      onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          status: e.target.value as any,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                     >
                       <option value="available">Disponível</option>
@@ -664,11 +770,18 @@ export default function Equipment() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Localização</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Localização
+                    </label>
                     <input
                       type="text"
                       value={formData.location}
-                      onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          location: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="Ex: Setor A - Linha 1"
                     />
@@ -677,22 +790,36 @@ export default function Equipment() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Fabricante</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Fabricante
+                    </label>
                     <input
                       type="text"
                       value={formData.manufacturer}
-                      onChange={(e) => setFormData(prev => ({ ...prev, manufacturer: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          manufacturer: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="Nome do fabricante"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Modelo</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Modelo
+                    </label>
                     <input
                       type="text"
                       value={formData.model}
-                      onChange={(e) => setFormData(prev => ({ ...prev, model: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          model: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="Modelo do equipamento"
                     />
@@ -701,23 +828,37 @@ export default function Equipment() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Número de Série</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Número de Série
+                    </label>
                     <input
                       type="text"
                       value={formData.serialNumber}
-                      onChange={(e) => setFormData(prev => ({ ...prev, serialNumber: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          serialNumber: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="SN-123456"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Precisão de Corte (mm)</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Precisão de Corte (mm)
+                    </label>
                     <input
                       type="number"
                       step="0.1"
                       value={formData.cuttingPrecision}
-                      onChange={(e) => setFormData(prev => ({ ...prev, cuttingPrecision: Number(e.target.value) }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          cuttingPrecision: Number(e.target.value),
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       placeholder="Ex: 0.5"
                     />
@@ -725,43 +866,66 @@ export default function Equipment() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Dimensões Máximas (mm)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Dimensões Máximas (mm)
+                  </label>
                   <div className="grid grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Comprimento</label>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Comprimento
+                      </label>
                       <input
                         type="number"
                         value={formData.maxDimensions.length}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          maxDimensions: { ...prev.maxDimensions, length: Number(e.target.value) }
-                        }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            maxDimensions: {
+                              ...prev.maxDimensions,
+                              length: Number(e.target.value),
+                            },
+                          }))
+                        }
                         className="w-full px-3 py-2 border rounded-lg bg-background"
                         placeholder="40000"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Largura</label>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Largura
+                      </label>
                       <input
                         type="number"
                         value={formData.maxDimensions.width}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          maxDimensions: { ...prev.maxDimensions, width: Number(e.target.value) }
-                        }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            maxDimensions: {
+                              ...prev.maxDimensions,
+                              width: Number(e.target.value),
+                            },
+                          }))
+                        }
                         className="w-full px-3 py-2 border rounded-lg bg-background"
                         placeholder="2000"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs text-muted-foreground mb-1">Altura</label>
+                      <label className="block text-xs text-muted-foreground mb-1">
+                        Altura
+                      </label>
                       <input
                         type="number"
                         value={formData.maxDimensions.height}
-                        onChange={(e) => setFormData(prev => ({
-                          ...prev,
-                          maxDimensions: { ...prev.maxDimensions, height: Number(e.target.value) }
-                        }))}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            maxDimensions: {
+                              ...prev.maxDimensions,
+                              height: Number(e.target.value),
+                            },
+                          }))
+                        }
                         className="w-full px-3 py-2 border rounded-lg bg-background"
                         placeholder="2000"
                       />
@@ -771,31 +935,52 @@ export default function Equipment() {
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Data de Instalação</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Data de Instalação
+                    </label>
                     <input
                       type="date"
                       value={formData.installationDate}
-                      onChange={(e) => setFormData(prev => ({ ...prev, installationDate: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          installationDate: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Próxima Manutenção</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Próxima Manutenção
+                    </label>
                     <input
                       type="date"
                       value={formData.nextMaintenance}
-                      onChange={(e) => setFormData(prev => ({ ...prev, nextMaintenance: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          nextMaintenance: e.target.value,
+                        }))
+                      }
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Observações</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Observações
+                  </label>
                   <textarea
                     value={formData.notes}
-                    onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        notes: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                     rows={3}
                     placeholder="Observações adicionais sobre o equipamento..."
@@ -817,7 +1002,7 @@ export default function Equipment() {
                     type="submit"
                     className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
                   >
-                    {editingEquipment ? 'Atualizar' : 'Adicionar'} Equipamento
+                    {editingEquipment ? "Atualizar" : "Adicionar"} Equipamento
                   </button>
                 </div>
               </form>
@@ -859,13 +1044,15 @@ export default function Equipment() {
                       />
                       <button
                         onClick={() => {
-                          const updated = equipment.map(eq =>
+                          const updated = equipment.map((eq) =>
                             eq.id === selectedEquipmentForFiles.id
                               ? { ...eq, coverPhoto: undefined }
-                              : eq
+                              : eq,
                           );
                           setEquipment(updated);
-                          setSelectedEquipmentForFiles(prev => prev ? { ...prev, coverPhoto: undefined } : null);
+                          setSelectedEquipmentForFiles((prev) =>
+                            prev ? { ...prev, coverPhoto: undefined } : null,
+                          );
                           saveEquipmentDetails(updated);
                         }}
                         className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center text-xs"
@@ -887,11 +1074,16 @@ export default function Equipment() {
                         const file = e.target.files?.[0];
                         if (file) {
                           try {
-                            await setCoverPhoto(selectedEquipmentForFiles.id, file);
-                            const updated = equipment.find(eq => eq.id === selectedEquipmentForFiles.id);
+                            await setCoverPhoto(
+                              selectedEquipmentForFiles.id,
+                              file,
+                            );
+                            const updated = equipment.find(
+                              (eq) => eq.id === selectedEquipmentForFiles.id,
+                            );
                             if (updated) setSelectedEquipmentForFiles(updated);
                           } catch (error) {
-                            alert('Erro ao definir foto de capa');
+                            alert("Erro ao definir foto de capa");
                           }
                         }
                       }}
@@ -903,7 +1095,9 @@ export default function Equipment() {
                       className="px-3 py-2 text-sm font-medium border rounded-lg hover:bg-muted cursor-pointer flex items-center gap-2"
                     >
                       <Upload className="h-4 w-4" />
-                      {selectedEquipmentForFiles.coverPhoto ? 'Alterar Foto' : 'Adicionar Foto'}
+                      {selectedEquipmentForFiles.coverPhoto
+                        ? "Alterar Foto"
+                        : "Adicionar Foto"}
                     </label>
                   </div>
                 </div>
@@ -921,12 +1115,18 @@ export default function Equipment() {
                         const files = Array.from(e.target.files || []);
                         for (const file of files) {
                           try {
-                            await addFileToEquipment(selectedEquipmentForFiles.id, file, 'manual');
+                            await addFileToEquipment(
+                              selectedEquipmentForFiles.id,
+                              file,
+                              "manual",
+                            );
                           } catch (error) {
                             alert(`Erro ao fazer upload de ${file.name}`);
                           }
                         }
-                        const updated = equipment.find(eq => eq.id === selectedEquipmentForFiles.id);
+                        const updated = equipment.find(
+                          (eq) => eq.id === selectedEquipmentForFiles.id,
+                        );
                         if (updated) setSelectedEquipmentForFiles(updated);
                       }}
                       className="hidden"
@@ -951,13 +1151,19 @@ export default function Equipment() {
                     </div>
                   ) : (
                     selectedEquipmentForFiles.files.map((file) => (
-                      <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={file.id}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div className="flex items-center gap-3">
                           <File className="h-4 w-4 text-muted-foreground" />
                           <div>
                             <p className="text-sm font-medium">{file.name}</p>
                             <p className="text-xs text-muted-foreground">
-                              {(file.size / 1024).toFixed(1)} KB • {new Date(file.uploadedAt).toLocaleDateString('pt-BR')}
+                              {(file.size / 1024).toFixed(1)} KB •{" "}
+                              {new Date(file.uploadedAt).toLocaleDateString(
+                                "pt-BR",
+                              )}
                             </p>
                           </div>
                         </div>
@@ -965,7 +1171,7 @@ export default function Equipment() {
                           <button
                             onClick={() => {
                               // Open file in new tab
-                              window.open(file.url, '_blank');
+                              window.open(file.url, "_blank");
                             }}
                             className="p-1 text-muted-foreground hover:text-foreground"
                             title="Ver ficheiro"
@@ -975,7 +1181,7 @@ export default function Equipment() {
                           <button
                             onClick={() => {
                               // Download file
-                              const link = document.createElement('a');
+                              const link = document.createElement("a");
                               link.href = file.url;
                               link.download = file.name;
                               link.click();
@@ -987,10 +1193,17 @@ export default function Equipment() {
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm('Remover este ficheiro?')) {
-                                removeFile(selectedEquipmentForFiles.id, file.id);
-                                const updated = equipment.find(eq => eq.id === selectedEquipmentForFiles.id);
-                                if (updated) setSelectedEquipmentForFiles(updated);
+                              if (confirm("Remover este ficheiro?")) {
+                                removeFile(
+                                  selectedEquipmentForFiles.id,
+                                  file.id,
+                                );
+                                const updated = equipment.find(
+                                  (eq) =>
+                                    eq.id === selectedEquipmentForFiles.id,
+                                );
+                                if (updated)
+                                  setSelectedEquipmentForFiles(updated);
                               }
                             }}
                             className="p-1 text-muted-foreground hover:text-destructive"

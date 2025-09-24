@@ -122,8 +122,10 @@ camerasRouter.post("/cameras", async (req, res) => {
     const url: string = (d.url || "").trim();
     const protocol: string = (d.protocol || "rtsp").trim();
     const rois = Array.isArray(d.rois) ? d.rois : [];
-    const thresholds = d.thresholds && typeof d.thresholds === "object" ? d.thresholds : {};
-    const schedule = d.schedule && typeof d.schedule === "object" ? d.schedule : {};
+    const thresholds =
+      d.thresholds && typeof d.thresholds === "object" ? d.thresholds : {};
+    const schedule =
+      d.schedule && typeof d.schedule === "object" ? d.schedule : {};
     const enabled = d.enabled !== false;
 
     if (!name || !url) {
@@ -133,10 +135,30 @@ camerasRouter.post("/cameras", async (req, res) => {
     await query(
       `INSERT INTO cameras (id, machine_id, name, url, protocol, rois, thresholds, schedule, enabled)
        VALUES ($1,$2,$3,$4,$5,COALESCE($6,'[]'::jsonb),COALESCE($7,'{}'::jsonb),COALESCE($8,'{}'::jsonb),$9)`,
-      [id, machineId, name, url, protocol, JSON.stringify(rois), JSON.stringify(thresholds), JSON.stringify(schedule), enabled],
+      [
+        id,
+        machineId,
+        name,
+        url,
+        protocol,
+        JSON.stringify(rois),
+        JSON.stringify(thresholds),
+        JSON.stringify(schedule),
+        enabled,
+      ],
     );
 
-    res.json({ id, machineId, name, url, protocol, rois, thresholds, schedule, enabled });
+    res.json({
+      id,
+      machineId,
+      name,
+      url,
+      protocol,
+      rois,
+      thresholds,
+      schedule,
+      enabled,
+    });
   } catch (e: any) {
     console.error("POST /cameras error", e);
     res.status(500).json({ error: e.message });
@@ -161,10 +183,24 @@ camerasRouter.patch("/cameras/:id", async (req, res) => {
     if (d.machineId !== undefined) set("machine_id", d.machineId || null);
     if (d.name !== undefined) set("name", (d.name || "").trim());
     if (d.url !== undefined) set("url", (d.url || "").trim());
-    if (d.protocol !== undefined) set("protocol", (d.protocol || "rtsp").trim());
-    if (d.rois !== undefined) set("rois", JSON.stringify(Array.isArray(d.rois) ? d.rois : []));
-    if (d.thresholds !== undefined) set("thresholds", JSON.stringify(d.thresholds && typeof d.thresholds === "object" ? d.thresholds : {}));
-    if (d.schedule !== undefined) set("schedule", JSON.stringify(d.schedule && typeof d.schedule === "object" ? d.schedule : {}));
+    if (d.protocol !== undefined)
+      set("protocol", (d.protocol || "rtsp").trim());
+    if (d.rois !== undefined)
+      set("rois", JSON.stringify(Array.isArray(d.rois) ? d.rois : []));
+    if (d.thresholds !== undefined)
+      set(
+        "thresholds",
+        JSON.stringify(
+          d.thresholds && typeof d.thresholds === "object" ? d.thresholds : {},
+        ),
+      );
+    if (d.schedule !== undefined)
+      set(
+        "schedule",
+        JSON.stringify(
+          d.schedule && typeof d.schedule === "object" ? d.schedule : {},
+        ),
+      );
     if (d.enabled !== undefined) set("enabled", d.enabled !== false);
 
     if (fields.length === 0) return res.json({ ok: true });

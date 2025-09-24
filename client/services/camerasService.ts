@@ -19,12 +19,19 @@ class CamerasService {
   }
 
   async listByMachine(machineId: string): Promise<CameraRecord[]> {
-    const resp = await fetch(`/api/machines/${encodeURIComponent(machineId)}/cameras`);
-    if (!resp.ok) throw new Error(`Falha ao listar câmaras do equipamento (${resp.status})`);
+    const resp = await fetch(
+      `/api/machines/${encodeURIComponent(machineId)}/cameras`,
+    );
+    if (!resp.ok)
+      throw new Error(
+        `Falha ao listar câmaras do equipamento (${resp.status})`,
+      );
     return resp.json();
-    }
+  }
 
-  async create(data: Omit<CameraRecord, "id" | "createdAt"> & { id?: string }): Promise<CameraRecord> {
+  async create(
+    data: Omit<CameraRecord, "id" | "createdAt"> & { id?: string },
+  ): Promise<CameraRecord> {
     const resp = await fetch("/api/cameras", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -34,7 +41,10 @@ class CamerasService {
     return resp.json();
   }
 
-  async update(id: string, updates: Partial<Omit<CameraRecord, "id" | "createdAt">>): Promise<void> {
+  async update(
+    id: string,
+    updates: Partial<Omit<CameraRecord, "id" | "createdAt">>,
+  ): Promise<void> {
     const resp = await fetch(`/api/cameras/${encodeURIComponent(id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -44,7 +54,9 @@ class CamerasService {
   }
 
   async remove(id: string): Promise<void> {
-    const resp = await fetch(`/api/cameras/${encodeURIComponent(id)}`, { method: "DELETE" });
+    const resp = await fetch(`/api/cameras/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
     if (!resp.ok) throw new Error(`Falha ao remover câmara (${resp.status})`);
   }
 }

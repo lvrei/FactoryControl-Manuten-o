@@ -17,27 +17,36 @@ async function ensureVisionTables() {
     created_at TIMESTAMPTZ DEFAULT now()
   )`);
 
-  await query(`CREATE INDEX IF NOT EXISTS idx_vision_events_machine_time ON vision_camera_events(machine_id, created_at)`);
-  await query(`CREATE INDEX IF NOT EXISTS idx_vision_events_camera_time ON vision_camera_events(camera_id, created_at)`);
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_vision_events_machine_time ON vision_camera_events(machine_id, created_at)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_vision_events_camera_time ON vision_camera_events(camera_id, created_at)`,
+  );
 }
 
 // Helper: compute uptime from events
-function computeUptime(events: any[], from: Date, to: Date, initialStatus: 'active' | 'inactive') {
+function computeUptime(
+  events: any[],
+  from: Date,
+  to: Date,
+  initialStatus: "active" | "inactive",
+) {
   // events sorted ASC by created_at
   let lastTs = from.getTime();
-  let status: 'active' | 'inactive' = initialStatus;
+  let status: "active" | "inactive" = initialStatus;
   let activeMs = 0;
   for (const e of events) {
     const ts = new Date(e.created_at || e.frame_time || e.time).getTime();
     const windowEnd = Math.min(ts, to.getTime());
-    if (windowEnd > lastTs && status === 'active') {
+    if (windowEnd > lastTs && status === "active") {
       activeMs += windowEnd - lastTs;
     }
     lastTs = Math.max(lastTs, ts);
-    status = e.status === 'active' ? 'active' : 'inactive';
+    status = e.status === "active" ? "active" : "inactive";
     if (lastTs >= to.getTime()) break;
   }
-  if (to.getTime() > lastTs && status === 'active') {
+  if (to.getTime() > lastTs && status === "active") {
     activeMs += to.getTime() - lastTs;
   }
   const totalMs = Math.max(0, to.getTime() - from.getTime());
@@ -46,103 +55,154 @@ function computeUptime(events: any[], from: Date, to: Date, initialStatus: 'acti
 }
 
 // GET /vision/status?machineId=...&cameraId=...
-visionRouter.get('/vision/status', async (req, res) => {
+visionRouter.get("/vision/status", async (req, res) => {
   try {
     await ensureVisionTables();
-    const { machineId, cameraId } = req.query as { machineId?: string, cameraId?: string };
+    const { machineId, cameraId } = req.query as {
+      machineId?: string;
+      cameraId?: string;
+    };
     if (!machineId && !cameraId) {
-      return res.status(400).json({ error: 'machineId ou cameraId são obrigatórios' });
+      return res
+        .status(400)
+        .json({ error: "machineId ou cameraId são obrigatórios" });
     }
     if (machineId) {
       const { rows } = await query<any>(
         `SELECT status, created_at FROM vision_camera_events WHERE machine_id = $1 ORDER BY created_at DESC LIMIT 1`,
-        [machineId]
+        [machineId],
       );
       const last = rows[0];
-      return res.json({ scope: 'machine', id: machineId, status: last?.status || 'inactive', updatedAt: last?.created_at || null });
+      return res.json({
+        scope: "machine",
+        id: machineId,
+        status: last?.status || "inactive",
+        updatedAt: last?.created_at || null,
+      });
     }
     if (cameraId) {
       const { rows } = await query<any>(
         `SELECT status, created_at FROM vision_camera_events WHERE camera_id = $1 ORDER BY created_at DESC LIMIT 1`,
-        [cameraId]
+        [cameraId],
       );
       const last = rows[0];
-      return res.json({ scope: 'camera', id: cameraId, status: last?.status || 'inactive', updatedAt: last?.created_at || null });
+      return res.json({
+        scope: "camera",
+        id: cameraId,
+        status: last?.status || "inactive",
+        updatedAt: last?.created_at || null,
+      });
     }
   } catch (e: any) {
-    console.error('GET /vision/status error', e);
+    console.error("GET /vision/status error", e);
     res.status(500).json({ error: e.message });
   }
 });
 
 // GET /vision/uptime?machineId=...&cameraId=...&from=iso&to=iso
-visionRouter.get('/vision/uptime', async (req, res) => {
+visionRouter.get("/vision/uptime", async (req, res) => {
   try {
     await ensureVisionTables();
     const { machineId, cameraId, from, to } = req.query as any;
     const toDate = to ? new Date(String(to)) : new Date();
-    const fromDate = from ? new Date(String(from)) : new Date(toDate.getTime() - 24 * 60 * 60 * 1000);
+    const fromDate = from
+      ? new Date(String(from))
+      : new Date(toDate.getTime() - 24 * 60 * 60 * 1000);
 
     if (!machineId && !cameraId) {
-      return res.status(400).json({ error: 'machineId ou cameraId são obrigatórios' });
+      return res
+        .status(400)
+        .json({ error: "machineId ou cameraId são obrigatórios" });
     }
 
     if (machineId) {
       const past = await query<any>(
         `SELECT status, created_at FROM vision_camera_events WHERE machine_id = $1 AND created_at < $2 ORDER BY created_at DESC LIMIT 1`,
-        [machineId, fromDate.toISOString()]
+        [machineId, fromDate.toISOString()],
       );
       const { rows } = await query<any>(
         `SELECT status, created_at FROM vision_camera_events WHERE machine_id = $1 AND created_at >= $2 AND created_at <= $3 ORDER BY created_at ASC`,
-        [machineId, fromDate.toISOString(), toDate.toISOString()]
+        [machineId, fromDate.toISOString(), toDate.toISOString()],
       );
-      const initialStatus = past.rows[0]?.status === 'active' ? 'active' : 'inactive';
+      const initialStatus =
+        past.rows[0]?.status === "active" ? "active" : "inactive";
       const agg = computeUptime(rows, fromDate, toDate, initialStatus);
-      return res.json({ scope: 'machine', id: machineId, from: fromDate.toISOString(), to: toDate.toISOString(), ...agg });
+      return res.json({
+        scope: "machine",
+        id: machineId,
+        from: fromDate.toISOString(),
+        to: toDate.toISOString(),
+        ...agg,
+      });
     }
 
     if (cameraId) {
       const past = await query<any>(
         `SELECT status, created_at FROM vision_camera_events WHERE camera_id = $1 AND created_at < $2 ORDER BY created_at DESC LIMIT 1`,
-        [cameraId, fromDate.toISOString()]
+        [cameraId, fromDate.toISOString()],
       );
       const { rows } = await query<any>(
         `SELECT status, created_at FROM vision_camera_events WHERE camera_id = $1 AND created_at >= $2 AND created_at <= $3 ORDER BY created_at ASC`,
-        [cameraId, fromDate.toISOString(), toDate.toISOString()]
+        [cameraId, fromDate.toISOString(), toDate.toISOString()],
       );
-      const initialStatus = past.rows[0]?.status === 'active' ? 'active' : 'inactive';
+      const initialStatus =
+        past.rows[0]?.status === "active" ? "active" : "inactive";
       const agg = computeUptime(rows, fromDate, toDate, initialStatus);
-      return res.json({ scope: 'camera', id: cameraId, from: fromDate.toISOString(), to: toDate.toISOString(), ...agg });
+      return res.json({
+        scope: "camera",
+        id: cameraId,
+        from: fromDate.toISOString(),
+        to: toDate.toISOString(),
+        ...agg,
+      });
     }
   } catch (e: any) {
-    console.error('GET /vision/uptime error', e);
+    console.error("GET /vision/uptime error", e);
     res.status(500).json({ error: e.message });
   }
 });
 
 // POST /vision/mock-event { machineId, cameraId?, status, confidence?, createdAt? }
-visionRouter.post('/vision/mock-event', async (req, res) => {
+visionRouter.post("/vision/mock-event", async (req, res) => {
   try {
     await ensureVisionTables();
     const d = req.body || {};
     const id: string = d.id || `vis-${Date.now()}`;
-    const machineId: string = (d.machineId || '').trim();
-    const cameraId: string | null = (d.cameraId || '').trim() || null;
-    const status: 'active' | 'inactive' = d.status === 'active' ? 'active' : 'inactive';
-    const confidence: number | null = typeof d.confidence === 'number' ? d.confidence : null;
+    const machineId: string = (d.machineId || "").trim();
+    const cameraId: string | null = (d.cameraId || "").trim() || null;
+    const status: "active" | "inactive" =
+      d.status === "active" ? "active" : "inactive";
+    const confidence: number | null =
+      typeof d.confidence === "number" ? d.confidence : null;
     const when = d.createdAt ? new Date(d.createdAt) : new Date();
 
-    if (!machineId) return res.status(400).json({ error: 'machineId é obrigatório' });
+    if (!machineId)
+      return res.status(400).json({ error: "machineId é obrigatório" });
 
     await query(
       `INSERT INTO vision_camera_events (id, camera_id, machine_id, status, confidence, frame_time, created_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-      [id, cameraId, machineId, status, confidence, when.toISOString(), when.toISOString()]
+      [
+        id,
+        cameraId,
+        machineId,
+        status,
+        confidence,
+        when.toISOString(),
+        when.toISOString(),
+      ],
     );
 
-    res.json({ id, machineId, cameraId, status, confidence, createdAt: when.toISOString() });
+    res.json({
+      id,
+      machineId,
+      cameraId,
+      status,
+      confidence,
+      createdAt: when.toISOString(),
+    });
   } catch (e: any) {
-    console.error('POST /vision/mock-event error', e);
+    console.error("POST /vision/mock-event error", e);
     res.status(500).json({ error: e.message });
   }
 });

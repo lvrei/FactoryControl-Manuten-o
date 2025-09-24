@@ -4,7 +4,10 @@ import { productionService } from "@/services/productionService";
 import { visionService } from "@/services/visionService";
 import { Plus, X, Trash2, Edit, Video, Link as LinkIcon } from "lucide-react";
 
-interface MachineOption { id: string; name: string }
+interface MachineOption {
+  id: string;
+  name: string;
+}
 
 type Protocol = "rtsp" | "http" | "webrtc" | "file";
 
@@ -16,7 +19,9 @@ export default function CamerasPage() {
   const [editing, setEditing] = useState<CameraRecord | null>(null);
   const [search, setSearch] = useState("");
 
-  const [statusByMachine, setStatusByMachine] = useState<Record<string, 'active'|'inactive'>>({});
+  const [statusByMachine, setStatusByMachine] = useState<
+    Record<string, "active" | "inactive">
+  >({});
 
   const [form, setForm] = useState({
     id: "",
@@ -45,8 +50,10 @@ export default function CamerasPage() {
       setMachines(ms.map((m) => ({ id: m.id, name: m.name })));
 
       // fetch statuses for associated machines
-      const uniqueMachineIds = Array.from(new Set(cams.map(c => c.machineId).filter(Boolean) as string[]));
-      const entries: [string, 'active'|'inactive'][] = [];
+      const uniqueMachineIds = Array.from(
+        new Set(cams.map((c) => c.machineId).filter(Boolean) as string[]),
+      );
+      const entries: [string, "active" | "inactive"][] = [];
       for (const mid of uniqueMachineIds) {
         try {
           const st = await visionService.getStatusByMachine(mid);
@@ -62,20 +69,40 @@ export default function CamerasPage() {
   };
 
   const resetForm = () => {
-    setForm({ id: "", name: "", url: "", protocol: "rtsp", machineId: "", enabled: true, rois: [], thresholds: {}, schedule: {} });
+    setForm({
+      id: "",
+      name: "",
+      url: "",
+      protocol: "rtsp",
+      machineId: "",
+      enabled: true,
+      rois: [],
+      thresholds: {},
+      schedule: {},
+    });
     setEditing(null);
   };
 
   const filtered = useMemo(() => {
     const term = search.toLowerCase();
-    return cameras.filter((c) =>
-      c.name.toLowerCase().includes(term) || c.url.toLowerCase().includes(term) || (machines.find(m => m.id === (c.machineId || ""))?.name?.toLowerCase() || "").includes(term),
+    return cameras.filter(
+      (c) =>
+        c.name.toLowerCase().includes(term) ||
+        c.url.toLowerCase().includes(term) ||
+        (
+          machines
+            .find((m) => m.id === (c.machineId || ""))
+            ?.name?.toLowerCase() || ""
+        ).includes(term),
     );
   }, [search, cameras, machines]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name || !form.url) { alert("Preencha nome e URL"); return; }
+    if (!form.name || !form.url) {
+      alert("Preencha nome e URL");
+      return;
+    }
     try {
       if (editing) {
         await camerasService.update(editing.id, {
@@ -138,27 +165,42 @@ export default function CamerasPage() {
     }
   };
 
-  if (loading) return <div className="p-6 text-muted-foreground">Carregando câmaras…</div>;
+  if (loading)
+    return <div className="p-6 text-muted-foreground">Carregando câmaras…</div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Câmaras</h1>
-          <p className="text-muted-foreground">Associe câmaras aos equipamentos e configure rapidamente.</p>
+          <p className="text-muted-foreground">
+            Associe câmaras aos equipamentos e configure rapidamente.
+          </p>
         </div>
-        <button onClick={() => { resetForm(); setShowForm(true); }} className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2">
+        <button
+          onClick={() => {
+            resetForm();
+            setShowForm(true);
+          }}
+          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+        >
           <Plus className="h-4 w-4" /> Nova Câmara
         </button>
       </div>
 
       <div className="flex gap-3">
-        <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Pesquisar por nome, URL ou equipamento" className="flex-1 px-3 py-2 border rounded-lg bg-background" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Pesquisar por nome, URL ou equipamento"
+          className="flex-1 px-3 py-2 border rounded-lg bg-background"
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {filtered.map((c) => {
-          const machineName = machines.find((m) => m.id === (c.machineId || ""))?.name || "—";
+          const machineName =
+            machines.find((m) => m.id === (c.machineId || ""))?.name || "—";
           return (
             <div key={c.id} className="border rounded-lg p-4 bg-card">
               <div className="flex items-start justify-between mb-2">
@@ -172,8 +214,20 @@ export default function CamerasPage() {
                   </div>
                 </div>
                 <div className="flex gap-1">
-                  <button onClick={() => onEdit(c)} className="p-1 text-muted-foreground hover:text-foreground" title="Editar"><Edit className="h-4 w-4"/></button>
-                  <button onClick={() => onDelete(c.id)} className="p-1 text-muted-foreground hover:text-destructive" title="Remover"><Trash2 className="h-4 w-4"/></button>
+                  <button
+                    onClick={() => onEdit(c)}
+                    className="p-1 text-muted-foreground hover:text-foreground"
+                    title="Editar"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => onDelete(c.id)}
+                    className="p-1 text-muted-foreground hover:text-destructive"
+                    title="Remover"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
                 </div>
               </div>
               <div className="text-sm space-y-1">
@@ -187,20 +241,64 @@ export default function CamerasPage() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Ativa</span>
-                  <span className="font-medium">{c.enabled !== false ? "Sim" : "Não"}</span>
+                  <span className="font-medium">
+                    {c.enabled !== false ? "Sim" : "Não"}
+                  </span>
                 </div>
                 {c.machineId && (
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Status (visão)</span>
-                    <span className={`font-medium ${statusByMachine[c.machineId] === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
-                      {statusByMachine[c.machineId] || 'inactive'}
+                    <span className="text-muted-foreground">
+                      Status (visão)
+                    </span>
+                    <span
+                      className={`font-medium ${statusByMachine[c.machineId] === "active" ? "text-green-600" : "text-gray-600"}`}
+                    >
+                      {statusByMachine[c.machineId] || "inactive"}
                     </span>
                   </div>
                 )}
                 {c.machineId && (
                   <div className="flex items-center gap-2 justify-end pt-1">
-                    <button onClick={async () => { await visionService.postMockEvent({ machineId: c.machineId!, cameraId: c.id, status: 'active', confidence: 0.9 }); const st = await visionService.getStatusByMachine(c.machineId!); setStatusByMachine(prev => ({ ...prev, [c.machineId!]: st.status })); }} className="px-2 py-1 text-xs border rounded hover:bg-muted">Set ON</button>
-                    <button onClick={async () => { await visionService.postMockEvent({ machineId: c.machineId!, cameraId: c.id, status: 'inactive', confidence: 0.9 }); const st = await visionService.getStatusByMachine(c.machineId!); setStatusByMachine(prev => ({ ...prev, [c.machineId!]: st.status })); }} className="px-2 py-1 text-xs border rounded hover:bg-muted">Set OFF</button>
+                    <button
+                      onClick={async () => {
+                        await visionService.postMockEvent({
+                          machineId: c.machineId!,
+                          cameraId: c.id,
+                          status: "active",
+                          confidence: 0.9,
+                        });
+                        const st = await visionService.getStatusByMachine(
+                          c.machineId!,
+                        );
+                        setStatusByMachine((prev) => ({
+                          ...prev,
+                          [c.machineId!]: st.status,
+                        }));
+                      }}
+                      className="px-2 py-1 text-xs border rounded hover:bg-muted"
+                    >
+                      Set ON
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await visionService.postMockEvent({
+                          machineId: c.machineId!,
+                          cameraId: c.id,
+                          status: "inactive",
+                          confidence: 0.9,
+                        });
+                        const st = await visionService.getStatusByMachine(
+                          c.machineId!,
+                        );
+                        setStatusByMachine((prev) => ({
+                          ...prev,
+                          [c.machineId!]: st.status,
+                        }));
+                      }}
+                      className="px-2 py-1 text-xs border rounded hover:bg-muted"
+                    >
+                      Set OFF
+                    </button>
                   </div>
                 )}
               </div>
@@ -214,31 +312,80 @@ export default function CamerasPage() {
           <div className="bg-background rounded-lg max-w-2xl w-full">
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">{editing ? "Editar Câmara" : "Nova Câmara"}</h3>
-                <button onClick={() => { setShowForm(false); resetForm(); }} className="text-muted-foreground hover:text-foreground"><X/></button>
+                <h3 className="text-xl font-semibold">
+                  {editing ? "Editar Câmara" : "Nova Câmara"}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowForm(false);
+                    resetForm();
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <X />
+                </button>
               </div>
               <form onSubmit={onSubmit} className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Nome</label>
-                    <input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} className="w-full px-3 py-2 border rounded-lg bg-background" placeholder="Ex: Câmara BZM 01" />
+                    <label className="block text-sm font-medium mb-2">
+                      Nome
+                    </label>
+                    <input
+                      value={form.name}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, name: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="Ex: Câmara BZM 01"
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Equipamento</label>
-                    <select value={form.machineId} onChange={(e) => setForm((p) => ({ ...p, machineId: e.target.value }))} className="w-full px-3 py-2 border rounded-lg bg-background">
+                    <label className="block text-sm font-medium mb-2">
+                      Equipamento
+                    </label>
+                    <select
+                      value={form.machineId}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, machineId: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                    >
                       <option value="">— Sem associação —</option>
                       {machines.map((m) => (
-                        <option key={m.id} value={m.id}>{m.name}</option>
+                        <option key={m.id} value={m.id}>
+                          {m.name}
+                        </option>
                       ))}
                     </select>
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-2">URL</label>
-                    <input value={form.url} onChange={(e) => setForm((p) => ({ ...p, url: e.target.value }))} className="w-full px-3 py-2 border rounded-lg bg-background" placeholder="rtsp://..." />
+                    <label className="block text-sm font-medium mb-2">
+                      URL
+                    </label>
+                    <input
+                      value={form.url}
+                      onChange={(e) =>
+                        setForm((p) => ({ ...p, url: e.target.value }))
+                      }
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      placeholder="rtsp://..."
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Protocolo</label>
-                    <select value={form.protocol} onChange={(e) => setForm((p) => ({ ...p, protocol: e.target.value as Protocol }))} className="w-full px-3 py-2 border rounded-lg bg-background">
+                    <label className="block text-sm font-medium mb-2">
+                      Protocolo
+                    </label>
+                    <select
+                      value={form.protocol}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          protocol: e.target.value as Protocol,
+                        }))
+                      }
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                    >
                       <option value="rtsp">RTSP</option>
                       <option value="http">HTTP</option>
                       <option value="webrtc">WebRTC</option>
@@ -246,8 +393,19 @@ export default function CamerasPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Ativa</label>
-                    <select value={form.enabled ? "1" : "0"} onChange={(e) => setForm((p) => ({ ...p, enabled: e.target.value === "1" }))} className="w-full px-3 py-2 border rounded-lg bg-background">
+                    <label className="block text-sm font-medium mb-2">
+                      Ativa
+                    </label>
+                    <select
+                      value={form.enabled ? "1" : "0"}
+                      onChange={(e) =>
+                        setForm((p) => ({
+                          ...p,
+                          enabled: e.target.value === "1",
+                        }))
+                      }
+                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                    >
                       <option value="1">Sim</option>
                       <option value="0">Não</option>
                     </select>
@@ -255,30 +413,83 @@ export default function CamerasPage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">ROI (JSON opcional)</label>
-                  <textarea value={JSON.stringify(form.rois || [], null, 2)} onChange={(e) => {
-                    try { const v = JSON.parse(e.target.value); setForm((p) => ({ ...p, rois: Array.isArray(v) ? v : [] })); } catch {}
-                  }} className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs" rows={4} />
+                  <label className="block text-sm font-medium mb-2">
+                    ROI (JSON opcional)
+                  </label>
+                  <textarea
+                    value={JSON.stringify(form.rois || [], null, 2)}
+                    onChange={(e) => {
+                      try {
+                        const v = JSON.parse(e.target.value);
+                        setForm((p) => ({
+                          ...p,
+                          rois: Array.isArray(v) ? v : [],
+                        }));
+                      } catch {}
+                    }}
+                    className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
+                    rows={4}
+                  />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Limiares (JSON)</label>
-                    <textarea value={JSON.stringify(form.thresholds || {}, null, 2)} onChange={(e) => {
-                      try { const v = JSON.parse(e.target.value); setForm((p) => ({ ...p, thresholds: v && typeof v === 'object' ? v : {} })); } catch {}
-                    }} className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs" rows={4} />
+                    <label className="block text-sm font-medium mb-2">
+                      Limiares (JSON)
+                    </label>
+                    <textarea
+                      value={JSON.stringify(form.thresholds || {}, null, 2)}
+                      onChange={(e) => {
+                        try {
+                          const v = JSON.parse(e.target.value);
+                          setForm((p) => ({
+                            ...p,
+                            thresholds: v && typeof v === "object" ? v : {},
+                          }));
+                        } catch {}
+                      }}
+                      className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
+                      rows={4}
+                    />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Agenda (JSON)</label>
-                    <textarea value={JSON.stringify(form.schedule || {}, null, 2)} onChange={(e) => {
-                      try { const v = JSON.parse(e.target.value); setForm((p) => ({ ...p, schedule: v && typeof v === 'object' ? v : {} })); } catch {}
-                    }} className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs" rows={4} />
+                    <label className="block text-sm font-medium mb-2">
+                      Agenda (JSON)
+                    </label>
+                    <textarea
+                      value={JSON.stringify(form.schedule || {}, null, 2)}
+                      onChange={(e) => {
+                        try {
+                          const v = JSON.parse(e.target.value);
+                          setForm((p) => ({
+                            ...p,
+                            schedule: v && typeof v === "object" ? v : {},
+                          }));
+                        } catch {}
+                      }}
+                      className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
+                      rows={4}
+                    />
                   </div>
                 </div>
 
                 <div className="flex justify-end gap-2">
-                  <button type="button" onClick={() => { setShowForm(false); resetForm(); }} className="px-4 py-2 border rounded-lg hover:bg-muted">Cancelar</button>
-                  <button type="submit" className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90">{editing ? "Guardar" : "Criar"}</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForm(false);
+                      resetForm();
+                    }}
+                    className="px-4 py-2 border rounded-lg hover:bg-muted"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                  >
+                    {editing ? "Guardar" : "Criar"}
+                  </button>
                 </div>
               </form>
             </div>
