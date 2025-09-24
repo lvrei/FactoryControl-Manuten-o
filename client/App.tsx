@@ -21,6 +21,7 @@ import FactoryOrders from "./pages/FactoryOrders";
 import AlertsSimple from "./pages/AlertsSimple";
 import SensorsPage from "./pages/Sensors";
 import CamerasPage from "./pages/Cameras";
+import Assistant from "./pages/Assistant";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -64,6 +65,7 @@ const App = () => {
               <Route path="alerts" element={<AlertsSimple />} />
               <Route path="sensors" element={<SensorsPage />} />
               <Route path="cameras" element={<CamerasPage />} />
+              <Route path="assistant" element={<Assistant />} />
               <Route path="test-production" element={<TestProduction />} />
               <Route
                 path="factory-orders"
