@@ -173,6 +173,13 @@ export function createServer() {
       .catch((e) =>
         console.warn("Factories API not loaded:", (e as any)?.message),
       );
+    import("./routes/cameras")
+      .then(({ camerasRouter }) => {
+        app.use("/api", camerasRouter);
+      })
+      .catch((e) =>
+        console.warn("Cameras API not loaded:", (e as any)?.message),
+      );
   }
 
   // Health check
