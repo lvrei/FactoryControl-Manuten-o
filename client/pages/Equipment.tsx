@@ -27,6 +27,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { BackToOperatorButton } from '@/components/BackToOperatorButton';
 import { Machine, MachineFile } from "@/types/production";
 import { productionService } from "@/services/productionService";
+import { camerasService } from "@/services/camerasService";
 
 interface EquipmentDetails extends Machine {
   location: string;
@@ -56,6 +57,7 @@ export default function Equipment() {
   const [editingEquipment, setEditingEquipment] = useState<EquipmentDetails | null>(null);
   const [showFileManager, setShowFileManager] = useState(false);
   const [selectedEquipmentForFiles, setSelectedEquipmentForFiles] = useState<EquipmentDetails | null>(null);
+  const [cameraCounts, setCameraCounts] = useState<Record<string, number>>({});
 
   const [formData, setFormData] = useState({
     name: '',
@@ -82,8 +84,17 @@ export default function Equipment() {
     try {
       setLoading(true);
       // Buscar máquinas do sistema de produção
-      const machines = await productionService.getMachines();
-      
+      const [machines, allCameras] = await Promise.all([
+        productionService.getMachines(),
+        camerasService.listAll().catch(() => []),
+      ]);
+
+      const counts: Record<string, number> = {};
+      for (const cam of allCameras) {
+        if (cam.machineId) counts[cam.machineId] = (counts[cam.machineId] || 0) + 1;
+      }
+      setCameraCounts(counts);
+
       // Converter para formato estendido com dados salvos no localStorage
       const savedEquipment = localStorage.getItem('factoryControl_equipment');
       const equipmentDetails = savedEquipment ? JSON.parse(savedEquipment) : [];
@@ -470,7 +481,9 @@ export default function Equipment() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-lg">{typeConfig[eq.type]?.icon || "⚙️"}</span>
-                    <h3 className="text-lg font-semibold text-card-foreground">{eq.name}</h3>
+                    <h3 className="text-lg font-semibold text-card-foreground flex items-center gap-2">{eq.name}
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground" title="Câmaras associadas">🎥 {cameraCounts[eq.id] || 0}</span>
+                    </h3>
                   </div>
                   <p className="text-sm text-muted-foreground">{typeConfig[eq.type]?.label || "Equipamento"}</p>
                   <p className="text-xs text-muted-foreground">{eq.location}</p>
