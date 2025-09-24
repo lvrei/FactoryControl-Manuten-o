@@ -13,6 +13,7 @@ import {
   Menu,
   X,
   Warehouse,
+  Video,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 // import { PWADebug } from "./PWADebug"; // Temporarily disabled
@@ -40,6 +41,7 @@ const navigation = [
   { name: "Equipa", href: "/team", icon: Users },
   { name: "Planejamento", href: "/planning", icon: Calendar },
   { name: "Sensores", href: "/sensors", icon: Settings },
+  { name: "Câmaras", href: "/cameras", icon: Video },
   { name: "Alertas", href: "/alerts", icon: AlertTriangle },
 ];
 
