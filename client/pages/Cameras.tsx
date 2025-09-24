@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { camerasService, CameraRecord } from "@/services/camerasService";
 import { productionService } from "@/services/productionService";
+import { visionService } from "@/services/visionService";
 import { Plus, X, Trash2, Edit, Video, Link as LinkIcon } from "lucide-react";
 
 interface MachineOption { id: string; name: string }
@@ -14,6 +15,8 @@ export default function CamerasPage() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<CameraRecord | null>(null);
   const [search, setSearch] = useState("");
+
+  const [statusByMachine, setStatusByMachine] = useState<Record<string, 'active'|'inactive'>>({});
 
   const [form, setForm] = useState({
     id: "",
@@ -40,6 +43,17 @@ export default function CamerasPage() {
       ]);
       setCameras(cams);
       setMachines(ms.map((m) => ({ id: m.id, name: m.name })));
+
+      // fetch statuses for associated machines
+      const uniqueMachineIds = Array.from(new Set(cams.map(c => c.machineId).filter(Boolean) as string[]));
+      const entries: [string, 'active'|'inactive'][] = [];
+      for (const mid of uniqueMachineIds) {
+        try {
+          const st = await visionService.getStatusByMachine(mid);
+          entries.push([mid, st.status]);
+        } catch {}
+      }
+      setStatusByMachine(Object.fromEntries(entries));
     } catch (e) {
       console.error(e);
     } finally {
@@ -162,7 +176,7 @@ export default function CamerasPage() {
                   <button onClick={() => onDelete(c.id)} className="p-1 text-muted-foreground hover:text-destructive" title="Remover"><Trash2 className="h-4 w-4"/></button>
                 </div>
               </div>
-              <div className="text-sm">
+              <div className="text-sm space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Equipamento</span>
                   <span className="font-medium">{machineName}</span>
@@ -175,6 +189,20 @@ export default function CamerasPage() {
                   <span className="text-muted-foreground">Ativa</span>
                   <span className="font-medium">{c.enabled !== false ? "Sim" : "Não"}</span>
                 </div>
+                {c.machineId && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Status (visão)</span>
+                    <span className={`font-medium ${statusByMachine[c.machineId] === 'active' ? 'text-green-600' : 'text-gray-600'}`}>
+                      {statusByMachine[c.machineId] || 'inactive'}
+                    </span>
+                  </div>
+                )}
+                {c.machineId && (
+                  <div className="flex items-center gap-2 justify-end pt-1">
+                    <button onClick={async () => { await visionService.postMockEvent({ machineId: c.machineId!, cameraId: c.id, status: 'active', confidence: 0.9 }); const st = await visionService.getStatusByMachine(c.machineId!); setStatusByMachine(prev => ({ ...prev, [c.machineId!]: st.status })); }} className="px-2 py-1 text-xs border rounded hover:bg-muted">Set ON</button>
+                    <button onClick={async () => { await visionService.postMockEvent({ machineId: c.machineId!, cameraId: c.id, status: 'inactive', confidence: 0.9 }); const st = await visionService.getStatusByMachine(c.machineId!); setStatusByMachine(prev => ({ ...prev, [c.machineId!]: st.status })); }} className="px-2 py-1 text-xs border rounded hover:bg-muted">Set OFF</button>
+                  </div>
+                )}
               </div>
             </div>
           );
