@@ -142,6 +142,14 @@ export function createServer() {
         .catch((e) =>
           console.warn("Cameras API not loaded:", (e as any)?.message),
         );
+
+      import("./routes/vision")
+        .then(({ visionRouter }) => {
+          app.use("/api", visionRouter);
+        })
+        .catch((e) =>
+          console.warn("Vision API not loaded:", (e as any)?.message),
+        );
     } catch (e) {
       console.warn("APIs not loaded:", (e as any)?.message);
     }
