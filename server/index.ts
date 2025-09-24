@@ -150,6 +150,14 @@ export function createServer() {
         .catch((e) =>
           console.warn("Vision API not loaded:", (e as any)?.message),
         );
+
+      import("./routes/agents")
+        .then(({ agentsRouter }) => {
+          app.use("/api", agentsRouter);
+        })
+        .catch((e) =>
+          console.warn("Agents API not loaded:", (e as any)?.message),
+        );
     } catch (e) {
       console.warn("APIs not loaded:", (e as any)?.message);
     }
