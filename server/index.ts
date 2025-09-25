@@ -13,10 +13,6 @@ export function createServer() {
 
   // Initialize Sentry (Node)
   initSentryNode();
-  if (process.env.SENTRY_DSN) {
-    // Sentry request handler must be before all other middleware
-    app.use(Sentry.Handlers.requestHandler());
-  }
 
   // Security middleware
   app.use(
@@ -229,9 +225,9 @@ export function createServer() {
     });
   });
 
-  // Sentry error handler
+  // Sentry Express error/request handlers (must be after routes, before our error handler)
   if (process.env.SENTRY_DSN) {
-    app.use(Sentry.Handlers.errorHandler());
+    Sentry.setupExpressErrorHandler(app);
   }
 
   // Error handling middleware
