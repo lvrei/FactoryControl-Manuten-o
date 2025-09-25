@@ -772,9 +772,10 @@ export default function Equipment() {
                       </div>
                     );
                   if (cam.protocol === "http" || cam.url.startsWith("http")) {
+                    const snapshotUrl = camerasService.getSnapshotUrl(cam.id);
                     return (
                       <img
-                        src={cam.url}
+                        src={snapshotUrl}
                         alt={cam.name}
                         className="max-h-[70vh] w-full object-contain"
                         referrerPolicy="no-referrer"
