@@ -6,6 +6,7 @@ export function initSentryNode() {
   Sentry.init({
     dsn,
     environment: process.env.NODE_ENV,
+    integrations: [Sentry.expressIntegration()],
     tracesSampleRate: 0.1,
     attachStacktrace: true,
     sendClientReports: true,
