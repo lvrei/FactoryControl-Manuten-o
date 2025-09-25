@@ -162,6 +162,14 @@ export function createServer() {
         .catch((e) =>
           console.warn("Agents API not loaded:", (e as any)?.message),
         );
+
+      import("./routes/camera_ops")
+        .then(({ cameraOpsRouter }) => {
+          app.use("/api", cameraOpsRouter);
+        })
+        .catch((e) =>
+          console.warn("Camera Ops API not loaded:", (e as any)?.message),
+        );
     } catch (e) {
       console.warn("APIs not loaded:", (e as any)?.message);
     }
