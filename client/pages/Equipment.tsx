@@ -62,6 +62,14 @@ export default function Equipment() {
     useState<EquipmentDetails | null>(null);
   const [cameraCounts, setCameraCounts] = useState<Record<string, number>>({});
 
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [selectedEquipmentForCamera, setSelectedEquipmentForCamera] =
+    useState<EquipmentDetails | null>(null);
+  const [equipmentCameras, setEquipmentCameras] = useState<
+    { id: string; name: string; url: string; protocol?: string }[]
+  >([]);
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     type: "BZM" as "BZM" | "CAROUSEL" | "PRE_CNC" | "CNC",
