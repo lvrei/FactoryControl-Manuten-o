@@ -6,9 +6,17 @@ import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 // Lazy loaded below to avoid ESM/CJS interop issues
 import { isDbConfigured, query } from "./db";
+import { Sentry, initSentryNode } from "./sentry";
 
 export function createServer() {
   const app = express();
+
+  // Initialize Sentry (Node)
+  initSentryNode();
+  if (process.env.SENTRY_DSN) {
+    // Sentry request handler must be before all other middleware
+    app.use(Sentry.Handlers.requestHandler());
+  }
 
   // Security middleware
   app.use(
@@ -220,6 +228,11 @@ export function createServer() {
       version: "4.0.0",
     });
   });
+
+  // Sentry error handler
+  if (process.env.SENTRY_DSN) {
+    app.use(Sentry.Handlers.errorHandler());
+  }
 
   // Error handling middleware
   app.use(
