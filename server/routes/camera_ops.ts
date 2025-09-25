@@ -35,15 +35,30 @@ cameraOpsRouter.get("/cameras/:id/status", async (req, res) => {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), 3000);
       try {
-        const resp = await fetch(cam.url, { method: "GET", signal: controller.signal });
+        const resp = await fetch(cam.url, {
+          method: "GET",
+          signal: controller.signal,
+        });
         clearTimeout(timeout);
         if (resp.ok || (resp.status >= 200 && resp.status < 400)) {
-          return res.json({ reachable: true, protocol: "http", latencyMs: Date.now() - started });
+          return res.json({
+            reachable: true,
+            protocol: "http",
+            latencyMs: Date.now() - started,
+          });
         }
-        return res.json({ reachable: false, protocol: "http", message: `HTTP ${resp.status}` });
+        return res.json({
+          reachable: false,
+          protocol: "http",
+          message: `HTTP ${resp.status}`,
+        });
       } catch (e: any) {
         clearTimeout(timeout);
-        return res.json({ reachable: false, protocol: "http", message: e.message || "Falha HTTP" });
+        return res.json({
+          reachable: false,
+          protocol: "http",
+          message: e.message || "Falha HTTP",
+        });
       }
     }
 
@@ -56,12 +71,16 @@ cameraOpsRouter.get("/cameras/:id/status", async (req, res) => {
         await new Promise<void>((resolve, reject) => {
           const socket = net.connect({ host, port });
           const tm = setTimeout(() => {
-            try { socket.destroy(); } catch {}
+            try {
+              socket.destroy();
+            } catch {}
             reject(new Error("Timeout"));
           }, 3000);
           socket.once("connect", () => {
             clearTimeout(tm);
-            try { socket.end(); } catch {}
+            try {
+              socket.end();
+            } catch {}
             resolve();
           });
           socket.once("error", (err) => {
@@ -69,14 +88,26 @@ cameraOpsRouter.get("/cameras/:id/status", async (req, res) => {
             reject(err);
           });
         });
-        return res.json({ reachable: true, protocol: "rtsp", latencyMs: Date.now() - started });
+        return res.json({
+          reachable: true,
+          protocol: "rtsp",
+          latencyMs: Date.now() - started,
+        });
       } catch (e: any) {
-        return res.json({ reachable: false, protocol: "rtsp", message: e.message || "Falha RTSP" });
+        return res.json({
+          reachable: false,
+          protocol: "rtsp",
+          message: e.message || "Falha RTSP",
+        });
       }
     }
 
     // Fallback
-    return res.json({ reachable: false, protocol: cam.protocol || "unknown", message: "Protocolo não suportado para teste" });
+    return res.json({
+      reachable: false,
+      protocol: cam.protocol || "unknown",
+      message: "Protocolo não suportado para teste",
+    });
   } catch (e: any) {
     return res.status(500).json({ error: e.message });
   }
@@ -90,8 +121,11 @@ cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
     if (!cam) return res.status(404).end();
 
     // Determine snapshot URL: thresholds.snapshotUrl overrides; otherwise if HTTP use main url
-    const snapshotUrl = cam.thresholds?.snapshotUrl || (cam.url.startsWith("http") ? cam.url : null);
-    if (!snapshotUrl) return res.status(400).json({ error: "Snapshot não configurado" });
+    const snapshotUrl =
+      cam.thresholds?.snapshotUrl ||
+      (cam.url.startsWith("http") ? cam.url : null);
+    if (!snapshotUrl)
+      return res.status(400).json({ error: "Snapshot não configurado" });
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
@@ -101,7 +135,10 @@ cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
     if (!resp.ok) return res.status(resp.status).end();
 
     // Stream the body to client
-    res.setHeader("Content-Type", resp.headers.get("content-type") || "image/jpeg");
+    res.setHeader(
+      "Content-Type",
+      resp.headers.get("content-type") || "image/jpeg",
+    );
     if (resp.body) {
       (resp.body as any).pipe(res);
     } else {
