@@ -59,6 +59,17 @@ class CamerasService {
     });
     if (!resp.ok) throw new Error(`Falha ao remover câmara (${resp.status})`);
   }
+
+  async checkStatus(id: string): Promise<{ reachable: boolean; protocol: string; latencyMs?: number; message?: string; }> {
+    const resp = await fetch(`/api/cameras/${encodeURIComponent(id)}/status`);
+    if (!resp.ok) throw new Error(`Falha ao verificar status (${resp.status})`);
+    return resp.json();
+  }
+
+  getSnapshotUrl(id: string): string {
+    const ts = Date.now();
+    return `/api/cameras/${encodeURIComponent(id)}/snapshot?ts=${ts}`;
+  }
 }
 
 export const camerasService = new CamerasService();
