@@ -38,6 +38,8 @@
     "create:zip": "create-phonegap-zip.bat"
   },
   "dependencies": {
+    "@sentry/node": "^10.15.0",
+    "@sentry/react": "^10.15.0",
     "bcryptjs": "^3.0.2",
     "cookie-parser": "^1.4.7",
     "dotenv": "^17.2.0",
