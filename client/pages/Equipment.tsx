@@ -575,7 +575,14 @@ export default function Equipment() {
                       try {
                         setSelectedEquipmentForCamera(eq);
                         const cams = await camerasService.listByMachine(eq.id);
-                        setEquipmentCameras(cams.map(c => ({ id: c.id, name: c.name, url: c.url, protocol: c.protocol })));
+                        setEquipmentCameras(
+                          cams.map((c) => ({
+                            id: c.id,
+                            name: c.name,
+                            url: c.url,
+                            protocol: c.protocol,
+                          })),
+                        );
                         setSelectedCameraId(cams[0]?.id || null);
                         setShowCameraModal(true);
                       } catch (e) {
@@ -714,17 +721,26 @@ export default function Equipment() {
           <div className="bg-background rounded-lg w-full max-w-4xl max-h-[90vh] overflow-hidden shadow-xl">
             <div className="flex items-center justify-between p-4 border-b">
               <div>
-                <h3 className="text-lg font-semibold">Câmara — {selectedEquipmentForCamera.name}</h3>
-                <p className="text-xs text-muted-foreground">Selecione a câmara abaixo para visualizar</p>
+                <h3 className="text-lg font-semibold">
+                  Câmara — {selectedEquipmentForCamera.name}
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Selecione a câmara abaixo para visualizar
+                </p>
               </div>
-              <button onClick={() => setShowCameraModal(false)} className="text-muted-foreground hover:text-foreground">
+              <button
+                onClick={() => setShowCameraModal(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
             <div className="p-4 grid gap-4 md:grid-cols-3">
               <div className="md:col-span-1 space-y-2 overflow-auto max-h-[60vh] pr-2 border-r">
                 {equipmentCameras.length === 0 && (
-                  <div className="text-sm text-muted-foreground">Nenhuma câmara associada.</div>
+                  <div className="text-sm text-muted-foreground">
+                    Nenhuma câmara associada.
+                  </div>
                 )}
                 {equipmentCameras.map((c) => (
                   <button
@@ -732,38 +748,68 @@ export default function Equipment() {
                     onClick={() => setSelectedCameraId(c.id)}
                     className={cn(
                       "w-full text-left px-3 py-2 rounded border",
-                      selectedCameraId === c.id ? "bg-primary/10 border-primary" : "hover:bg-muted"
+                      selectedCameraId === c.id
+                        ? "bg-primary/10 border-primary"
+                        : "hover:bg-muted",
                     )}
                   >
                     <div className="font-medium truncate">{c.name}</div>
-                    <div className="text-[10px] text-muted-foreground truncate">{c.protocol || "rtsp"} • {c.url}</div>
+                    <div className="text-[10px] text-muted-foreground truncate">
+                      {c.protocol || "rtsp"} • {c.url}
+                    </div>
                   </button>
                 ))}
               </div>
               <div className="md:col-span-2 min-h-[50vh] bg-black/80 flex items-center justify-center">
                 {(() => {
-                  const cam = equipmentCameras.find(cc => cc.id === selectedCameraId);
-                  if (!cam) return <div className="text-sm text-muted-foreground">Selecione uma câmara</div>;
-                  if ((cam.protocol === "http") || cam.url.startsWith("http")) {
+                  const cam = equipmentCameras.find(
+                    (cc) => cc.id === selectedCameraId,
+                  );
+                  if (!cam)
                     return (
-                      <img src={cam.url} alt={cam.name} className="max-h-[70vh] w-full object-contain" referrerPolicy="no-referrer" />
+                      <div className="text-sm text-muted-foreground">
+                        Selecione uma câmara
+                      </div>
+                    );
+                  if (cam.protocol === "http" || cam.url.startsWith("http")) {
+                    return (
+                      <img
+                        src={cam.url}
+                        alt={cam.name}
+                        className="max-h-[70vh] w-full object-contain"
+                        referrerPolicy="no-referrer"
+                      />
                     );
                   }
                   return (
                     <div className="p-4 text-center text-muted-foreground space-y-3">
-                      <div>Pré-visualização RTSP requer transcodificação no servidor.</div>
+                      <div>
+                        Pré-visualização RTSP requer transcodificação no
+                        servidor.
+                      </div>
                       <div className="flex gap-2 justify-center">
-                        <a href={cam.url} target="_blank" rel="noreferrer" className="px-3 py-1 border rounded">Abrir no player</a>
+                        <a
+                          href={cam.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-3 py-1 border rounded"
+                        >
+                          Abrir no player
+                        </a>
                         <button
                           onClick={(e) => {
-                            const holder = (e.currentTarget.parentElement?.parentElement?.querySelector(".snapshot-holder")) as HTMLDivElement | null;
+                            const holder =
+                              e.currentTarget.parentElement?.parentElement?.querySelector(
+                                ".snapshot-holder",
+                              ) as HTMLDivElement | null;
                             const img = new Image();
                             img.src = `/api/cameras/${encodeURIComponent(cam.id)}/snapshot?ts=${Date.now()}`;
                             img.onload = () => {
                               if (holder) {
                                 holder.innerHTML = "";
                                 holder.appendChild(img);
-                                img.className = "max-h-[70vh] w-full object-contain";
+                                img.className =
+                                  "max-h-[70vh] w-full object-contain";
                               }
                             };
                           }}
