@@ -563,6 +563,23 @@ export default function Equipment() {
                     <Upload className="h-4 w-4" />
                   </button>
                   <button
+                    onClick={async () => {
+                      try {
+                        setSelectedEquipmentForCamera(eq);
+                        const cams = await camerasService.listByMachine(eq.id);
+                        setEquipmentCameras(cams.map(c => ({ id: c.id, name: c.name, url: c.url, protocol: c.protocol })));
+                        setSelectedCameraId(cams[0]?.id || null);
+                        setShowCameraModal(true);
+                      } catch (e) {
+                        alert("Sem câmaras associadas ou erro ao carregar.");
+                      }
+                    }}
+                    className="p-1 text-muted-foreground hover:text-blue-600"
+                    title="Ver Câmara"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => handleEdit(eq)}
                     className="p-1 text-muted-foreground hover:text-foreground"
                     title="Editar"
