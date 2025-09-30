@@ -1,9 +1,11 @@
 import express from "express";
 import net from "node:net";
 import { spawn } from "node:child_process";
+import ffmpegStatic from "ffmpeg-static";
 import { query } from "../db";
 
 export const cameraOpsRouter = express.Router();
+const ffmpegBin = (ffmpegStatic as unknown as string) || "ffmpeg";
 
 async function getCameraById(id: string) {
   const { rows } = await query<any>(
@@ -148,7 +150,7 @@ cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
         "-rtsp_transport","tcp","-i",cam.url,
         "-frames:v","1","-q:v","2","-f","image2","pipe:1",
       ];
-      const ff = spawn("ffmpeg", args, { stdio: ["ignore","pipe","pipe"] });
+      const ff = spawn(ffmpegBin as string, args, { stdio: ["ignore","pipe","pipe"] });
       const killTimer = setTimeout(() => { try { ff.kill("SIGKILL"); } catch {} }, 8000);
       res.setHeader("Content-Type","image/jpeg");
       ff.stdout.pipe(res);
@@ -177,7 +179,7 @@ cameraOpsRouter.get("/cameras/:id/mjpeg", async (req, res) => {
       "-rtsp_transport","tcp","-i",cam.url,
       "-an","-c:v","mjpeg","-q:v","5","-r","5","-f","mpjpeg","pipe:1",
     ];
-    const ff = spawn("ffmpeg", args, { stdio: ["ignore","pipe","pipe"] });
+    const ff = spawn(ffmpegBin as string, args, { stdio: ["ignore","pipe","pipe"] });
 
     res.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
     res.setHeader("Pragma","no-cache");
