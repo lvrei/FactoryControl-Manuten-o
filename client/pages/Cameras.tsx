@@ -34,6 +34,10 @@ export default function CamerasPage() {
     thresholds: {} as Record<string, any>,
     schedule: {} as Record<string, any>,
   });
+  const [roisText, setRoisText] = useState("[]");
+  const [thresholdsText, setThresholdsText] = useState("{}");
+  const [scheduleText, setScheduleText] = useState("{}");
+  const [jsonErrors, setJsonErrors] = useState<{ rois?: string; thresholds?: string; schedule?: string }>({});
 
   useEffect(() => {
     load();
@@ -81,6 +85,10 @@ export default function CamerasPage() {
       schedule: {},
     });
     setEditing(null);
+    setRoisText("[]");
+    setThresholdsText("{}");
+    setScheduleText("{}");
+    setJsonErrors({});
   };
 
   const filtered = useMemo(() => {
@@ -104,6 +112,35 @@ export default function CamerasPage() {
       return;
     }
     try {
+      // Parse JSON fields from textareas
+      let roisParsed: any[] = [];
+      let thresholdsParsed: Record<string, any> = {};
+      let scheduleParsed: Record<string, any> = {};
+      try {
+        roisParsed = JSON.parse(roisText || "[]");
+        if (!Array.isArray(roisParsed)) throw new Error("ROI deve ser array");
+      } catch {
+        setJsonErrors((p) => ({ ...p, rois: "ROI inválido (JSON)" }));
+        alert("ROI inválido (JSON)");
+        return;
+      }
+      try {
+        const t = JSON.parse(thresholdsText || "{}");
+        thresholdsParsed = t && typeof t === "object" ? t : {};
+      } catch {
+        setJsonErrors((p) => ({ ...p, thresholds: "Limiares inválidos (JSON)" }));
+        alert("Limiares inválidos (JSON)");
+        return;
+      }
+      try {
+        const s = JSON.parse(scheduleText || "{}");
+        scheduleParsed = s && typeof s === "object" ? s : {};
+      } catch {
+        setJsonErrors((p) => ({ ...p, schedule: "Agenda inválida (JSON)" }));
+        alert("Agenda inválida (JSON)");
+        return;
+      }
+      setJsonErrors({});
       if (editing) {
         await camerasService.update(editing.id, {
           name: form.name,
@@ -111,9 +148,9 @@ export default function CamerasPage() {
           protocol: form.protocol,
           machineId: form.machineId || null,
           enabled: form.enabled,
-          rois: form.rois,
-          thresholds: form.thresholds,
-          schedule: form.schedule,
+          rois: roisParsed,
+          thresholds: thresholdsParsed,
+          schedule: scheduleParsed,
         });
       } else {
         const created = await camerasService.create({
@@ -123,9 +160,9 @@ export default function CamerasPage() {
           protocol: form.protocol,
           machineId: form.machineId || null,
           enabled: form.enabled,
-          rois: form.rois,
-          thresholds: form.thresholds,
-          schedule: form.schedule,
+          rois: roisParsed,
+          thresholds: thresholdsParsed,
+          schedule: scheduleParsed,
         });
         setCameras((prev) => [created, ...prev]);
       }
@@ -151,6 +188,10 @@ export default function CamerasPage() {
       thresholds: c.thresholds || {},
       schedule: c.schedule || {},
     });
+    setRoisText(JSON.stringify(c.rois || [], null, 2));
+    setThresholdsText(JSON.stringify(c.thresholds || {}, null, 2));
+    setScheduleText(JSON.stringify(c.schedule || {}, null, 2));
+    setJsonErrors({});
     setShowForm(true);
   };
 
@@ -417,19 +458,14 @@ export default function CamerasPage() {
                     ROI (JSON opcional)
                   </label>
                   <textarea
-                    value={JSON.stringify(form.rois || [], null, 2)}
-                    onChange={(e) => {
-                      try {
-                        const v = JSON.parse(e.target.value);
-                        setForm((p) => ({
-                          ...p,
-                          rois: Array.isArray(v) ? v : [],
-                        }));
-                      } catch {}
-                    }}
+                    value={roisText}
+                    onChange={(e) => setRoisText(e.target.value)}
                     className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
                     rows={4}
                   />
+                  {jsonErrors.rois && (
+                    <div className="text-xs text-red-600 mt-1">{jsonErrors.rois}</div>
+                  )}
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2">
@@ -438,38 +474,28 @@ export default function CamerasPage() {
                       Limiares (JSON)
                     </label>
                     <textarea
-                      value={JSON.stringify(form.thresholds || {}, null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const v = JSON.parse(e.target.value);
-                          setForm((p) => ({
-                            ...p,
-                            thresholds: v && typeof v === "object" ? v : {},
-                          }));
-                        } catch {}
-                      }}
+                      value={thresholdsText}
+                      onChange={(e) => setThresholdsText(e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
                       rows={4}
                     />
+                    {jsonErrors.thresholds && (
+                      <div className="text-xs text-red-600 mt-1">{jsonErrors.thresholds}</div>
+                    )}
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       Agenda (JSON)
                     </label>
                     <textarea
-                      value={JSON.stringify(form.schedule || {}, null, 2)}
-                      onChange={(e) => {
-                        try {
-                          const v = JSON.parse(e.target.value);
-                          setForm((p) => ({
-                            ...p,
-                            schedule: v && typeof v === "object" ? v : {},
-                          }));
-                        } catch {}
-                      }}
+                      value={scheduleText}
+                      onChange={(e) => setScheduleText(e.target.value)}
                       className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
                       rows={4}
                     />
+                    {jsonErrors.schedule && (
+                      <div className="text-xs text-red-600 mt-1">{jsonErrors.schedule}</div>
+                    )}
                   </div>
                 </div>
 
