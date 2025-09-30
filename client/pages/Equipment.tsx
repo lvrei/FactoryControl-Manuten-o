@@ -782,44 +782,14 @@ export default function Equipment() {
                       />
                     );
                   }
+                  const mjpegUrl = camerasService.getMjpegUrl(cam.id);
                   return (
-                    <div className="p-4 text-center text-muted-foreground space-y-3">
-                      <div>
-                        Pré-visualização RTSP requer transcodificação no
-                        servidor.
-                      </div>
-                      <div className="flex gap-2 justify-center">
-                        <a
-                          href={cam.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="px-3 py-1 border rounded"
-                        >
-                          Abrir no player
-                        </a>
-                        <button
-                          onClick={(e) => {
-                            const holder =
-                              e.currentTarget.parentElement?.parentElement?.querySelector(
-                                ".snapshot-holder",
-                              ) as HTMLDivElement | null;
-                            const img = new Image();
-                            img.src = `/api/cameras/${encodeURIComponent(cam.id)}/snapshot?ts=${Date.now()}`;
-                            img.onload = () => {
-                              if (holder) {
-                                holder.innerHTML = "";
-                                holder.appendChild(img);
-                                img.className =
-                                  "max-h-[70vh] w-full object-contain";
-                              }
-                            };
-                          }}
-                          className="px-3 py-1 border rounded"
-                        >
-                          Tirar snapshot
-                        </button>
-                      </div>
-                      <div className="snapshot-holder" />
+                    <div className="w-full h-full flex items-center justify-center bg-black/50">
+                      <img
+                        src={mjpegUrl}
+                        alt={cam.name}
+                        className="max-h-[70vh] w-full object-contain"
+                      />
                     </div>
                   );
                 })()}
