@@ -6,7 +6,8 @@ import {
   ProductionOrder,
   ProductionOrderLine,
 } from "@/types/production";
-import { Plus, Save, Trash2 } from "lucide-react";
+import { Plus, Save, Trash2, Layers } from "lucide-react";
+import NestingModal from "@/components/production/NestingModal";
 
 export default function FactoryOrders() {
   const user = authService.getCurrentUser();
@@ -27,6 +28,7 @@ export default function FactoryOrders() {
   const [notes, setNotes] = useState<string>("");
   const [lines, setLines] = useState<ProductionOrderLine[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [showNesting, setShowNesting] = useState(false);
 
   const totalVolume = useMemo(() => {
     return (lines || []).reduce(
@@ -146,11 +148,16 @@ export default function FactoryOrders() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Nova OP (Fábrica)</h1>
-        <p className="text-muted-foreground">
-          Fábrica: <strong>{factoryName || "—"}</strong>
-        </p>
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Nova OP (Fábrica)</h1>
+          <p className="text-muted-foreground">
+            Fábrica: <strong>{factoryName || "—"}</strong>
+          </p>
+        </div>
+        <button onClick={()=>setShowNesting(true)} className="px-3 py-2 border rounded flex items-center gap-2">
+          <Layers className="h-4 w-4"/> Nova OP (nesting)
+        </button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -359,6 +366,15 @@ export default function FactoryOrders() {
           ))}
         </div>
       </div>
+      {showNesting && (
+        <NestingModal
+          onClose={()=>setShowNesting(false)}
+          onApply={(newLines)=>{
+            setLines(prev=>[...prev, ...newLines]);
+            setShowNesting(false);
+          }}
+        />
+      )}
     </div>
   );
 }
