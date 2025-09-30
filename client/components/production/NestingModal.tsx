@@ -140,7 +140,9 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
               <label className="block text-sm font-medium mb-1">Ficheiro DXF/JSON</label>
               <input type="file" accept=".json,.dxf" onChange={(e)=>{const f=e.target.files?.[0]; if (f) handleFile(f);}} />
               {fileName && <div className="text-xs text-muted-foreground mt-1">{fileName}</div>}
-              <div className="text-xs text-muted-foreground mt-2">JSON exemplo: [{"length":500,"width":300,"height":50,"quantity":10,"foamTypeId":"1"}]</div>
+              <div className="text-xs text-muted-foreground mt-2">
+                <code>{"JSON exemplo: [{\"length\":500,\"width\":300,\"height\":50,\"quantity\":10,\"foamTypeId\":\"1\"}]"}</code>
+              </div>
             </div>
 
             <div>
