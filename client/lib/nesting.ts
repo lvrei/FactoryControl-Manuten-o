@@ -96,17 +96,20 @@ export function packRectangles(parts: NestPart[], sheet: Sheet): NestResult {
   return { placements, sheetsUsed, utilization };
 }
 
-// Minimal DXF rectangle extractor: looks for LWPOLYLINE closed with 4 vertices axis-aligned
+// Minimal DXF rectangle extractor: looks for LWPOLYLINE closed with 4+ vertices or POLYLINE/SEQEND blocks.
 export function parseDxfRectangles(
   dxfContent: string,
   defaultHeight = 50,
 ): NestPart[] {
-  // Extremely simplified DXF parsing — not full spec compliant. Extract vertices from LWPOLYLINE sections.
   const parts: NestPart[] = [];
-  const sections = dxfContent.split(/ENDSEC/i);
+
+  // Normalize line endings to handle CRLF/LF uniformly (regex below still uses \n but \r is matched by \s)
+  const content = String(dxfContent);
+
+  // Parse LWPOLYLINE entries inside any section
+  const sections = content.split(/ENDSEC/i);
   for (const sec of sections) {
     if (!/LWPOLYLINE/i.test(sec)) continue;
-    // Collect vertices (x=10, y=20 codes appear per vertex in DXF ENTITIES)
     const xs = Array.from(sec.matchAll(/\n\s*10\s*\n\s*([\-\d\.]+)/g)).map(
       (m) => Number(m[1]),
     );
@@ -126,6 +129,33 @@ export function parseDxfRectangles(
       parts.push({ length, width, height: defaultHeight, quantity: 1 });
     }
   }
+
+  // Additionally parse classic POLYLINE ... SEQEND blocks (with VERTEX entries)
+  const polyBlocks = Array.from(
+    content.matchAll(/\n\s*0\s*\n\s*POLYLINE[\s\S]*?\n\s*0\s*\n\s*SEQEND/gi),
+  ).map((m) => m[0]);
+  for (const blk of polyBlocks) {
+    const closed = /\n\s*70\s*\n\s*(\d+)/.exec(blk);
+    const isClosed = closed ? (Number(closed[1]) & 1) === 1 : false;
+    if (!isClosed) continue;
+    const xs = Array.from(blk.matchAll(/\n\s*10\s*\n\s*([\-\d\.]+)/g)).map(
+      (m) => Number(m[1]),
+    );
+    const ys = Array.from(blk.matchAll(/\n\s*20\s*\n\s*([\-\d\.]+)/g)).map(
+      (m) => Number(m[1]),
+    );
+    if (xs.length < 4 || ys.length < 4) continue;
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const width = Math.abs(maxX - minX);
+    const length = Math.abs(maxY - minY);
+    if (width > 0 && length > 0) {
+      parts.push({ length, width, height: defaultHeight, quantity: 1 });
+    }
+  }
+
   // Merge identical rectangles
   const merged: Record<string, NestPart> = {};
   for (const p of parts) {
