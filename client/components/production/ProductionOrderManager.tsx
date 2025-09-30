@@ -34,6 +34,7 @@ export function ProductionOrderManager({
   onClose,
   editingOrder,
   onOrderCreated,
+  initialLines,
 }: ProductionOrderManagerProps) {
   const [foamTypes, setFoamTypes] = useState<FoamType[]>([]);
   const [machines, setMachines] = useState<Machine[]>([]);
