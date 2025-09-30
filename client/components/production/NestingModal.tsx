@@ -280,6 +280,17 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
               </div>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium mb-1">Quantidade total (multiplicador)</label>
+              <input
+                type="number"
+                min={1}
+                value={quantityMultiplier}
+                onChange={(e) => setQuantityMultiplier(Math.max(1, Number(e.target.value)))}
+                className="w-full border rounded px-2 py-1"
+              />
+            </div>
+
             {result && (
               <div className="p-2 border rounded bg-muted/30 text-sm">
                 <div className="flex items-center gap-2">
