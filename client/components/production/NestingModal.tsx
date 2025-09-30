@@ -111,9 +111,13 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
 
   function applyToOrder() {
     if (!result) return;
+    const scaled = parts.map((p) => ({
+      ...p,
+      quantity: Math.max(0, Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier))),
+    }));
     // Group parts by (foamTypeId,length,width,height)
     const map = new Map<string, { part: NestPart; qty: number }>();
-    for (const p of parts) {
+    for (const p of scaled) {
       const foamId =
         p.foamTypeId || mappingFoamTypeId || foamTypes[0]?.id || "";
       const key = `${foamId}|${p.length}|${p.width}|${p.height}`;
