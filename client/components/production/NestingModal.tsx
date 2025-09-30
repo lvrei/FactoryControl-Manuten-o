@@ -26,6 +26,7 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
     kerf: 5,
     margin: 10,
   });
+  const [quantityMultiplier, setQuantityMultiplier] = useState<number>(1);
   const [stockBlocks, setStockBlocks] = useState<FoamBlock[] | null>(null);
   const [stockWarning, setStockWarning] = useState<string>("");
 
