@@ -49,8 +49,12 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
 
   const result = useMemo(() => {
     if (parts.length === 0) return null;
-    return packRectangles(parts, sheet);
-  }, [parts, sheet]);
+    const scaled = parts.map((p) => ({
+      ...p,
+      quantity: Math.max(0, Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier))),
+    }));
+    return packRectangles(scaled, sheet);
+  }, [parts, sheet, quantityMultiplier]);
 
   useEffect(() => {
     if (!result) {
