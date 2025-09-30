@@ -77,6 +77,11 @@ class CamerasService {
     const ts = Date.now();
     return `/api/cameras/${encodeURIComponent(id)}/snapshot?ts=${ts}`;
   }
+
+  getMjpegUrl(id: string): string {
+    const ts = Date.now();
+    return `/api/cameras/${encodeURIComponent(id)}/mjpeg?ts=${ts}`;
+  }
 }
 
 export const camerasService = new CamerasService();
