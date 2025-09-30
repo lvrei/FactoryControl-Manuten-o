@@ -51,7 +51,10 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
     if (parts.length === 0) return null;
     const scaled = parts.map((p) => ({
       ...p,
-      quantity: Math.max(0, Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier))),
+      quantity: Math.max(
+        0,
+        Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
+      ),
     }));
     return packRectangles(scaled, sheet);
   }, [parts, sheet, quantityMultiplier]);
@@ -113,7 +116,10 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
     if (!result) return;
     const scaled = parts.map((p) => ({
       ...p,
-      quantity: Math.max(0, Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier))),
+      quantity: Math.max(
+        0,
+        Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
+      ),
     }));
     // Group parts by (foamTypeId,length,width,height)
     const map = new Map<string, { part: NestPart; qty: number }>();
@@ -281,12 +287,16 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Quantidade total (multiplicador)</label>
+              <label className="block text-sm font-medium mb-1">
+                Quantidade total (multiplicador)
+              </label>
               <input
                 type="number"
                 min={1}
                 value={quantityMultiplier}
-                onChange={(e) => setQuantityMultiplier(Math.max(1, Number(e.target.value)))}
+                onChange={(e) =>
+                  setQuantityMultiplier(Math.max(1, Number(e.target.value)))
+                }
                 className="w-full border rounded px-2 py-1"
               />
             </div>

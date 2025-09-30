@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  Factory, 
-  Calendar, 
-  User, 
-  Settings, 
+import { useState, useEffect } from "react";
+import {
+  Plus,
+  Search,
+  Filter,
+  Factory,
+  Calendar,
+  User,
+  Settings,
   MessageCircle,
   TrendingUp,
   Clock,
@@ -20,35 +20,52 @@ import {
   Pause,
   Square,
   Trash2,
-  Printer
-} from 'lucide-react';
-import { ProductionOrder, Machine, OperatorSession, ProductionFilters, ProductionOrderLine } from '@/types/production';
-import { productionService } from '@/services/productionService';
-import { ProductionOrderManager } from '@/components/production/ProductionOrderManager';
-import NestingModal from '@/components/production/NestingModal';
-import { Layers } from 'lucide-react';
-import { ProductSheetsManager } from '@/components/production/ProductSheetsManager';
-import { ProductionChat, useChatNotifications } from '@/components/production/ProductionChat';
-import { cn } from '@/lib/utils';
-import { BackToOperatorButton } from '@/components/BackToOperatorButton';
-import { useLocation } from 'react-router-dom';
+  Printer,
+} from "lucide-react";
+import {
+  ProductionOrder,
+  Machine,
+  OperatorSession,
+  ProductionFilters,
+  ProductionOrderLine,
+} from "@/types/production";
+import { productionService } from "@/services/productionService";
+import { ProductionOrderManager } from "@/components/production/ProductionOrderManager";
+import NestingModal from "@/components/production/NestingModal";
+import { Layers } from "lucide-react";
+import { ProductSheetsManager } from "@/components/production/ProductSheetsManager";
+import {
+  ProductionChat,
+  useChatNotifications,
+} from "@/components/production/ProductionChat";
+import { cn } from "@/lib/utils";
+import { BackToOperatorButton } from "@/components/BackToOperatorButton";
+import { useLocation } from "react-router-dom";
 
 function ProductionNew() {
   const location = useLocation();
-  const fromOperator = location.search.includes('from=operator');
-  const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>([]);
+  const fromOperator = location.search.includes("from=operator");
+  const [productionOrders, setProductionOrders] = useState<ProductionOrder[]>(
+    [],
+  );
   const [machines, setMachines] = useState<Machine[]>([]);
-  const [operatorSessions, setOperatorSessions] = useState<OperatorSession[]>([]);
+  const [operatorSessions, setOperatorSessions] = useState<OperatorSession[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
-  
-  const [activeTab, setActiveTab] = useState<'orders' | 'machines' | 'sheets'>('orders');
 
-  const getMachineName = (id: string) => machines.find(m => m.id === id)?.name || id;
+  const [activeTab, setActiveTab] = useState<"orders" | "machines" | "sheets">(
+    "orders",
+  );
+
+  const getMachineName = (id: string) =>
+    machines.find((m) => m.id === id)?.name || id;
 
   const printOrder = (order: ProductionOrder) => {
     try {
-      const win = window.open('', '_blank');
-      if (!win) return alert('Não foi possível abrir a pré-visualização de impressão');
+      const win = window.open("", "_blank");
+      if (!win)
+        return alert("Não foi possível abrir a pré-visualização de impressão");
       const css = `
         body { font-family: Arial, sans-serif; color: #111; }
         h1 { margin: 0 0 8px; }
@@ -59,16 +76,19 @@ function ProductionNew() {
         .section { margin-top: 16px; }
       `;
 
-      const linesHtml = (order.lines || []).map((line, idx) => {
-        const ops = (line.cuttingOperations || []).map(op => {
-          const out = op.outputDimensions || line.finalDimensions;
-          return `<tr>
+      const linesHtml = (order.lines || [])
+        .map((line, idx) => {
+          const ops = (line.cuttingOperations || [])
+            .map((op) => {
+              const out = op.outputDimensions || line.finalDimensions;
+              return `<tr>
             <td>${getMachineName(op.machineId)}</td>
             <td>${op.quantity || 0}</td>
             <td>${out.length} × ${out.width} × ${out.height} mm</td>
           </tr>`;
-        }).join('');
-        return `
+            })
+            .join("");
+          return `
           <div class="section">
             <h3>Linha ${idx + 1}</h3>
             <div class="meta">Blocos BZM: <strong>${line.quantity}</strong> • Medidas Finais: <strong>${line.finalDimensions.length} × ${line.finalDimensions.width} × ${line.finalDimensions.height} mm</strong></div>
@@ -78,7 +98,8 @@ function ProductionNew() {
             </table>
           </div>
         `;
-      }).join('');
+        })
+        .join("");
 
       const html = `<!doctype html>
 <html>
@@ -89,8 +110,8 @@ function ProductionNew() {
 </head>
 <body>
   <h1>Ordem de Produção ${order.orderNumber}</h1>
-  <div class="meta">Cliente: <strong>${order.customer?.name || ''}</strong></div>
-  <div class="meta">Entrega Prevista: <strong>${new Date(order.expectedDeliveryDate).toLocaleDateString('pt-PT')}</strong></div>
+  <div class="meta">Cliente: <strong>${order.customer?.name || ""}</strong></div>
+  <div class="meta">Entrega Prevista: <strong>${new Date(order.expectedDeliveryDate).toLocaleDateString("pt-PT")}</strong></div>
   <div class="meta">Prioridade: <strong>${order.priority}</strong> • Estado: <strong>${order.status}</strong></div>
   <div class="section">
     <h2>Linhas</h2>
@@ -107,24 +128,28 @@ function ProductionNew() {
         win.close();
       }, 300);
     } catch (e) {
-      console.error('Erro ao imprimir OP', e);
-      alert('Erro ao gerar impressão da OP');
+      console.error("Erro ao imprimir OP", e);
+      alert("Erro ao gerar impressão da OP");
     }
   };
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [showNesting, setShowNesting] = useState(false);
-  const [nestingLines, setNestingLines] = useState<ProductionOrderLine[] | null>(null);
+  const [nestingLines, setNestingLines] = useState<
+    ProductionOrderLine[] | null
+  >(null);
   const [showSheetsManager, setShowSheetsManager] = useState(false);
   const [showChat, setShowChat] = useState(false);
-  const [editingOrder, setEditingOrder] = useState<ProductionOrder | null>(null);
-  
-  const [searchTerm, setSearchTerm] = useState('');
+  const [editingOrder, setEditingOrder] = useState<ProductionOrder | null>(
+    null,
+  );
+
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<ProductionFilters>({
     status: [],
     priority: [],
-    customer: '',
-    machine: '',
-    foamType: ''
+    customer: "",
+    machine: "",
+    foamType: "",
   });
 
   const { unreadCount } = useChatNotifications();
@@ -141,7 +166,7 @@ function ProductionNew() {
       const [orders, machinesData, sessions] = await Promise.all([
         productionService.getProductionOrders(filters),
         productionService.getMachines(),
-        productionService.getOperatorSessions(true)
+        productionService.getOperatorSessions(true),
       ]);
 
       console.log(`📋 Loaded ${orders.length} production orders`);
@@ -149,89 +174,133 @@ function ProductionNew() {
       setMachines(machinesData);
       setOperatorSessions(sessions);
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
-      alert('Erro ao carregar dados de produção');
+      console.error("Erro ao carregar dados:", error);
+      alert("Erro ao carregar dados de produção");
     } finally {
       setLoading(false);
     }
   };
 
-  const changePriority = async (orderId: string, newPriority: ProductionOrder['priority']) => {
+  const changePriority = async (
+    orderId: string,
+    newPriority: ProductionOrder["priority"],
+  ) => {
     try {
-      await productionService.updateProductionOrder(orderId, { priority: newPriority });
+      await productionService.updateProductionOrder(orderId, {
+        priority: newPriority,
+      });
       await loadData();
     } catch (error) {
-      console.error('Erro ao alterar prioridade:', error);
-      alert('Erro ao alterar prioridade');
+      console.error("Erro ao alterar prioridade:", error);
+      alert("Erro ao alterar prioridade");
     }
   };
 
-  const updateOrderStatus = async (orderId: string, newStatus: ProductionOrder['status']) => {
+  const updateOrderStatus = async (
+    orderId: string,
+    newStatus: ProductionOrder["status"],
+  ) => {
     try {
-      await productionService.updateProductionOrder(orderId, { status: newStatus });
+      await productionService.updateProductionOrder(orderId, {
+        status: newStatus,
+      });
       await loadData();
     } catch (error) {
-      console.error('Erro ao alterar status:', error);
-      alert('Erro ao alterar status');
+      console.error("Erro ao alterar status:", error);
+      alert("Erro ao alterar status");
     }
   };
 
   const deleteOrder = async (orderId: string) => {
-    if (!confirm('Tem certeza que deseja excluir esta ordem de produção?')) return;
-    
+    if (!confirm("Tem certeza que deseja excluir esta ordem de produção?"))
+      return;
+
     try {
       await productionService.deleteProductionOrder(orderId);
       await loadData();
     } catch (error) {
-      console.error('Erro ao excluir ordem:', error);
-      alert('Erro ao excluir ordem');
+      console.error("Erro ao excluir ordem:", error);
+      alert("Erro ao excluir ordem");
     }
   };
 
-  const filteredOrders = (productionOrders || []).filter(order => {
-    const matchesSearch = order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filters.status?.length === 0 || filters.status?.includes(order.status);
-    const matchesPriority = filters.priority?.length === 0 || filters.priority?.includes(order.priority);
-    const matchesCustomer = !filters.customer || order.customer.name.toLowerCase().includes(filters.customer.toLowerCase());
-    
+  const filteredOrders = (productionOrders || []).filter((order) => {
+    const matchesSearch =
+      order.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      order.customer.name.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus =
+      filters.status?.length === 0 || filters.status?.includes(order.status);
+    const matchesPriority =
+      filters.priority?.length === 0 ||
+      filters.priority?.includes(order.priority);
+    const matchesCustomer =
+      !filters.customer ||
+      order.customer.name
+        .toLowerCase()
+        .includes(filters.customer.toLowerCase());
+
     return matchesSearch && matchesStatus && matchesPriority && matchesCustomer;
   });
 
   const priorityConfig = {
-    low: { color: "text-green-600 bg-green-50 border-green-200", label: "Baixa" },
-    medium: { color: "text-yellow-600 bg-yellow-50 border-yellow-200", label: "Média" },
-    high: { color: "text-orange-600 bg-orange-50 border-orange-200", label: "Alta" },
-    urgent: { color: "text-red-600 bg-red-50 border-red-200", label: "Urgente" }
+    low: {
+      color: "text-green-600 bg-green-50 border-green-200",
+      label: "Baixa",
+    },
+    medium: {
+      color: "text-yellow-600 bg-yellow-50 border-yellow-200",
+      label: "Média",
+    },
+    high: {
+      color: "text-orange-600 bg-orange-50 border-orange-200",
+      label: "Alta",
+    },
+    urgent: {
+      color: "text-red-600 bg-red-50 border-red-200",
+      label: "Urgente",
+    },
   };
 
   const statusConfig = {
     created: { color: "text-blue-600 bg-blue-50", label: "Criada" },
-    in_progress: { color: "text-purple-600 bg-purple-50", label: "Em Andamento" },
+    in_progress: {
+      color: "text-purple-600 bg-purple-50",
+      label: "Em Andamento",
+    },
     completed: { color: "text-green-600 bg-green-50", label: "Concluída" },
     cancelled: { color: "text-gray-600 bg-gray-50", label: "Cancelada" },
-    shipped: { color: "text-teal-600 bg-teal-50", label: "Expedida" }
+    shipped: { color: "text-teal-600 bg-teal-50", label: "Expedida" },
   };
 
   const machineStatusConfig = {
     available: { color: "text-green-600 bg-green-50", label: "Disponível" },
     busy: { color: "text-yellow-600 bg-yellow-50", label: "Ocupada" },
     maintenance: { color: "text-red-600 bg-red-50", label: "Manutenção" },
-    offline: { color: "text-gray-600 bg-gray-50", label: "Offline" }
+    offline: { color: "text-gray-600 bg-gray-50", label: "Offline" },
   };
 
   // Estatísticas
   const totalOrders = (productionOrders || []).length;
-  const inProgressOrders = (productionOrders || []).filter(o => o.status === 'in_progress').length;
-  const completedOrders = (productionOrders || []).filter(o => o.status === 'completed').length;
-  const urgentOrders = (productionOrders || []).filter(o => o.priority === 'urgent').length;
-  const activeMachines = (machines || []).filter(m => m.status === 'busy').length;
+  const inProgressOrders = (productionOrders || []).filter(
+    (o) => o.status === "in_progress",
+  ).length;
+  const completedOrders = (productionOrders || []).filter(
+    (o) => o.status === "completed",
+  ).length;
+  const urgentOrders = (productionOrders || []).filter(
+    (o) => o.priority === "urgent",
+  ).length;
+  const activeMachines = (machines || []).filter(
+    (m) => m.status === "busy",
+  ).length;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-muted-foreground">Carregando sistema de produção...</div>
+        <div className="text-lg text-muted-foreground">
+          Carregando sistema de produção...
+        </div>
       </div>
     );
   }
@@ -242,19 +311,18 @@ function ProductionNew() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           {fromOperator && (
-            <BackToOperatorButton
-              variant="header"
-              useRouter={true}
-            />
+            <BackToOperatorButton variant="header" useRouter={true} />
           )}
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Sistema de Produção</h1>
+            <h1 className="text-3xl font-bold text-foreground">
+              Sistema de Produção
+            </h1>
             <p className="text-muted-foreground">
               Gestão completa de ordens de produção para corte de espuma
             </p>
           </div>
         </div>
-        
+
         <div className="flex gap-2">
           <button
             onClick={() => setShowChat(true)}
@@ -268,7 +336,7 @@ function ProductionNew() {
               </span>
             )}
           </button>
-          
+
           <button
             onClick={() => setShowSheetsManager(true)}
             className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2"
@@ -276,7 +344,7 @@ function ProductionNew() {
             <Settings className="h-4 w-4" />
             Fichas Técnicas
           </button>
-          
+
           <button
             onClick={() => setShowOrderForm(true)}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
@@ -288,7 +356,7 @@ function ProductionNew() {
             onClick={() => setShowNesting(true)}
             className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2"
           >
-            <Layers className="h-4 w-4"/>
+            <Layers className="h-4 w-4" />
             Nova OP (nesting)
           </button>
         </div>
@@ -299,8 +367,12 @@ function ProductionNew() {
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Total de Ordens</p>
-              <p className="text-2xl font-bold text-card-foreground">{totalOrders}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total de Ordens
+              </p>
+              <p className="text-2xl font-bold text-card-foreground">
+                {totalOrders}
+              </p>
             </div>
             <Package className="h-6 w-6 text-muted-foreground" />
           </div>
@@ -309,8 +381,12 @@ function ProductionNew() {
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Em Andamento</p>
-              <p className="text-2xl font-bold text-purple-600">{inProgressOrders}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Em Andamento
+              </p>
+              <p className="text-2xl font-bold text-purple-600">
+                {inProgressOrders}
+              </p>
             </div>
             <Play className="h-6 w-6 text-purple-600" />
           </div>
@@ -319,8 +395,12 @@ function ProductionNew() {
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Concluídas</p>
-              <p className="text-2xl font-bold text-green-600">{completedOrders}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Concluídas
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {completedOrders}
+              </p>
             </div>
             <TrendingUp className="h-6 w-6 text-green-600" />
           </div>
@@ -329,7 +409,9 @@ function ProductionNew() {
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Urgentes</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Urgentes
+              </p>
               <p className="text-2xl font-bold text-red-600">{urgentOrders}</p>
             </div>
             <AlertTriangle className="h-6 w-6 text-red-600" />
@@ -339,8 +421,12 @@ function ProductionNew() {
         <div className="bg-card border rounded-lg p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Máquinas Ativas</p>
-              <p className="text-2xl font-bold text-card-foreground">{activeMachines}/{machines.length}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Máquinas Ativas
+              </p>
+              <p className="text-2xl font-bold text-card-foreground">
+                {activeMachines}/{machines.length}
+              </p>
             </div>
             <Factory className="h-6 w-6 text-muted-foreground" />
           </div>
@@ -350,23 +436,23 @@ function ProductionNew() {
       {/* Tabs */}
       <div className="flex rounded-lg bg-muted p-1 w-fit">
         <button
-          onClick={() => setActiveTab('orders')}
+          onClick={() => setActiveTab("orders")}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-            activeTab === 'orders'
+            activeTab === "orders"
               ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           Ordens de Produção ({productionOrders.length})
         </button>
         <button
-          onClick={() => setActiveTab('machines')}
+          onClick={() => setActiveTab("machines")}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
-            activeTab === 'machines'
+            activeTab === "machines"
               ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           Máquinas ({machines.length})
@@ -374,7 +460,7 @@ function ProductionNew() {
       </div>
 
       {/* Filters and Search */}
-      {activeTab === 'orders' && (
+      {activeTab === "orders" && (
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -386,13 +472,15 @@ function ProductionNew() {
               className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background"
             />
           </div>
-          
+
           <select
-            value={filters.status?.[0] || 'all'}
-            onChange={(e) => setFilters(prev => ({
-              ...prev,
-              status: e.target.value === 'all' ? [] : [e.target.value]
-            }))}
+            value={filters.status?.[0] || "all"}
+            onChange={(e) =>
+              setFilters((prev) => ({
+                ...prev,
+                status: e.target.value === "all" ? [] : [e.target.value],
+              }))
+            }
             className="px-3 py-2 border rounded-lg bg-background min-w-[150px]"
           >
             <option value="all">Todos os status</option>
@@ -403,11 +491,13 @@ function ProductionNew() {
           </select>
 
           <select
-            value={filters.priority?.[0] || 'all'}
-            onChange={(e) => setFilters(prev => ({
-              ...prev,
-              priority: e.target.value === 'all' ? [] : [e.target.value]
-            }))}
+            value={filters.priority?.[0] || "all"}
+            onChange={(e) =>
+              setFilters((prev) => ({
+                ...prev,
+                priority: e.target.value === "all" ? [] : [e.target.value],
+              }))
+            }
             className="px-3 py-2 border rounded-lg bg-background min-w-[150px]"
           >
             <option value="all">Todas as prioridades</option>
@@ -420,126 +510,202 @@ function ProductionNew() {
       )}
 
       {/* Content */}
-      {activeTab === 'orders' ? (
+      {activeTab === "orders" ? (
         <div className="bg-card border rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b bg-muted/50">
                 <tr>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Ordem</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Cliente</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Linhas</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Status</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Prioridade</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Entrega</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Valor</th>
-                  <th className="text-left p-4 font-medium text-muted-foreground">Ações</th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">
+                    Ordem
+                  </th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">
+                    Cliente
+                  </th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">
+                    Linhas
+                  </th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">
+                    Status
+                  </th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">
+                    Prioridade
+                  </th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">
+                    Entrega
+                  </th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">
+                    Valor
+                  </th>
+                  <th className="text-left p-4 font-medium text-muted-foreground">
+                    Ações
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {filteredOrders.map((order) => {
-                  const isLate = new Date(order.expectedDeliveryDate) < new Date() && order.status !== 'completed';
-                  const completedLines = order.lines.filter(line => line.status === 'completed').length;
-                  const totalOperations = order.lines.reduce((total, line) => total + line.cuttingOperations.length, 0);
-                  const completedOperations = order.lines.reduce((total, line) => 
-                    total + line.cuttingOperations.filter(op => op.status === 'completed').length, 0
+                  const isLate =
+                    new Date(order.expectedDeliveryDate) < new Date() &&
+                    order.status !== "completed";
+                  const completedLines = order.lines.filter(
+                    (line) => line.status === "completed",
+                  ).length;
+                  const totalOperations = order.lines.reduce(
+                    (total, line) => total + line.cuttingOperations.length,
+                    0,
                   );
-                  
+                  const completedOperations = order.lines.reduce(
+                    (total, line) =>
+                      total +
+                      line.cuttingOperations.filter(
+                        (op) => op.status === "completed",
+                      ).length,
+                    0,
+                  );
+
                   return (
                     <tr key={order.id} className="border-b hover:bg-muted/50">
                       <td className="p-4">
                         <div>
-                          <p className="font-medium text-card-foreground">{order.orderNumber}</p>
+                          <p className="font-medium text-card-foreground">
+                            {order.orderNumber}
+                          </p>
                           <p className="text-sm text-muted-foreground">
                             {completedLines}/{order.lines.length} linhas
                           </p>
                         </div>
                       </td>
-                      
+
                       <td className="p-4">
                         <div>
-                          <p className="font-medium text-card-foreground">{order.customer.name}</p>
-                          <p className="text-sm text-muted-foreground">{order.totalVolume.toFixed(3)} m³</p>
+                          <p className="font-medium text-card-foreground">
+                            {order.customer.name}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {order.totalVolume.toFixed(3)} m³
+                          </p>
                         </div>
                       </td>
-                      
+
                       <td className="p-4">
                         <div className="space-y-1">
                           <div className="text-sm">
-                            <span className="font-medium">{order.lines.length}</span> linhas
+                            <span className="font-medium">
+                              {order.lines.length}
+                            </span>{" "}
+                            linhas
                           </div>
                           <div className="text-xs text-muted-foreground">
                             {completedOperations}/{totalOperations} operações
                           </div>
                           <div className="w-full bg-muted rounded-full h-1.5">
-                            <div 
+                            <div
                               className="bg-primary h-1.5 rounded-full transition-all"
-                              style={{ width: `${totalOperations > 0 ? (completedOperations / totalOperations) * 100 : 0}%` }}
+                              style={{
+                                width: `${totalOperations > 0 ? (completedOperations / totalOperations) * 100 : 0}%`,
+                              }}
                             ></div>
                           </div>
                         </div>
                       </td>
-                      
+
                       <td className="p-4">
-                        <span className={cn("inline-flex rounded-full px-2 py-1 text-xs font-medium", statusConfig[order.status]?.color || "text-gray-600 bg-gray-50")}>
+                        <span
+                          className={cn(
+                            "inline-flex rounded-full px-2 py-1 text-xs font-medium",
+                            statusConfig[order.status]?.color ||
+                              "text-gray-600 bg-gray-50",
+                          )}
+                        >
                           {statusConfig[order.status]?.label || order.status}
                         </span>
                       </td>
-                      
+
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <span className={cn("inline-flex rounded border px-2 py-1 text-xs font-medium", priorityConfig[order.priority]?.color || "text-gray-600 bg-gray-50 border-gray-200")}>
-                            {priorityConfig[order.priority]?.label || order.priority}
+                          <span
+                            className={cn(
+                              "inline-flex rounded border px-2 py-1 text-xs font-medium",
+                              priorityConfig[order.priority]?.color ||
+                                "text-gray-600 bg-gray-50 border-gray-200",
+                            )}
+                          >
+                            {priorityConfig[order.priority]?.label ||
+                              order.priority}
                           </span>
                           <div className="flex flex-col">
                             <button
                               onClick={() => {
-                                const priorities: ProductionOrder['priority'][] = ['low', 'medium', 'high', 'urgent'];
-                                const currentIndex = priorities.indexOf(order.priority);
+                                const priorities: ProductionOrder["priority"][] =
+                                  ["low", "medium", "high", "urgent"];
+                                const currentIndex = priorities.indexOf(
+                                  order.priority,
+                                );
                                 if (currentIndex < priorities.length - 1) {
-                                  changePriority(order.id, priorities[currentIndex + 1]);
+                                  changePriority(
+                                    order.id,
+                                    priorities[currentIndex + 1],
+                                  );
                                 }
                               }}
                               className="text-xs text-muted-foreground hover:text-foreground"
-                              disabled={order.priority === 'urgent'}
+                              disabled={order.priority === "urgent"}
                             >
                               <ArrowUp className="h-3 w-3" />
                             </button>
                             <button
                               onClick={() => {
-                                const priorities: ProductionOrder['priority'][] = ['low', 'medium', 'high', 'urgent'];
-                                const currentIndex = priorities.indexOf(order.priority);
+                                const priorities: ProductionOrder["priority"][] =
+                                  ["low", "medium", "high", "urgent"];
+                                const currentIndex = priorities.indexOf(
+                                  order.priority,
+                                );
                                 if (currentIndex > 0) {
-                                  changePriority(order.id, priorities[currentIndex - 1]);
+                                  changePriority(
+                                    order.id,
+                                    priorities[currentIndex - 1],
+                                  );
                                 }
                               }}
                               className="text-xs text-muted-foreground hover:text-foreground"
-                              disabled={order.priority === 'low'}
+                              disabled={order.priority === "low"}
                             >
                               <ArrowDown className="h-3 w-3" />
                             </button>
                           </div>
                         </div>
                       </td>
-                      
+
                       <td className="p-4">
-                        <div className={cn("text-sm", isLate && "text-red-600")}>
-                          <p>{new Date(order.expectedDeliveryDate).toLocaleDateString('pt-BR')}</p>
+                        <div
+                          className={cn("text-sm", isLate && "text-red-600")}
+                        >
+                          <p>
+                            {new Date(
+                              order.expectedDeliveryDate,
+                            ).toLocaleDateString("pt-BR")}
+                          </p>
                           {isLate && (
-                            <p className="text-xs text-red-600 font-medium">Atrasado</p>
+                            <p className="text-xs text-red-600 font-medium">
+                              Atrasado
+                            </p>
                           )}
                         </div>
                       </td>
-                      
+
                       <td className="p-4">
                         <div className="text-sm">
-                          <p className="font-medium">€{order.estimatedCost.toFixed(2)}</p>
+                          <p className="font-medium">
+                            €{order.estimatedCost.toFixed(2)}
+                          </p>
                           {order.actualCost && (
-                            <p className="text-xs text-muted-foreground">Real: €{order.actualCost.toFixed(2)}</p>
+                            <p className="text-xs text-muted-foreground">
+                              Real: €{order.actualCost.toFixed(2)}
+                            </p>
                           )}
                         </div>
                       </td>
-                      
+
                       <td className="p-4">
                         <div className="flex gap-1">
                           <button
@@ -552,27 +718,31 @@ function ProductionNew() {
                           >
                             <Edit className="h-4 w-4" />
                           </button>
-                          
-                          {order.status === 'created' && (
+
+                          {order.status === "created" && (
                             <button
-                              onClick={() => updateOrderStatus(order.id, 'in_progress')}
+                              onClick={() =>
+                                updateOrderStatus(order.id, "in_progress")
+                              }
                               className="p-1 text-green-600 hover:text-green-700"
                               title="Iniciar produção"
                             >
                               <Play className="h-4 w-4" />
                             </button>
                           )}
-                          
-                          {order.status === 'in_progress' && (
+
+                          {order.status === "in_progress" && (
                             <button
-                              onClick={() => updateOrderStatus(order.id, 'created')}
+                              onClick={() =>
+                                updateOrderStatus(order.id, "created")
+                              }
                               className="p-1 text-yellow-600 hover:text-yellow-700"
                               title="Pausar produção"
                             >
                               <Pause className="h-4 w-4" />
                             </button>
                           )}
-                          
+
                           <button
                             onClick={() => printOrder(order)}
                             className="p-1 text-blue-600 hover:text-blue-700"
@@ -596,21 +766,23 @@ function ProductionNew() {
               </tbody>
             </table>
           </div>
-          
+
           {filteredOrders.length === 0 && (
             <div className="text-center py-12">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-50" />
               <h3 className="text-lg font-medium text-card-foreground mb-2">
-                {searchTerm || filters.status?.length || filters.priority?.length
-                  ? 'Nenhuma ordem encontrada'
-                  : 'Nenhuma ordem de produção'
-                }
+                {searchTerm ||
+                filters.status?.length ||
+                filters.priority?.length
+                  ? "Nenhuma ordem encontrada"
+                  : "Nenhuma ordem de produção"}
               </h3>
               <p className="text-muted-foreground">
-                {searchTerm || filters.status?.length || filters.priority?.length
-                  ? 'Tente ajustar os filtros de busca'
-                  : 'Comece criando sua primeira ordem de produção'
-                }
+                {searchTerm ||
+                filters.status?.length ||
+                filters.priority?.length
+                  ? "Tente ajustar os filtros de busca"
+                  : "Comece criando sua primeira ordem de produção"}
               </p>
             </div>
           )}
@@ -619,15 +791,26 @@ function ProductionNew() {
         // Tab de máquinas
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {(machines || []).map((machine) => {
-            const activeSession = operatorSessions.find(s => s.machineId === machine.id);
-            
+            const activeSession = operatorSessions.find(
+              (s) => s.machineId === machine.id,
+            );
+
             return (
               <div key={machine.id} className="bg-card border rounded-lg p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-card-foreground">{machine.name}</h3>
-                    <span className={cn("inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium", machineStatusConfig[machine.status]?.color || "text-gray-600 bg-gray-50")}>
-                      {machineStatusConfig[machine.status]?.label || machine.status}
+                    <h3 className="text-lg font-semibold text-card-foreground">
+                      {machine.name}
+                    </h3>
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium",
+                        machineStatusConfig[machine.status]?.color ||
+                          "text-gray-600 bg-gray-50",
+                      )}
+                    >
+                      {machineStatusConfig[machine.status]?.label ||
+                        machine.status}
                     </span>
                   </div>
                   <Factory className="h-8 w-8 text-muted-foreground" />
@@ -638,63 +821,80 @@ function ProductionNew() {
                     <span className="text-muted-foreground">Tipo:</span>
                     <span className="font-medium">{machine.type}</span>
                   </div>
-                  
+
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Dimensões máx:</span>
+                    <span className="text-muted-foreground">
+                      Dimensões máx:
+                    </span>
                     <span className="font-medium">
-                      {machine.maxDimensions.length/1000}×{machine.maxDimensions.width/1000}×{machine.maxDimensions.height/1000}m
+                      {machine.maxDimensions.length / 1000}×
+                      {machine.maxDimensions.width / 1000}×
+                      {machine.maxDimensions.height / 1000}m
                     </span>
                   </div>
-                  
+
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Precisão:</span>
-                    <span className="font-medium">{machine.cuttingPrecision}mm</span>
+                    <span className="font-medium">
+                      {machine.cuttingPrecision}mm
+                    </span>
                   </div>
-                  
+
                   {activeSession && (
                     <div className="pt-2 border-t">
                       <div className="flex justify-between mb-1">
                         <span className="text-muted-foreground">Operador:</span>
-                        <span className="font-medium text-primary">{activeSession.operatorName}</span>
+                        <span className="font-medium text-primary">
+                          {activeSession.operatorName}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Desde:</span>
-                        <span className="text-xs">{new Date(activeSession.startTime).toLocaleTimeString()}</span>
+                        <span className="text-xs">
+                          {new Date(
+                            activeSession.startTime,
+                          ).toLocaleTimeString()}
+                        </span>
                       </div>
                     </div>
                   )}
                 </div>
 
-      {showOrderForm && (
-        <ProductionOrderManager
-          onClose={() => { setShowOrderForm(false); setNestingLines(null); }}
-          editingOrder={editingOrder}
-          onOrderCreated={loadData}
-          initialLines={nestingLines || undefined}
-        />
-      )}
+                {showOrderForm && (
+                  <ProductionOrderManager
+                    onClose={() => {
+                      setShowOrderForm(false);
+                      setNestingLines(null);
+                    }}
+                    editingOrder={editingOrder}
+                    onOrderCreated={loadData}
+                    initialLines={nestingLines || undefined}
+                  />
+                )}
 
-      {showSheetsManager && (
-        <ProductSheetsManager onClose={() => setShowSheetsManager(false)} />
-      )}
+                {showSheetsManager && (
+                  <ProductSheetsManager
+                    onClose={() => setShowSheetsManager(false)}
+                  />
+                )}
 
-      {showChat && (
-        <ProductionChat onClose={() => setShowChat(false)} />
-      )}
+                {showChat && (
+                  <ProductionChat onClose={() => setShowChat(false)} />
+                )}
 
-      {showNesting && (
-        <NestingModal
-          onClose={() => setShowNesting(false)}
-          onApply={(lines)=>{
-            setNestingLines(lines);
-            setShowNesting(false);
-            setShowOrderForm(true);
-          }}
-        />
-      )}
-    </div>
-  );
-})}
+                {showNesting && (
+                  <NestingModal
+                    onClose={() => setShowNesting(false)}
+                    onApply={(lines) => {
+                      setNestingLines(lines);
+                      setShowNesting(false);
+                      setShowOrderForm(true);
+                    }}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
