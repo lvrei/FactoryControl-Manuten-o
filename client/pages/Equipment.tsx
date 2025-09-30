@@ -783,12 +783,18 @@ export default function Equipment() {
                     );
                   }
                   const mjpegUrl = camerasService.getMjpegUrl(cam.id);
+                  const snapshotUrl = camerasService.getSnapshotUrl(cam.id);
                   return (
                     <div className="w-full h-full flex items-center justify-center bg-black/50">
                       <img
                         src={mjpegUrl}
                         alt={cam.name}
                         className="max-h-[70vh] w-full object-contain"
+                        onError={(e) => {
+                          try {
+                            (e.currentTarget as HTMLImageElement).src = snapshotUrl;
+                          } catch {}
+                        }}
                       />
                     </div>
                   );
