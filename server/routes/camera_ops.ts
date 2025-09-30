@@ -114,38 +114,77 @@ cameraOpsRouter.get("/cameras/:id/status", async (req, res) => {
   }
 });
 
-// GET /cameras/:id/snapshot - proxy a single JPEG frame if available
+// GET /cameras/:id/snapshot - proxy a single JPEG frame if available, or grab from RTSP via ffmpeg
 cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
   try {
     const id = req.params.id;
     const cam = await getCameraById(id);
     if (!cam) return res.status(404).end();
 
-    // Determine snapshot URL: thresholds.snapshotUrl overrides; otherwise if HTTP use main url
-    const snapshotUrl =
-      cam.thresholds?.snapshotUrl ||
-      (cam.url.startsWith("http") ? cam.url : null);
-    if (!snapshotUrl)
-      return res.status(400).json({ error: "Snapshot não configurado" });
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
-    const resp = await fetch(snapshotUrl, { signal: controller.signal });
-    clearTimeout(timeout);
-
-    if (!resp.ok) return res.status(resp.status).end();
-
-    // Stream the body to client
-    res.setHeader(
-      "Content-Type",
-      resp.headers.get("content-type") || "image/jpeg",
-    );
-    if (resp.body) {
-      (resp.body as any).pipe(res);
-    } else {
-      const buf = Buffer.from(await resp.arrayBuffer());
-      res.end(buf);
+    // If HTTP snapshot is configured, proxy it
+    const httpSnapshotUrl =
+      cam.thresholds?.snapshotUrl || (cam.url.startsWith("http") ? cam.url : null);
+    if (httpSnapshotUrl) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      try {
+        const resp = await fetch(httpSnapshotUrl, { signal: controller.signal });
+        clearTimeout(timeout);
+        if (!resp.ok) return res.status(resp.status).end();
+        res.setHeader("Content-Type", resp.headers.get("content-type") || "image/jpeg");
+        if (resp.body) {
+          (resp.body as any).pipe(res);
+        } else {
+          const buf = Buffer.from(await resp.arrayBuffer());
+          res.end(buf);
+        }
+        return;
+      } catch (err) {
+        clearTimeout(timeout);
+        // Will fallback to RTSP grab if available below
+      }
     }
+
+    // Fallback: if RTSP, use ffmpeg to grab a single frame
+    if (cam.url.startsWith("rtsp")) {
+      const args = [
+        "-rtsp_transport",
+        "tcp",
+        "-i",
+        cam.url,
+        "-frames:v",
+        "1",
+        "-q:v",
+        "2",
+        "-f",
+        "image2",
+        "pipe:1",
+      ];
+      const ff = spawn("ffmpeg", args, { stdio: ["ignore", "pipe", "pipe"] });
+
+      const killTimer = setTimeout(() => {
+        try {
+          ff.kill("SIGKILL");
+        } catch {}
+      }, 8000);
+
+      res.setHeader("Content-Type", "image/jpeg");
+      ff.stdout.pipe(res);
+      ff.stderr.on("data", () => {});
+      ff.on("close", (code) => {
+        clearTimeout(killTimer);
+        if (code !== 0 && !res.headersSent) {
+          res.status(500).json({ error: "ffmpeg falhou ao gerar snapshot" });
+        }
+      });
+      ff.on("error", () => {
+        clearTimeout(killTimer);
+        if (!res.headersSent) res.status(500).json({ error: "ffmpeg não encontrado" });
+      });
+      return;
+    }
+
+    return res.status(400).json({ error: "Snapshot não configurado" });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
