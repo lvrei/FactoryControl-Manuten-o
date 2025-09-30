@@ -860,38 +860,6 @@ function ProductionNew() {
                   )}
                 </div>
 
-                {showOrderForm && (
-                  <ProductionOrderManager
-                    onClose={() => {
-                      setShowOrderForm(false);
-                      setNestingLines(null);
-                    }}
-                    editingOrder={editingOrder}
-                    onOrderCreated={loadData}
-                    initialLines={nestingLines || undefined}
-                  />
-                )}
-
-                {showSheetsManager && (
-                  <ProductSheetsManager
-                    onClose={() => setShowSheetsManager(false)}
-                  />
-                )}
-
-                {showChat && (
-                  <ProductionChat onClose={() => setShowChat(false)} />
-                )}
-
-                {showNesting && (
-                  <NestingModal
-                    onClose={() => setShowNesting(false)}
-                    onApply={(lines) => {
-                      setNestingLines(lines);
-                      setShowNesting(false);
-                      setShowOrderForm(true);
-                    }}
-                  />
-                )}
               </div>
             );
           })}
@@ -905,10 +873,12 @@ function ProductionNew() {
           onClose={() => {
             setShowOrderForm(false);
             setEditingOrder(null);
+            setNestingLines(null);
           }}
           onOrderCreated={() => {
-            loadData(); // Recarregar dados após criação/edição
+            loadData();
           }}
+          initialLines={nestingLines || undefined}
         />
       )}
 
@@ -923,12 +893,20 @@ function ProductionNew() {
       {showChat && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="max-w-4xl w-full">
-            <ProductionChat
-              isBackend={true}
-              onClose={() => setShowChat(false)}
-            />
+            <ProductionChat isBackend={true} onClose={() => setShowChat(false)} />
           </div>
         </div>
+      )}
+
+      {showNesting && (
+        <NestingModal
+          onClose={() => setShowNesting(false)}
+          onApply={(lines) => {
+            setNestingLines(lines);
+            setShowNesting(false);
+            setShowOrderForm(true);
+          }}
+        />
       )}
     </div>
   );
