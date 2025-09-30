@@ -29,6 +29,7 @@ interface LayoutProps {
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "🆕 Produção", href: "/production", icon: Factory, isNew: true },
+  { name: "OP (Fábrica)", href: "/factory-orders", icon: Package },
   {
     name: "🔄 Portal Operador",
     href: "/operator",
