@@ -22,9 +22,11 @@ import {
   Trash2,
   Printer
 } from 'lucide-react';
-import { ProductionOrder, Machine, OperatorSession, ProductionFilters } from '@/types/production';
+import { ProductionOrder, Machine, OperatorSession, ProductionFilters, ProductionOrderLine } from '@/types/production';
 import { productionService } from '@/services/productionService';
 import { ProductionOrderManager } from '@/components/production/ProductionOrderManager';
+import NestingModal from '@/components/production/NestingModal';
+import { Layers } from 'lucide-react';
 import { ProductSheetsManager } from '@/components/production/ProductSheetsManager';
 import { ProductionChat, useChatNotifications } from '@/components/production/ProductionChat';
 import { cn } from '@/lib/utils';
@@ -110,6 +112,8 @@ function ProductionNew() {
     }
   };
   const [showOrderForm, setShowOrderForm] = useState(false);
+  const [showNesting, setShowNesting] = useState(false);
+  const [nestingLines, setNestingLines] = useState<ProductionOrderLine[] | null>(null);
   const [showSheetsManager, setShowSheetsManager] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [editingOrder, setEditingOrder] = useState<ProductionOrder | null>(null);
@@ -279,6 +283,13 @@ function ProductionNew() {
           >
             <Plus className="h-4 w-4" />
             Nova Ordem
+          </button>
+          <button
+            onClick={() => setShowNesting(true)}
+            className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2"
+          >
+            <Layers className="h-4 w-4"/>
+            Nova OP (nesting)
           </button>
         </div>
       </div>
@@ -653,9 +664,37 @@ function ProductionNew() {
                     </div>
                   )}
                 </div>
-              </div>
-            );
-          })}
+
+      {showOrderForm && (
+        <ProductionOrderManager
+          onClose={() => { setShowOrderForm(false); setNestingLines(null); }}
+          editingOrder={editingOrder}
+          onOrderCreated={loadData}
+          initialLines={nestingLines || undefined}
+        />
+      )}
+
+      {showSheetsManager && (
+        <ProductSheetsManager onClose={() => setShowSheetsManager(false)} />
+      )}
+
+      {showChat && (
+        <ProductionChat onClose={() => setShowChat(false)} />
+      )}
+
+      {showNesting && (
+        <NestingModal
+          onClose={() => setShowNesting(false)}
+          onApply={(lines)=>{
+            setNestingLines(lines);
+            setShowNesting(false);
+            setShowOrderForm(true);
+          }}
+        />
+      )}
+    </div>
+  );
+})}
         </div>
       )}
 
