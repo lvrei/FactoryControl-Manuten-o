@@ -21,6 +21,7 @@ interface ProductionOrderManagerProps {
   onClose?: () => void;
   editingOrder?: ProductionOrder | null;
   onOrderCreated?: () => void;
+  initialLines?: ProductionOrderLine[];
 }
 
 export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }: ProductionOrderManagerProps) {
@@ -44,6 +45,13 @@ export function ProductionOrderManager({ onClose, editingOrder, onOrderCreated }
       loadEditingOrder(editingOrder);
     }
   }, [editingOrder]);
+
+  // Preencher com linhas de nesting quando não está a editar
+  useEffect(() => {
+    if (!editingOrder && initialLines && initialLines.length > 0) {
+      setLines(initialLines);
+    }
+  }, [editingOrder, initialLines]);
 
   const loadData = async () => {
     try {
