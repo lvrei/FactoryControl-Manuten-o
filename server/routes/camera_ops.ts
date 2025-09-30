@@ -121,7 +121,6 @@ cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
     const cam = await getCameraById(id);
     if (!cam) return res.status(404).end();
 
-    // If HTTP snapshot is configured, proxy it
     const httpSnapshotUrl =
       cam.thresholds?.snapshotUrl || (cam.url.startsWith("http") ? cam.url : null);
     if (httpSnapshotUrl) {
@@ -141,50 +140,59 @@ cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
         return;
       } catch (err) {
         clearTimeout(timeout);
-        // Will fallback to RTSP grab if available below
       }
     }
 
-    // Fallback: if RTSP, use ffmpeg to grab a single frame
     if (cam.url.startsWith("rtsp")) {
       const args = [
-        "-rtsp_transport",
-        "tcp",
-        "-i",
-        cam.url,
-        "-frames:v",
-        "1",
-        "-q:v",
-        "2",
-        "-f",
-        "image2",
-        "pipe:1",
+        "-rtsp_transport","tcp","-i",cam.url,
+        "-frames:v","1","-q:v","2","-f","image2","pipe:1",
       ];
-      const ff = spawn("ffmpeg", args, { stdio: ["ignore", "pipe", "pipe"] });
-
-      const killTimer = setTimeout(() => {
-        try {
-          ff.kill("SIGKILL");
-        } catch {}
-      }, 8000);
-
-      res.setHeader("Content-Type", "image/jpeg");
+      const ff = spawn("ffmpeg", args, { stdio: ["ignore","pipe","pipe"] });
+      const killTimer = setTimeout(() => { try { ff.kill("SIGKILL"); } catch {} }, 8000);
+      res.setHeader("Content-Type","image/jpeg");
       ff.stdout.pipe(res);
       ff.stderr.on("data", () => {});
-      ff.on("close", (code) => {
-        clearTimeout(killTimer);
-        if (code !== 0 && !res.headersSent) {
-          res.status(500).json({ error: "ffmpeg falhou ao gerar snapshot" });
-        }
-      });
-      ff.on("error", () => {
-        clearTimeout(killTimer);
-        if (!res.headersSent) res.status(500).json({ error: "ffmpeg não encontrado" });
-      });
+      ff.on("close", (code) => { clearTimeout(killTimer); if (code !== 0 && !res.headersSent) res.status(500).json({ error: "ffmpeg falhou ao gerar snapshot" }); });
+      ff.on("error", () => { clearTimeout(killTimer); if (!res.headersSent) res.status(500).json({ error: "ffmpeg não encontrado" }); });
       return;
     }
 
     return res.status(400).json({ error: "Snapshot não configurado" });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// GET /cameras/:id/mjpeg - transcode RTSP to multipart MJPEG for browser playback
+cameraOpsRouter.get("/cameras/:id/mjpeg", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const cam = await getCameraById(id);
+    if (!cam) return res.status(404).json({ error: "Câmara não encontrada" });
+    if (!cam.url.startsWith("rtsp")) return res.status(400).json({ error: "Apenas RTSP suportado" });
+
+    // Start ffmpeg as MJPEG (multipart) stream
+    const args = [
+      "-rtsp_transport","tcp","-i",cam.url,
+      "-an","-c:v","mjpeg","-q:v","5","-r","5","-f","mpjpeg","pipe:1",
+    ];
+    const ff = spawn("ffmpeg", args, { stdio: ["ignore","pipe","pipe"] });
+
+    res.setHeader("Cache-Control","no-cache, no-store, must-revalidate");
+    res.setHeader("Pragma","no-cache");
+    res.setHeader("Expires","0");
+    // ffmpeg uses boundary=ffserver by default for mpjpeg
+    res.setHeader("Content-Type","multipart/x-mixed-replace; boundary=ffserver");
+
+    const killTimer = setTimeout(() => { try { ff.kill("SIGKILL"); } catch {} }, 60 * 60 * 1000); // 1h safety
+
+    ff.stdout.pipe(res);
+
+    const onEnd = () => { clearTimeout(killTimer); try { res.end(); } catch {} };
+    ff.on("close", onEnd);
+    ff.on("error", () => { onEnd(); });
+    req.on("close", () => { try { ff.kill("SIGKILL"); } catch {} onEnd(); });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
