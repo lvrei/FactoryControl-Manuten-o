@@ -155,8 +155,11 @@ export default function FactoryOrders() {
             Fábrica: <strong>{factoryName || "—"}</strong>
           </p>
         </div>
-        <button onClick={()=>setShowNesting(true)} className="px-3 py-2 border rounded flex items-center gap-2">
-          <Layers className="h-4 w-4"/> Nova OP (nesting)
+        <button
+          onClick={() => setShowNesting(true)}
+          className="px-3 py-2 border rounded flex items-center gap-2"
+        >
+          <Layers className="h-4 w-4" /> Nova OP (nesting)
         </button>
       </div>
 
@@ -368,9 +371,9 @@ export default function FactoryOrders() {
       </div>
       {showNesting && (
         <NestingModal
-          onClose={()=>setShowNesting(false)}
-          onApply={(newLines)=>{
-            setLines(prev=>[...prev, ...newLines]);
+          onClose={() => setShowNesting(false)}
+          onApply={(newLines) => {
+            setLines((prev) => [...prev, ...newLines]);
             setShowNesting(false);
           }}
         />

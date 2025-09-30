@@ -14,7 +14,11 @@ export type Sheet = {
   margin: number; // mm
 };
 
-export type PlacedPart = NestPart & { x: number; y: number; sheetIndex: number };
+export type PlacedPart = NestPart & {
+  x: number;
+  y: number;
+  sheetIndex: number;
+};
 
 export type NestResult = {
   placements: PlacedPart[];
@@ -32,10 +36,13 @@ export function packRectangles(parts: NestPart[], sheet: Sheet): NestResult {
     }
   }
   // Sort by max dimension (descending) to improve packing a bit
-  expanded.sort((a, b) => Math.max(b.length, b.width) - Math.max(a.length, a.width));
+  expanded.sort(
+    (a, b) => Math.max(b.length, b.width) - Math.max(a.length, a.width),
+  );
 
   const placements: PlacedPart[] = [];
-  const areaSheet = (sheet.length - 2 * sheet.margin) * (sheet.width - 2 * sheet.margin);
+  const areaSheet =
+    (sheet.length - 2 * sheet.margin) * (sheet.width - 2 * sheet.margin);
   let usedAreaTotal = 0;
 
   let sheetIndex = 0;
@@ -68,7 +75,10 @@ export function packRectangles(parts: NestPart[], sheet: Sheet): NestResult {
       nextSheet();
     }
     // If after moving sheet, still too big, force new sheet and place at origin
-    if (cursorX + w > sheet.width - sheet.margin || cursorY + h > sheet.length - sheet.margin) {
+    if (
+      cursorX + w > sheet.width - sheet.margin ||
+      cursorY + h > sheet.length - sheet.margin
+    ) {
       nextSheet();
     }
 
@@ -79,20 +89,30 @@ export function packRectangles(parts: NestPart[], sheet: Sheet): NestResult {
   }
 
   const sheetsUsed = sheetIndex + 1;
-  const utilization = Math.min(1, usedAreaTotal / Math.max(1, sheetsUsed * areaSheet));
+  const utilization = Math.min(
+    1,
+    usedAreaTotal / Math.max(1, sheetsUsed * areaSheet),
+  );
   return { placements, sheetsUsed, utilization };
 }
 
 // Minimal DXF rectangle extractor: looks for LWPOLYLINE closed with 4 vertices axis-aligned
-export function parseDxfRectangles(dxfContent: string, defaultHeight = 50): NestPart[] {
+export function parseDxfRectangles(
+  dxfContent: string,
+  defaultHeight = 50,
+): NestPart[] {
   // Extremely simplified DXF parsing — not full spec compliant. Extract vertices from LWPOLYLINE sections.
   const parts: NestPart[] = [];
   const sections = dxfContent.split(/ENDSEC/i);
   for (const sec of sections) {
     if (!/LWPOLYLINE/i.test(sec)) continue;
     // Collect vertices (x=10, y=20 codes appear per vertex in DXF ENTITIES)
-    const xs = Array.from(sec.matchAll(/\n\s*10\s*\n\s*([\-\d\.]+)/g)).map((m) => Number(m[1]));
-    const ys = Array.from(sec.matchAll(/\n\s*20\s*\n\s*([\-\d\.]+)/g)).map((m) => Number(m[1]));
+    const xs = Array.from(sec.matchAll(/\n\s*10\s*\n\s*([\-\d\.]+)/g)).map(
+      (m) => Number(m[1]),
+    );
+    const ys = Array.from(sec.matchAll(/\n\s*20\s*\n\s*([\-\d\.]+)/g)).map(
+      (m) => Number(m[1]),
+    );
     const closed = /\n\s*70\s*\n\s*(\d+)/.exec(sec);
     const isClosed = closed ? (Number(closed[1]) & 1) === 1 : false;
     if (!isClosed || xs.length < 4 || ys.length < 4) continue;
@@ -119,12 +139,14 @@ export function parseDxfRectangles(dxfContent: string, defaultHeight = 50): Nest
 export function parseJsonParts(jsonText: string): NestPart[] {
   const data = JSON.parse(jsonText);
   if (!Array.isArray(data)) throw new Error("JSON deve ser um array de peças");
-  return data.map((it: any) => ({
-    length: Number(it.length),
-    width: Number(it.width),
-    height: Number(it.height || 50),
-    quantity: Number(it.quantity || 1),
-    foamTypeId: it.foamTypeId,
-    label: it.label,
-  })).filter((p: NestPart) => p.length > 0 && p.width > 0 && p.quantity > 0);
+  return data
+    .map((it: any) => ({
+      length: Number(it.length),
+      width: Number(it.width),
+      height: Number(it.height || 50),
+      quantity: Number(it.quantity || 1),
+      foamTypeId: it.foamTypeId,
+      label: it.label,
+    }))
+    .filter((p: NestPart) => p.length > 0 && p.width > 0 && p.quantity > 0);
 }
