@@ -63,6 +63,35 @@ export function ProductionOrderManager({
     }
   }, [editingOrder, initialLines]);
 
+  // Quando vierem linhas do nesting, garantir pelo menos uma operação (BZM) por linha
+  useEffect(() => {
+    if (editingOrder) return;
+    if (!initialLines || initialLines.length === 0) return;
+    if (machines.length === 0) return;
+
+    setLines((prev) => {
+      if (!prev || prev.length === 0) return prev;
+      const bzmMachine = machines.find((m) => m.type === "BZM");
+      if (!bzmMachine) return prev;
+      return prev.map((line) => {
+        const hasOps = (line.cuttingOperations || []).length > 0;
+        if (hasOps) return line;
+        const bzmOperation: CuttingOperation = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          machineId: bzmMachine.id,
+          inputDimensions: line.finalDimensions,
+          outputDimensions: line.finalDimensions,
+          quantity: line.quantity,
+          completedQuantity: 0,
+          estimatedTime: 30,
+          status: "pending",
+          observations: "Corte inicial do bloco de espuma",
+        };
+        return { ...line, cuttingOperations: [bzmOperation] };
+      });
+    });
+  }, [editingOrder, initialLines, machines]);
+
   const loadData = async () => {
     try {
       setLoading(true);
