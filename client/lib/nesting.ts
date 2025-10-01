@@ -147,6 +147,76 @@ export function parseDxfRectangles(
   lwBlocks.forEach(parseBlock);
   plBlocks.forEach(parseBlock);
 
+  // If none found via polylines, try to compose rectangles from LINE entities
+  if (parts.length === 0) {
+    const lineBlocks = Array.from(
+      content.matchAll(/\n\s*0\n\s*LINE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+    ).map((m) => m[0]);
+
+    type HLine = { y: number; x1: number; x2: number };
+    type VLine = { x: number; y1: number; y2: number };
+    const H: HLine[] = [];
+    const V: VLine[] = [];
+
+    const val = (blk: string, code: number) => {
+      const m = new RegExp(`\\n\\s*${code}\\n\\s*([\\-\\d\\.]+)`, "g").exec(blk);
+      return m ? Number(m[1]) : NaN;
+    };
+    const pushLine = (blk: string) => {
+      const x1 = val(blk, 10);
+      const y1 = val(blk, 20);
+      const x2 = val(blk, 11);
+      const y2 = val(blk, 21);
+      if ([x1, y1, x2, y2].some((n) => !isFinite(n))) return;
+      const eps = 1e-6;
+      if (Math.abs(y1 - y2) < eps && Math.abs(x1 - x2) > eps) {
+        const xa = Math.min(x1, x2);
+        const xb = Math.max(x1, x2);
+        H.push({ y: y1, x1: xa, x2: xb });
+      } else if (Math.abs(x1 - x2) < eps && Math.abs(y1 - y2) > eps) {
+        const ya = Math.min(y1, y2);
+        const yb = Math.max(y1, y2);
+        V.push({ x: x1, y1: ya, y2: yb });
+      }
+    };
+
+    lineBlocks.forEach(pushLine);
+
+    // Normalize with rounding to reduce floating noise
+    const round = (n: number) => Math.round(n * 1000) / 1000;
+    const Hn = H.map((l) => ({ y: round(l.y), x1: round(l.x1), x2: round(l.x2) }))
+      // merge duplicates
+      .filter((ln, idx, arr) => idx === arr.findIndex((t) => t.y === ln.y && t.x1 === ln.x1 && t.x2 === ln.x2));
+    const Vn = V.map((l) => ({ x: round(l.x), y1: round(l.y1), y2: round(l.y2) }))
+      .filter((ln, idx, arr) => idx === arr.findIndex((t) => t.x === ln.x && t.y1 === ln.y1 && t.y2 === ln.y2));
+
+    // Index verticals for quick lookup
+    const vIndex = new Map<string, boolean>();
+    const vk = (x: number, y1: number, y2: number) => `${x}|${y1}|${y2}`;
+    Vn.forEach((l) => vIndex.set(vk(l.x, l.y1, l.y2), true));
+
+    // Find pairs of horizontal lines with same x-span and check verticals on the ends
+    for (let i = 0; i < Hn.length; i++) {
+      for (let j = i + 1; j < Hn.length; j++) {
+        const a = Hn[i];
+        const b = Hn[j];
+        if (a.x1 !== b.x1 || a.x2 !== b.x2) continue;
+        if (a.y === b.y) continue;
+        const y1 = Math.min(a.y, b.y);
+        const y2 = Math.max(a.y, b.y);
+        const hasLeft = vIndex.get(vk(a.x1, y1, y2));
+        const hasRight = vIndex.get(vk(a.x2, y1, y2));
+        if (hasLeft && hasRight) {
+          const width = Math.abs(a.x2 - a.x1);
+          const length = Math.abs(y2 - y1);
+          if (width > 0 && length > 0) {
+            parts.push({ length, width, height: defaultHeight, quantity: 1 });
+          }
+        }
+      }
+    }
+  }
+
   // Merge identical rectangles
   const merged: Record<string, NestPart> = {};
   for (const p of parts) {
@@ -158,6 +228,7 @@ export function parseDxfRectangles(
   }
   return Object.values(merged);
 }
+
 
 export function parseJsonParts(jsonText: string): NestPart[] {
   const data = JSON.parse(jsonText);
