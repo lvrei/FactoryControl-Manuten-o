@@ -26,6 +26,11 @@ export type NestResult = {
   utilization: number; // 0..1 total area utilization
 };
 
+export type DxfDrawing = {
+  paths: Array<Array<[number, number]>>;
+  bbox: { minX: number; minY: number; maxX: number; maxY: number } | null;
+};
+
 // Simple shelf (guillotine) packing: sorts by height desc and packs rows.
 export function packRectangles(parts: NestPart[], sheet: Sheet): NestResult {
   // Expand quantities to individual items with reference
@@ -404,4 +409,110 @@ export function parseJsonParts(jsonText: string): NestPart[] {
       label: it.label,
     }))
     .filter((p: NestPart) => p.length > 0 && p.width > 0 && p.quantity > 0);
+}
+
+// Extract generic vector paths from DXF for visualization (no dependencies).
+export function parseDxfPaths(dxfContent: string): DxfDrawing {
+  const content = String(dxfContent);
+  const paths: Array<Array<[number, number]>> = [];
+
+  // Helper to extract blocks by type
+  const blocks = (type: string, regex?: RegExp) =>
+    Array.from(
+      content.matchAll(
+        regex || new RegExp(`\n\\s*0\n\\s*${type}[\\s\\S]*?(?=\n\\s*0\\n\\s*\\w+)`, "gi"),
+      ),
+    ).map((m) => m[0]);
+
+  // LWPOLYLINE
+  for (const blk of blocks("LWPOLYLINE")) {
+    const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map((m) => Number(m[1]));
+    const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map((m) => Number(m[1]));
+    const pts: Array<[number, number]> = [];
+    for (let i = 0; i < Math.min(xs.length, ys.length); i++) pts.push([xs[i], ys[i]]);
+    if (pts.length >= 2) paths.push(pts);
+  }
+
+  // POLYLINE + VERTEX ... SEQEND
+  for (const blk of blocks("POLYLINE", /\n\s*0\n\s*POLYLINE[\s\S]*?\n\s*0\n\s*SEQEND/gi)) {
+    const verts = Array.from(blk.matchAll(/\n\s*0\n\s*VERTEX[\s\S]*?(?=\n\s*0\n\s*\w+)/gi)).map((m) => m[0]);
+    const pts: Array<[number, number]> = [];
+    for (const v of verts) {
+      const x = /\n\s*10\n\s*([\-\d\.]+)/.exec(v);
+      const y = /\n\s*20\n\s*([\-\d\.]+)/.exec(v);
+      if (x && y) pts.push([Number(x[1]), Number(y[1])]);
+    }
+    if (pts.length >= 2) paths.push(pts);
+  }
+
+  // LINE
+  for (const blk of blocks("LINE")) {
+    const x1 = /\n\s*10\n\s*([\-\d\.]+)/.exec(blk);
+    const y1 = /\n\s*20\n\s*([\-\d\.]+)/.exec(blk);
+    const x2 = /\n\s*11\n\s*([\-\d\.]+)/.exec(blk);
+    const y2 = /\n\s*21\n\s*([\-\d\.]+)/.exec(blk);
+    if (x1 && y1 && x2 && y2) paths.push([[Number(x1[1]), Number(y1[1])],[Number(x2[1]), Number(y2[1])]]);
+  }
+
+  // CIRCLE (approximate with 32 segments)
+  for (const blk of blocks("CIRCLE")) {
+    const cx = /\n\s*10\n\s*([\-\d\.]+)/.exec(blk);
+    const cy = /\n\s*20\n\s*([\-\d\.]+)/.exec(blk);
+    const r = /\n\s*40\n\s*([\-\d\.]+)/.exec(blk);
+    if (cx && cy && r) {
+      const cxt = Number(cx[1]);
+      const cyt = Number(cy[1]);
+      const rt = Number(r[1]);
+      const segs: Array<[number, number]> = [];
+      for (let i = 0; i < 32; i++) {
+        const a = (i / 32) * Math.PI * 2;
+        segs.push([cxt + rt * Math.cos(a), cyt + rt * Math.sin(a)]);
+      }
+      segs.push(segs[0]);
+      paths.push(segs);
+    }
+  }
+
+  // ELLIPSE (approximate)
+  for (const blk of blocks("ELLIPSE")) {
+    const cx = /\n\s*10\n\s*([\-\d\.]+)/.exec(blk);
+    const cy = /\n\s*20\n\s*([\-\d\.]+)/.exec(blk);
+    const mx = /\n\s*11\n\s*([\-\d\.]+)/.exec(blk);
+    const my = /\n\s*21\n\s*([\-\d\.]+)/.exec(blk);
+    const ratio = /\n\s*40\n\s*([\-\d\.]+)/.exec(blk);
+    if (cx && cy && mx && my && ratio) {
+      const cxt = Number(cx[1]);
+      const cyt = Number(cy[1]);
+      const mxv = Number(mx[1]);
+      const myv = Number(my[1]);
+      const r = Number(ratio[1]);
+      const aMajor = Math.sqrt(mxv * mxv + myv * myv);
+      const ang = Math.atan2(myv, mxv);
+      const aMinor = aMajor * Math.abs(r);
+      const segs: Array<[number, number]> = [];
+      for (let i = 0; i < 48; i++) {
+        const t = (i / 48) * Math.PI * 2;
+        const px = aMajor * Math.cos(t);
+        const py = aMinor * Math.sin(t);
+        const rx = px * Math.cos(ang) - py * Math.sin(ang);
+        const ry = px * Math.sin(ang) + py * Math.cos(ang);
+        segs.push([cxt + rx, cyt + ry]);
+      }
+      segs.push(segs[0]);
+      paths.push(segs);
+    }
+  }
+
+  // Compute bbox
+  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  for (const p of paths) {
+    for (const [x,y] of p) {
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+      if (x > maxX) maxX = x;
+      if (y > maxY) maxY = y;
+    }
+  }
+  const bbox = paths.length ? { minX, minY, maxX, maxY } : null;
+  return { paths, bbox };
 }
