@@ -298,6 +298,76 @@ export function parseDxfRectangles(
     }
   }
 
+  // If still none, try BLOCK/INSERT: compute block bounding boxes and count inserts
+  if (parts.length === 0) {
+    const blockChunks = Array.from(
+      content.matchAll(/\n\s*0\n\s*BLOCK[\s\S]*?\n\s*0\n\s*ENDBLK/gi),
+    ).map((m) => m[0]);
+    const blockDims = new Map<string, { length: number; width: number }>();
+
+    for (const blk of blockChunks) {
+      const nameMatch = /\n\s*2\n\s*([^\n\r]+)/.exec(blk);
+      const name = nameMatch ? nameMatch[1].trim() : "";
+      if (!name) continue;
+
+      let xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map(
+        (m) => Number(m[1]),
+      );
+      let ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map(
+        (m) => Number(m[1]),
+      );
+      // If no vertices, try circle/ellipse sizes as extents
+      if (xs.length < 2 || ys.length < 2) {
+        const circleRs = Array.from(
+          blk.matchAll(/\n\s*40\n\s*([\-\d\.]+)/g),
+        ).map((m) => Number(m[1]));
+        if (circleRs.length > 0) {
+          const size = 2 * Math.max(...circleRs);
+          blockDims.set(name, { length: size, width: size });
+          continue;
+        }
+      }
+      if (xs.length >= 2 && ys.length >= 2) {
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const width = Math.abs(maxX - minX);
+        const length = Math.abs(maxY - minY);
+        if (width > 0 && length > 0) blockDims.set(name, { length, width });
+      }
+    }
+
+    // Read INSERT occurrences and create parts accordingly
+    if (blockDims.size > 0) {
+      const inserts = Array.from(
+        content.matchAll(/\n\s*0\n\s*INSERT[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+      ).map((m) => m[0]);
+      for (const ins of inserts) {
+        const nameMatch = /\n\s*2\n\s*([^\n\r]+)/.exec(ins);
+        const name = nameMatch ? nameMatch[1].trim() : "";
+        if (!name) continue;
+        const base = blockDims.get(name);
+        if (!base) continue;
+        const sxMatch = /\n\s*41\n\s*([\-\d\.]+)/.exec(ins);
+        const syMatch = /\n\s*42\n\s*([\-\d\.]+)/.exec(ins);
+        const angMatch = /\n\s*50\n\s*([\-\d\.]+)/.exec(ins);
+        const sx = sxMatch ? Number(sxMatch[1]) : 1;
+        const sy = syMatch ? Number(syMatch[1]) : 1;
+        const ang = angMatch ? Number(angMatch[1]) : 0;
+        let w = base.width * Math.abs(sx);
+        let l = base.length * Math.abs(sy);
+        const rot = ((ang % 360) + 360) % 360;
+        if (Math.abs(rot - 90) < 1e-3 || Math.abs(rot - 270) < 1e-3) {
+          const tmp = w;
+          w = l;
+          l = tmp;
+        }
+        if (w > 0 && l > 0) parts.push({ length: l, width: w, height: defaultHeight, quantity: 1 });
+      }
+    }
+  }
+
   // Merge identical rectangles
   const merged: Record<string, NestPart> = {};
   for (const p of parts) {
