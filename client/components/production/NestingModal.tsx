@@ -101,6 +101,11 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
         } else if (file.name.toLowerCase().endsWith(".dxf")) {
           const ps = parseDxfRectangles(text);
           setParts(ps);
+          if (!ps || ps.length === 0) {
+            alert(
+              "DXF carregado, mas não foram encontrados retângulos fechados. Use polylines fechadas (LWPOLYLINE/POLYLINE) ou forneça JSON."
+            );
+          }
         } else {
           alert("Formato não suportado. Use DXF ou JSON.");
         }
