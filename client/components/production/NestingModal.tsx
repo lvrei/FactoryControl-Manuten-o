@@ -355,44 +355,69 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
           </div>
 
           <div className="md:col-span-2 border rounded p-2 bg-white overflow-auto">
-            {/* Preview of first sheet */}
-            <svg
-              width={Math.max(420, sheet.width * svgScale)}
-              height={sheet.length * svgScale + 20}
-              style={{ background: "#f7fafc" }}
-            >
-              {/* panel outline */}
-              <rect
-                x={10}
-                y={10}
-                width={sheet.width * svgScale}
-                height={sheet.length * svgScale}
-                fill="#fff"
-                stroke="#e2e8f0"
-              />
-              {firstSheetPlacements.map((p, idx) => {
-                const x = 10 + p.x * svgScale;
-                const y = 10 + p.y * svgScale;
-                const w = p.width * svgScale;
-                const h = p.length * svgScale;
-                return (
-                  <g key={idx}>
-                    <rect
-                      x={x}
-                      y={y}
-                      width={w}
-                      height={h}
-                      fill="#c7f9cc"
-                      stroke="#2b8a3e"
-                    />
-                    <text x={x + 4} y={y + 12} fontSize={10} fill="#1a202c">
-                      {Math.round(p.length)}×{Math.round(p.width)}×
-                      {Math.round(p.height)}
-                    </text>
-                  </g>
+            {result ? (
+              <svg
+                width={Math.max(420, sheet.width * svgScale)}
+                height={sheet.length * svgScale + 20}
+                style={{ background: "#f7fafc" }}
+              >
+                <rect
+                  x={10}
+                  y={10}
+                  width={sheet.width * svgScale}
+                  height={sheet.length * svgScale}
+                  fill="#fff"
+                  stroke="#e2e8f0"
+                />
+                {firstSheetPlacements.map((p, idx) => {
+                  const x = 10 + p.x * svgScale;
+                  const y = 10 + p.y * svgScale;
+                  const w = p.width * svgScale;
+                  const h = p.length * svgScale;
+                  return (
+                    <g key={idx}>
+                      <rect x={x} y={y} width={w} height={h} fill="#c7f9cc" stroke="#2b8a3e" />
+                      <text x={x + 4} y={y + 12} fontSize={10} fill="#1a202c">
+                        {Math.round(p.length)}×{Math.round(p.width)}×{Math.round(p.height)}
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            ) : dxfDrawing && dxfDrawing.paths.length ? (
+              (() => {
+                const bb = dxfDrawing.bbox!;
+                const pad = 10;
+                const scale = Math.min(
+                  800 / Math.max(1, bb.maxX - bb.minX),
+                  600 / Math.max(1, bb.maxY - bb.minY),
                 );
-              })}
-            </svg>
+                return (
+                  <svg
+                    width={Math.max(420, (bb.maxX - bb.minX) * scale + pad * 2)}
+                    height={(bb.maxY - bb.minY) * scale + pad * 2}
+                    style={{ background: "#f7fafc" }}
+                  >
+                    <rect x={0} y={0} width="100%" height="100%" fill="#fff" stroke="#e2e8f0" />
+                    {dxfDrawing.paths.map((poly, i) => (
+                      <polyline
+                        key={i}
+                        fill="none"
+                        stroke="#1f2937"
+                        strokeWidth={1}
+                        points={poly
+                          .map(([x, y]) => `${(x - bb.minX) * scale + pad},${(bb.maxY - y) * scale + pad}`)
+                          .join(" ")}
+                      />
+                    ))}
+                  </svg>
+                );
+              })()
+            ) : (
+              <div className="p-6 text-sm text-muted-foreground">
+                Carregue um DXF/JSON para visualizar aqui.
+              </div>
+            )}
           </div>
         </div>
       </div>
