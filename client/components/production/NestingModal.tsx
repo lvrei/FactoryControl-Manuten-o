@@ -107,9 +107,11 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
           }
           const ps = parseDxfRectangles(text);
           setParts(ps);
+          const drawing = parseDxfPaths(text);
+          setDxfDrawing(drawing);
           if (!ps || ps.length === 0) {
             alert(
-              "DXF carregado, mas não foram encontrados retângulos fechados. Use polylines fechadas (LWPOLYLINE/POLYLINE) ou forneça JSON.",
+              "DXF carregado. Não detetámos retângulos para nesting, mas mostramos o desenho abaixo. Para nesting, forneça retângulos (LWPOLYLINE) ou JSON.",
             );
           }
         } else {
