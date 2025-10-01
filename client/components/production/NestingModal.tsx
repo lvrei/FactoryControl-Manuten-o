@@ -8,6 +8,7 @@ import {
 } from "@/services/fileLoaderService";
 import type { Part, LoadedDrawing } from "@/services/fileLoaderService";
 import { NestPart, Sheet, packRectangles } from "@/lib/nesting";
+import DxfDebugPanel from "./DxfDebugPanel";
 
 export type NestingModalProps = {
   onClose: () => void;
@@ -291,6 +292,8 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                 {errorMessage}
               </div>
             )}
+
+            <DxfDebugPanel drawing={drawing} />
 
             <div>
               <label className="block text-sm font-medium mb-1">
