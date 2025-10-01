@@ -1,14 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
-import { X, Upload, Package, AlertTriangle, Layers } from "lucide-react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { X, Upload, Package, AlertTriangle, Layers, Info } from "lucide-react";
 import { productionService } from "@/services/productionService";
 import { FoamBlock, FoamType, ProductionOrderLine } from "@/types/production";
+import { fileLoaderService, FileLoaderError } from "@/services/fileLoaderService";
+import type { Part, LoadedDrawing } from "@/services/fileLoaderService";
 import {
   NestPart,
   Sheet,
   packRectangles,
-  parseDxfRectangles,
-  parseJsonParts,
-  parseDxfPaths,
 } from "@/lib/nesting";
 
 export type NestingModalProps = {
@@ -21,9 +20,9 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
   const [fileName, setFileName] = useState<string>("");
   const [parts, setParts] = useState<NestPart[]>([]);
   const [mappingFoamTypeId, setMappingFoamTypeId] = useState<string>("");
-  const [dxfDrawing, setDxfDrawing] = useState<ReturnType<
-    typeof parseDxfPaths
-  > | null>(null);
+  const [drawing, setDrawing] = useState<LoadedDrawing | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [sheet, setSheet] = useState<Sheet>({
     length: 2000,
     width: 1000,
@@ -33,6 +32,11 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
   const [quantityMultiplier, setQuantityMultiplier] = useState<number>(1);
   const [stockBlocks, setStockBlocks] = useState<FoamBlock[] | null>(null);
   const [stockWarning, setStockWarning] = useState<string>("");
+  const [manualHeight, setManualHeight] = useState<number>(50);
+  const [manualQty, setManualQty] = useState<number>(1);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
+  const [dragCurr, setDragCurr] = useState<{ x: number; y: number } | null>(null);
+  const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
     (async () => {
@@ -40,7 +44,6 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
         const types = await productionService.getFoamTypes();
         setFoamTypes(types);
       } catch {}
-      // Try to fetch blocks if method exists
       try {
         const anySvc: any = productionService as any;
         if (typeof anySvc.getFoamBlocks === "function") {
@@ -68,7 +71,6 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
       setStockWarning("");
       return;
     }
-    // Rough stock check: compare total volume to available blocks of selected foamType
     const totalVolumeM3 = parts.reduce(
       (s, p) => s + (p.length * p.width * p.height * p.quantity) / 1e9,
       0,
@@ -93,40 +95,43 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
     }
   }, [result, stockBlocks, parts, mappingFoamTypeId]);
 
-  function handleFile(file: File) {
+  async function handleFile(file: File) {
     setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const text = String(reader.result || "");
-        if (file.name.toLowerCase().endsWith(".json")) {
-          const ps = parseJsonParts(text);
-          setParts(ps);
-        } else if (file.name.toLowerCase().endsWith(".dxf")) {
-          if (!/SECTION/i.test(text)) {
-            alert(
-              "Este DXF parece estar em formato binário. Exporte como DXF ASCII (ex.: R12) e tente novamente.",
-            );
-            return;
-          }
-          const ps = parseDxfRectangles(text);
-          setParts(ps);
-          const drawing = parseDxfPaths(text);
-          setDxfDrawing(drawing);
-          if (!ps || ps.length === 0) {
-            alert(
-              "DXF carregado. Não detetámos retângulos para nesting, mas mostramos o desenho abaixo. Para nesting, forneça retângulos (LWPOLYLINE) ou JSON.",
-            );
-          }
-        } else {
-          alert("Formato não suportado. Use DXF ou JSON.");
-        }
-      } catch (e: any) {
-        console.error(e);
-        alert("Falha ao ler ficheiro: " + e.message);
+    setIsLoading(true);
+    setErrorMessage("");
+    
+    try {
+      const loadedDrawing = await fileLoaderService.loadFile(file, {
+        defaultHeight: manualHeight,
+        detectRectangles: true,
+        extractPaths: true,
+      });
+
+      setDrawing(loadedDrawing);
+      setParts(loadedDrawing.parts as NestPart[]);
+
+      if (loadedDrawing.parts.length === 0 && loadedDrawing.paths.length > 0) {
+        setErrorMessage(
+          "DXF carregado com sucesso! Desenho visualizado abaixo. " +
+          "Não foram detetados retângulos automáticamente. " +
+          "Use o mouse para selecionar áreas manualmente ou forneça um JSON com as dimensões."
+        );
+      } else if (loadedDrawing.parts.length > 0) {
+        setErrorMessage("");
       }
-    };
-    reader.readAsText(file);
+    } catch (error) {
+      if (error instanceof FileLoaderError) {
+        setErrorMessage(error.message);
+        console.error('File loader error:', error.code, error.details);
+      } else {
+        setErrorMessage(`Erro ao carregar ficheiro: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        console.error('Unexpected error:', error);
+      }
+      setDrawing(null);
+      setParts([]);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   function applyToOrder() {
@@ -138,7 +143,6 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
         Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
       ),
     }));
-    // Group parts by (foamTypeId,length,width,height)
     const map = new Map<string, { part: NestPart; qty: number }>();
     for (const p of scaled) {
       const foamId =
@@ -199,7 +203,7 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
               <Layers className="h-5 w-5" /> Nesting (DXF/JSON)
             </h3>
             <p className="text-xs text-muted-foreground">
-              Importe desenhos e gere linhas para OP. Visualização do 1º painel.
+              Importe desenhos e gere linhas para OP. Suporta DXF (ASCII) e JSON.
             </p>
           </div>
           <button
@@ -223,19 +227,71 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                   const f = e.target.files?.[0];
                   if (f) handleFile(f);
                 }}
+                disabled={isLoading}
+                className="w-full"
               />
               {fileName && (
-                <div className="text-xs text-muted-foreground mt-1">
-                  {fileName}
+                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                  {isLoading ? (
+                    <>
+                      <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+                      A carregar...
+                    </>
+                  ) : (
+                    fileName
+                  )}
+                </div>
+              )}
+              {drawing?.metadata && (
+                <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted/30 rounded">
+                  <Info className="h-3 w-3 inline mr-1" />
+                  {drawing.format.toUpperCase()} | 
+                  {drawing.metadata.entityCount && ` ${drawing.metadata.entityCount} entidades`}
+                  {drawing.metadata.layerCount && ` | ${drawing.metadata.layerCount} layers`}
                 </div>
               )}
               <div className="text-xs text-muted-foreground mt-2">
-                <code>
-                  {
-                    'JSON exemplo: [{"length":500,"width":300,"height":50,"quantity":10,"foamTypeId":"1"}]'
-                  }
-                </code>
+                <details>
+                  <summary className="cursor-pointer hover:text-foreground">
+                    Exemplo JSON
+                  </summary>
+                  <code className="block mt-1 p-2 bg-muted rounded text-xs">
+                    {`[
+  {
+    "length": 500,
+    "width": 300,
+    "height": 50,
+    "quantity": 10,
+    "foamTypeId": "1",
+    "label": "Peça A"
+  }
+]`}
+                  </code>
+                </details>
               </div>
+            </div>
+
+            {errorMessage && (
+              <div className={`p-3 rounded border text-sm ${
+                errorMessage.includes('sucesso') 
+                  ? 'bg-blue-50 border-blue-200 text-blue-700'
+                  : 'bg-red-50 border-red-200 text-red-700'
+              }`}>
+                <AlertTriangle className="h-4 w-4 inline mr-2" />
+                {errorMessage}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                Espessura padrão (mm)
+              </label>
+              <input
+                type="number"
+                value={manualHeight}
+                onChange={(e) => setManualHeight(Number(e.target.value))}
+                className="w-full border rounded px-2 py-1"
+              />
             </div>
 
             <div>
@@ -394,9 +450,9 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                   );
                 })}
               </svg>
-            ) : dxfDrawing && dxfDrawing.paths.length ? (
+            ) : drawing && drawing.paths.length > 0 ? (
               (() => {
-                const bb = dxfDrawing.bbox!;
+                const bb = drawing.bbox!;
                 const pad = 10;
                 const scale = Math.min(
                   800 / Math.max(1, bb.maxX - bb.minX),
@@ -461,69 +517,101 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                   setDragCurr(null);
                 };
                 return (
-                  <svg
-                    ref={svgRef}
-                    onMouseDown={onDown}
-                    onMouseMove={onMove}
-                    onMouseUp={onUp}
-                    width={width}
-                    height={height}
-                    style={{ background: "#f7fafc", cursor: "crosshair" }}
-                  >
-                    <rect
-                      x={0}
-                      y={0}
-                      width="100%"
-                      height="100%"
-                      fill="#fff"
-                      stroke="#e2e8f0"
-                    />
-                    {dxfDrawing.paths.map((poly, i) => (
-                      <polyline
-                        key={i}
-                        fill="none"
-                        stroke="#1f2937"
-                        strokeWidth={1}
-                        points={poly
-                          .map(([x, y]) => `${toSvgX(x)},${toSvgY(y)}`)
-                          .join(" ")}
+                  <>
+                    <div className="mb-2 p-2 bg-blue-50 border border-blue-200 text-blue-700 text-xs rounded">
+                      <Info className="h-3 w-3 inline mr-1" />
+                      Arraste no desenho para selecionar áreas manualmente
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
+                      <div>
+                        <label className="block text-xs">Altura seleção (mm)</label>
+                        <input
+                          type="number"
+                          value={manualHeight}
+                          onChange={(e) => setManualHeight(Number(e.target.value))}
+                          className="w-full border rounded px-2 py-1 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs">Quantidade</label>
+                        <input
+                          type="number"
+                          value={manualQty}
+                          onChange={(e) => setManualQty(Number(e.target.value))}
+                          className="w-full border rounded px-2 py-1 text-sm"
+                        />
+                      </div>
+                    </div>
+                    <svg
+                      ref={svgRef}
+                      onMouseDown={onDown}
+                      onMouseMove={onMove}
+                      onMouseUp={onUp}
+                      width={width}
+                      height={height}
+                      style={{ background: "#f7fafc", cursor: "crosshair" }}
+                    >
+                      <rect
+                        x={0}
+                        y={0}
+                        width="100%"
+                        height="100%"
+                        fill="#fff"
+                        stroke="#e2e8f0"
                       />
-                    ))}
-                    {dragStart &&
-                      dragCurr &&
-                      (() => {
-                        const sx = Math.min(
-                          toSvgX(dragStart.x),
-                          toSvgX(dragCurr.x),
-                        );
-                        const sy = Math.min(
-                          toSvgY(dragStart.y),
-                          toSvgY(dragCurr.y),
-                        );
-                        const sw = Math.abs(
-                          toSvgX(dragCurr.x) - toSvgX(dragStart.x),
-                        );
-                        const sh = Math.abs(
-                          toSvgY(dragCurr.y) - toSvgY(dragStart.y),
-                        );
-                        return (
-                          <rect
-                            x={sx}
-                            y={sy}
-                            width={sw}
-                            height={sh}
-                            fill="rgba(59,130,246,0.2)"
-                            stroke="#3b82f6"
-                            strokeDasharray="4 2"
-                          />
-                        );
-                      })()}
-                  </svg>
+                      {drawing.paths.map((poly, i) => (
+                        <polyline
+                          key={i}
+                          fill="none"
+                          stroke="#1f2937"
+                          strokeWidth={1}
+                          points={poly
+                            .map(([x, y]) => `${toSvgX(x)},${toSvgY(y)}`)
+                            .join(" ")}
+                        />
+                      ))}
+                      {dragStart &&
+                        dragCurr &&
+                        (() => {
+                          const sx = Math.min(
+                            toSvgX(dragStart.x),
+                            toSvgX(dragCurr.x),
+                          );
+                          const sy = Math.min(
+                            toSvgY(dragStart.y),
+                            toSvgY(dragCurr.y),
+                          );
+                          const sw = Math.abs(
+                            toSvgX(dragCurr.x) - toSvgX(dragStart.x),
+                          );
+                          const sh = Math.abs(
+                            toSvgY(dragCurr.y) - toSvgY(dragStart.y),
+                          );
+                          return (
+                            <rect
+                              x={sx}
+                              y={sy}
+                              width={sw}
+                              height={sh}
+                              fill="rgba(59,130,246,0.2)"
+                              stroke="#3b82f6"
+                              strokeDasharray="4 2"
+                            />
+                          );
+                        })()}
+                    </svg>
+                  </>
                 );
               })()
             ) : (
-              <div className="p-6 text-sm text-muted-foreground">
-                Carregue um DXF/JSON para visualizar aqui.
+              <div className="p-6 text-sm text-muted-foreground text-center">
+                <Upload className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Carregue um ficheiro DXF ou JSON para começar</p>
+                <p className="text-xs mt-2">
+                  DXF: Exporte como ASCII (R12/R2000/R2004)
+                  <br />
+                  JSON: Array com dimensões das peças
+                </p>
               </div>
             )}
           </div>
