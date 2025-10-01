@@ -23,6 +23,8 @@ export type LoadedDrawing = {
   } | null;
   format: "dxf" | "json" | "svg";
   metadata?: Record<string, any>;
+  // Para nesting de formas irregulares
+  polygons?: DrawingPath[];
 };
 
 export type FileLoaderOptions = {
@@ -133,6 +135,7 @@ class FileLoaderService {
         layerCount: Object.keys(dxfData.tables?.layer?.layers || {}).length,
         entityCount: dxfData.entities?.length || 0,
       },
+      polygons: paths, // Polígonos são os mesmos que paths para DXF
     };
   }
 
