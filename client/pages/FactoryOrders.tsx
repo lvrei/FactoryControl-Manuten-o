@@ -7,7 +7,7 @@ import {
   ProductionOrderLine,
 } from "@/types/production";
 import { Plus, Save, Trash2, Layers } from "lucide-react";
-import NestingModal from "@/components/production/NestingModal";
+import NestingModalPolygon from "@/components/production/NestingModalPolygon";
 
 export default function FactoryOrders() {
   const user = authService.getCurrentUser();
@@ -370,7 +370,7 @@ export default function FactoryOrders() {
         </div>
       </div>
       {showNesting && (
-        <NestingModal
+        <NestingModalPolygon
           onClose={() => setShowNesting(false)}
           onApply={(newLines) => {
             setLines((prev) => [...prev, ...newLines]);

@@ -31,7 +31,7 @@ import {
 } from "@/types/production";
 import { productionService } from "@/services/productionService";
 import { ProductionOrderManager } from "@/components/production/ProductionOrderManager";
-import NestingModal from "@/components/production/NestingModal";
+import NestingModalPolygon from "@/components/production/NestingModalPolygon";
 import { Layers } from "lucide-react";
 import { ProductSheetsManager } from "@/components/production/ProductSheetsManager";
 import {
@@ -899,7 +899,7 @@ function ProductionNew() {
       )}
 
       {showNesting && (
-        <NestingModal
+        <NestingModalPolygon
           onClose={() => setShowNesting(false)}
           onApply={(lines) => {
             setNestingLines(lines);
