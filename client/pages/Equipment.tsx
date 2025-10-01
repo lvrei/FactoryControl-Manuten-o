@@ -783,6 +783,22 @@ export default function Equipment() {
                         ? camerasService.getSnapshotUrl(camId)
                         : camerasService.getMjpegUrl(camId),
                     );
+                    const [firstFrame, setFirstFrame] = useState<boolean>(false);
+
+                    // Fallback timer: if no first frame within 4s, switch to snapshots
+                    useEffect(() => {
+                      if (fallback) return;
+                      setFirstFrame(false);
+                      const tm = setTimeout(() => {
+                        if (!firstFrame) {
+                          setFallback(true);
+                          setSrc(camerasService.getSnapshotUrl(camId));
+                        }
+                      }, 4000);
+                      return () => clearTimeout(tm);
+                    }, [fallback, camId]);
+
+                    // Poll snapshots when in fallback mode
                     useEffect(() => {
                       if (!fallback) return;
                       const interval = setInterval(() => {
@@ -790,14 +806,28 @@ export default function Equipment() {
                       }, 1000);
                       return () => clearInterval(interval);
                     }, [fallback, camId]);
+
+                    // Periodically try to restore MJPEG
+                    useEffect(() => {
+                      if (!fallback) return;
+                      const retry = setInterval(() => {
+                        setFirstFrame(false);
+                        setFallback(false);
+                        setSrc(camerasService.getMjpegUrl(camId));
+                      }, 20000);
+                      return () => clearInterval(retry);
+                    }, [fallback, camId]);
+
                     return (
                       <img
                         src={src}
                         alt={alt}
                         className="max-h-[70vh] w-full object-contain"
                         referrerPolicy="no-referrer"
+                        onLoad={() => {
+                          setFirstFrame(true);
+                        }}
                         onError={() => {
-                          // If MJPEG fails, start polling snapshots
                           setFallback(true);
                           setSrc(camerasService.getSnapshotUrl(camId));
                         }}
