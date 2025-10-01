@@ -422,7 +422,7 @@ export function parseDxfPaths(dxfContent: string): DxfDrawing {
       content.matchAll(
         regex ||
           new RegExp(
-            `\n\\s*0\n\\s*${type}[\\s\\S]*?(?=\n\\s*0\\n\\s*\\w+)`,
+            `(?:^|\r?\n)\s*0\r?\n\s*${type}[\s\S]*?(?=(?:^|\r?\n)\s*0\r?\n\s*\w+)`,
             "gi",
           ),
       ),
