@@ -101,13 +101,13 @@ class FileLoaderService {
     let dxfData: DxfData;
     try {
       dxfData = this.dxfParser.parseSync(text);
-      console.log('[DXF Parser] Ficheiro parseado com sucesso:', {
+      console.log("[DXF Parser] Ficheiro parseado com sucesso:", {
         entities: dxfData.entities?.length || 0,
         blocks: Object.keys(dxfData.blocks || {}).length,
         layers: Object.keys(dxfData.tables?.layer?.layers || {}).length,
       });
     } catch (error: any) {
-      console.error('[DXF Parser] Erro ao parsear:', error);
+      console.error("[DXF Parser] Erro ao parsear:", error);
       throw new FileLoaderError(
         `Erro ao parsear DXF: ${error.message}`,
         "PARSE_ERROR",
@@ -141,10 +141,10 @@ class FileLoaderService {
     const entities = dxfData.entities || [];
     const entityTypes = new Map<string, number>();
 
-    console.log('[DXF Extract] A processar', entities.length, 'entidades');
+    console.log("[DXF Extract] A processar", entities.length, "entidades");
 
     for (const entity of entities) {
-      const type = entity.type || 'UNKNOWN';
+      const type = entity.type || "UNKNOWN";
       entityTypes.set(type, (entityTypes.get(type) || 0) + 1);
 
       const part = this.entityToPart(entity, defaultHeight);
@@ -153,12 +153,15 @@ class FileLoaderService {
       }
     }
 
-    console.log('[DXF Extract] Tipos de entidades encontrados:',
-      Array.from(entityTypes.entries()).map(([type, count]) => `${type}: ${count}`).join(', ')
+    console.log(
+      "[DXF Extract] Tipos de entidades encontrados:",
+      Array.from(entityTypes.entries())
+        .map(([type, count]) => `${type}: ${count}`)
+        .join(", "),
     );
 
     if (parts.length === 0 && dxfData.blocks) {
-      console.log('[DXF Extract] A processar blocos...');
+      console.log("[DXF Extract] A processar blocos...");
       for (const blockName in dxfData.blocks) {
         const block = dxfData.blocks[blockName];
         for (const entity of block.entities || []) {
@@ -170,7 +173,7 @@ class FileLoaderService {
       }
     }
 
-    console.log('[DXF Extract] Total de peças extraídas:', parts.length);
+    console.log("[DXF Extract] Total de peças extraídas:", parts.length);
     return this.mergeDuplicateParts(parts);
   }
 
@@ -273,7 +276,7 @@ class FileLoaderService {
     let successCount = 0;
     let failCount = 0;
 
-    console.log('[DXF Paths] A extrair paths de', entities.length, 'entidades');
+    console.log("[DXF Paths] A extrair paths de", entities.length, "entidades");
 
     for (const entity of entities) {
       const path = this.entityToPath(entity);
@@ -286,7 +289,7 @@ class FileLoaderService {
     }
 
     if (paths.length === 0 && dxfData.blocks) {
-      console.log('[DXF Paths] A processar blocos para paths...');
+      console.log("[DXF Paths] A processar blocos para paths...");
       for (const blockName in dxfData.blocks) {
         const block = dxfData.blocks[blockName];
         for (const entity of block.entities || []) {
@@ -301,7 +304,9 @@ class FileLoaderService {
       }
     }
 
-    console.log(`[DXF Paths] Extraídos ${successCount} paths com sucesso, ${failCount} falharam`);
+    console.log(
+      `[DXF Paths] Extraídos ${successCount} paths com sucesso, ${failCount} falharam`,
+    );
     return paths;
   }
 
@@ -312,28 +317,35 @@ class FileLoaderService {
         case "POLYLINE": {
           const vertices = (entity as any).vertices;
           if (!vertices || vertices.length < 2) {
-            console.warn('[entityToPath] POLYLINE sem vértices suficientes:', entity);
+            console.warn(
+              "[entityToPath] POLYLINE sem vértices suficientes:",
+              entity,
+            );
             return null;
           }
           const path = vertices.map((v: any) => {
-            if (typeof v.x !== 'number' || typeof v.y !== 'number') {
-              console.warn('[entityToPath] Vértice inválido:', v);
+            if (typeof v.x !== "number" || typeof v.y !== "number") {
+              console.warn("[entityToPath] Vértice inválido:", v);
               return [0, 0] as [number, number];
             }
             return [v.x, v.y] as [number, number];
           });
-          console.log(`[entityToPath] ${entity.type} com ${path.length} pontos`);
+          console.log(
+            `[entityToPath] ${entity.type} com ${path.length} pontos`,
+          );
           return path;
         }
 
         case "LINE": {
           const line = entity as any;
           if (!line.vertices || line.vertices.length !== 2) {
-            console.warn('[entityToPath] LINE com dados inválidos:', line);
+            console.warn("[entityToPath] LINE com dados inválidos:", line);
             return null;
           }
-          const path = line.vertices.map((v: any) => [v.x, v.y] as [number, number]);
-          console.log('[entityToPath] LINE com 2 pontos');
+          const path = line.vertices.map(
+            (v: any) => [v.x, v.y] as [number, number],
+          );
+          console.log("[entityToPath] LINE com 2 pontos");
           return path;
         }
 
@@ -401,25 +413,42 @@ class FileLoaderService {
           const spline = entity as any;
           const points = spline.controlPoints || spline.fitPoints;
           if (!points || points.length < 2) {
-            console.warn('[entityToPath] SPLINE sem pontos suficientes:', spline);
+            console.warn(
+              "[entityToPath] SPLINE sem pontos suficientes:",
+              spline,
+            );
             return null;
           }
-          const path = points.map((p: any) => [p.x || 0, p.y || 0] as [number, number]);
+          const path = points.map(
+            (p: any) => [p.x || 0, p.y || 0] as [number, number],
+          );
           console.log(`[entityToPath] SPLINE com ${path.length} pontos`);
           return path;
         }
 
         case "VERTEX":
         case "SEQEND":
-          console.log('[entityToPath] Entidade de suporte ignorada:', entity.type);
+          console.log(
+            "[entityToPath] Entidade de suporte ignorada:",
+            entity.type,
+          );
           return null;
 
         default:
-          console.warn('[entityToPath] Tipo de entidade não suportado:', entity.type, entity);
+          console.warn(
+            "[entityToPath] Tipo de entidade não suportado:",
+            entity.type,
+            entity,
+          );
           return null;
       }
     } catch (error) {
-      console.error('[entityToPath] Erro ao processar:', entity.type, error, entity);
+      console.error(
+        "[entityToPath] Erro ao processar:",
+        entity.type,
+        error,
+        entity,
+      );
       return null;
     }
   }
