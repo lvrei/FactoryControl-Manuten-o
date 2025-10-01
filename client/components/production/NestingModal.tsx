@@ -21,6 +21,7 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
   const [fileName, setFileName] = useState<string>("");
   const [parts, setParts] = useState<NestPart[]>([]);
   const [mappingFoamTypeId, setMappingFoamTypeId] = useState<string>("");
+  const [dxfDrawing, setDxfDrawing] = useState<ReturnType<typeof parseDxfPaths> | null>(null);
   const [sheet, setSheet] = useState<Sheet>({
     length: 2000,
     width: 1000,
