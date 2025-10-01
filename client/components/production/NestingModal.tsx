@@ -100,7 +100,9 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
           setParts(ps);
         } else if (file.name.toLowerCase().endsWith(".dxf")) {
           if (!/SECTION/i.test(text)) {
-            alert("Este DXF parece estar em formato binário. Exporte como DXF ASCII (ex.: R12) e tente novamente.");
+            alert(
+              "Este DXF parece estar em formato binário. Exporte como DXF ASCII (ex.: R12) e tente novamente.",
+            );
             return;
           }
           const ps = parseDxfRectangles(text);
@@ -317,7 +319,13 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                   <strong>{result.sheetsUsed}</strong>
                 </div>
                 <div>Utilização: {(result.utilization * 100).toFixed(1)}%</div>
-                <div>Peças detetadas: <strong>{parts.length}</strong> • Quantidade total: <strong>{parts.reduce((s,p)=>s+(p.quantity||1),0)}</strong></div>
+                <div>
+                  Peças detetadas: <strong>{parts.length}</strong> • Quantidade
+                  total:{" "}
+                  <strong>
+                    {parts.reduce((s, p) => s + (p.quantity || 1), 0)}
+                  </strong>
+                </div>
               </div>
             )}
 

@@ -242,11 +242,11 @@ export function parseDxfRectangles(
       content.matchAll(/\n\s*0\n\s*SPLINE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
     ).map((m) => m[0]);
     for (const blk of splineBlocks) {
-      const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map(
-        (m) => Number(m[1]),
+      const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map((m) =>
+        Number(m[1]),
       );
-      const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map(
-        (m) => Number(m[1]),
+      const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map((m) =>
+        Number(m[1]),
       );
       if (xs.length >= 2 && ys.length >= 2) {
         const minX = Math.min(...xs);
@@ -273,7 +273,12 @@ export function parseDxfRectangles(
       const r = Number(rMatch[1]);
       if (!isFinite(r) || r <= 0) continue;
       const size = 2 * r;
-      parts.push({ length: size, width: size, height: defaultHeight, quantity: 1 });
+      parts.push({
+        length: size,
+        width: size,
+        height: defaultHeight,
+        quantity: 1,
+      });
     }
 
     const ellipseBlocks = Array.from(
@@ -310,11 +315,11 @@ export function parseDxfRectangles(
       const name = nameMatch ? nameMatch[1].trim() : "";
       if (!name) continue;
 
-      let xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map(
-        (m) => Number(m[1]),
+      let xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map((m) =>
+        Number(m[1]),
       );
-      let ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map(
-        (m) => Number(m[1]),
+      let ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map((m) =>
+        Number(m[1]),
       );
       // If no vertices, try circle/ellipse sizes as extents
       if (xs.length < 2 || ys.length < 2) {
@@ -363,7 +368,13 @@ export function parseDxfRectangles(
           w = l;
           l = tmp;
         }
-        if (w > 0 && l > 0) parts.push({ length: l, width: w, height: defaultHeight, quantity: 1 });
+        if (w > 0 && l > 0)
+          parts.push({
+            length: l,
+            width: w,
+            height: defaultHeight,
+            quantity: 1,
+          });
       }
     }
   }
