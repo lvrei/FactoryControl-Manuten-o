@@ -113,13 +113,13 @@ export function parseDxfRectangles(
   const extractBlocks = (type: string) =>
     Array.from(
       content.matchAll(
-        new RegExp(`\n\\s*0\n\\s*${type}[\\s\\S]*?(?=\n\\s*0\n\\s*\\w+)`, "gi"),
+        new RegExp(`(?:^|\r?\n)\s*0\r?\n\s*${type}[\s\S]*?(?=(?:^|\r?\n)\s*0\r?\n\s*\w+)`, "gi"),
       ),
     ).map((m) => m[0]);
 
   const lwBlocks = extractBlocks("LWPOLYLINE");
   const plBlocks = Array.from(
-    content.matchAll(/\n\s*0\n\s*POLYLINE[\s\S]*?\n\s*0\n\s*SEQEND/gi),
+    content.matchAll(/(?:^|\r?\n)\s*0\r?\n\s*POLYLINE[\s\S]*?(?:^|\r?\n)\s*0\r?\n\s*SEQEND/gi),
   ).map((m) => m[0]);
 
   const parseBlock = (blk: string) => {
@@ -155,7 +155,7 @@ export function parseDxfRectangles(
   // If none found via polylines, try to compose rectangles from LINE entities
   if (parts.length === 0) {
     const lineBlocks = Array.from(
-      content.matchAll(/\n\s*0\n\s*LINE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+      content.matchAll(/(?:^|\r?\n)\s*0\r?\n\s*LINE[\s\S]*?(?=(?:^|\r?\n)\s*0\r?\n\s*\w+)/gi),
     ).map((m) => m[0]);
 
     type HLine = { y: number; x1: number; x2: number };
@@ -244,7 +244,7 @@ export function parseDxfRectangles(
   // If still none, try SPLINE (bounding box of control points)
   if (parts.length === 0) {
     const splineBlocks = Array.from(
-      content.matchAll(/\n\s*0\n\s*SPLINE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+      content.matchAll(/(?:^|\r?\n)\s*0\r?\n\s*SPLINE[\s\S]*?(?=(?:^|\r?\n)\s*0\r?\n\s*\w+)/gi),
     ).map((m) => m[0]);
     for (const blk of splineBlocks) {
       const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map((m) =>
@@ -270,7 +270,7 @@ export function parseDxfRectangles(
   // If still none, try CIRCLE and ELLIPSE
   if (parts.length === 0) {
     const circleBlocks = Array.from(
-      content.matchAll(/\n\s*0\n\s*CIRCLE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+      content.matchAll(/(?:^|\r?\n)\s*0\r?\n\s*CIRCLE[\s\S]*?(?=(?:^|\r?\n)\s*0\r?\n\s*\w+)/gi),
     ).map((m) => m[0]);
     for (const blk of circleBlocks) {
       const rMatch = /\n\s*40\n\s*([\-\d\.]+)/.exec(blk);
@@ -287,7 +287,7 @@ export function parseDxfRectangles(
     }
 
     const ellipseBlocks = Array.from(
-      content.matchAll(/\n\s*0\n\s*ELLIPSE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+      content.matchAll(/(?:^|\r?\n)\s*0\r?\n\s*ELLIPSE[\s\S]*?(?=(?:^|\r?\n)\s*0\r?\n\s*\w+)/gi),
     ).map((m) => m[0]);
     for (const blk of ellipseBlocks) {
       const mx = /\n\s*11\n\s*([\-\d\.]+)/.exec(blk);
@@ -351,7 +351,7 @@ export function parseDxfRectangles(
     // Read INSERT occurrences and create parts accordingly
     if (blockDims.size > 0) {
       const inserts = Array.from(
-        content.matchAll(/\n\s*0\n\s*INSERT[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+        content.matchAll(/(?:^|\r?\n)\s*0\r?\n\s*INSERT[\s\S]*?(?=(?:^|\r?\n)\s*0\r?\n\s*\w+)/gi),
       ).map((m) => m[0]);
       for (const ins of inserts) {
         const nameMatch = /\n\s*2\n\s*([^\n\r]+)/.exec(ins);
