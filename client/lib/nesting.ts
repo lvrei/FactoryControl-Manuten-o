@@ -236,6 +236,68 @@ export function parseDxfRectangles(
     }
   }
 
+  // If still none, try SPLINE (bounding box of control points)
+  if (parts.length === 0) {
+    const splineBlocks = Array.from(
+      content.matchAll(/\n\s*0\n\s*SPLINE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+    ).map((m) => m[0]);
+    for (const blk of splineBlocks) {
+      const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map(
+        (m) => Number(m[1]),
+      );
+      const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map(
+        (m) => Number(m[1]),
+      );
+      if (xs.length >= 2 && ys.length >= 2) {
+        const minX = Math.min(...xs);
+        const maxX = Math.max(...xs);
+        const minY = Math.min(...ys);
+        const maxY = Math.max(...ys);
+        const width = Math.abs(maxX - minX);
+        const length = Math.abs(maxY - minY);
+        if (width > 0 && length > 0) {
+          parts.push({ length, width, height: defaultHeight, quantity: 1 });
+        }
+      }
+    }
+  }
+
+  // If still none, try CIRCLE and ELLIPSE
+  if (parts.length === 0) {
+    const circleBlocks = Array.from(
+      content.matchAll(/\n\s*0\n\s*CIRCLE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+    ).map((m) => m[0]);
+    for (const blk of circleBlocks) {
+      const rMatch = /\n\s*40\n\s*([\-\d\.]+)/.exec(blk);
+      if (!rMatch) continue;
+      const r = Number(rMatch[1]);
+      if (!isFinite(r) || r <= 0) continue;
+      const size = 2 * r;
+      parts.push({ length: size, width: size, height: defaultHeight, quantity: 1 });
+    }
+
+    const ellipseBlocks = Array.from(
+      content.matchAll(/\n\s*0\n\s*ELLIPSE[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+    ).map((m) => m[0]);
+    for (const blk of ellipseBlocks) {
+      const mx = /\n\s*11\n\s*([\-\d\.]+)/.exec(blk);
+      const my = /\n\s*21\n\s*([\-\d\.]+)/.exec(blk);
+      const ratioMatch = /\n\s*40\n\s*([\-\d\.]+)/.exec(blk);
+      const mxv = mx ? Number(mx[1]) : NaN;
+      const myv = my ? Number(my[1]) : NaN;
+      const ratio = ratioMatch ? Number(ratioMatch[1]) : NaN;
+      if (!isFinite(mxv) || !isFinite(myv) || !isFinite(ratio) || ratio <= 0)
+        continue;
+      const major = 2 * Math.sqrt(mxv * mxv + myv * myv);
+      const minor = major * ratio;
+      const width = Math.max(major, minor);
+      const length = Math.min(major, minor);
+      if (width > 0 && length > 0) {
+        parts.push({ length, width, height: defaultHeight, quantity: 1 });
+      }
+    }
+  }
+
   // Merge identical rectangles
   const merged: Record<string, NestPart> = {};
   for (const p of parts) {
