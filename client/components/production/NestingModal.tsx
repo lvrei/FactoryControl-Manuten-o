@@ -103,7 +103,7 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
           setParts(ps);
           if (!ps || ps.length === 0) {
             alert(
-              "DXF carregado, mas não foram encontrados retângulos fechados. Use polylines fechadas (LWPOLYLINE/POLYLINE) ou forneça JSON."
+              "DXF carregado, mas não foram encontrados retângulos fechados. Use polylines fechadas (LWPOLYLINE/POLYLINE) ou forneça JSON.",
             );
           }
         } else {

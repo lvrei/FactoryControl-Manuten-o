@@ -108,26 +108,21 @@ export function parseDxfRectangles(
   const extractBlocks = (type: string) =>
     Array.from(
       content.matchAll(
-        new RegExp(
-          `\n\\s*0\n\\s*${type}[\\s\\S]*?(?=\n\\s*0\n\\s*\\w+)`,
-          "gi",
-        ),
+        new RegExp(`\n\\s*0\n\\s*${type}[\\s\\S]*?(?=\n\\s*0\n\\s*\\w+)`, "gi"),
       ),
     ).map((m) => m[0]);
 
   const lwBlocks = extractBlocks("LWPOLYLINE");
   const plBlocks = Array.from(
-    content.matchAll(
-      /\n\s*0\n\s*POLYLINE[\s\S]*?\n\s*0\n\s*SEQEND/gi,
-    ),
+    content.matchAll(/\n\s*0\n\s*POLYLINE[\s\S]*?\n\s*0\n\s*SEQEND/gi),
   ).map((m) => m[0]);
 
   const parseBlock = (blk: string) => {
-    const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map(
-      (m) => Number(m[1]),
+    const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map((m) =>
+      Number(m[1]),
     );
-    const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map(
-      (m) => Number(m[1]),
+    const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map((m) =>
+      Number(m[1]),
     );
     if (xs.length < 4 || ys.length < 4) return;
 
