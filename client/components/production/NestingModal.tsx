@@ -8,6 +8,7 @@ import {
   packRectangles,
   parseDxfRectangles,
   parseJsonParts,
+  parseDxfPaths,
 } from "@/lib/nesting";
 
 export type NestingModalProps = {
