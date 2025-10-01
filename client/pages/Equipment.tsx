@@ -762,14 +762,26 @@ export default function Equipment() {
               </div>
               <div className="md:col-span-2 min-h-[50vh] bg-black/80 flex items-center justify-center">
                 {(() => {
-                  const cam = equipmentCameras.find((cc) => cc.id === selectedCameraId);
+                  const cam = equipmentCameras.find(
+                    (cc) => cc.id === selectedCameraId,
+                  );
                   if (!cam)
-                    return <div className="text-sm text-muted-foreground">Selecione uma câmara</div>;
+                    return (
+                      <div className="text-sm text-muted-foreground">
+                        Selecione uma câmara
+                      </div>
+                    );
 
-                  const MJpegOrPollingImage: React.FC<{ camId: string; alt: string; isHttp: boolean }> = ({ camId, alt, isHttp }) => {
+                  const MJpegOrPollingImage: React.FC<{
+                    camId: string;
+                    alt: string;
+                    isHttp: boolean;
+                  }> = ({ camId, alt, isHttp }) => {
                     const [fallback, setFallback] = useState<boolean>(isHttp);
                     const [src, setSrc] = useState<string>(
-                      isHttp ? camerasService.getSnapshotUrl(camId) : camerasService.getMjpegUrl(camId),
+                      isHttp
+                        ? camerasService.getSnapshotUrl(camId)
+                        : camerasService.getMjpegUrl(camId),
                     );
                     useEffect(() => {
                       if (!fallback) return;
@@ -793,10 +805,15 @@ export default function Equipment() {
                     );
                   };
 
-                  const isHttp = cam.protocol === "http" || cam.url.startsWith("http");
+                  const isHttp =
+                    cam.protocol === "http" || cam.url.startsWith("http");
                   return (
                     <div className="w-full h-full flex items-center justify-center bg-black/50">
-                      <MJpegOrPollingImage camId={cam.id} alt={cam.name} isHttp={isHttp} />
+                      <MJpegOrPollingImage
+                        camId={cam.id}
+                        alt={cam.name}
+                        isHttp={isHttp}
+                      />
                     </div>
                   );
                 })()}
