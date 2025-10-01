@@ -402,34 +402,82 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                   800 / Math.max(1, bb.maxX - bb.minX),
                   600 / Math.max(1, bb.maxY - bb.minY),
                 );
+                const width = Math.max(420, (bb.maxX - bb.minX) * scale + pad * 2);
+                const height = (bb.maxY - bb.minY) * scale + pad * 2;
+                const toSvgX = (x:number) => (x - bb.minX) * scale + pad;
+                const toSvgY = (y:number) => (bb.maxY - y) * scale + pad;
+                const fromClientToDrawing = (clientX:number, clientY:number) => {
+                  const svg = svgRef.current;
+                  if (!svg) return null;
+                  const rect = svg.getBoundingClientRect();
+                  const sx = clientX - rect.left;
+                  const sy = clientY - rect.top;
+                  const dx = (sx - pad) / scale + bb.minX;
+                  const dy = bb.maxY - (sy - pad) / scale;
+                  return {x: dx, y: dy};
+                };
+                const onDown = (e: React.MouseEvent<SVGSVGElement>) => {
+                  const p = fromClientToDrawing(e.clientX, e.clientY);
+                  if (!p) return;
+                  setDragStart(p);
+                  setDragCurr(p);
+                };
+                const onMove = (e: React.MouseEvent<SVGSVGElement>) => {
+                  if (!dragStart) return;
+                  const p = fromClientToDrawing(e.clientX, e.clientY);
+                  if (!p) return;
+                  setDragCurr(p);
+                };
+                const onUp = () => {
+                  if (!dragStart || !dragCurr) {
+                    setDragStart(null);
+                    setDragCurr(null);
+                    return;
+                  }
+                  const x1 = Math.min(dragStart.x, dragCurr.x);
+                  const x2 = Math.max(dragStart.x, dragCurr.x);
+                  const y1 = Math.min(dragStart.y, dragCurr.y);
+                  const y2 = Math.max(dragStart.y, dragCurr.y);
+                  const widthMm = Math.max(0, x2 - x1);
+                  const lengthMm = Math.max(0, y2 - y1);
+                  if (widthMm > 0 && lengthMm > 0) {
+                    setParts((prev)=>[
+                      ...prev,
+                      { length: Math.round(lengthMm), width: Math.round(widthMm), height: manualHeight, quantity: manualQty },
+                    ]);
+                  }
+                  setDragStart(null);
+                  setDragCurr(null);
+                };
                 return (
                   <svg
-                    width={Math.max(420, (bb.maxX - bb.minX) * scale + pad * 2)}
-                    height={(bb.maxY - bb.minY) * scale + pad * 2}
-                    style={{ background: "#f7fafc" }}
+                    ref={svgRef}
+                    onMouseDown={onDown}
+                    onMouseMove={onMove}
+                    onMouseUp={onUp}
+                    width={width}
+                    height={height}
+                    style={{ background: "#f7fafc", cursor: "crosshair" }}
                   >
-                    <rect
-                      x={0}
-                      y={0}
-                      width="100%"
-                      height="100%"
-                      fill="#fff"
-                      stroke="#e2e8f0"
-                    />
+                    <rect x={0} y={0} width="100%" height="100%" fill="#fff" stroke="#e2e8f0" />
                     {dxfDrawing.paths.map((poly, i) => (
                       <polyline
                         key={i}
                         fill="none"
                         stroke="#1f2937"
                         strokeWidth={1}
-                        points={poly
-                          .map(
-                            ([x, y]) =>
-                              `${(x - bb.minX) * scale + pad},${(bb.maxY - y) * scale + pad}`,
-                          )
-                          .join(" ")}
+                        points={poly.map(([x, y]) => `${toSvgX(x)},${toSvgY(y)}`).join(" ")}
                       />
                     ))}
+                    {dragStart && dragCurr && (
+                      (()=>{
+                        const sx = Math.min(toSvgX(dragStart.x), toSvgX(dragCurr.x));
+                        const sy = Math.min(toSvgY(dragStart.y), toSvgY(dragCurr.y));
+                        const sw = Math.abs(toSvgX(dragCurr.x) - toSvgX(dragStart.x));
+                        const sh = Math.abs(toSvgY(dragCurr.y) - toSvgY(dragStart.y));
+                        return <rect x={sx} y={sy} width={sw} height={sh} fill="rgba(59,130,246,0.2)" stroke="#3b82f6" strokeDasharray="4 2" />;
+                      })()
+                    )}
                   </svg>
                 );
               })()
