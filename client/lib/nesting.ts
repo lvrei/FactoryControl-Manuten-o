@@ -96,55 +96,48 @@ export function packRectangles(parts: NestPart[], sheet: Sheet): NestResult {
   return { placements, sheetsUsed, utilization };
 }
 
-// Minimal DXF rectangle extractor: looks for LWPOLYLINE closed with 4+ vertices or POLYLINE/SEQEND blocks.
+// Minimal DXF rectangle extractor over entity blocks. Accepts open polylines if first==last or 4+ vertices.
 export function parseDxfRectangles(
   dxfContent: string,
   defaultHeight = 50,
 ): NestPart[] {
   const parts: NestPart[] = [];
-
-  // Normalize line endings to handle CRLF/LF uniformly (regex below still uses \n but \r is matched by \s)
   const content = String(dxfContent);
 
-  // Parse LWPOLYLINE entries inside any section
-  const sections = content.split(/ENDSEC/i);
-  for (const sec of sections) {
-    if (!/LWPOLYLINE/i.test(sec)) continue;
-    const xs = Array.from(sec.matchAll(/\n\s*10\s*\n\s*([\-\d\.]+)/g)).map(
-      (m) => Number(m[1]),
-    );
-    const ys = Array.from(sec.matchAll(/\n\s*20\s*\n\s*([\-\d\.]+)/g)).map(
-      (m) => Number(m[1]),
-    );
-    const closed = /\n\s*70\s*\n\s*(\d+)/.exec(sec);
-    const isClosed = closed ? (Number(closed[1]) & 1) === 1 : false;
-    if (!isClosed || xs.length < 4 || ys.length < 4) continue;
-    const minX = Math.min(...xs);
-    const maxX = Math.max(...xs);
-    const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
-    const width = Math.abs(maxX - minX);
-    const length = Math.abs(maxY - minY);
-    if (width > 0 && length > 0) {
-      parts.push({ length, width, height: defaultHeight, quantity: 1 });
-    }
-  }
+  // Helper to extract entity blocks by type until next entity (0 <type>)
+  const extractBlocks = (type: string) =>
+    Array.from(
+      content.matchAll(
+        new RegExp(
+          `\n\\s*0\n\\s*${type}[\\s\\S]*?(?=\n\\s*0\n\\s*\\w+)`,
+          "gi",
+        ),
+      ),
+    ).map((m) => m[0]);
 
-  // Additionally parse classic POLYLINE ... SEQEND blocks (with VERTEX entries)
-  const polyBlocks = Array.from(
-    content.matchAll(/\n\s*0\s*\n\s*POLYLINE[\s\S]*?\n\s*0\s*\n\s*SEQEND/gi),
+  const lwBlocks = extractBlocks("LWPOLYLINE");
+  const plBlocks = Array.from(
+    content.matchAll(
+      /\n\s*0\n\s*POLYLINE[\s\S]*?\n\s*0\n\s*SEQEND/gi,
+    ),
   ).map((m) => m[0]);
-  for (const blk of polyBlocks) {
-    const closed = /\n\s*70\s*\n\s*(\d+)/.exec(blk);
-    const isClosed = closed ? (Number(closed[1]) & 1) === 1 : false;
-    if (!isClosed) continue;
-    const xs = Array.from(blk.matchAll(/\n\s*10\s*\n\s*([\-\d\.]+)/g)).map(
+
+  const parseBlock = (blk: string) => {
+    const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map(
       (m) => Number(m[1]),
     );
-    const ys = Array.from(blk.matchAll(/\n\s*20\s*\n\s*([\-\d\.]+)/g)).map(
+    const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map(
       (m) => Number(m[1]),
     );
-    if (xs.length < 4 || ys.length < 4) continue;
+    if (xs.length < 4 || ys.length < 4) return;
+
+    // Closed flag or repeated first/last
+    const flagMatch = /\n\s*70\n\s*(\d+)/.exec(blk);
+    const isClosedFlag = flagMatch ? (Number(flagMatch[1]) & 1) === 1 : false;
+    const isClosedCoords =
+      xs[0] === xs[xs.length - 1] && ys[0] === ys[ys.length - 1];
+    if (!isClosedFlag && !isClosedCoords && xs.length !== 4) return;
+
     const minX = Math.min(...xs);
     const maxX = Math.max(...xs);
     const minY = Math.min(...ys);
@@ -154,12 +147,17 @@ export function parseDxfRectangles(
     if (width > 0 && length > 0) {
       parts.push({ length, width, height: defaultHeight, quantity: 1 });
     }
-  }
+  };
+
+  lwBlocks.forEach(parseBlock);
+  plBlocks.forEach(parseBlock);
 
   // Merge identical rectangles
   const merged: Record<string, NestPart> = {};
   for (const p of parts) {
-    const key = `${Math.round(p.length)}x${Math.round(p.width)}x${Math.round(p.height)}`;
+    const key = `${Math.round(p.length)}x${Math.round(p.width)}x${Math.round(
+      p.height,
+    )}`;
     if (!merged[key]) merged[key] = { ...p };
     else merged[key].quantity += p.quantity;
   }
