@@ -99,6 +99,10 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
           const ps = parseJsonParts(text);
           setParts(ps);
         } else if (file.name.toLowerCase().endsWith(".dxf")) {
+          if (!/SECTION/i.test(text)) {
+            alert("Este DXF parece estar em formato binário. Exporte como DXF ASCII (ex.: R12) e tente novamente.");
+            return;
+          }
           const ps = parseDxfRectangles(text);
           setParts(ps);
           if (!ps || ps.length === 0) {
