@@ -783,7 +783,8 @@ export default function Equipment() {
                         ? camerasService.getSnapshotUrl(camId)
                         : camerasService.getMjpegUrl(camId),
                     );
-                    const [firstFrame, setFirstFrame] = useState<boolean>(false);
+                    const [firstFrame, setFirstFrame] =
+                      useState<boolean>(false);
 
                     // Fallback timer: if no first frame within 4s, switch to snapshots
                     useEffect(() => {
