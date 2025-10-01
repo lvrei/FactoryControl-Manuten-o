@@ -159,7 +159,9 @@ export function parseDxfRectangles(
     const V: VLine[] = [];
 
     const val = (blk: string, code: number) => {
-      const m = new RegExp(`\\n\\s*${code}\\n\\s*([\\-\\d\\.]+)`, "g").exec(blk);
+      const m = new RegExp(`\\n\\s*${code}\\n\\s*([\\-\\d\\.]+)`, "g").exec(
+        blk,
+      );
       return m ? Number(m[1]) : NaN;
     };
     const pushLine = (blk: string) => {
@@ -184,11 +186,28 @@ export function parseDxfRectangles(
 
     // Normalize with rounding to reduce floating noise
     const round = (n: number) => Math.round(n * 1000) / 1000;
-    const Hn = H.map((l) => ({ y: round(l.y), x1: round(l.x1), x2: round(l.x2) }))
+    const Hn = H.map((l) => ({
+      y: round(l.y),
+      x1: round(l.x1),
+      x2: round(l.x2),
+    }))
       // merge duplicates
-      .filter((ln, idx, arr) => idx === arr.findIndex((t) => t.y === ln.y && t.x1 === ln.x1 && t.x2 === ln.x2));
-    const Vn = V.map((l) => ({ x: round(l.x), y1: round(l.y1), y2: round(l.y2) }))
-      .filter((ln, idx, arr) => idx === arr.findIndex((t) => t.x === ln.x && t.y1 === ln.y1 && t.y2 === ln.y2));
+      .filter(
+        (ln, idx, arr) =>
+          idx ===
+          arr.findIndex(
+            (t) => t.y === ln.y && t.x1 === ln.x1 && t.x2 === ln.x2,
+          ),
+      );
+    const Vn = V.map((l) => ({
+      x: round(l.x),
+      y1: round(l.y1),
+      y2: round(l.y2),
+    })).filter(
+      (ln, idx, arr) =>
+        idx ===
+        arr.findIndex((t) => t.x === ln.x && t.y1 === ln.y1 && t.y2 === ln.y2),
+    );
 
     // Index verticals for quick lookup
     const vIndex = new Map<string, boolean>();
@@ -228,7 +247,6 @@ export function parseDxfRectangles(
   }
   return Object.values(merged);
 }
-
 
 export function parseJsonParts(jsonText: string): NestPart[] {
   const data = JSON.parse(jsonText);
