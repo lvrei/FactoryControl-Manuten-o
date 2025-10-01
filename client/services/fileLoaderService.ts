@@ -1,5 +1,5 @@
-import DxfParser from 'dxf-parser';
-import type { DxfData, Entity } from 'dxf-parser';
+import DxfParser from "dxf-parser";
+import type { DxfData, Entity } from "dxf-parser";
 
 export type Part = {
   length: number;
@@ -21,7 +21,7 @@ export type LoadedDrawing = {
     maxX: number;
     maxY: number;
   } | null;
-  format: 'dxf' | 'json' | 'svg';
+  format: "dxf" | "json" | "svg";
   metadata?: Record<string, any>;
 };
 
@@ -34,11 +34,15 @@ export type FileLoaderOptions = {
 export class FileLoaderError extends Error {
   constructor(
     message: string,
-    public code: 'UNSUPPORTED_FORMAT' | 'PARSE_ERROR' | 'BINARY_DXF' | 'NO_DATA',
-    public details?: any
+    public code:
+      | "UNSUPPORTED_FORMAT"
+      | "PARSE_ERROR"
+      | "BINARY_DXF"
+      | "NO_DATA",
+    public details?: any,
   ) {
     super(message);
-    this.name = 'FileLoaderError';
+    this.name = "FileLoaderError";
   }
 }
 
@@ -51,7 +55,7 @@ class FileLoaderService {
 
   async loadFile(
     file: File,
-    options: FileLoaderOptions = {}
+    options: FileLoaderOptions = {},
   ): Promise<LoadedDrawing> {
     const {
       defaultHeight = 50,
@@ -59,17 +63,22 @@ class FileLoaderService {
       extractPaths = true,
     } = options;
 
-    const extension = file.name.split('.').pop()?.toLowerCase();
+    const extension = file.name.split(".").pop()?.toLowerCase();
 
     switch (extension) {
-      case 'dxf':
-        return this.loadDxf(file, defaultHeight, detectRectangles, extractPaths);
-      case 'json':
+      case "dxf":
+        return this.loadDxf(
+          file,
+          defaultHeight,
+          detectRectangles,
+          extractPaths,
+        );
+      case "json":
         return this.loadJson(file);
       default:
         throw new FileLoaderError(
           `Formato não suportado: .${extension}. Use DXF ou JSON.`,
-          'UNSUPPORTED_FORMAT'
+          "UNSUPPORTED_FORMAT",
         );
     }
   }
@@ -78,14 +87,14 @@ class FileLoaderService {
     file: File,
     defaultHeight: number,
     detectRectangles: boolean,
-    extractPaths: boolean
+    extractPaths: boolean,
   ): Promise<LoadedDrawing> {
     const text = await this.readFileAsText(file);
 
     if (!/SECTION/i.test(text)) {
       throw new FileLoaderError(
-        'Este DXF está em formato binário. Exporte como DXF ASCII (R12/R2000) e tente novamente.',
-        'BINARY_DXF'
+        "Este DXF está em formato binário. Exporte como DXF ASCII (R12/R2000) e tente novamente.",
+        "BINARY_DXF",
       );
     }
 
@@ -95,8 +104,8 @@ class FileLoaderService {
     } catch (error: any) {
       throw new FileLoaderError(
         `Erro ao parsear DXF: ${error.message}`,
-        'PARSE_ERROR',
-        error
+        "PARSE_ERROR",
+        error,
       );
     }
 
@@ -112,7 +121,7 @@ class FileLoaderService {
       parts,
       paths,
       bbox,
-      format: 'dxf',
+      format: "dxf",
       metadata: {
         header: dxfData.header,
         layerCount: Object.keys(dxfData.tables?.layer?.layers || {}).length,
@@ -150,8 +159,8 @@ class FileLoaderService {
   private entityToPart(entity: Entity, defaultHeight: number): Part | null {
     try {
       switch (entity.type) {
-        case 'LWPOLYLINE':
-        case 'POLYLINE': {
+        case "LWPOLYLINE":
+        case "POLYLINE": {
           const vertices = (entity as any).vertices;
           if (!vertices || vertices.length < 3) return null;
 
@@ -171,13 +180,13 @@ class FileLoaderService {
           return null;
         }
 
-        case 'LINE': {
+        case "LINE": {
           const line = entity as any;
           if (!line.vertices || line.vertices.length !== 2) return null;
           return null;
         }
 
-        case 'CIRCLE': {
+        case "CIRCLE": {
           const circle = entity as any;
           const diameter = circle.radius * 2;
           return {
@@ -185,16 +194,16 @@ class FileLoaderService {
             width: Math.round(diameter),
             height: defaultHeight,
             quantity: 1,
-            label: 'Círculo',
+            label: "Círculo",
           };
         }
 
-        case 'ELLIPSE': {
+        case "ELLIPSE": {
           const ellipse = entity as any;
           const majorAxis = ellipse.majorAxisEndPoint;
-          const majorLength = Math.sqrt(
-            majorAxis.x * majorAxis.x + majorAxis.y * majorAxis.y
-          ) * 2;
+          const majorLength =
+            Math.sqrt(majorAxis.x * majorAxis.x + majorAxis.y * majorAxis.y) *
+            2;
           const minorLength = majorLength * ellipse.axisRatio;
 
           return {
@@ -202,11 +211,11 @@ class FileLoaderService {
             width: Math.round(Math.min(majorLength, minorLength)),
             height: defaultHeight,
             quantity: 1,
-            label: 'Elipse',
+            label: "Elipse",
           };
         }
 
-        case 'INSERT': {
+        case "INSERT": {
           const insert = entity as any;
           const block = (this.dxfParser as any).dxfData?.blocks?.[insert.name];
           if (!block) return null;
@@ -235,7 +244,7 @@ class FileLoaderService {
           return null;
       }
     } catch (error) {
-      console.warn('Erro ao processar entidade:', entity.type, error);
+      console.warn("Erro ao processar entidade:", entity.type, error);
       return null;
     }
   }
@@ -269,20 +278,20 @@ class FileLoaderService {
   private entityToPath(entity: Entity): DrawingPath | null {
     try {
       switch (entity.type) {
-        case 'LWPOLYLINE':
-        case 'POLYLINE': {
+        case "LWPOLYLINE":
+        case "POLYLINE": {
           const vertices = (entity as any).vertices;
           if (!vertices || vertices.length < 2) return null;
           return vertices.map((v: any) => [v.x, v.y] as [number, number]);
         }
 
-        case 'LINE': {
+        case "LINE": {
           const line = entity as any;
           if (!line.vertices || line.vertices.length !== 2) return null;
           return line.vertices.map((v: any) => [v.x, v.y] as [number, number]);
         }
 
-        case 'CIRCLE': {
+        case "CIRCLE": {
           const circle = entity as any;
           const segments = 64;
           const path: DrawingPath = [];
@@ -296,7 +305,7 @@ class FileLoaderService {
           return path;
         }
 
-        case 'ARC': {
+        case "ARC": {
           const arc = entity as any;
           const segments = 32;
           const path: DrawingPath = [];
@@ -317,14 +326,14 @@ class FileLoaderService {
           return path;
         }
 
-        case 'ELLIPSE': {
+        case "ELLIPSE": {
           const ellipse = entity as any;
           const segments = 64;
           const path: DrawingPath = [];
           const majorAxis = ellipse.majorAxisEndPoint;
           const angle = Math.atan2(majorAxis.y, majorAxis.x);
           const majorLength = Math.sqrt(
-            majorAxis.x * majorAxis.x + majorAxis.y * majorAxis.y
+            majorAxis.x * majorAxis.x + majorAxis.y * majorAxis.y,
           );
           const minorLength = majorLength * ellipse.axisRatio;
 
@@ -342,7 +351,7 @@ class FileLoaderService {
           return path;
         }
 
-        case 'SPLINE': {
+        case "SPLINE": {
           const spline = entity as any;
           const points = spline.controlPoints || spline.fitPoints;
           if (!points || points.length < 2) return null;
@@ -353,7 +362,7 @@ class FileLoaderService {
           return null;
       }
     } catch (error) {
-      console.warn('Erro ao processar path da entidade:', entity.type, error);
+      console.warn("Erro ao processar path da entidade:", entity.type, error);
       return null;
     }
   }
@@ -367,15 +376,15 @@ class FileLoaderService {
     } catch (error: any) {
       throw new FileLoaderError(
         `Erro ao parsear JSON: ${error.message}`,
-        'PARSE_ERROR',
-        error
+        "PARSE_ERROR",
+        error,
       );
     }
 
     if (!Array.isArray(data)) {
       throw new FileLoaderError(
-        'JSON deve ser um array de peças',
-        'PARSE_ERROR'
+        "JSON deve ser um array de peças",
+        "PARSE_ERROR",
       );
     }
 
@@ -392,8 +401,8 @@ class FileLoaderService {
 
     if (parts.length === 0) {
       throw new FileLoaderError(
-        'Nenhuma peça válida encontrada no JSON',
-        'NO_DATA'
+        "Nenhuma peça válida encontrada no JSON",
+        "NO_DATA",
       );
     }
 
@@ -401,7 +410,7 @@ class FileLoaderService {
       parts,
       paths: [],
       bbox: null,
-      format: 'json',
+      format: "json",
     };
   }
 
@@ -421,7 +430,7 @@ class FileLoaderService {
   }
 
   private calculateBoundingBox(
-    paths: DrawingPath[]
+    paths: DrawingPath[],
   ): { minX: number; minY: number; maxX: number; maxY: number } | null {
     if (paths.length === 0) return null;
 
@@ -461,8 +470,8 @@ class FileLoaderService {
   private readFileAsText(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result || ''));
-      reader.onerror = () => reject(new Error('Erro ao ler ficheiro'));
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Erro ao ler ficheiro"));
       reader.readAsText(file);
     });
   }

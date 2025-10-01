@@ -2,13 +2,12 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { X, Upload, Package, AlertTriangle, Layers, Info } from "lucide-react";
 import { productionService } from "@/services/productionService";
 import { FoamBlock, FoamType, ProductionOrderLine } from "@/types/production";
-import { fileLoaderService, FileLoaderError } from "@/services/fileLoaderService";
-import type { Part, LoadedDrawing } from "@/services/fileLoaderService";
 import {
-  NestPart,
-  Sheet,
-  packRectangles,
-} from "@/lib/nesting";
+  fileLoaderService,
+  FileLoaderError,
+} from "@/services/fileLoaderService";
+import type { Part, LoadedDrawing } from "@/services/fileLoaderService";
+import { NestPart, Sheet, packRectangles } from "@/lib/nesting";
 
 export type NestingModalProps = {
   onClose: () => void;
@@ -34,8 +33,12 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
   const [stockWarning, setStockWarning] = useState<string>("");
   const [manualHeight, setManualHeight] = useState<number>(50);
   const [manualQty, setManualQty] = useState<number>(1);
-  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(null);
-  const [dragCurr, setDragCurr] = useState<{ x: number; y: number } | null>(null);
+  const [dragStart, setDragStart] = useState<{ x: number; y: number } | null>(
+    null,
+  );
+  const [dragCurr, setDragCurr] = useState<{ x: number; y: number } | null>(
+    null,
+  );
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
@@ -99,7 +102,7 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
     setFileName(file.name);
     setIsLoading(true);
     setErrorMessage("");
-    
+
     try {
       const loadedDrawing = await fileLoaderService.loadFile(file, {
         defaultHeight: manualHeight,
@@ -113,8 +116,8 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
       if (loadedDrawing.parts.length === 0 && loadedDrawing.paths.length > 0) {
         setErrorMessage(
           "DXF carregado com sucesso! Desenho visualizado abaixo. " +
-          "Não foram detetados retângulos automáticamente. " +
-          "Use o mouse para selecionar áreas manualmente ou forneça um JSON com as dimensões."
+            "Não foram detetados retângulos automáticamente. " +
+            "Use o mouse para selecionar áreas manualmente ou forneça um JSON com as dimensões.",
         );
       } else if (loadedDrawing.parts.length > 0) {
         setErrorMessage("");
@@ -122,10 +125,12 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
     } catch (error) {
       if (error instanceof FileLoaderError) {
         setErrorMessage(error.message);
-        console.error('File loader error:', error.code, error.details);
+        console.error("File loader error:", error.code, error.details);
       } else {
-        setErrorMessage(`Erro ao carregar ficheiro: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
-        console.error('Unexpected error:', error);
+        setErrorMessage(
+          `Erro ao carregar ficheiro: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
+        );
+        console.error("Unexpected error:", error);
       }
       setDrawing(null);
       setParts([]);
@@ -203,7 +208,8 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
               <Layers className="h-5 w-5" /> Nesting (DXF/JSON)
             </h3>
             <p className="text-xs text-muted-foreground">
-              Importe desenhos e gere linhas para OP. Suporta DXF (ASCII) e JSON.
+              Importe desenhos e gere linhas para OP. Suporta DXF (ASCII) e
+              JSON.
             </p>
           </div>
           <button
@@ -245,9 +251,11 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
               {drawing?.metadata && (
                 <div className="text-xs text-muted-foreground mt-2 p-2 bg-muted/30 rounded">
                   <Info className="h-3 w-3 inline mr-1" />
-                  {drawing.format.toUpperCase()} | 
-                  {drawing.metadata.entityCount && ` ${drawing.metadata.entityCount} entidades`}
-                  {drawing.metadata.layerCount && ` | ${drawing.metadata.layerCount} layers`}
+                  {drawing.format.toUpperCase()} |
+                  {drawing.metadata.entityCount &&
+                    ` ${drawing.metadata.entityCount} entidades`}
+                  {drawing.metadata.layerCount &&
+                    ` | ${drawing.metadata.layerCount} layers`}
                 </div>
               )}
               <div className="text-xs text-muted-foreground mt-2">
@@ -272,11 +280,13 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
             </div>
 
             {errorMessage && (
-              <div className={`p-3 rounded border text-sm ${
-                errorMessage.includes('sucesso') 
-                  ? 'bg-blue-50 border-blue-200 text-blue-700'
-                  : 'bg-red-50 border-red-200 text-red-700'
-              }`}>
+              <div
+                className={`p-3 rounded border text-sm ${
+                  errorMessage.includes("sucesso")
+                    ? "bg-blue-50 border-blue-200 text-blue-700"
+                    : "bg-red-50 border-red-200 text-red-700"
+                }`}
+              >
                 <AlertTriangle className="h-4 w-4 inline mr-2" />
                 {errorMessage}
               </div>
@@ -524,11 +534,15 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                     </div>
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div>
-                        <label className="block text-xs">Altura seleção (mm)</label>
+                        <label className="block text-xs">
+                          Altura seleção (mm)
+                        </label>
                         <input
                           type="number"
                           value={manualHeight}
-                          onChange={(e) => setManualHeight(Number(e.target.value))}
+                          onChange={(e) =>
+                            setManualHeight(Number(e.target.value))
+                          }
                           className="w-full border rounded px-2 py-1 text-sm"
                         />
                       </div>

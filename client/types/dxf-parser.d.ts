@@ -1,4 +1,4 @@
-declare module 'dxf-parser' {
+declare module "dxf-parser" {
   export default class DxfParser {
     parseSync(dxfString: string): DxfData;
   }
@@ -32,24 +32,24 @@ declare module 'dxf-parser' {
   }
 
   export interface Line extends Entity {
-    type: 'LINE';
+    type: "LINE";
     vertices: [Point, Point];
   }
 
   export interface Polyline extends Entity {
-    type: 'POLYLINE' | 'LWPOLYLINE';
+    type: "POLYLINE" | "LWPOLYLINE";
     vertices: Point[];
     closed?: boolean;
   }
 
   export interface Circle extends Entity {
-    type: 'CIRCLE';
+    type: "CIRCLE";
     center: Point;
     radius: number;
   }
 
   export interface Arc extends Entity {
-    type: 'ARC';
+    type: "ARC";
     center: Point;
     radius: number;
     startAngle: number;
@@ -57,7 +57,7 @@ declare module 'dxf-parser' {
   }
 
   export interface Ellipse extends Entity {
-    type: 'ELLIPSE';
+    type: "ELLIPSE";
     center: Point;
     majorAxisEndPoint: Point;
     axisRatio: number;
@@ -66,7 +66,7 @@ declare module 'dxf-parser' {
   }
 
   export interface Spline extends Entity {
-    type: 'SPLINE';
+    type: "SPLINE";
     controlPoints: Point[];
     fitPoints?: Point[];
     degree?: number;
@@ -74,7 +74,7 @@ declare module 'dxf-parser' {
   }
 
   export interface Insert extends Entity {
-    type: 'INSERT';
+    type: "INSERT";
     name: string;
     position: Point;
     xScale?: number;
