@@ -21,7 +21,9 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
   const [fileName, setFileName] = useState<string>("");
   const [parts, setParts] = useState<NestPart[]>([]);
   const [mappingFoamTypeId, setMappingFoamTypeId] = useState<string>("");
-  const [dxfDrawing, setDxfDrawing] = useState<ReturnType<typeof parseDxfPaths> | null>(null);
+  const [dxfDrawing, setDxfDrawing] = useState<ReturnType<
+    typeof parseDxfPaths
+  > | null>(null);
   const [sheet, setSheet] = useState<Sheet>({
     length: 2000,
     width: 1000,
@@ -376,9 +378,17 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                   const h = p.length * svgScale;
                   return (
                     <g key={idx}>
-                      <rect x={x} y={y} width={w} height={h} fill="#c7f9cc" stroke="#2b8a3e" />
+                      <rect
+                        x={x}
+                        y={y}
+                        width={w}
+                        height={h}
+                        fill="#c7f9cc"
+                        stroke="#2b8a3e"
+                      />
                       <text x={x + 4} y={y + 12} fontSize={10} fill="#1a202c">
-                        {Math.round(p.length)}×{Math.round(p.width)}×{Math.round(p.height)}
+                        {Math.round(p.length)}×{Math.round(p.width)}×
+                        {Math.round(p.height)}
                       </text>
                     </g>
                   );
@@ -398,7 +408,14 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                     height={(bb.maxY - bb.minY) * scale + pad * 2}
                     style={{ background: "#f7fafc" }}
                   >
-                    <rect x={0} y={0} width="100%" height="100%" fill="#fff" stroke="#e2e8f0" />
+                    <rect
+                      x={0}
+                      y={0}
+                      width="100%"
+                      height="100%"
+                      fill="#fff"
+                      stroke="#e2e8f0"
+                    />
                     {dxfDrawing.paths.map((poly, i) => (
                       <polyline
                         key={i}
@@ -406,7 +423,10 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                         stroke="#1f2937"
                         strokeWidth={1}
                         points={poly
-                          .map(([x, y]) => `${(x - bb.minX) * scale + pad},${(bb.maxY - y) * scale + pad}`)
+                          .map(
+                            ([x, y]) =>
+                              `${(x - bb.minX) * scale + pad},${(bb.maxY - y) * scale + pad}`,
+                          )
                           .join(" ")}
                       />
                     ))}

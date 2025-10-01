@@ -420,22 +420,36 @@ export function parseDxfPaths(dxfContent: string): DxfDrawing {
   const blocks = (type: string, regex?: RegExp) =>
     Array.from(
       content.matchAll(
-        regex || new RegExp(`\n\\s*0\n\\s*${type}[\\s\\S]*?(?=\n\\s*0\\n\\s*\\w+)`, "gi"),
+        regex ||
+          new RegExp(
+            `\n\\s*0\n\\s*${type}[\\s\\S]*?(?=\n\\s*0\\n\\s*\\w+)`,
+            "gi",
+          ),
       ),
     ).map((m) => m[0]);
 
   // LWPOLYLINE
   for (const blk of blocks("LWPOLYLINE")) {
-    const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map((m) => Number(m[1]));
-    const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map((m) => Number(m[1]));
+    const xs = Array.from(blk.matchAll(/\n\s*10\n\s*([\-\d\.]+)/g)).map((m) =>
+      Number(m[1]),
+    );
+    const ys = Array.from(blk.matchAll(/\n\s*20\n\s*([\-\d\.]+)/g)).map((m) =>
+      Number(m[1]),
+    );
     const pts: Array<[number, number]> = [];
-    for (let i = 0; i < Math.min(xs.length, ys.length); i++) pts.push([xs[i], ys[i]]);
+    for (let i = 0; i < Math.min(xs.length, ys.length); i++)
+      pts.push([xs[i], ys[i]]);
     if (pts.length >= 2) paths.push(pts);
   }
 
   // POLYLINE + VERTEX ... SEQEND
-  for (const blk of blocks("POLYLINE", /\n\s*0\n\s*POLYLINE[\s\S]*?\n\s*0\n\s*SEQEND/gi)) {
-    const verts = Array.from(blk.matchAll(/\n\s*0\n\s*VERTEX[\s\S]*?(?=\n\s*0\n\s*\w+)/gi)).map((m) => m[0]);
+  for (const blk of blocks(
+    "POLYLINE",
+    /\n\s*0\n\s*POLYLINE[\s\S]*?\n\s*0\n\s*SEQEND/gi,
+  )) {
+    const verts = Array.from(
+      blk.matchAll(/\n\s*0\n\s*VERTEX[\s\S]*?(?=\n\s*0\n\s*\w+)/gi),
+    ).map((m) => m[0]);
     const pts: Array<[number, number]> = [];
     for (const v of verts) {
       const x = /\n\s*10\n\s*([\-\d\.]+)/.exec(v);
@@ -451,7 +465,11 @@ export function parseDxfPaths(dxfContent: string): DxfDrawing {
     const y1 = /\n\s*20\n\s*([\-\d\.]+)/.exec(blk);
     const x2 = /\n\s*11\n\s*([\-\d\.]+)/.exec(blk);
     const y2 = /\n\s*21\n\s*([\-\d\.]+)/.exec(blk);
-    if (x1 && y1 && x2 && y2) paths.push([[Number(x1[1]), Number(y1[1])],[Number(x2[1]), Number(y2[1])]]);
+    if (x1 && y1 && x2 && y2)
+      paths.push([
+        [Number(x1[1]), Number(y1[1])],
+        [Number(x2[1]), Number(y2[1])],
+      ]);
   }
 
   // CIRCLE (approximate with 32 segments)
@@ -504,9 +522,12 @@ export function parseDxfPaths(dxfContent: string): DxfDrawing {
   }
 
   // Compute bbox
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+  let minX = Infinity,
+    minY = Infinity,
+    maxX = -Infinity,
+    maxY = -Infinity;
   for (const p of paths) {
-    for (const [x,y] of p) {
+    for (const [x, y] of p) {
       if (x < minX) minX = x;
       if (y < minY) minY = y;
       if (x > maxX) maxX = x;
