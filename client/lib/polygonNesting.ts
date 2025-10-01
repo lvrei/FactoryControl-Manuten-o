@@ -88,7 +88,7 @@ export function normalizePolygon(polygon: Polygon): Polygon {
 export function translatePolygon(
   polygon: Polygon,
   dx: number,
-  dy: number
+  dy: number,
 ): Polygon {
   return polygon.map(([x, y]) => [x + dx, y + dy]);
 }
@@ -98,7 +98,7 @@ export function rotatePolygon(
   polygon: Polygon,
   angleDeg: number,
   centerX = 0,
-  centerY = 0
+  centerY = 0,
 ): Polygon {
   const rad = (angleDeg * Math.PI) / 180;
   const cos = Math.cos(rad);
@@ -117,7 +117,7 @@ export function rotatePolygon(
 // Verifica se polígono está completamente dentro do retângulo (sheet)
 export function isPolygonInSheet(
   polygon: Polygon,
-  sheet: PolygonSheet
+  sheet: PolygonSheet,
 ): boolean {
   const bbox = polygonBBox(polygon);
   return (
@@ -132,7 +132,7 @@ export function isPolygonInSheet(
 export function bboxOverlap(
   bbox1: ReturnType<typeof polygonBBox>,
   bbox2: ReturnType<typeof polygonBBox>,
-  kerf: number
+  kerf: number,
 ): boolean {
   return !(
     bbox1.maxX + kerf < bbox2.minX ||
@@ -146,7 +146,7 @@ export function bboxOverlap(
 export function polygonsOverlap(
   poly1: Polygon,
   poly2: Polygon,
-  kerf: number
+  kerf: number,
 ): boolean {
   const bbox1 = polygonBBox(poly1);
   const bbox2 = polygonBBox(poly2);
@@ -157,7 +157,7 @@ export function polygonsOverlap(
 // Usa estratégia gulosa: tenta posições em grade e coloca quando caber
 export function packPolygons(
   parts: PolygonPart[],
-  sheet: PolygonSheet
+  sheet: PolygonSheet,
 ): PolygonNestResult {
   const placements: PlacedPolygonPart[] = [];
   let sheetIndex = 0;
@@ -267,8 +267,7 @@ export function packPolygons(
 
       sheetPolygons.set(sheetIndex, [candidate]);
       totalSheetArea +=
-        (sheet.width - 2 * sheet.margin) *
-        (sheet.length - 2 * sheet.margin);
+        (sheet.width - 2 * sheet.margin) * (sheet.length - 2 * sheet.margin);
       usedArea += polygonArea(part.polygon);
     }
   }
@@ -276,8 +275,12 @@ export function packPolygons(
   const sheetsUsed = sheetIndex + 1;
   const utilization = totalSheetArea > 0 ? usedArea / totalSheetArea : 0;
 
-  console.log(`[Polygon Nesting] Colocados ${placements.length} polígonos em ${sheetsUsed} painéis`);
-  console.log(`[Polygon Nesting] Utilização: ${(utilization * 100).toFixed(1)}%`);
+  console.log(
+    `[Polygon Nesting] Colocados ${placements.length} polígonos em ${sheetsUsed} painéis`,
+  );
+  console.log(
+    `[Polygon Nesting] Utilização: ${(utilization * 100).toFixed(1)}%`,
+  );
 
   return {
     placements,
@@ -294,7 +297,7 @@ export function pathToPolygonPart(
   height: number,
   quantity: number = 1,
   foamTypeId?: string,
-  label?: string
+  label?: string,
 ): PolygonPart {
   return {
     polygon: path,

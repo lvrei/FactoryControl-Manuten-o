@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import { X, Upload, Package, AlertTriangle, Layers, Info, Square, Pentagon } from "lucide-react";
+import {
+  X,
+  Upload,
+  Package,
+  AlertTriangle,
+  Layers,
+  Info,
+  Square,
+  Pentagon,
+} from "lucide-react";
 import { productionService } from "@/services/productionService";
 import { FoamBlock, FoamType, ProductionOrderLine } from "@/types/production";
 import {
@@ -42,7 +51,7 @@ export default function NestingModalPolygon({
   const [manualHeight, setManualHeight] = useState<number>(50);
   const [mappingFoamTypeId, setMappingFoamTypeId] = useState<string>("");
   const [nestingMode, setNestingMode] = useState<"rectangle" | "polygon">(
-    "polygon"
+    "polygon",
   );
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -80,7 +89,7 @@ export default function NestingModalPolygon({
       if (loadedDrawing.polygons && loadedDrawing.polygons.length > 0) {
         setNestingMode("polygon");
         setErrorMessage(
-          `DXF carregado! ${loadedDrawing.polygons.length} forma(s) irregular(es) detetada(s). Modo de nesting de polígonos ativado.`
+          `DXF carregado! ${loadedDrawing.polygons.length} forma(s) irregular(es) detetada(s). Modo de nesting de polígonos ativado.`,
         );
       } else if (loadedDrawing.parts.length > 0) {
         setNestingMode("rectangle");
@@ -92,7 +101,7 @@ export default function NestingModalPolygon({
         console.error("File loader error:", error.code, error.details);
       } else {
         setErrorMessage(
-          `Erro ao carregar ficheiro: ${error instanceof Error ? error.message : "Erro desconhecido"}`
+          `Erro ao carregar ficheiro: ${error instanceof Error ? error.message : "Erro desconhecido"}`,
         );
         console.error("Unexpected error:", error);
       }
@@ -103,8 +112,7 @@ export default function NestingModalPolygon({
   }
 
   const polygonResult = useMemo(() => {
-    if (!drawing || !drawing.polygons || nestingMode !== "polygon")
-      return null;
+    if (!drawing || !drawing.polygons || nestingMode !== "polygon") return null;
 
     const polygonParts: PolygonPart[] = drawing.polygons.map((path) =>
       pathToPolygonPart(
@@ -112,22 +120,28 @@ export default function NestingModalPolygon({
         manualHeight,
         quantityMultiplier,
         mappingFoamTypeId,
-        "Forma irregular"
-      )
+        "Forma irregular",
+      ),
     );
 
     return packPolygons(polygonParts, sheet);
-  }, [drawing, sheet, quantityMultiplier, manualHeight, mappingFoamTypeId, nestingMode]);
+  }, [
+    drawing,
+    sheet,
+    quantityMultiplier,
+    manualHeight,
+    mappingFoamTypeId,
+    nestingMode,
+  ]);
 
   const rectangleResult = useMemo(() => {
-    if (!drawing || !drawing.parts || nestingMode !== "rectangle")
-      return null;
+    if (!drawing || !drawing.parts || nestingMode !== "rectangle") return null;
 
     const scaled = drawing.parts.map((p) => ({
       ...p,
       quantity: Math.max(
         0,
-        Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier))
+        Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
       ),
     }));
     return packRectangles(scaled as NestPart[], sheet);
@@ -155,7 +169,7 @@ export default function NestingModalPolygon({
 
         const totalArea = placements.reduce(
           (sum, p) => sum + polygonArea(p.polygon),
-          0
+          0,
         );
 
         lines.push({
@@ -186,7 +200,7 @@ export default function NestingModalPolygon({
         ...p,
         quantity: Math.max(
           0,
-          Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier))
+          Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
         ),
       }));
 
@@ -202,8 +216,9 @@ export default function NestingModalPolygon({
 
       for (const { part, qty } of map.values()) {
         const foam =
-          foamTypes.find((f) => f.id === (part.foamTypeId || mappingFoamTypeId)) ||
-          foamTypes[0];
+          foamTypes.find(
+            (f) => f.id === (part.foamTypeId || mappingFoamTypeId),
+          ) || foamTypes[0];
         if (!foam) continue;
 
         lines.push({
@@ -244,7 +259,8 @@ export default function NestingModalPolygon({
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <h3 className="text-xl font-semibold flex items-center gap-2">
-              <Layers className="h-5 w-5" /> Nesting Avançado (Formas Irregulares)
+              <Layers className="h-5 w-5" /> Nesting Avançado (Formas
+              Irregulares)
             </h3>
             <p className="text-xs text-muted-foreground">
               Suporta retângulos E formas irregulares (polígonos, curvas)
@@ -436,7 +452,8 @@ export default function NestingModalPolygon({
                 <div>Utilização: {(result.utilization * 100).toFixed(1)}%</div>
                 {nestingMode === "polygon" && polygonResult && (
                   <div>
-                    Formas colocadas: <strong>{polygonResult.placements.length}</strong>
+                    Formas colocadas:{" "}
+                    <strong>{polygonResult.placements.length}</strong>
                   </div>
                 )}
               </div>
@@ -478,8 +495,7 @@ export default function NestingModalPolygon({
                   .map((placement, idx) => {
                     const points = placement.polygon
                       .map(
-                        ([x, y]) =>
-                          `${10 + x * svgScale},${10 + y * svgScale}`
+                        ([x, y]) => `${10 + x * svgScale},${10 + y * svgScale}`,
                       )
                       .join(" ");
 

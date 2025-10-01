@@ -9,18 +9,21 @@ Sistema agora suporta **nesting de qualquer tipo de forma** - não apenas retân
 ### ✅ Arquivos Criados
 
 1. **`client/lib/polygonNesting.ts`** (307 linhas)
+
    - Algoritmos de nesting para polígonos
    - Funções geométricas (área, bounding box, rotação, translação)
    - Detecção de colisões entre formas
    - Packing com rotações automáticas (0°, 90°, 180°, 270°)
 
 2. **`client/components/production/NestingModalPolygon.tsx`** (559 linhas)
+
    - Modal com suporte a 2 modos: Retângulos / Polígonos
    - Seleção automática baseada no DXF carregado
    - Visualização de formas irregulares no painel
    - Interface melhorada com estatísticas
 
 3. **`client/components/production/DxfDebugPanel.tsx`** (119 linhas)
+
    - Painel de debug expansível
    - Mostra entidades, layers, paths
    - Lista peças detetadas
@@ -35,11 +38,13 @@ Sistema agora suporta **nesting de qualquer tipo de forma** - não apenas retân
 ### ✅ Arquivos Modificados
 
 1. **`client/services/fileLoaderService.ts`**
+
    - Adicionado campo `polygons` ao tipo `LoadedDrawing`
    - Logs detalhados de parsing
    - Melhor tratamento de erros
 
 2. **`client/pages/ProductionNew.tsx`**
+
    - Atualizado para usar `NestingModalPolygon`
 
 3. **`client/pages/FactoryOrders.tsx`**
@@ -110,15 +115,15 @@ Sistema agora suporta **nesting de qualquer tipo de forma** - não apenas retân
 
 ## Comparação: Antes vs Agora
 
-| Funcionalidade | Antes | Agora |
-|----------------|-------|-------|
-| **Retângulos** | ✅ Suportado | ✅ Suportado |
-| **Polígonos irregulares** | ❌ Apenas bbox | ✅ **Forma real** |
-| **Rotação** | ✅ 90° | ✅ 0°, 90°, 180°, 270° |
-| **Visualização** | ✅ Retângulos | ✅ **Formas reais** |
-| **Detecção de colisão** | ✅ Bbox simples | ✅ **Bbox + kerf** |
-| **Debug** | ❌ Apenas logs | ✅ **Painel interativo** |
-| **Documentação** | ⚠️ Básica | ✅ **Guia completo** |
+| Funcionalidade            | Antes           | Agora                    |
+| ------------------------- | --------------- | ------------------------ |
+| **Retângulos**            | ✅ Suportado    | ✅ Suportado             |
+| **Polígonos irregulares** | ❌ Apenas bbox  | ✅ **Forma real**        |
+| **Rotação**               | ✅ 90°          | ✅ 0°, 90°, 180°, 270°   |
+| **Visualização**          | ✅ Retângulos   | ✅ **Formas reais**      |
+| **Detecção de colisão**   | ✅ Bbox simples | ✅ **Bbox + kerf**       |
+| **Debug**                 | ❌ Apenas logs  | ✅ **Painel interativo** |
+| **Documentação**          | ⚠️ Básica       | ✅ **Guia completo**     |
 
 ## Algoritmo de Nesting (Simplificado)
 
@@ -146,15 +151,15 @@ const drawing = await fileLoaderService.loadFile(file);
 // Se tiver polígonos
 if (drawing.polygons && drawing.polygons.length > 0) {
   // Converter paths para PolygonPart
-  const polygonParts = drawing.polygons.map(path =>
-    pathToPolygonPart(path, height, quantity, foamTypeId)
+  const polygonParts = drawing.polygons.map((path) =>
+    pathToPolygonPart(path, height, quantity, foamTypeId),
   );
 
   // Executar nesting
   const result = packPolygons(polygonParts, sheet);
 
   // Visualizar
-  result.placements.forEach(placement => {
+  result.placements.forEach((placement) => {
     // placement.polygon = array de pontos [x, y]
     // placement.x, placement.y = posição
     // placement.rotation = 0, 90, 180, ou 270
@@ -180,17 +185,20 @@ if (drawing.polygons && drawing.polygons.length > 0) {
 ## Próximos Passos (Melhorias Futuras)
 
 ### 🔧 Curto Prazo
+
 - [ ] Rotação livre (qualquer ângulo, não só 90°)
 - [ ] Preview de todos os painéis (não só o 1º)
 - [ ] Exportar layout para PDF/DXF
 
 ### 🚀 Médio Prazo
+
 - [ ] Detecção de colisão precisa (polígono-polígono real)
 - [ ] Algoritmo genético para otimização global
 - [ ] Nesting de múltiplos tipos de peça misturados
 - [ ] Cache de resultados para reutilização
 
 ### 🌟 Longo Prazo
+
 - [ ] Machine learning para aprender padrões ótimos
 - [ ] Simulated annealing para escapar de mínimos locais
 - [ ] Suporte 3D (empilhamento de peças)
@@ -201,28 +209,31 @@ if (drawing.polygons && drawing.polygons.length > 0) {
 ### Benchmarks Estimados
 
 | Quantidade de Peças | Tempo de Processamento |
-|---------------------|------------------------|
-| 1-10 peças | < 1 segundo |
-| 10-50 peças | 1-5 segundos |
-| 50-100 peças | 5-15 segundos |
-| 100+ peças | 15+ segundos |
+| ------------------- | ---------------------- |
+| 1-10 peças          | < 1 segundo            |
+| 10-50 peças         | 1-5 segundos           |
+| 50-100 peças        | 5-15 segundos          |
+| 100+ peças          | 15+ segundos           |
 
 **Nota**: Tempos variam com complexidade das formas e tamanho da grade.
 
 ## Limitações Conhecidas
 
 ### ⚠️ Técnicas
+
 1. **Rotação**: Apenas 90° (não livre)
 2. **Colisão**: Usa bounding box (não polígono preciso)
 3. **Algoritmo**: Guloso (não garante solução ótima global)
 4. **Preview**: Apenas 1º painel (não todos)
 
 ### ⚠️ Performance
+
 1. **Formas complexas**: > 200 pontos podem ser lentas
 2. **Muitas peças**: > 100 peças pode demorar
 3. **Grade fina**: Steps < 5mm aumentam tempo
 
 ### ⚠️ UX
+
 1. **Feedback**: Não mostra progresso durante cálculo
 2. **Edição**: Não permite ajuste manual após nesting
 3. **Comparação**: Não compara múltiplas soluções
@@ -230,16 +241,19 @@ if (drawing.polygons && drawing.polygons.length > 0) {
 ## Troubleshooting
 
 ### Problema: "Utilização muito baixa (< 30%)"
+
 ✅ **Normal** para formas muito irregulares
 ✅ Tente reduzir kerf/margem
 ✅ Use painéis maiores
 
 ### Problema: "Peças se sobrepõem"
+
 ❌ **Bug** - Reportar!
 ✅ Aumente kerf temporariamente
 ✅ Use modo Retângulos como fallback
 
 ### Problema: "Muito lento (> 30s)"
+
 ✅ Reduza número de peças
 ✅ Simplifique formas (menos pontos)
 ✅ Aumente grid step (20mm em vez de 10mm)
@@ -257,6 +271,7 @@ if (drawing.polygons && drawing.polygons.length > 0) {
 🎉 **Sistema agora suporta QUALQUER tipo de forma!**
 
 Seu DXF com polígono de 66 pontos agora funciona perfeitamente:
+
 - ✅ Carrega e visualiza corretamente
 - ✅ Deteta geometria real (não apenas bbox)
 - ✅ Faz nesting com rotações automáticas
