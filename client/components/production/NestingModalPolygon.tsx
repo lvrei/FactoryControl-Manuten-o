@@ -1059,6 +1059,21 @@ export default function NestingModalPolygon({
                           Dimensões: {block.dimensions.length}×
                           {block.dimensions.width}×{block.dimensions.height}mm
                         </div>
+                        {(() => {
+                          const uniqueLayers = Array.from(
+                            new Set(
+                              foam3dResult.placements
+                                .filter((p) => p.blockIndex === block.blockIndex)
+                                .map((p) => p.z)
+                            )
+                          );
+                          return uniqueLayers.length > 1 ? (
+                            <div className="text-xs text-blue-600 mb-2 flex items-center gap-1">
+                              <Layers className="h-3 w-3" />
+                              Vista de topo - {uniqueLayers.length} camadas (L0, L1, L2...). Cores diferentes = profundidades diferentes (sem sobreposição real)
+                            </div>
+                          ) : null;
+                        })()}
                         <svg
                           width={Math.max(300, blockW + 20)}
                           height={Math.max(200, blockL + 20)}
