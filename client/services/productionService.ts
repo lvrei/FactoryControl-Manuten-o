@@ -1034,7 +1034,8 @@ class ProductionService {
             if (machineId && operation.machineId !== machineId) continue;
 
             // Calculate remaining quantity first to filter out completed operations
-            const remainingQty = operation.quantity - (operation.completedQuantity || 0);
+            const remainingQty =
+              operation.quantity - (operation.completedQuantity || 0);
 
             // Skip if no work remaining (additional safety check)
             if (remainingQty <= 0) continue;
