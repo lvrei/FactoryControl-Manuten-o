@@ -279,10 +279,10 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       // Resetar quantidade de conclusão
       setCompletionQuantity((prev) => ({ ...prev, [workItem.id]: 0 }));
 
-      // Forçar espera para garantir que localStorage foi atualizado
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Forçar espera para garantir que API (Neon) foi sincronizada
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
-      // Recarregar lista de trabalho
+      // Recarregar lista de trabalho (agora da API/Neon atualizada)
       await loadWorkItems();
 
       console.log("🔄 [OperatorPortal] Lista de trabalho recarregada");
@@ -884,7 +884,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                     {item.observations && (
                       <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                         <div className="text-sm font-medium text-yellow-800 mb-1">
-                          📋 Observações:
+                          �� Observações:
                         </div>
                         <div className="text-sm text-yellow-700">
                           {item.observations}
