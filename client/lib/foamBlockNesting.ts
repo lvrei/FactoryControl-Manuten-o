@@ -92,7 +92,7 @@ export function canFitInBlock(
 
 /**
  * Calcula as dimensões ótimas do bloco menor baseado nas peças
- * Respeita os limites da máquina CNC
+ * Usa os limites MÁXIMOS da CNC para aproveitar ao máximo
  */
 export function calculateOptimalBlockSize(
   parts: FoamPart[],
@@ -100,41 +100,39 @@ export function calculateOptimalBlockSize(
 ): FoamBlock {
   if (parts.length === 0) {
     return {
-      length: Math.min(2500, constraints.maxLength), // padrão
+      length: Math.min(2500, constraints.maxLength),
       width: Math.min(2300, constraints.maxWidth),
       height: Math.min(1300, constraints.maxHeight),
     };
   }
 
-  // Encontra as dimensões máximas das peças
+  // Encontra as dimensões máximas das peças (para validar que cabem)
   const maxPartLength = Math.max(...parts.map((p) => p.length));
   const maxPartWidth = Math.max(...parts.map((p) => p.width));
   const maxPartHeight = Math.max(...parts.map((p) => p.height));
 
-  // Adiciona margem de segurança
-  const safety = 100; // 10cm extra para manobra
+  // Valida que as peças cabem nos limites da CNC
+  if (maxPartLength + 2 * constraints.margin > constraints.maxLength) {
+    throw new Error(`Peça com ${maxPartLength}mm de comprimento não cabe na CNC (máx: ${constraints.maxLength}mm)`);
+  }
+  if (maxPartWidth + 2 * constraints.margin > constraints.maxWidth) {
+    throw new Error(`Peça com ${maxPartWidth}mm de largura não cabe na CNC (máx: ${constraints.maxWidth}mm)`);
+  }
+  if (maxPartHeight + 2 * constraints.margin > constraints.maxHeight) {
+    throw new Error(`Peça com ${maxPartHeight}mm de altura não cabe na CNC (máx: ${constraints.maxHeight}mm)`);
+  }
 
-  let blockLength = Math.min(
-    maxPartLength + 2 * constraints.margin + safety,
-    constraints.maxLength,
-  );
+  // Usa os LIMITES MÁXIMOS da CNC para aproveitar ao máximo
+  let blockLength = constraints.maxLength;
+  let blockWidth = constraints.maxWidth;
+  let blockHeight = constraints.maxHeight;
 
-  let blockWidth = Math.min(
-    maxPartWidth + 2 * constraints.margin + safety,
-    constraints.maxWidth,
-  );
+  // Arredonda para baixo para múltiplos de 50mm (mais fácil de cortar)
+  blockLength = Math.floor(blockLength / 50) * 50;
+  blockWidth = Math.floor(blockWidth / 50) * 50;
+  blockHeight = Math.floor(blockHeight / 50) * 50;
 
-  let blockHeight = Math.min(
-    maxPartHeight + 2 * constraints.margin + safety,
-    constraints.maxHeight,
-  );
-
-  // Arredonda para cima para múltiplos de 50mm (mais fácil de cortar)
-  blockLength = Math.ceil(blockLength / 50) * 50;
-  blockWidth = Math.ceil(blockWidth / 50) * 50;
-  blockHeight = Math.ceil(blockHeight / 50) * 50;
-
-  // Garante mínimo de 500mm em cada dimensão
+  // Garante mínimo de 500mm em comprimento e largura, 100mm em altura
   blockLength = Math.max(500, blockLength);
   blockWidth = Math.max(500, blockWidth);
   blockHeight = Math.max(100, blockHeight);
