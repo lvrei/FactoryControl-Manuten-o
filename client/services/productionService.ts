@@ -1306,6 +1306,14 @@ class ProductionService {
           : "in_progress";
       operation.completedAt = new Date().toISOString();
 
+      console.log(`📝 [completeWorkItem] Operação atualizada:`, {
+        operationId: operation.id,
+        completedQuantity: operation.completedQuantity,
+        targetQuantity: opTargetQty,
+        status: operation.status,
+        remaining: opTargetQty - operation.completedQuantity
+      });
+
       if (operatorNotes) {
         operation.notes =
           (operation.notes || "") +
@@ -1325,6 +1333,12 @@ class ProductionService {
           (op.completedQuantity || 0) >= (op.quantity || 0),
       );
       line.status = allOpsCompleted ? "completed" : "in_progress";
+
+      console.log(`📝 [completeWorkItem] Linha atualizada:`, {
+        lineId: line.id,
+        status: line.status,
+        allOpsCompleted
+      });
 
       // Atualizar ordem
       const allLinesCompleted =
