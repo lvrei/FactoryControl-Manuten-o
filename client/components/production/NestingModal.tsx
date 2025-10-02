@@ -390,7 +390,7 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
             {result && (
               <div className="p-2 border rounded bg-muted/30 text-sm space-y-1">
                 <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4" /> Painéis necessários:{" "}
+                  <Package className="h-4 w-4" /> Blocos necessários:{" "}
                   <strong>{result.sheetsUsed}</strong>
                 </div>
                 <div>Utilização: {(result.utilization * 100).toFixed(1)}%</div>
