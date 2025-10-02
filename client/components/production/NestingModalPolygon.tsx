@@ -8,6 +8,8 @@ import {
   Info,
   Square,
   Pentagon,
+  FileText,
+  Edit3,
 } from "lucide-react";
 import { productionService } from "@/services/productionService";
 import { FoamBlock, FoamType, ProductionOrderLine } from "@/types/production";
@@ -24,6 +26,7 @@ import {
   type PolygonPart,
 } from "@/lib/polygonNesting";
 import DxfDebugPanel from "./DxfDebugPanel";
+import ManualShapeInput, { type ManualShape } from "./ManualShapeInput";
 
 export type NestingModalPolygonProps = {
   onClose: () => void;
@@ -51,8 +54,10 @@ export default function NestingModalPolygon({
   const [manualHeight, setManualHeight] = useState<number>(50);
   const [mappingFoamTypeId, setMappingFoamTypeId] = useState<string>("");
   const [nestingMode, setNestingMode] = useState<"rectangle" | "polygon">(
-    "polygon",
+    "rectangle",
   );
+  const [inputMode, setInputMode] = useState<"file" | "manual">("file");
+  const [manualShapes, setManualShapes] = useState<ManualShape[]>([]);
 
   const svgRef = useRef<SVGSVGElement>(null);
 
