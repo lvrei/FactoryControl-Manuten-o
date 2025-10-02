@@ -1018,6 +1018,9 @@ class ProductionService {
       const orders = await this.getProductionOrders();
       const workItems: OperatorWorkItem[] = [];
 
+      console.log('🔍 [getOperatorWorkItems] Analisando ordens para machineId:', machineId);
+      console.log(`📊 [getOperatorWorkItems] Total de ordens: ${orders.length}`);
+
       for (const order of orders) {
         if (
           order.status === "completed" ||
@@ -1027,18 +1030,31 @@ class ProductionService {
           continue;
 
         for (const line of order.lines || []) {
-          if (line.status === "completed") continue;
+          if (line.status === "completed") {
+            console.log(`⏭️  [getOperatorWorkItems] Linha ${line.id} já completa, ignorando`);
+            continue;
+          }
 
           for (const operation of line.cuttingOperations || []) {
-            if (operation.status === "completed") continue;
+            const opId = `${order.id}-${line.id}-${operation.id}`;
+
+            if (operation.status === "completed") {
+              console.log(`✅ [getOperatorWorkItems] Op ${opId} status=completed, ignorando`);
+              continue;
+            }
             if (machineId && operation.machineId !== machineId) continue;
 
             // Calculate remaining quantity first to filter out completed operations
             const remainingQty =
               operation.quantity - (operation.completedQuantity || 0);
 
+            console.log(`🔢 [getOperatorWorkItems] Op ${opId}: qty=${operation.quantity}, completed=${operation.completedQuantity || 0}, remaining=${remainingQty}, status=${operation.status}`);
+
             // Skip if no work remaining (additional safety check)
-            if (remainingQty <= 0) continue;
+            if (remainingQty <= 0) {
+              console.log(`⏭️  [getOperatorWorkItems] Op ${opId} sem trabalho restante (${remainingQty}), ignorando`);
+              continue;
+            }
 
             // Find machine details
             const machine = this.mockMachines.find(
