@@ -1382,6 +1382,15 @@ class ProductionService {
 
       console.log(`✅ [completeWorkItem] Dados salvos no localStorage`);
 
+      // IMPORTANTE: Também atualizar via API se disponível
+      try {
+        console.log(`🌐 [completeWorkItem] Tentando sincronizar com API...`);
+        await this.updateProductionOrder(orderId, order);
+        console.log(`✅ [completeWorkItem] Dados sincronizados com API`);
+      } catch (apiError) {
+        console.warn(`⚠️ [completeWorkItem] Falha ao sincronizar com API (continuando em modo local):`, apiError);
+      }
+
       // Verificação pós-save (detecta problemas de quota/corrupção)
       const verification = this.getStoredData();
       const verifyOrder = verification?.productionOrders?.find(
