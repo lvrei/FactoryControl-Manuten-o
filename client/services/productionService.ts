@@ -1133,28 +1133,46 @@ class ProductionService {
       let operationId = "";
       let foundMatch = false;
 
+      console.log(`🔍 Procurando em ${data.productionOrders.length} ordens...`);
+
       for (const order of data.productionOrders) {
         // O workItemId começa com orderId
         if (workItemId.startsWith(order.id + "-")) {
           orderId = order.id;
           const afterOrder = workItemId.substring(order.id.length + 1); // Remove "orderId-"
+          console.log(`✅ Ordem encontrada: ${orderId}`);
+          console.log(`📝 Procurando linha em: "${afterOrder}"`);
+          console.log(`📊 Ordem tem ${order.lines?.length || 0} linhas`);
 
           // Procurar a linha
           for (const line of order.lines || []) {
+            console.log(`  🔎 Testando linha: "${line.id}"`);
             if (afterOrder.startsWith(line.id + "-")) {
               lineId = line.id;
               const afterLine = afterOrder.substring(line.id.length + 1); // Remove "lineId-"
               operationId = afterLine; // O resto é o operationId
               foundMatch = true;
+              console.log(`✅ Linha encontrada: ${lineId}`);
+              console.log(`✅ Operação: ${operationId}`);
               break;
             }
           }
 
           if (foundMatch) break;
+
+          // Se chegou aqui, não encontrou a linha
+          if (!foundMatch) {
+            console.error(`❌ Nenhuma linha corresponde. IDs das linhas disponíveis:`);
+            order.lines?.forEach(l => console.error(`   - "${l.id}"`));
+          }
         }
       }
 
       if (!foundMatch || !orderId || !lineId || !operationId) {
+        console.error(`❌ Parsing falhou para: ${workItemId}`);
+        console.error(`   orderId: "${orderId}"`);
+        console.error(`   lineId: "${lineId}"`);
+        console.error(`   operationId: "${operationId}"`);
         throw new Error(`Não foi possível analisar o ID: ${workItemId}`);
       }
 
