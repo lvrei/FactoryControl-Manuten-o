@@ -51,6 +51,7 @@ export function ProductionOrderManager({
   });
 
   const [lines, setLines] = useState<ProductionOrderLine[]>([]);
+  const [showNestingModal, setShowNestingModal] = useState(false);
 
   useEffect(() => {
     loadData();
