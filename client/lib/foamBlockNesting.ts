@@ -162,16 +162,9 @@ export function nestPartsInBlock(
 ): PlacedPart[] {
   const placements: PlacedPart[] = [];
 
-  // Expande quantidades em peças individuais
-  const expandedParts: FoamPart[] = [];
-  for (const part of parts) {
-    for (let i = 0; i < part.quantity; i++) {
-      expandedParts.push({ ...part, quantity: 1 });
-    }
-  }
-
+  // As peças já vêm expandidas (quantity: 1) da função nestFoamParts
   // Ordena por volume decrescente (maiores primeiro)
-  expandedParts.sort((a, b) => calculateVolume(b) - calculateVolume(a));
+  const sortedParts = [...parts].sort((a, b) => calculateVolume(b) - calculateVolume(a));
 
   const usableLength = block.length - 2 * margin;
   const usableWidth = block.width - 2 * margin;
@@ -180,7 +173,9 @@ export function nestPartsInBlock(
   let currentZ = margin;
   let currentLayer: PlacedPart[] = [];
 
-  for (const part of expandedParts) {
+  console.log(`[nestPartsInBlock] Tentando alocar ${sortedParts.length} peças em bloco ${block.length}x${block.width}x${block.height}`);
+
+  for (const part of sortedParts) {
     let placed = false;
 
     // Tenta colocar na camada atual
