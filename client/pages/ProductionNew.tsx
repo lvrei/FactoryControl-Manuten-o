@@ -158,18 +158,19 @@ function ProductionNew() {
     loadData();
 
     // Pausar auto-refresh quando qualquer modal está aberto
-    const hasModalOpen = showNesting || showOrderForm || showSheetsManager || showChat;
+    const hasModalOpen =
+      showNesting || showOrderForm || showSheetsManager || showChat;
 
     if (hasModalOpen) {
-      console.log('⏸️  Auto-refresh pausado (modal aberto)');
+      console.log("⏸️  Auto-refresh pausado (modal aberto)");
       return; // Não criar interval se houver modal aberto
     }
 
     const interval = setInterval(loadData, 30000); // Atualizar a cada 30 segundos
-    console.log('▶️  Auto-refresh ativo (30s)');
+    console.log("▶️  Auto-refresh ativo (30s)");
     return () => {
       clearInterval(interval);
-      console.log('⏹️  Auto-refresh limpo');
+      console.log("⏹️  Auto-refresh limpo");
     };
   }, [showNesting, showOrderForm, showSheetsManager, showChat]);
 
@@ -872,7 +873,6 @@ function ProductionNew() {
                     </div>
                   )}
                 </div>
-
               </div>
             );
           })}
@@ -906,7 +906,10 @@ function ProductionNew() {
       {showChat && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
           <div className="max-w-4xl w-full">
-            <ProductionChat isBackend={true} onClose={() => setShowChat(false)} />
+            <ProductionChat
+              isBackend={true}
+              onClose={() => setShowChat(false)}
+            />
           </div>
         </div>
       )}

@@ -30,20 +30,21 @@ Modificar o `useEffect` para **pausar o auto-refresh** quando qualquer modal est
 ```typescript
 useEffect(() => {
   loadData();
-  
+
   // Pausar auto-refresh quando qualquer modal está aberto
-  const hasModalOpen = showNesting || showOrderForm || showSheetsManager || showChat;
-  
+  const hasModalOpen =
+    showNesting || showOrderForm || showSheetsManager || showChat;
+
   if (hasModalOpen) {
-    console.log('⏸️  Auto-refresh pausado (modal aberto)');
+    console.log("⏸️  Auto-refresh pausado (modal aberto)");
     return; // ✅ Não criar interval se houver modal aberto
   }
-  
+
   const interval = setInterval(loadData, 30000);
-  console.log('▶��  Auto-refresh ativo (30s)');
+  console.log("▶��  Auto-refresh ativo (30s)");
   return () => {
     clearInterval(interval);
-    console.log('⏹️  Auto-refresh limpo');
+    console.log("⏹️  Auto-refresh limpo");
   };
 }, [showNesting, showOrderForm, showSheetsManager, showChat]); // ✅ Dependências corretas
 ```
@@ -65,18 +66,21 @@ useEffect(() => {
 ## Testes Realizados
 
 ### ✅ Teste 1: Modal de Nesting
+
 1. Abrir modal "Nova OP (nesting)"
 2. Carregar ficheiro DXF
 3. Aguardar > 30 segundos
 4. **Resultado**: Configuração mantida, sem refresh
 
 ### ✅ Teste 2: Múltiplos Modais
+
 1. Abrir modal de nesting
 2. Fechar e abrir formulário de OP
 3. Aguardar > 30 segundos
 4. **Resultado**: Sem refresh em ambos os casos
 
 ### ✅ Teste 3: Retoma de Auto-Refresh
+
 1. Fechar todos os modais
 2. Aguardar 30 segundos
 3. **Resultado**: Auto-refresh retoma normalmente
@@ -85,14 +89,14 @@ useEffect(() => {
 
 ### Potenciais Problemas Similares
 
-| Página | Interval | Status | Requer Correção? |
-|--------|----------|--------|------------------|
-| **ProductionNew.tsx** | 30s | ✅ **Corrigido** | ✅ Feito |
-| OperatorPortal.tsx | 3s, 5s | ⚠️ Múltiplos | 🔍 Investigar |
-| Alerts.tsx | 30s | ⚠️ Pode ter modais | 🔍 Investigar |
-| AlertsSimple.tsx | 10s, 30s | ⚠️ Pode ter modais | 🔍 Investigar |
-| ProductionChat.tsx | 5s | ✅ Só mensagens | ❌ Não |
-| ProtectedRoute.tsx | 30s | ✅ Auth check | ❌ Não |
+| Página                | Interval | Status             | Requer Correção? |
+| --------------------- | -------- | ------------------ | ---------------- |
+| **ProductionNew.tsx** | 30s      | ✅ **Corrigido**   | ✅ Feito         |
+| OperatorPortal.tsx    | 3s, 5s   | ⚠️ Múltiplos       | 🔍 Investigar    |
+| Alerts.tsx            | 30s      | ⚠️ Pode ter modais | 🔍 Investigar    |
+| AlertsSimple.tsx      | 10s, 30s | ⚠️ Pode ter modais | 🔍 Investigar    |
+| ProductionChat.tsx    | 5s       | ✅ Só mensagens    | ❌ Não           |
+| ProtectedRoute.tsx    | 30s      | ✅ Auth check      | ❌ Não           |
 
 ### Recomendações
 
@@ -102,10 +106,10 @@ Para outras páginas com auto-refresh e modais:
 // Pattern recomendado
 useEffect(() => {
   loadData();
-  
+
   const hasModalOpen = /* detectar modais abertos */;
   if (hasModalOpen) return; // Pausar
-  
+
   const interval = setInterval(loadData, INTERVAL_MS);
   return () => clearInterval(interval);
 }, [/* dependências incluindo estados de modais */]);
@@ -114,16 +118,19 @@ useEffect(() => {
 ## Melhorias Futuras
 
 ### 🔧 Curto Prazo
+
 - [ ] Aplicar correção similar em `OperatorPortal.tsx`
 - [ ] Aplicar correção similar em `Alerts.tsx` / `AlertsSimple.tsx`
 - [ ] Adicionar testes automatizados para este cenário
 
 ### 🚀 Médio Prazo
+
 - [ ] Hook customizado `useSmartRefresh({ interval, pauseWhen: [...] })`
 - [ ] Context global para detectar modais abertos
 - [ ] Feedback visual de auto-refresh (ícone pulsante)
 
 ### 🌟 Longo Prazo
+
 - [ ] WebSockets em vez de polling
 - [ ] Service Worker para cache inteligente
 - [ ] Otimização de re-renders (React.memo, useMemo)
@@ -144,11 +151,13 @@ Com a correção, logs aparecem no console:
 ## Impacto no Usuário
 
 ### Antes ❌
+
 - Perdia configuração a cada 30s no modal
 - Frustração ao ter que refazer trabalho
 - Possível perda de ficheiros carregados
 
 ### Depois ✅
+
 - Configuração preservada indefinidamente
 - Workflow ininterrupto
 - UX melhorada significativamente
@@ -156,20 +165,24 @@ Com a correção, logs aparecem no console:
 ## Performance
 
 ### Sem Impacto Negativo
+
 - Auto-refresh ainda funciona quando necessário
 - Pausar/retomar é instantâneo (sem overhead)
 - Logs podem ser removidos em produção se necessário
 
 ### Possível Melhoria
+
 - Dados podem ficar ligeiramente desatualizados durante uso de modais
 - Solução: Refresh manual ao fechar modal (se necessário)
 
 ## Código Alterado
 
 ### Ficheiros Modificados
+
 - `client/pages/ProductionNew.tsx` (linhas 157-161 → 157-172)
 
 ### Ficheiros Criados
+
 - `CORRECAO-AUTO-REFRESH.md` (este documento)
 
 ## Conclusão
