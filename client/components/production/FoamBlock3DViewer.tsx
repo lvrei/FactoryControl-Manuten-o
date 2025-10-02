@@ -7,11 +7,16 @@ import {
   PerspectiveCamera,
 } from "@react-three/drei";
 import { Suspense } from "react";
+import * as THREE from "three";
 import type { BlockNestingResult, PlacedPart } from "@/lib/foamBlockNesting";
 
 type FoamBlock3DViewerProps = {
   result: BlockNestingResult;
   selectedBlockIndex?: number;
+};
+
+type ExtendedPlacedPart = PlacedPart & {
+  polygon?: [number, number][];
 };
 
 function Block3D({
@@ -39,11 +44,99 @@ function Block3D({
   );
 }
 
+function PolygonPart3D({
+  part,
+  blockDimensions,
+}: {
+  part: ExtendedPlacedPart;
+  blockDimensions: { length: number; width: number; height: number };
+}) {
+  const layerColors = [
+    "#22c55e", // Verde
+    "#3b82f6", // Azul
+    "#ef4444", // Vermelho
+    "#f59e0b", // Amarelo
+    "#a855f7", // Roxo
+    "#06b6d4", // Ciano
+    "#ec4899", // Rosa
+    "#f97316", // Laranja
+  ];
+
+  const layerIndex = Math.floor(part.z / 100) % layerColors.length;
+  const color = layerColors[layerIndex];
+
+  if (!part.polygon || part.polygon.length < 3) {
+    // Fallback to box if no polygon data
+    const x = part.x + part.length / 2 - blockDimensions.length / 2;
+    const y = part.z + part.height / 2 - blockDimensions.height / 2;
+    const z = -(part.y + part.width / 2 - blockDimensions.width / 2);
+
+    return (
+      <group>
+        <Box args={[part.length, part.height, part.width]} position={[x, y, z]}>
+          <meshStandardMaterial
+            color={color}
+            transparent
+            opacity={0.85}
+            roughness={0.3}
+            metalness={0.1}
+          />
+        </Box>
+        <Box args={[part.length, part.height, part.width]} position={[x, y, z]}>
+          <meshBasicMaterial color="#1e293b" wireframe />
+        </Box>
+      </group>
+    );
+  }
+
+  // Cria forma extrudida a partir do polígono
+  const shape = new THREE.Shape();
+  part.polygon.forEach(([x, y], i) => {
+    if (i === 0) {
+      shape.moveTo(x, y);
+    } else {
+      shape.lineTo(x, y);
+    }
+  });
+  shape.closePath();
+
+  const extrudeSettings = {
+    steps: 1,
+    depth: part.height,
+    bevelEnabled: false,
+  };
+
+  const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
+  // Ajusta posição para centrar no bloco
+  const posX = part.x - blockDimensions.length / 2;
+  const posY = part.z + part.height / 2 - blockDimensions.height / 2;
+  const posZ = -(part.y - blockDimensions.width / 2);
+
+  return (
+    <group position={[posX, posY, posZ]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh geometry={geometry}>
+        <meshStandardMaterial
+          color={color}
+          transparent
+          opacity={0.85}
+          roughness={0.3}
+          metalness={0.1}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+      <mesh geometry={geometry}>
+        <meshBasicMaterial color="#1e293b" wireframe />
+      </mesh>
+    </group>
+  );
+}
+
 function Part3D({
   part,
   blockDimensions,
 }: {
-  part: PlacedPart;
+  part: ExtendedPlacedPart;
   blockDimensions: { length: number; width: number; height: number };
 }) {
   // Converte coordenadas: SVG usa top-left, Three.js usa centro
@@ -134,9 +227,19 @@ function Scene({
       />
 
       {/* Peças cortadas */}
-      {blockPlacements.map((part, idx) => (
-        <Part3D key={idx} part={part} blockDimensions={blockDims} />
-      ))}
+      {blockPlacements.map((part, idx) => {
+        const extendedPart = part as ExtendedPlacedPart;
+        if (extendedPart.polygon && extendedPart.polygon.length >= 3) {
+          return (
+            <PolygonPart3D
+              key={idx}
+              part={extendedPart}
+              blockDimensions={blockDims}
+            />
+          );
+        }
+        return <Part3D key={idx} part={part} blockDimensions={blockDims} />;
+      })}
 
       {/* Iluminação */}
       <ambientLight intensity={0.6} />
