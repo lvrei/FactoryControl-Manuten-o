@@ -1163,7 +1163,9 @@ class ProductionService {
 
       // Estratégia 2: Se não encontrou match exato, tentar parsing por partes
       if (!foundOperation) {
-        console.log(`🔄 Match exato não encontrado, tentando parsing por partes...`);
+        console.log(
+          `🔄 Match exato não encontrado, tentando parsing por partes...`,
+        );
 
         // Primeiro, achar a ordem que começa o workItemId
         for (const order of orders) {
@@ -1184,7 +1186,9 @@ class ProductionService {
                 operationId = opRemainder;
 
                 // Verificar se a operação existe
-                foundOperation = line.cuttingOperations?.find(op => op.id === operationId);
+                foundOperation = line.cuttingOperations?.find(
+                  (op) => op.id === operationId,
+                );
 
                 if (foundOperation) {
                   console.log(`✅ Linha: ${lineId}, Operação: ${operationId}`);
@@ -1201,18 +1205,23 @@ class ProductionService {
       // Estratégia 3: Busca flexível se ainda não encontrou
       if (!foundOperation && orderId) {
         console.log(`🔄 Tentando busca flexível na ordem ${orderId}...`);
-        const order = orders.find(o => o.id === orderId);
+        const order = orders.find((o) => o.id === orderId);
 
         if (order) {
           for (const line of order.lines || []) {
             for (const op of line.cuttingOperations || []) {
               // Verificar se os IDs estão contidos no workItemId
-              if (workItemId.includes(`-${line.id}-`) && workItemId.endsWith(`-${op.id}`)) {
+              if (
+                workItemId.includes(`-${line.id}-`) &&
+                workItemId.endsWith(`-${op.id}`)
+              ) {
                 foundLine = line;
                 foundOperation = op;
                 lineId = line.id;
                 operationId = op.id;
-                console.log(`✅ Match flexível - Linha: ${lineId}, Op: ${operationId}`);
+                console.log(
+                  `✅ Match flexível - Linha: ${lineId}, Op: ${operationId}`,
+                );
                 break;
               }
             }
@@ -1228,16 +1237,18 @@ class ProductionService {
         console.error(`   Parsed lineId: "${lineId}"`);
         console.error(`   Parsed operationId: "${operationId}"`);
         console.error(`\n📋 Ordens disponíveis:`);
-        orders.forEach(o => {
+        orders.forEach((o) => {
           console.error(`   Ordem: ${o.id} - ${o.orderNumber}`);
-          o.lines?.forEach(l => {
+          o.lines?.forEach((l) => {
             console.error(`     Linha: ${l.id}`);
-            l.cuttingOperations?.forEach(op => {
+            l.cuttingOperations?.forEach((op) => {
               console.error(`       Op: ${op.id} - Status: ${op.status}`);
             });
           });
         });
-        throw new Error(`Item de trabalho não encontrado no sistema: ${workItemId}`);
+        throw new Error(
+          `Item de trabalho não encontrado no sistema: ${workItemId}`,
+        );
       }
 
       console.log("✅ Parsing completo:", { orderId, lineId, operationId });
@@ -1355,7 +1366,9 @@ class ProductionService {
       );
 
       if (!verifyOrder) {
-        console.warn("⚠️ Aviso: Verificação pós-save falhou, mas a operação foi completada");
+        console.warn(
+          "⚠️ Aviso: Verificação pós-save falhou, mas a operação foi completada",
+        );
       }
 
       console.log("✅ Item completado com sucesso");
