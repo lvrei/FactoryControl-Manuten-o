@@ -10,7 +10,7 @@ import {
   Pentagon,
   FileText,
   Edit3,
-  Cube,
+  Box,
 } from "lucide-react";
 import { productionService } from "@/services/productionService";
 import {
