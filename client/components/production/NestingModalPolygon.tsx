@@ -271,7 +271,7 @@ export default function NestingModalPolygon({
 
       if (!bzmMachine || !cncMachine) {
         alert(
-          "Máquinas BZM e CNC não encontradas. Configure as máquinas primeiro.",
+          "M��quinas BZM e CNC não encontradas. Configure as máquinas primeiro.",
         );
         return;
       }
@@ -283,6 +283,30 @@ export default function NestingModalPolygon({
           bzmMachine.id,
           cncMachine.id,
         );
+
+        // Obtém as dimensões das peças introduzidas (não do bloco)
+        let pieceDimensions = { length: 0, width: 0, height: 0 };
+
+        if (manualShapes.length > 0) {
+          // Usa a primeira forma manual como referência
+          const firstShape = manualShapes[0];
+          pieceDimensions = {
+            length: firstShape.length,
+            width: firstShape.width,
+            height: firstShape.height,
+          };
+        } else if (drawing?.parts && drawing.parts.length > 0) {
+          // Usa a primeira peça do ficheiro
+          const firstPart = drawing.parts[0];
+          pieceDimensions = {
+            length: firstPart.length,
+            width: firstPart.width,
+            height: firstPart.height,
+          };
+        } else {
+          // Fallback: usa dimensões do bloco
+          pieceDimensions = ops.cncOperation.inputDimensions;
+        }
 
         const bzmCuttingOp: CuttingOperation = {
           id: `bzm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -300,12 +324,12 @@ export default function NestingModalPolygon({
           id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           machineId: ops.cncOperation.machineId,
           inputDimensions: ops.cncOperation.inputDimensions,
-          outputDimensions: ops.cncOperation.inputDimensions,
+          outputDimensions: pieceDimensions,
           quantity: ops.cncOperation.quantity,
           completedQuantity: 0,
           estimatedTime: ops.cncOperation.quantity * 5,
           status: "pending",
-          observations: `CNC: Nesting de ${ops.cncOperation.quantity} peça(s) em ${foam3dResult.totalBlocksNeeded} bloco(s). Aproveitamento: ${(foam3dResult.utilization * 100).toFixed(1)}%`,
+          observations: `CNC: Nesting de ${ops.cncOperation.quantity} peça(s) de ${pieceDimensions.length}×${pieceDimensions.width}×${pieceDimensions.height}mm em ${foam3dResult.totalBlocksNeeded} bloco(s). Aproveitamento: ${(foam3dResult.utilization * 100).toFixed(1)}%`,
         };
 
         const smallBlock = foam3dResult.smallBlocks[0];
@@ -314,11 +338,7 @@ export default function NestingModalPolygon({
           id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           foamType: foam,
           initialDimensions: ops.bzmOperation.inputDimensions,
-          finalDimensions: {
-            length: smallBlock.length,
-            width: smallBlock.width,
-            height: smallBlock.height,
-          },
+          finalDimensions: pieceDimensions,
           quantity: foam3dResult.totalPartsPlaced,
           completedQuantity: 0,
           cuttingOperations: [bzmCuttingOp, cncCuttingOp],
