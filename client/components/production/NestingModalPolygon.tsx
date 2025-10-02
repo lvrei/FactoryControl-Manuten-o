@@ -77,6 +77,8 @@ export default function NestingModalPolygon({
   );
   const [inputMode, setInputMode] = useState<"file" | "manual">("manual"); // Manual por padrão
   const [manualShapes, setManualShapes] = useState<ManualShape[]>([]);
+  const [viewMode, setViewMode] = useState<"2d" | "3d">("3d"); // 3D por padrão para melhor experiência
+  const [selectedBlockIndex, setSelectedBlockIndex] = useState<number>(0);
 
   // Limites da máquina CNC (padrão)
   const [cncConstraints, setCncConstraints] = useState<BlockConstraints>({
