@@ -11,6 +11,7 @@ import {
   FileText,
   Edit3,
   Box,
+  Maximize2,
 } from "lucide-react";
 import { productionService } from "@/services/productionService";
 import {
@@ -41,6 +42,7 @@ import {
 } from "@/lib/foamBlockNesting";
 import DxfDebugPanel from "./DxfDebugPanel";
 import ManualShapeInput, { type ManualShape } from "./ManualShapeInput";
+import FoamBlock3DViewer from "./FoamBlock3DViewer";
 
 export type NestingModalPolygonProps = {
   onClose: () => void;
