@@ -315,9 +315,9 @@ export default function NestingModalPolygon({
       }
 
       const bzmMachine = machines.find((m) => m.type === "BZM");
-      const cncMachine = machines.find((m) => m.type === "CNC");
+      const targetMachine = machines.find((m) => m.type === selectedMachine);
 
-      if (!bzmMachine || !cncMachine) {
+      if (!bzmMachine || !targetMachine) {
         alert(
           "M��quinas BZM e CNC não encontradas. Configure as máquinas primeiro.",
         );
@@ -329,7 +329,7 @@ export default function NestingModalPolygon({
           foam3dResult,
           foam.id,
           bzmMachine.id,
-          cncMachine.id,
+          targetMachine.id,
         );
 
         // Operação BZM (cortar blocos)
