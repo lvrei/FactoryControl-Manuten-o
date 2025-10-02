@@ -287,11 +287,10 @@ export default function NestingModalPolygon({
         <div className="p-4 border-b flex items-center justify-between">
           <div>
             <h3 className="text-xl font-semibold flex items-center gap-2">
-              <Layers className="h-5 w-5" /> Nesting Avançado (Formas
-              Irregulares)
+              <Layers className="h-5 w-5" /> Nesting Avançado
             </h3>
             <p className="text-xs text-muted-foreground">
-              Suporta retângulos E formas irregulares (polígonos, curvas)
+              Ficheiros DXF/JSON ou entrada manual de quadrados e retângulos
             </p>
           </div>
           <button
@@ -304,33 +303,75 @@ export default function NestingModalPolygon({
 
         <div className="p-4 grid md:grid-cols-3 gap-4">
           <div className="md:col-span-1 space-y-3">
+            {/* Modo de Entrada: Ficheiro ou Manual */}
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Ficheiro DXF/JSON
+              <label className="block text-sm font-medium mb-2">
+                Origem das Peças
               </label>
-              <input
-                type="file"
-                accept=".json,.dxf"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFile(f);
-                }}
-                disabled={isLoading}
-                className="w-full"
-              />
-              {fileName && (
-                <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
-                      A carregar...
-                    </>
-                  ) : (
-                    fileName
-                  )}
-                </div>
-              )}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setInputMode("file")}
+                  className={`px-3 py-2 border rounded flex items-center justify-center gap-2 ${
+                    inputMode === "file"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  }`}
+                >
+                  <FileText className="h-4 w-4" />
+                  Ficheiro
+                </button>
+                <button
+                  onClick={() => setInputMode("manual")}
+                  className={`px-3 py-2 border rounded flex items-center justify-center gap-2 ${
+                    inputMode === "manual"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  }`}
+                >
+                  <Edit3 className="h-4 w-4" />
+                  Manual
+                </button>
+              </div>
             </div>
+
+            {/* Entrada de Ficheiro */}
+            {inputMode === "file" && (
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Ficheiro DXF/JSON
+                </label>
+                <input
+                  type="file"
+                  accept=".json,.dxf"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleFile(f);
+                  }}
+                  disabled={isLoading}
+                  className="w-full"
+                />
+                {fileName && (
+                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                    {isLoading ? (
+                      <>
+                        <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+                        A carregar...
+                      </>
+                    ) : (
+                      fileName
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Entrada Manual */}
+            {inputMode === "manual" && (
+              <ManualShapeInput
+                shapes={manualShapes}
+                onShapesChange={setManualShapes}
+              />
+            )}
 
             {errorMessage && (
               <div
@@ -484,6 +525,12 @@ export default function NestingModalPolygon({
                     <strong>{polygonResult.placements.length}</strong>
                   </div>
                 )}
+                {inputMode === "manual" && manualShapes.length > 0 && (
+                  <div className="pt-1 border-t">
+                    Formas manuais: <strong>{manualShapes.length}</strong> tipos •{" "}
+                    {manualShapes.reduce((sum, s) => sum + s.quantity, 0)} peças
+                  </div>
+                )}
               </div>
             )}
 
@@ -494,7 +541,7 @@ export default function NestingModalPolygon({
               <button
                 onClick={applyToOrder}
                 className="px-3 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50"
-                disabled={!result}
+                disabled={!result || (inputMode === "manual" && manualShapes.length === 0)}
               >
                 Aplicar na OP
               </button>
