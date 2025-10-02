@@ -324,11 +324,20 @@ export function nestFoamParts(
     allPlacements.push(...placements);
 
     // Remove peças já colocadas
-    remainingParts = remainingParts.slice(placements.length);
+    const placedCount = placements.length;
+    remainingParts = remainingParts.slice(placedCount);
 
     console.log(
-      `[Foam Nesting] Bloco ${blockIndex + 1}: ${placements.length} peças colocadas, ${remainingParts.length} restantes`,
+      `[Foam Nesting] Bloco ${blockIndex + 1}: ${placedCount} peças colocadas, ${remainingParts.length} restantes`,
     );
+
+    // Se não colocou nenhuma peça neste bloco, algo está errado
+    if (placedCount === 0) {
+      console.error('[Foam Nesting] ERRO: Nenhuma peça colocada no bloco! Verificar dimensões.');
+      console.error('[Foam Nesting] Bloco:', currentBlock);
+      console.error('[Foam Nesting] Primeira peça restante:', remainingParts[0]);
+      break;
+    }
 
     blockIndex++;
 
