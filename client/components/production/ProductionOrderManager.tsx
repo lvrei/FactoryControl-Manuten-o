@@ -1432,6 +1432,14 @@ export function ProductionOrderManager({
           </form>
         </div>
       </div>
+
+      {/* Modal de Nesting */}
+      {showNestingModal && (
+        <NestingModalPolygon
+          onClose={() => setShowNestingModal(false)}
+          onApply={handleNestingApply}
+        />
+      )}
     </div>
   );
 }
