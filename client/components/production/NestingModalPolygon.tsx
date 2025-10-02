@@ -1423,7 +1423,7 @@ export default function NestingModalPolygon({
                   <FoamBlock3DViewer
                     result={{
                       placements: polygonResult.placements.map((p) => {
-                        // Calcula bounding box do polígono
+                        // Calcula bounding box do polígono para dimensões básicas
                         const minX = Math.min(...p.polygon.map(([x, y]) => x));
                         const maxX = Math.max(...p.polygon.map(([x, y]) => x));
                         const minY = Math.min(...p.polygon.map(([x, y]) => y));
@@ -1438,7 +1438,8 @@ export default function NestingModalPolygon({
                           height: manualHeight,
                           blockIndex: p.sheetIndex,
                           label: p.part?.label,
-                        };
+                          polygon: p.polygon, // Passa os dados do polígono real
+                        } as any;
                       }),
                       blockDetails: Array.from(
                         { length: polygonResult.sheetsUsed },
