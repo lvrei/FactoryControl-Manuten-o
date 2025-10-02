@@ -1197,8 +1197,7 @@ export default function NestingModalPolygon({
                           partsCount: rectangleResult.placements.filter(
                             (p) => p.sheetIndex === i,
                           ).length,
-                          utilizationPercent:
-                            rectangleResult.utilization * 100,
+                          utilizationPercent: rectangleResult.utilization * 100,
                         }),
                       ),
                       totalBlocksNeeded: rectangleResult.sheetsUsed,
@@ -1270,9 +1269,11 @@ export default function NestingModalPolygon({
                           }`}
                         >
                           Painel #{i + 1} (
-                          {rectangleResult.placements.filter(
-                            (p) => p.sheetIndex === i,
-                          ).length}
+                          {
+                            rectangleResult.placements.filter(
+                              (p) => p.sheetIndex === i,
+                            ).length
+                          }
                           ×)
                         </button>
                       ),
