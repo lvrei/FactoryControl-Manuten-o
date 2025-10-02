@@ -621,14 +621,24 @@ export function ProductionOrderManager({
                   <Factory className="h-5 w-5" />
                   Linhas de Produção ({lines.length})
                 </h3>
-                <button
-                  type="button"
-                  onClick={addNewLine}
-                  className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Adicionar Linha
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowNestingModal(true)}
+                    className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 flex items-center gap-2"
+                  >
+                    <Boxes className="h-4 w-4" />
+                    Nesting
+                  </button>
+                  <button
+                    type="button"
+                    onClick={addNewLine}
+                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Adicionar Linha
+                  </button>
+                </div>
               </div>
 
               {lines.length === 0 ? (
