@@ -793,8 +793,9 @@ export default function NestingModalPolygon({
                 ) : (
                   <>
                     <div className="flex items-center gap-2">
-                      <Package className="h-4 w-4" /> {nestingMode === "polygon" ? "Painéis" : "Blocos"} necessários:{" "}
-                      <strong>{result.sheetsUsed}</strong>
+                      <Package className="h-4 w-4" />{" "}
+                      {nestingMode === "polygon" ? "Painéis" : "Blocos"}{" "}
+                      necessários: <strong>{result.sheetsUsed}</strong>
                     </div>
                     <div>
                       Utilização: {(result.utilization * 100).toFixed(1)}%
