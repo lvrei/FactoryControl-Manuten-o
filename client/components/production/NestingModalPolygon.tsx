@@ -271,7 +271,10 @@ export default function NestingModalPolygon({
       foam3dMargins.left,
       foam3dMargins.right,
     );
-    const constraintsWithMargins = { ...cncConstraints, margin: effectiveMargin };
+    const constraintsWithMargins = {
+      ...cncConstraints,
+      margin: effectiveMargin,
+    };
 
     return nestFoamParts(allParts, constraintsWithMargins);
   }, [
