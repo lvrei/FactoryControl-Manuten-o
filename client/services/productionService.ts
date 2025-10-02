@@ -1033,6 +1033,12 @@ class ProductionService {
             if (operation.status === "completed") continue;
             if (machineId && operation.machineId !== machineId) continue;
 
+            // Calculate remaining quantity first to filter out completed operations
+            const remainingQty = operation.quantity - (operation.completedQuantity || 0);
+
+            // Skip if no work remaining (additional safety check)
+            if (remainingQty <= 0) continue;
+
             // Find machine details
             const machine = this.mockMachines.find(
               (m) => m.id === operation.machineId,
@@ -1081,8 +1087,7 @@ class ProductionService {
               inputDimensions: operation.inputDimensions,
               outputDimensions: operation.outputDimensions,
               quantity: operation.quantity,
-              remainingQuantity:
-                operation.quantity - (operation.completedQuantity || 0),
+              remainingQuantity: remainingQty,
               machineId: operation.machineId,
               machineName: machine?.name || "Máquina Desconhecida",
               machineType: machineType,
