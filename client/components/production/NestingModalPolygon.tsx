@@ -10,6 +10,7 @@ import {
   Pentagon,
   FileText,
   Edit3,
+  Cube,
 } from "lucide-react";
 import { productionService } from "@/services/productionService";
 import { FoamBlock, FoamType, ProductionOrderLine, Machine, CuttingOperation } from "@/types/production";
@@ -596,52 +597,117 @@ export default function NestingModalPolygon({
               </select>
             </div>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="block text-sm">Largura painel (mm)</label>
-                <input
-                  type="number"
-                  value={sheet.width}
-                  onChange={(e) =>
-                    setSheet((s) => ({ ...s, width: Number(e.target.value) }))
-                  }
-                  className="w-full border rounded px-2 py-1"
-                />
+            {nestingMode === "foam3d" ? (
+              <div className="border rounded p-3 bg-muted/20">
+                <label className="block text-sm font-medium mb-2">
+                  Limites da Máquina CNC
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block text-xs">Comp. Máx (mm)</label>
+                    <input
+                      type="number"
+                      value={cncConstraints.maxLength}
+                      onChange={(e) =>
+                        setCncConstraints((c) => ({ ...c, maxLength: Number(e.target.value) }))
+                      }
+                      className="w-full border rounded px-2 py-1 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs">Larg. Máx (mm)</label>
+                    <input
+                      type="number"
+                      value={cncConstraints.maxWidth}
+                      onChange={(e) =>
+                        setCncConstraints((c) => ({ ...c, maxWidth: Number(e.target.value) }))
+                      }
+                      className="w-full border rounded px-2 py-1 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs">Alt. Máx (mm)</label>
+                    <input
+                      type="number"
+                      value={cncConstraints.maxHeight}
+                      onChange={(e) =>
+                        setCncConstraints((c) => ({ ...c, maxHeight: Number(e.target.value) }))
+                      }
+                      className="w-full border rounded px-2 py-1 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs">Kerf (mm)</label>
+                    <input
+                      type="number"
+                      value={cncConstraints.kerf}
+                      onChange={(e) =>
+                        setCncConstraints((c) => ({ ...c, kerf: Number(e.target.value) }))
+                      }
+                      className="w-full border rounded px-2 py-1 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs">Margem (mm)</label>
+                    <input
+                      type="number"
+                      value={cncConstraints.margin}
+                      onChange={(e) =>
+                        setCncConstraints((c) => ({ ...c, margin: Number(e.target.value) }))
+                      }
+                      className="w-full border rounded px-2 py-1 text-sm"
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm">Comprimento painel (mm)</label>
-                <input
-                  type="number"
-                  value={sheet.length}
-                  onChange={(e) =>
-                    setSheet((s) => ({ ...s, length: Number(e.target.value) }))
-                  }
-                  className="w-full border rounded px-2 py-1"
-                />
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-sm">Largura painel (mm)</label>
+                  <input
+                    type="number"
+                    value={sheet.width}
+                    onChange={(e) =>
+                      setSheet((s) => ({ ...s, width: Number(e.target.value) }))
+                    }
+                    className="w-full border rounded px-2 py-1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm">Comprimento painel (mm)</label>
+                  <input
+                    type="number"
+                    value={sheet.length}
+                    onChange={(e) =>
+                      setSheet((s) => ({ ...s, length: Number(e.target.value) }))
+                    }
+                    className="w-full border rounded px-2 py-1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm">Kerf (mm)</label>
+                  <input
+                    type="number"
+                    value={sheet.kerf}
+                    onChange={(e) =>
+                      setSheet((s) => ({ ...s, kerf: Number(e.target.value) }))
+                    }
+                    className="w-full border rounded px-2 py-1"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm">Margem (mm)</label>
+                  <input
+                    type="number"
+                    value={sheet.margin}
+                    onChange={(e) =>
+                      setSheet((s) => ({ ...s, margin: Number(e.target.value) }))
+                    }
+                    className="w-full border rounded px-2 py-1"
+                  />
+                </div>
               </div>
-              <div>
-                <label className="block text-sm">Kerf (mm)</label>
-                <input
-                  type="number"
-                  value={sheet.kerf}
-                  onChange={(e) =>
-                    setSheet((s) => ({ ...s, kerf: Number(e.target.value) }))
-                  }
-                  className="w-full border rounded px-2 py-1"
-                />
-              </div>
-              <div>
-                <label className="block text-sm">Margem (mm)</label>
-                <input
-                  type="number"
-                  value={sheet.margin}
-                  onChange={(e) =>
-                    setSheet((s) => ({ ...s, margin: Number(e.target.value) }))
-                  }
-                  className="w-full border rounded px-2 py-1"
-                />
-              </div>
-            </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium mb-1">
