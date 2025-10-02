@@ -1015,7 +1015,12 @@ class ProductionService {
   ): Promise<OperatorWorkItem[]> {
     try {
       this.ensureInitialized();
-      const orders = await this.getProductionOrders();
+
+      // IMPORTANTE: Para operações do operador, sempre usar localStorage para ter dados em tempo real
+      // A API pode ter dados em cache/desatualizados do banco de dados
+      const storedData = this.getStoredData();
+      const orders = storedData?.productionOrders || [];
+
       const workItems: OperatorWorkItem[] = [];
 
       console.log(
@@ -1023,7 +1028,7 @@ class ProductionService {
         machineId,
       );
       console.log(
-        `📊 [getOperatorWorkItems] Total de ordens: ${orders.length}`,
+        `📊 [getOperatorWorkItems] Total de ordens (localStorage): ${orders.length}`,
       );
 
       for (const order of orders) {
