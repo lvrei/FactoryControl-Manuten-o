@@ -391,7 +391,10 @@ export default function NestingModalPolygon({
       // Lógica para retângulos (ficheiro + manual)
       // Agrupa peças por tipo de espuma e cria operações CNC separadas para cada forma distinta
 
-      const foamGroups = new Map<string, Map<string, { part: NestPart; qty: number }>>();
+      const foamGroups = new Map<
+        string,
+        Map<string, { part: NestPart; qty: number }>
+      >();
 
       // Combina peças do ficheiro com formas manuais
       const allParts: NestPart[] = [];
@@ -411,7 +414,8 @@ export default function NestingModalPolygon({
 
       // Agrupa por tipo de espuma e depois por dimensões
       for (const p of allParts) {
-        const foamId = p.foamTypeId || mappingFoamTypeId || foamTypes[0]?.id || "";
+        const foamId =
+          p.foamTypeId || mappingFoamTypeId || foamTypes[0]?.id || "";
 
         if (!foamGroups.has(foamId)) {
           foamGroups.set(foamId, new Map());
@@ -421,7 +425,10 @@ export default function NestingModalPolygon({
         const partsMap = foamGroups.get(foamId)!;
 
         if (!partsMap.has(dimensionsKey)) {
-          partsMap.set(dimensionsKey, { part: { ...p, foamTypeId: foamId }, qty: 0 });
+          partsMap.set(dimensionsKey, {
+            part: { ...p, foamTypeId: foamId },
+            qty: 0,
+          });
         }
 
         const rec = partsMap.get(dimensionsKey)!;
