@@ -1,6 +1,6 @@
 /**
  * Sistema de Nesting para Blocos de Espuma 3D
- * 
+ *
  * Workflow:
  * 1. Bloco Grande (40m×2m×1.2m) → BZM corta blocos menores
  * 2. Bloco Menor (limitado por CNC) → CNC-01 faz nesting
@@ -41,15 +41,15 @@ export type PlacedPart = FoamPart & {
 export type BlockNestingResult = {
   // Blocos menores necessários (cortados pela BZM)
   smallBlocks: FoamBlock[];
-  
+
   // Peças colocadas em cada bloco (para CNC)
   placements: PlacedPart[];
-  
+
   // Estatísticas
   totalBlocksNeeded: number; // quantos blocos a BZM deve cortar
   totalPartsPlaced: number; // total de peças
   utilization: number; // % aproveitamento médio
-  
+
   // Detalhes por bloco
   blockDetails: {
     blockIndex: number;
@@ -74,7 +74,7 @@ export function canFitInBlock(
   block: FoamBlock,
   kerf: number,
   margin: number,
-  rotated = false
+  rotated = false,
 ): boolean {
   const effLength = rotated ? part.width : part.length;
   const effWidth = rotated ? part.length : part.width;
@@ -96,7 +96,7 @@ export function canFitInBlock(
  */
 export function calculateOptimalBlockSize(
   parts: FoamPart[],
-  constraints: BlockConstraints
+  constraints: BlockConstraints,
 ): FoamBlock {
   if (parts.length === 0) {
     return {
@@ -107,26 +107,26 @@ export function calculateOptimalBlockSize(
   }
 
   // Encontra as dimensões máximas das peças
-  const maxPartLength = Math.max(...parts.map(p => p.length));
-  const maxPartWidth = Math.max(...parts.map(p => p.width));
-  const maxPartHeight = Math.max(...parts.map(p => p.height));
+  const maxPartLength = Math.max(...parts.map((p) => p.length));
+  const maxPartWidth = Math.max(...parts.map((p) => p.width));
+  const maxPartHeight = Math.max(...parts.map((p) => p.height));
 
   // Adiciona margem de segurança
   const safety = 100; // 10cm extra para manobra
 
   let blockLength = Math.min(
     maxPartLength + 2 * constraints.margin + safety,
-    constraints.maxLength
+    constraints.maxLength,
   );
-  
+
   let blockWidth = Math.min(
     maxPartWidth + 2 * constraints.margin + safety,
-    constraints.maxWidth
+    constraints.maxWidth,
   );
-  
+
   let blockHeight = Math.min(
     maxPartHeight + 2 * constraints.margin + safety,
-    constraints.maxHeight
+    constraints.maxHeight,
   );
 
   // Arredonda para cima para múltiplos de 50mm (mais fácil de cortar)
@@ -154,10 +154,10 @@ export function nestPartsInBlock(
   parts: FoamPart[],
   block: FoamBlock,
   kerf: number,
-  margin: number
+  margin: number,
 ): PlacedPart[] {
   const placements: PlacedPart[] = [];
-  
+
   // Expande quantidades em peças individuais
   const expandedParts: FoamPart[] = [];
   for (const part of parts) {
@@ -183,13 +183,13 @@ export function nestPartsInBlock(
     if (currentZ + part.height + kerf <= block.height - margin) {
       // Tenta posições em grade na camada
       const step = 50; // passo de 50mm
-      
+
       for (let y = margin; y <= usableWidth - part.width; y += step) {
         if (placed) break;
-        
+
         for (let x = margin; x <= usableLength - part.length; x += step) {
           // Verifica colisão com peças já colocadas nesta camada
-          const collision = currentLayer.some(p => {
+          const collision = currentLayer.some((p) => {
             return !(
               x + part.length + kerf <= p.x ||
               p.x + p.length + kerf <= x ||
@@ -217,7 +217,7 @@ export function nestPartsInBlock(
 
     // Se não coube na camada atual, tenta nova camada
     if (!placed && currentLayer.length > 0) {
-      const maxHeightInLayer = Math.max(...currentLayer.map(p => p.height));
+      const maxHeightInLayer = Math.max(...currentLayer.map((p) => p.height));
       currentZ += maxHeightInLayer + kerf;
       currentLayer = [];
 
@@ -255,14 +255,14 @@ export function nestPartsInBlock(
 
 /**
  * Função principal: Calcula nesting de peças em blocos de espuma
- * 
+ *
  * @param parts - Peças a serem cortadas
  * @param constraints - Limites da máquina CNC
  * @returns Resultado completo do nesting
  */
 export function nestFoamParts(
   parts: FoamPart[],
-  constraints: BlockConstraints
+  constraints: BlockConstraints,
 ): BlockNestingResult {
   if (parts.length === 0) {
     return {
@@ -275,12 +275,16 @@ export function nestFoamParts(
     };
   }
 
-  console.log('[Foam Nesting] Iniciando nesting de', parts.length, 'tipos de peças');
-  console.log('[Foam Nesting] Limites CNC:', constraints);
+  console.log(
+    "[Foam Nesting] Iniciando nesting de",
+    parts.length,
+    "tipos de peças",
+  );
+  console.log("[Foam Nesting] Limites CNC:", constraints);
 
   // Calcula dimensões ótimas do bloco menor
   const blockSize = calculateOptimalBlockSize(parts, constraints);
-  console.log('[Foam Nesting] Tamanho do bloco otimizado:', blockSize);
+  console.log("[Foam Nesting] Tamanho do bloco otimizado:", blockSize);
 
   const allPlacements: PlacedPart[] = [];
   const blocks: FoamBlock[] = [];
@@ -294,7 +298,10 @@ export function nestFoamParts(
     }
   }
 
-  console.log('[Foam Nesting] Total de peças individuais:', expandedParts.length);
+  console.log(
+    "[Foam Nesting] Total de peças individuais:",
+    expandedParts.length,
+  );
 
   let remainingParts = [...expandedParts];
 
@@ -307,11 +314,11 @@ export function nestFoamParts(
       remainingParts,
       currentBlock,
       constraints.kerf,
-      constraints.margin
+      constraints.margin,
     );
 
     // Marca índice do bloco
-    placements.forEach(p => {
+    placements.forEach((p) => {
       p.blockIndex = blockIndex;
     });
 
@@ -320,37 +327,42 @@ export function nestFoamParts(
     // Remove peças já colocadas
     remainingParts = remainingParts.slice(placements.length);
 
-    console.log(`[Foam Nesting] Bloco ${blockIndex + 1}: ${placements.length} peças colocadas, ${remainingParts.length} restantes`);
+    console.log(
+      `[Foam Nesting] Bloco ${blockIndex + 1}: ${placements.length} peças colocadas, ${remainingParts.length} restantes`,
+    );
 
     blockIndex++;
 
     // Segurança: máximo 100 blocos (evita loop infinito)
     if (blockIndex >= 100) {
-      console.error('[Foam Nesting] ERRO: Máximo de blocos atingido!');
+      console.error("[Foam Nesting] ERRO: Máximo de blocos atingido!");
       break;
     }
   }
 
   // Calcula estatísticas por bloco
   const blockDetails = blocks.map((block, idx) => {
-    const blockPlacements = allPlacements.filter(p => p.blockIndex === idx);
+    const blockPlacements = allPlacements.filter((p) => p.blockIndex === idx);
     const totalVolume = calculateVolume(block);
     const usedVolume = blockPlacements.reduce(
       (sum, p) => sum + calculateVolume(p),
-      0
+      0,
     );
-    
+
     return {
       blockIndex: idx,
       dimensions: block,
       partsCount: blockPlacements.length,
-      utilizationPercent: totalVolume > 0 ? (usedVolume / totalVolume) * 100 : 0,
+      utilizationPercent:
+        totalVolume > 0 ? (usedVolume / totalVolume) * 100 : 0,
     };
   });
 
-  const avgUtilization = blockDetails.length > 0
-    ? blockDetails.reduce((sum, b) => sum + b.utilizationPercent, 0) / blockDetails.length
-    : 0;
+  const avgUtilization =
+    blockDetails.length > 0
+      ? blockDetails.reduce((sum, b) => sum + b.utilizationPercent, 0) /
+        blockDetails.length
+      : 0;
 
   const result: BlockNestingResult = {
     smallBlocks: blocks,
@@ -361,7 +373,7 @@ export function nestFoamParts(
     blockDetails,
   };
 
-  console.log('[Foam Nesting] Resultado:', {
+  console.log("[Foam Nesting] Resultado:", {
     blocos: result.totalBlocksNeeded,
     peças: result.totalPartsPlaced,
     utilização: `${avgUtilization.toFixed(1)}%`,
@@ -372,7 +384,7 @@ export function nestFoamParts(
 
 /**
  * Converte resultado de nesting em operações para a OP
- * 
+ *
  * Gera:
  * 1. Operação BZM: cortar blocos menores (quantidade = número de blocos)
  * 2. Operação CNC-01: fazer nesting das peças finais
@@ -381,7 +393,7 @@ export function convertNestingToOperations(
   nestingResult: BlockNestingResult,
   foamTypeId: string,
   bzmMachineId: string,
-  cncMachineId: string
+  cncMachineId: string,
 ): {
   bzmOperation: {
     machineId: string;
@@ -397,12 +409,12 @@ export function convertNestingToOperations(
   };
 } {
   if (nestingResult.smallBlocks.length === 0) {
-    throw new Error('Nenhum bloco gerado no nesting');
+    throw new Error("Nenhum bloco gerado no nesting");
   }
 
   // BZM: Corta blocos menores
   const smallBlock = nestingResult.smallBlocks[0]; // todos têm mesmo tamanho
-  
+
   const bzmOperation = {
     machineId: bzmMachineId,
     quantity: nestingResult.totalBlocksNeeded,

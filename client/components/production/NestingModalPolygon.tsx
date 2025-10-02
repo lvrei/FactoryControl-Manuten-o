@@ -13,7 +13,13 @@ import {
   Cube,
 } from "lucide-react";
 import { productionService } from "@/services/productionService";
-import { FoamBlock, FoamType, ProductionOrderLine, Machine, CuttingOperation } from "@/types/production";
+import {
+  FoamBlock,
+  FoamType,
+  ProductionOrderLine,
+  Machine,
+  CuttingOperation,
+} from "@/types/production";
 import {
   fileLoaderService,
   FileLoaderError,
@@ -62,7 +68,9 @@ export default function NestingModalPolygon({
   const [stockWarning, setStockWarning] = useState<string>("");
   const [manualHeight, setManualHeight] = useState<number>(50);
   const [mappingFoamTypeId, setMappingFoamTypeId] = useState<string>("");
-  const [nestingMode, setNestingMode] = useState<"rectangle" | "polygon" | "foam3d">(
+  const [nestingMode, setNestingMode] = useState<
+    "rectangle" | "polygon" | "foam3d"
+  >(
     "foam3d", // Modo padrão para blocos de espuma
   );
   const [inputMode, setInputMode] = useState<"file" | "manual">("manual"); // Manual por padrão
@@ -222,19 +230,28 @@ export default function NestingModalPolygon({
           quantity: s.quantity,
           label: s.label,
           foamTypeId: s.foamTypeId || mappingFoamTypeId,
-        }))
+        })),
       );
     }
 
     if (allParts.length === 0) return null;
 
     return nestFoamParts(allParts, cncConstraints);
-  }, [drawing, cncConstraints, quantityMultiplier, nestingMode, manualShapes, mappingFoamTypeId]);
+  }, [
+    drawing,
+    cncConstraints,
+    quantityMultiplier,
+    nestingMode,
+    manualShapes,
+    mappingFoamTypeId,
+  ]);
 
   const result =
-    nestingMode === "polygon" ? polygonResult :
-    nestingMode === "foam3d" ? foam3dResult :
-    rectangleResult;
+    nestingMode === "polygon"
+      ? polygonResult
+      : nestingMode === "foam3d"
+        ? foam3dResult
+        : rectangleResult;
 
   function applyToOrder() {
     if (!result) return;
@@ -253,7 +270,9 @@ export default function NestingModalPolygon({
       const cncMachine = machines.find((m) => m.type === "CNC");
 
       if (!bzmMachine || !cncMachine) {
-        alert("Máquinas BZM e CNC não encontradas. Configure as máquinas primeiro.");
+        alert(
+          "Máquinas BZM e CNC não encontradas. Configure as máquinas primeiro.",
+        );
         return;
       }
 
@@ -262,7 +281,7 @@ export default function NestingModalPolygon({
           foam3dResult,
           foam.id,
           bzmMachine.id,
-          cncMachine.id
+          cncMachine.id,
         );
 
         const bzmCuttingOp: CuttingOperation = {
@@ -609,7 +628,10 @@ export default function NestingModalPolygon({
                       type="number"
                       value={cncConstraints.maxLength}
                       onChange={(e) =>
-                        setCncConstraints((c) => ({ ...c, maxLength: Number(e.target.value) }))
+                        setCncConstraints((c) => ({
+                          ...c,
+                          maxLength: Number(e.target.value),
+                        }))
                       }
                       className="w-full border rounded px-2 py-1 text-sm"
                     />
@@ -620,7 +642,10 @@ export default function NestingModalPolygon({
                       type="number"
                       value={cncConstraints.maxWidth}
                       onChange={(e) =>
-                        setCncConstraints((c) => ({ ...c, maxWidth: Number(e.target.value) }))
+                        setCncConstraints((c) => ({
+                          ...c,
+                          maxWidth: Number(e.target.value),
+                        }))
                       }
                       className="w-full border rounded px-2 py-1 text-sm"
                     />
@@ -631,7 +656,10 @@ export default function NestingModalPolygon({
                       type="number"
                       value={cncConstraints.maxHeight}
                       onChange={(e) =>
-                        setCncConstraints((c) => ({ ...c, maxHeight: Number(e.target.value) }))
+                        setCncConstraints((c) => ({
+                          ...c,
+                          maxHeight: Number(e.target.value),
+                        }))
                       }
                       className="w-full border rounded px-2 py-1 text-sm"
                     />
@@ -642,7 +670,10 @@ export default function NestingModalPolygon({
                       type="number"
                       value={cncConstraints.kerf}
                       onChange={(e) =>
-                        setCncConstraints((c) => ({ ...c, kerf: Number(e.target.value) }))
+                        setCncConstraints((c) => ({
+                          ...c,
+                          kerf: Number(e.target.value),
+                        }))
                       }
                       className="w-full border rounded px-2 py-1 text-sm"
                     />
@@ -653,7 +684,10 @@ export default function NestingModalPolygon({
                       type="number"
                       value={cncConstraints.margin}
                       onChange={(e) =>
-                        setCncConstraints((c) => ({ ...c, margin: Number(e.target.value) }))
+                        setCncConstraints((c) => ({
+                          ...c,
+                          margin: Number(e.target.value),
+                        }))
                       }
                       className="w-full border rounded px-2 py-1 text-sm"
                     />
@@ -674,12 +708,17 @@ export default function NestingModalPolygon({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm">Comprimento painel (mm)</label>
+                  <label className="block text-sm">
+                    Comprimento painel (mm)
+                  </label>
                   <input
                     type="number"
                     value={sheet.length}
                     onChange={(e) =>
-                      setSheet((s) => ({ ...s, length: Number(e.target.value) }))
+                      setSheet((s) => ({
+                        ...s,
+                        length: Number(e.target.value),
+                      }))
                     }
                     className="w-full border rounded px-2 py-1"
                   />
@@ -701,7 +740,10 @@ export default function NestingModalPolygon({
                     type="number"
                     value={sheet.margin}
                     onChange={(e) =>
-                      setSheet((s) => ({ ...s, margin: Number(e.target.value) }))
+                      setSheet((s) => ({
+                        ...s,
+                        margin: Number(e.target.value),
+                      }))
                     }
                     className="w-full border rounded px-2 py-1"
                   />
@@ -733,9 +775,13 @@ export default function NestingModalPolygon({
                       <strong>{foam3dResult.totalBlocksNeeded}</strong>
                     </div>
                     <div>
-                      Peças a cortar: <strong>{foam3dResult.totalPartsPlaced}</strong>
+                      Peças a cortar:{" "}
+                      <strong>{foam3dResult.totalPartsPlaced}</strong>
                     </div>
-                    <div>Aproveitamento: {(foam3dResult.utilization * 100).toFixed(1)}%</div>
+                    <div>
+                      Aproveitamento:{" "}
+                      {(foam3dResult.utilization * 100).toFixed(1)}%
+                    </div>
                     {foam3dResult.smallBlocks.length > 0 && (
                       <div className="pt-1 border-t text-xs">
                         Bloco CNC: {foam3dResult.smallBlocks[0].length}×
@@ -750,7 +796,9 @@ export default function NestingModalPolygon({
                       <Package className="h-4 w-4" /> Painéis necessários:{" "}
                       <strong>{result.sheetsUsed}</strong>
                     </div>
-                    <div>Utilização: {(result.utilization * 100).toFixed(1)}%</div>
+                    <div>
+                      Utilização: {(result.utilization * 100).toFixed(1)}%
+                    </div>
                     {nestingMode === "polygon" && polygonResult && (
                       <div>
                         Formas colocadas:{" "}
@@ -873,24 +921,31 @@ export default function NestingModalPolygon({
             ) : result && nestingMode === "foam3d" && foam3dResult ? (
               <div className="p-4 space-y-4">
                 <div className="text-sm font-medium mb-2">
-                  Blocos de Espuma 3D ({foam3dResult.totalBlocksNeeded} bloco{foam3dResult.totalBlocksNeeded !== 1 ? 's' : ''})
+                  Blocos de Espuma 3D ({foam3dResult.totalBlocksNeeded} bloco
+                  {foam3dResult.totalBlocksNeeded !== 1 ? "s" : ""})
                 </div>
                 <div className="grid gap-4 max-h-[600px] overflow-y-auto">
                   {foam3dResult.blockDetails.map((block) => {
                     const blockPlacements = foam3dResult.placements.filter(
-                      (p) => p.blockIndex === block.blockIndex
+                      (p) => p.blockIndex === block.blockIndex,
                     );
                     const scale = 0.15;
                     const blockW = block.dimensions.width * scale;
                     const blockL = block.dimensions.length * scale;
 
                     return (
-                      <div key={block.blockIndex} className="border rounded p-3 bg-white">
+                      <div
+                        key={block.blockIndex}
+                        className="border rounded p-3 bg-white"
+                      >
                         <div className="text-xs font-medium mb-2">
-                          Bloco #{block.blockIndex + 1} - {block.partsCount} peça{block.partsCount !== 1 ? 's' : ''} - {block.utilizationPercent.toFixed(1)}% usado
+                          Bloco #{block.blockIndex + 1} - {block.partsCount}{" "}
+                          peça{block.partsCount !== 1 ? "s" : ""} -{" "}
+                          {block.utilizationPercent.toFixed(1)}% usado
                         </div>
                         <div className="text-xs text-muted-foreground mb-2">
-                          Dimensões: {block.dimensions.length}×{block.dimensions.width}×{block.dimensions.height}mm
+                          Dimensões: {block.dimensions.length}×
+                          {block.dimensions.width}×{block.dimensions.height}mm
                         </div>
                         <svg
                           width={Math.max(300, blockW + 20)}
@@ -912,8 +967,16 @@ export default function NestingModalPolygon({
                             const pw = part.length * scale;
                             const ph = part.width * scale;
                             const colors = [
-                              "#c7f9cc", "#a5d8ff", "#ffc9c9", "#ffe066", "#d0bfff",
-                              "#b2f2bb", "#99e9f2", "#ffdeeb", "#ffd8a8", "#e7f5ff"
+                              "#c7f9cc",
+                              "#a5d8ff",
+                              "#ffc9c9",
+                              "#ffe066",
+                              "#d0bfff",
+                              "#b2f2bb",
+                              "#99e9f2",
+                              "#ffdeeb",
+                              "#ffd8a8",
+                              "#e7f5ff",
                             ];
                             const color = colors[idx % colors.length];
 
@@ -944,7 +1007,9 @@ export default function NestingModalPolygon({
                                   fontSize={7}
                                   fill="#495057"
                                 >
-                                  {Math.round(part.length)}×{Math.round(part.width)}×{Math.round(part.height)}
+                                  {Math.round(part.length)}×
+                                  {Math.round(part.width)}×
+                                  {Math.round(part.height)}
                                 </text>
                                 <text
                                   x={px + 3}
@@ -966,7 +1031,10 @@ export default function NestingModalPolygon({
             ) : (
               <div className="p-6 text-sm text-muted-foreground text-center">
                 <Upload className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Carregue um ficheiro DXF ou JSON ou adicione formas manualmente</p>
+                <p>
+                  Carregue um ficheiro DXF ou JSON ou adicione formas
+                  manualmente
+                </p>
                 <p className="text-xs mt-2">
                   Sistema suporta formas irregulares complexas e blocos 3D!
                 </p>

@@ -17,11 +17,14 @@ O sistema atual trata nesting como **placas 2D** (sheets), mas na realidade o ma
 ## Requisitos
 
 ### 1. Dimensões dos Blocos
+
 - **Bloco Grande**: 40m × 2m × 1.2m (padrão espuma)
 - **Bloco Menor**: Máx 2.5m × 2.3m × 1.3m (limite CNC)
 
 ### 2. Workflow de Operações
+
 1. **BZM**: Corta blocos grandes em blocos menores
+
    - Input: Bloco grande (40m × 2m × 1.2m)
    - Output: Bloco menor (calculado automaticamente)
    - Quantidade: **Número de blocos necessários** (resultado do nesting)
@@ -32,6 +35,7 @@ O sistema atual trata nesting como **placas 2D** (sheets), mas na realidade o ma
    - Quantidade: **Total de peças** a cortar
 
 ### 3. Cálculo de Blocos
+
 - Se peças > capacidade de 1 bloco → próximo bloco
 - Exemplo:
   - Peça: 2m × 100mm × 200mm × 50 unidades
@@ -42,6 +46,7 @@ O sistema atual trata nesting como **placas 2D** (sheets), mas na realidade o ma
 ## Arquivos Criados
 
 ### `client/lib/foamBlockNesting.ts` ✅
+
 Contém toda a lógica de nesting 3D:
 
 ```typescript
@@ -58,6 +63,7 @@ function convertNestingToOperations(...): { bzmOperation, cncOperation }
 ```
 
 #### Algoritmo de Nesting 3D
+
 1. Calcula tamanho ótimo do bloco menor (baseado nas peças)
 2. Usa estratégia de camadas (layers) em Z
 3. Preenche cada camada com algoritmo 2D
@@ -69,9 +75,12 @@ function convertNestingToOperations(...): { bzmOperation, cncOperation }
 ### `client/components/production/NestingModalPolygon.tsx`
 
 #### Estado Adicionado ✅
+
 ```typescript
-const [nestingMode, setNestingMode] = useState<"rectangle" | "polygon" | "foam3d">(
-  "foam3d" // Modo padrão
+const [nestingMode, setNestingMode] = useState<
+  "rectangle" | "polygon" | "foam3d"
+>(
+  "foam3d", // Modo padrão
 );
 
 const [cncConstraints, setCncConstraints] = useState<BlockConstraints>({
@@ -84,30 +93,33 @@ const [cncConstraints, setCncConstraints] = useState<BlockConstraints>({
 ```
 
 #### Cálculo de Resultado ✅
+
 ```typescript
 const foam3dResult = useMemo(() => {
   if (nestingMode !== "foam3d") return null;
-  
+
   // Combina peças do ficheiro + manual
   const allParts: FoamPart[] = [...fromFile, ...manualShapes];
-  
+
   return nestFoamParts(allParts, cncConstraints);
 }, [drawing, cncConstraints, quantityMultiplier, nestingMode, manualShapes]);
 ```
 
 #### applyToOrder() - Criar Operações ⏳
+
 ```typescript
 function applyToOrder() {
   if (nestingMode === "foam3d" && foam3dResult) {
     // Encontrar máquinas
-    const bzmMachine = machines.find(m => m.type === "BZM");
-    const cncMachine = machines.find(m => m.id === "cnc-001"); // CNC-01
-    
+    const bzmMachine = machines.find((m) => m.type === "BZM");
+    const cncMachine = machines.find((m) => m.id === "cnc-001"); // CNC-01
+
     // Criar linha com 2 operações
     const line: ProductionOrderLine = {
       id: generateId(),
       foamType: selectedFoam,
-      initialDimensions: { // Bloco grande
+      initialDimensions: {
+        // Bloco grande
         length: 40000,
         width: 2000,
         height: 1200,
@@ -153,7 +165,7 @@ function applyToOrder() {
       status: "pending",
       priority: 5,
     };
-    
+
     onApply([line]);
     onClose();
   }
@@ -163,6 +175,7 @@ function applyToOrder() {
 ## UI Necessária
 
 ### Modo de Nesting
+
 ```tsx
 <div className="grid grid-cols-3 gap-2">
   <button
@@ -187,6 +200,7 @@ function applyToOrder() {
 ```
 
 ### Limites da CNC
+
 ```tsx
 <div className="border rounded p-3">
   <h4 className="font-medium mb-2">Limites da CNC</h4>
@@ -196,10 +210,12 @@ function applyToOrder() {
       <input
         type="number"
         value={cncConstraints.maxLength}
-        onChange={e => setCncConstraints({
-          ...cncConstraints,
-          maxLength: Number(e.target.value)
-        })}
+        onChange={(e) =>
+          setCncConstraints({
+            ...cncConstraints,
+            maxLength: Number(e.target.value),
+          })
+        }
       />
     </div>
     <div>
@@ -207,10 +223,12 @@ function applyToOrder() {
       <input
         type="number"
         value={cncConstraints.maxWidth}
-        onChange={e => setCncConstraints({
-          ...cncConstraints,
-          maxWidth: Number(e.target.value)
-        })}
+        onChange={(e) =>
+          setCncConstraints({
+            ...cncConstraints,
+            maxWidth: Number(e.target.value),
+          })
+        }
       />
     </div>
     <div>
@@ -218,10 +236,12 @@ function applyToOrder() {
       <input
         type="number"
         value={cncConstraints.maxHeight}
-        onChange={e => setCncConstraints({
-          ...cncConstraints,
-          maxHeight: Number(e.target.value)
-        })}
+        onChange={(e) =>
+          setCncConstraints({
+            ...cncConstraints,
+            maxHeight: Number(e.target.value),
+          })
+        }
       />
     </div>
   </div>
@@ -229,88 +249,93 @@ function applyToOrder() {
 ```
 
 ### Estatísticas Foam 3D
+
 ```tsx
-{foam3dResult && (
-  <div className="border rounded p-3 bg-muted/30">
-    <h4 className="font-medium mb-2">Resultado Nesting 3D</h4>
-    <div className="space-y-1 text-sm">
-      <div>
-        📦 Blocos necessários: <strong>{foam3dResult.totalBlocksNeeded}</strong>
-      </div>
-      <div>
-        🔲 Total de peças: <strong>{foam3dResult.totalPartsPlaced}</strong>
-      </div>
-      <div>
-        📊 Utilização média: <strong>{(foam3dResult.utilization * 100).toFixed(1)}%</strong>
-      </div>
-      <div className="pt-2 border-t">
-        <strong>Dimensões do bloco menor:</strong>
-        <div className="text-xs text-muted-foreground">
-          {foam3dResult.smallBlocks[0].length}mm × 
-          {foam3dResult.smallBlocks[0].width}mm × 
-          {foam3dResult.smallBlocks[0].height}mm
+{
+  foam3dResult && (
+    <div className="border rounded p-3 bg-muted/30">
+      <h4 className="font-medium mb-2">Resultado Nesting 3D</h4>
+      <div className="space-y-1 text-sm">
+        <div>
+          📦 Blocos necessários:{" "}
+          <strong>{foam3dResult.totalBlocksNeeded}</strong>
+        </div>
+        <div>
+          🔲 Total de peças: <strong>{foam3dResult.totalPartsPlaced}</strong>
+        </div>
+        <div>
+          📊 Utilização média:{" "}
+          <strong>{(foam3dResult.utilization * 100).toFixed(1)}%</strong>
+        </div>
+        <div className="pt-2 border-t">
+          <strong>Dimensões do bloco menor:</strong>
+          <div className="text-xs text-muted-foreground">
+            {foam3dResult.smallBlocks[0].length}mm ×
+            {foam3dResult.smallBlocks[0].width}mm ×
+            {foam3dResult.smallBlocks[0].height}mm
+          </div>
         </div>
       </div>
     </div>
-  </div>
-)}
+  );
+}
 ```
 
 ### Visualização 3D (Simplificada)
+
 ```tsx
-{foam3dResult && (
-  <div className="border rounded p-2 bg-white">
-    <h4 className="text-sm font-medium mb-2">
-      Bloco 1 de {foam3dResult.totalBlocksNeeded}
-    </h4>
-    
-    {/* Vista superior (plano XY) */}
-    <svg width={400} height={300}>
-      {foam3dResult.placements
-        .filter(p => p.blockIndex === 0)
-        .map((p, idx) => {
-          const scale = 0.15; // escala para caber no SVG
-          return (
-            <g key={idx}>
-              <rect
-                x={p.x * scale}
-                y={p.y * scale}
-                width={p.length * scale}
-                height={p.width * scale}
-                fill={`hsl(${(p.z / 10) * 360}, 70%, 70%)`}
-                stroke="#333"
-                strokeWidth={1}
-              />
-              <text
-                x={p.x * scale + 5}
-                y={p.y * scale + 15}
-                fontSize={10}
-              >
-                #{idx + 1}
-              </text>
-              <text
-                x={p.x * scale + 5}
-                y={p.y * scale + 28}
-                fontSize={8}
-                fill="#666"
-              >
-                Z:{Math.round(p.z)}mm
-              </text>
-            </g>
-          );
-        })}
-    </svg>
-    
-    <div className="text-xs text-muted-foreground mt-2">
-      Vista superior • Cores = altura (Z)
+{
+  foam3dResult && (
+    <div className="border rounded p-2 bg-white">
+      <h4 className="text-sm font-medium mb-2">
+        Bloco 1 de {foam3dResult.totalBlocksNeeded}
+      </h4>
+
+      {/* Vista superior (plano XY) */}
+      <svg width={400} height={300}>
+        {foam3dResult.placements
+          .filter((p) => p.blockIndex === 0)
+          .map((p, idx) => {
+            const scale = 0.15; // escala para caber no SVG
+            return (
+              <g key={idx}>
+                <rect
+                  x={p.x * scale}
+                  y={p.y * scale}
+                  width={p.length * scale}
+                  height={p.width * scale}
+                  fill={`hsl(${(p.z / 10) * 360}, 70%, 70%)`}
+                  stroke="#333"
+                  strokeWidth={1}
+                />
+                <text x={p.x * scale + 5} y={p.y * scale + 15} fontSize={10}>
+                  #{idx + 1}
+                </text>
+                <text
+                  x={p.x * scale + 5}
+                  y={p.y * scale + 28}
+                  fontSize={8}
+                  fill="#666"
+                >
+                  Z:{Math.round(p.z)}mm
+                </text>
+              </g>
+            );
+          })}
+      </svg>
+
+      <div className="text-xs text-muted-foreground mt-2">
+        Vista superior • Cores = altura (Z)
+      </div>
     </div>
-  </div>
-)}
+  );
+}
 ```
 
 ## Exemplo de Uso
 
 ### Input
+
 ```
 Peça: 2000mm × 100mm × 200mm
 Quantidade: 50 unidades
@@ -319,6 +344,7 @@ CNC limites: 2500mm × 2300mm × 1300mm
 ```
 
 ### Cálculo
+
 ```typescript
 1. Tamanho ótimo do bloco menor:
    - Comprimento: 2500mm (limite CNC)
@@ -335,20 +361,21 @@ CNC limites: 2500mm × 2300mm × 1300mm
 ```
 
 ### Output (OP criada)
+
 ```
 Linha 1:
   Tipo de Espuma: Densidade 30
   Dimensões Iniciais: 40000mm × 2000mm × 1200mm (bloco grande)
   Dimensões Finais: 2500mm × 2300mm × 1300mm (bloco menor)
   Quantidade: 3 blocos
-  
+
   Operação 1 - BZM:
     Máquina: BZM Principal
     Input: 40000×2000×1200mm
     Output: 2500×2300×1300mm
     Quantidade: 3 blocos ⬅️ IMPORTANTE
     Observações: "Cortar 3 blocos menores"
-  
+
   Operação 2 - CNC-01:
     Máquina: CNC-01
     Input: 2500×2300×1300mm
@@ -361,6 +388,7 @@ Linha 1:
 ## Tarefas Pendentes
 
 ### ⏳ Implementação
+
 - [ ] Completar `applyToOrder()` para foam3d
 - [ ] Adicionar UI de seleção de modo nesting
 - [ ] Adicionar UI de limites da CNC
@@ -368,6 +396,7 @@ Linha 1:
 - [ ] Testar com dados reais
 
 ### 🔧 Melhorias Futuras
+
 - [ ] Visualização 3D interativa (Three.js)
 - [ ] Exportar dados de nesting para G-code
 - [ ] Otimização de orientação de peças
@@ -378,21 +407,25 @@ Linha 1:
 ## Vantagens da Solução
 
 ### ✅ Correto
+
 - Reflete o workflow real: Bloco Grande → BZM → Bloco Menor → CNC → Peças
 - Quantidade de blocos na BZM = resultado do nesting
 - Quantidade de peças na CNC = total solicitado
 
 ### ✅ Automático
+
 - Calcula automaticamente tamanho ótimo do bloco menor
 - Respeita limites da CNC
 - Distribui peças em múltiplos blocos se necessário
 
 ### ✅ Flexível
+
 - Suporta peças manuais + DXF
 - Configurável (limites CNC, kerf, margem)
 - Mantém compatibilidade com modos 2D existentes
 
 ### ✅ Rastreável
+
 - Guarda dados de nesting em JSON
 - Permite visualizar onde cada peça está
 - Facilita troubleshooting
