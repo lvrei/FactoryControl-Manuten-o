@@ -156,9 +156,22 @@ function ProductionNew() {
 
   useEffect(() => {
     loadData();
+
+    // Pausar auto-refresh quando qualquer modal está aberto
+    const hasModalOpen = showNesting || showOrderForm || showSheetsManager || showChat;
+
+    if (hasModalOpen) {
+      console.log('⏸️  Auto-refresh pausado (modal aberto)');
+      return; // Não criar interval se houver modal aberto
+    }
+
     const interval = setInterval(loadData, 30000); // Atualizar a cada 30 segundos
-    return () => clearInterval(interval);
-  }, []);
+    console.log('▶️  Auto-refresh ativo (30s)');
+    return () => {
+      clearInterval(interval);
+      console.log('⏹️  Auto-refresh limpo');
+    };
+  }, [showNesting, showOrderForm, showSheetsManager, showChat]);
 
   const loadData = async () => {
     try {
