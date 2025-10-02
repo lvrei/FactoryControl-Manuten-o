@@ -388,13 +388,13 @@ export default function NestingModalPolygon({
           shapeGroups.get(key)!.qty += part.quantity;
         }
 
-        // Cria uma operação CNC para cada forma distinta
+        // Cria uma operação para cada forma distinta usando a máquina selecionada
         const cuttingOperations: CuttingOperation[] = [bzmCuttingOp];
 
         for (const { part, qty } of shapeGroups.values()) {
-          const cncOp: CuttingOperation = {
-            id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            machineId: cncMachine.id,
+          const machineOp: CuttingOperation = {
+            id: `${selectedMachine.toLowerCase()}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            machineId: targetMachine.id,
             inputDimensions: ops.cncOperation.inputDimensions,
             outputDimensions: {
               length: part.length,
@@ -405,9 +405,9 @@ export default function NestingModalPolygon({
             completedQuantity: 0,
             estimatedTime: qty * 5,
             status: "pending",
-            observations: `CNC: Cortar ${qty} peça(s) de ${part.length}×${part.width}×${part.height}mm${part.label ? ` (${part.label})` : ""}`,
+            observations: `${selectedMachine}: Cortar ${qty} peça(s) de ${part.length}×${part.width}×${part.height}mm${part.label ? ` (${part.label})` : ""}`,
           };
-          cuttingOperations.push(cncOp);
+          cuttingOperations.push(machineOp);
         }
 
         // Usa as dimensões da primeira forma como referência
