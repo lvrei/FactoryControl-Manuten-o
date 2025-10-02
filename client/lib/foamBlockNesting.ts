@@ -249,6 +249,8 @@ export function nestPartsInBlock(
     }
   }
 
+  console.log(`[nestPartsInBlock] Total alocado: ${placements.length} de ${sortedParts.length} peças`);
+
   return placements;
 }
 
