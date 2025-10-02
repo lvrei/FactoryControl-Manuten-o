@@ -1356,50 +1356,158 @@ export default function NestingModalPolygon({
                 )}
               </div>
             ) : result && nestingMode === "polygon" && polygonResult ? (
-              <svg
-                ref={svgRef}
-                width={Math.max(420, sheet.width * svgScale)}
-                height={sheet.length * svgScale + 20}
-                style={{ background: "#f7fafc" }}
-              >
-                <rect
-                  x={10}
-                  y={10}
-                  width={sheet.width * svgScale}
-                  height={sheet.length * svgScale}
-                  fill="#fff"
-                  stroke="#e2e8f0"
-                  strokeWidth={2}
-                />
-                {polygonResult.placements
-                  .filter((p) => p.sheetIndex === 0)
-                  .map((placement, idx) => {
-                    const points = placement.polygon
-                      .map(
-                        ([x, y]) => `${10 + x * svgScale},${10 + y * svgScale}`,
-                      )
-                      .join(" ");
+              <div className="p-4 space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm font-medium">
+                    Nesting Polígonos ({polygonResult.sheetsUsed} painel
+                    {polygonResult.sheetsUsed !== 1 ? "is" : ""})
+                  </div>
+                  <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+                    <button
+                      onClick={() => setViewMode("2d")}
+                      className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                        viewMode === "2d"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Layers className="h-3.5 w-3.5 inline mr-1" />
+                      Vista 2D
+                    </button>
+                    <button
+                      onClick={() => setViewMode("3d")}
+                      className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                        viewMode === "3d"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Maximize2 className="h-3.5 w-3.5 inline mr-1" />
+                      Vista 3D
+                    </button>
+                  </div>
+                </div>
 
-                    return (
-                      <g key={idx}>
-                        <polygon
-                          points={points}
-                          fill="#c7f9cc"
-                          stroke="#2b8a3e"
-                          strokeWidth={1.5}
-                        />
-                        <text
-                          x={10 + placement.x * svgScale + 4}
-                          y={10 + placement.y * svgScale + 12}
-                          fontSize={9}
-                          fill="#1a202c"
+                {viewMode === "3d" ? (
+                  <FoamBlock3DViewer
+                    result={{
+                      placements: polygonResult.placements.map((p) => {
+                        // Calcula bounding box do polígono
+                        const minX = Math.min(...p.polygon.map(([x, y]) => x));
+                        const maxX = Math.max(...p.polygon.map(([x, y]) => x));
+                        const minY = Math.min(...p.polygon.map(([x, y]) => y));
+                        const maxY = Math.max(...p.polygon.map(([x, y]) => y));
+
+                        return {
+                          x: p.x,
+                          y: p.y,
+                          z: p.sheetIndex * (manualHeight + 10),
+                          length: maxX - minX,
+                          width: maxY - minY,
+                          height: manualHeight,
+                          blockIndex: p.sheetIndex,
+                          label: p.part?.label,
+                        };
+                      }),
+                      blockDetails: Array.from(
+                        { length: polygonResult.sheetsUsed },
+                        (_, i) => ({
+                          blockIndex: i,
+                          dimensions: {
+                            length: sheet.length,
+                            width: sheet.width,
+                            height: manualHeight,
+                          },
+                          partsCount: polygonResult.placements.filter(
+                            (p) => p.sheetIndex === i,
+                          ).length,
+                          utilizationPercent: polygonResult.utilization * 100,
+                        }),
+                      ),
+                      totalBlocksNeeded: polygonResult.sheetsUsed,
+                      totalPartsPlaced: polygonResult.placements.length,
+                      utilization: polygonResult.utilization,
+                      smallBlocks: [],
+                    }}
+                    selectedBlockIndex={selectedBlockIndex}
+                  />
+                ) : (
+                  <svg
+                    ref={svgRef}
+                    width={Math.max(420, sheet.width * svgScale)}
+                    height={sheet.length * svgScale + 20}
+                    style={{ background: "#f7fafc" }}
+                  >
+                    <rect
+                      x={10}
+                      y={10}
+                      width={sheet.width * svgScale}
+                      height={sheet.length * svgScale}
+                      fill="#fff"
+                      stroke="#e2e8f0"
+                      strokeWidth={2}
+                    />
+                    {polygonResult.placements
+                      .filter((p) => p.sheetIndex === selectedBlockIndex)
+                      .map((placement, idx) => {
+                        const points = placement.polygon
+                          .map(
+                            ([x, y]) =>
+                              `${10 + x * svgScale},${10 + y * svgScale}`,
+                          )
+                          .join(" ");
+
+                        return (
+                          <g key={idx}>
+                            <polygon
+                              points={points}
+                              fill="#c7f9cc"
+                              stroke="#2b8a3e"
+                              strokeWidth={1.5}
+                            />
+                            <text
+                              x={10 + placement.x * svgScale + 4}
+                              y={10 + placement.y * svgScale + 12}
+                              fontSize={9}
+                              fill="#1a202c"
+                            >
+                              #{idx + 1} {placement.rotation}°
+                            </text>
+                          </g>
+                        );
+                      })}
+                  </svg>
+                )}
+
+                {polygonResult.sheetsUsed > 1 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Selecionar painel:
+                    </span>
+                    {Array.from({ length: polygonResult.sheetsUsed }).map(
+                      (_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedBlockIndex(i)}
+                          className={`px-3 py-1.5 text-xs rounded border transition-colors ${
+                            selectedBlockIndex === i
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background hover:bg-muted border-border"
+                          }`}
                         >
-                          #{idx + 1} {placement.rotation}°
-                        </text>
-                      </g>
-                    );
-                  })}
-              </svg>
+                          Painel #{i + 1} (
+                          {
+                            polygonResult.placements.filter(
+                              (p) => p.sheetIndex === i,
+                            ).length
+                          }
+                          ×)
+                        </button>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
             ) : result && nestingMode === "foam3d" && foam3dResult ? (
               <div className="p-4 space-y-4">
                 <div className="flex items-center justify-between mb-4">
