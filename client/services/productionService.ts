@@ -1618,6 +1618,18 @@ class ProductionService {
           order.status,
         );
       }
+
+      // IMPORTANTE: Sincronizar com API/Neon
+      try {
+        console.log(`🌐 [markOrderLineAsShipped] Sincronizando com API/Neon...`);
+        await this.updateProductionOrder(orderId, order);
+        console.log(`✅ [markOrderLineAsShipped] Sincronizado com API/Neon`);
+      } catch (apiError) {
+        console.warn(
+          `⚠️ [markOrderLineAsShipped] Falha ao sincronizar com API (continuando em modo local):`,
+          apiError,
+        );
+      }
     } catch (error) {
       console.error("❌ Erro ao marcar como enviada:", error);
     }
