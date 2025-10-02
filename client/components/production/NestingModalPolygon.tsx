@@ -1084,7 +1084,9 @@ export default function NestingModalPolygon({
                         {foam3dResult.blockDetails.map((block) => (
                           <button
                             key={block.blockIndex}
-                            onClick={() => setSelectedBlockIndex(block.blockIndex)}
+                            onClick={() =>
+                              setSelectedBlockIndex(block.blockIndex)
+                            }
                             className={`px-3 py-1.5 text-xs rounded border transition-colors ${
                               selectedBlockIndex === block.blockIndex
                                 ? "bg-primary text-primary-foreground border-primary"
@@ -1138,9 +1140,9 @@ export default function NestingModalPolygon({
                             return uniqueLayers.length > 1 ? (
                               <div className="text-xs text-blue-600 mb-2 flex items-center gap-1">
                                 <Layers className="h-3 w-3" />
-                                Vista de topo - {uniqueLayers.length} camadas (L0,
-                                L1, L2...). Cores diferentes = profundidades
-                                diferentes (sem sobreposição real)
+                                Vista de topo - {uniqueLayers.length} camadas
+                                (L0, L1, L2...). Cores diferentes =
+                                profundidades diferentes (sem sobreposição real)
                               </div>
                             ) : null;
                           })()}

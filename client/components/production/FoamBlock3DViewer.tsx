@@ -1,5 +1,11 @@
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Box, Text, Grid, PerspectiveCamera } from "@react-three/drei";
+import {
+  OrbitControls,
+  Box,
+  Text,
+  Grid,
+  PerspectiveCamera,
+} from "@react-three/drei";
 import { Suspense } from "react";
 import type { BlockNestingResult, PlacedPart } from "@/lib/foamBlockNesting";
 
@@ -58,18 +64,13 @@ function Part3D({
   ];
 
   // Determina cor baseada na posição Z (camada)
-  const zLayers = Array.from(
-    new Set([part.z])
-  ).sort((a, b) => a - b);
+  const zLayers = Array.from(new Set([part.z])).sort((a, b) => a - b);
   const layerIndex = Math.floor(part.z / 100) % layerColors.length;
   const color = layerColors[layerIndex];
 
   return (
     <group>
-      <Box
-        args={[part.length, part.height, part.width]}
-        position={[x, y, z]}
-      >
+      <Box args={[part.length, part.height, part.width]} position={[x, y, z]}>
         <meshStandardMaterial
           color={color}
           transparent
@@ -79,10 +80,7 @@ function Part3D({
         />
       </Box>
       {/* Bordas para melhor definição */}
-      <Box
-        args={[part.length, part.height, part.width]}
-        position={[x, y, z]}
-      >
+      <Box args={[part.length, part.height, part.width]} position={[x, y, z]}>
         <meshBasicMaterial color="#1e293b" wireframe />
       </Box>
     </group>
@@ -100,7 +98,7 @@ function Scene({
   if (!block) return null;
 
   const blockPlacements = result.placements.filter(
-    (p) => p.blockIndex === selectedBlockIndex
+    (p) => p.blockIndex === selectedBlockIndex,
   );
 
   const blockDims = block.dimensions;
