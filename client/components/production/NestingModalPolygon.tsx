@@ -1036,145 +1036,198 @@ export default function NestingModalPolygon({
               </svg>
             ) : result && nestingMode === "foam3d" && foam3dResult ? (
               <div className="p-4 space-y-4">
-                <div className="text-sm font-medium mb-2">
-                  Blocos de Espuma 3D ({foam3dResult.totalBlocksNeeded} bloco
-                  {foam3dResult.totalBlocksNeeded !== 1 ? "s" : ""})
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm font-medium">
+                    Blocos de Espuma 3D ({foam3dResult.totalBlocksNeeded} bloco
+                    {foam3dResult.totalBlocksNeeded !== 1 ? "s" : ""})
+                  </div>
+                  <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+                    <button
+                      onClick={() => setViewMode("2d")}
+                      className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                        viewMode === "2d"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Layers className="h-3.5 w-3.5 inline mr-1" />
+                      Vista 2D
+                    </button>
+                    <button
+                      onClick={() => setViewMode("3d")}
+                      className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                        viewMode === "3d"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Maximize2 className="h-3.5 w-3.5 inline mr-1" />
+                      Vista 3D
+                    </button>
+                  </div>
                 </div>
-                <div className="grid gap-4 max-h-[600px] overflow-y-auto">
-                  {foam3dResult.blockDetails.map((block) => {
-                    const blockPlacements = foam3dResult.placements.filter(
-                      (p) => p.blockIndex === block.blockIndex,
-                    );
-                    const scale = 0.15;
-                    const blockW = block.dimensions.width * scale;
-                    const blockL = block.dimensions.length * scale;
 
-                    return (
-                      <div
-                        key={block.blockIndex}
-                        className="border rounded p-3 bg-white"
-                      >
-                        <div className="text-xs font-medium mb-2">
-                          Bloco #{block.blockIndex + 1} - {block.partsCount}{" "}
-                          peça{block.partsCount !== 1 ? "s" : ""} -{" "}
-                          {block.utilizationPercent.toFixed(1)}% usado
-                        </div>
-                        <div className="text-xs text-muted-foreground mb-2">
-                          Dimensões: {block.dimensions.length}×
-                          {block.dimensions.width}×{block.dimensions.height}mm
-                        </div>
-                        {(() => {
-                          const uniqueLayers = Array.from(
-                            new Set(
-                              foam3dResult.placements
-                                .filter(
-                                  (p) => p.blockIndex === block.blockIndex,
-                                )
-                                .map((p) => p.z),
-                            ),
-                          );
-                          return uniqueLayers.length > 1 ? (
-                            <div className="text-xs text-blue-600 mb-2 flex items-center gap-1">
-                              <Layers className="h-3 w-3" />
-                              Vista de topo - {uniqueLayers.length} camadas (L0,
-                              L1, L2...). Cores diferentes = profundidades
-                              diferentes (sem sobreposição real)
-                            </div>
-                          ) : null;
-                        })()}
-                        <svg
-                          width={Math.max(300, blockW + 20)}
-                          height={Math.max(200, blockL + 20)}
-                          className="border rounded bg-gray-50"
-                        >
-                          <rect
-                            x={10}
-                            y={10}
-                            width={blockW}
-                            height={blockL}
-                            fill="#f8f9fa"
-                            stroke="#adb5bd"
-                            strokeWidth={2}
-                          />
-                          {blockPlacements.map((part, idx) => {
-                            const px = 10 + part.x * scale;
-                            const py = 10 + part.y * scale;
-                            const pw = part.length * scale;
-                            const ph = part.width * scale;
-
-                            // Cores diferentes por camada Z para mostrar profundidade
-                            const zLayers = Array.from(
-                              new Set(blockPlacements.map((p) => p.z)),
-                            ).sort((a, b) => a - b);
-                            const layerIndex = zLayers.indexOf(part.z);
-                            const layerColors = [
-                              "#c7f9cc", // Layer 0 - Verde claro
-                              "#a5d8ff", // Layer 1 - Azul claro
-                              "#ffc9c9", // Layer 2 - Vermelho claro
-                              "#ffe066", // Layer 3 - Amarelo
-                              "#d0bfff", // Layer 4 - Roxo
-                              "#b2f2bb", // Layer 5 - Verde
-                              "#99e9f2", // Layer 6 - Ciano
-                              "#ffdeeb", // Layer 7 - Rosa
-                              "#ffd8a8", // Layer 8 - Laranja
-                              "#e7f5ff", // Layer 9 - Azul muito claro
-                            ];
-                            const color =
-                              layerColors[layerIndex % layerColors.length];
-
-                            // Opacidade baseada na camada (camadas superiores mais opacas)
-                            const opacity = 0.7 + layerIndex * 0.1;
-
-                            return (
-                              <g key={idx}>
-                                <rect
-                                  x={px}
-                                  y={py}
-                                  width={pw}
-                                  height={ph}
-                                  fill={color}
-                                  stroke="#2b8a3e"
-                                  strokeWidth={1.5}
-                                  opacity={Math.min(opacity, 0.95)}
-                                  strokeDasharray={
-                                    layerIndex > 0 ? "2,2" : "none"
-                                  }
-                                />
-                                <text
-                                  x={px + 3}
-                                  y={py + 10}
-                                  fontSize={8}
-                                  fill="#1a202c"
-                                  fontWeight="500"
-                                >
-                                  #{idx + 1} L{layerIndex}
-                                </text>
-                                <text
-                                  x={px + 3}
-                                  y={py + 20}
-                                  fontSize={7}
-                                  fill="#495057"
-                                >
-                                  {Math.round(part.length)}×
-                                  {Math.round(part.width)}×
-                                  {Math.round(part.height)}
-                                </text>
-                                <text
-                                  x={px + 3}
-                                  y={py + 29}
-                                  fontSize={6}
-                                  fill="#868e96"
-                                >
-                                  z:{Math.round(part.z)}
-                                </text>
-                              </g>
-                            );
-                          })}
-                        </svg>
+                {viewMode === "3d" ? (
+                  <div className="space-y-4">
+                    {foam3dResult.totalBlocksNeeded > 1 && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Selecionar bloco:
+                        </span>
+                        {foam3dResult.blockDetails.map((block) => (
+                          <button
+                            key={block.blockIndex}
+                            onClick={() => setSelectedBlockIndex(block.blockIndex)}
+                            className={`px-3 py-1.5 text-xs rounded border transition-colors ${
+                              selectedBlockIndex === block.blockIndex
+                                ? "bg-primary text-primary-foreground border-primary"
+                                : "bg-background hover:bg-muted border-border"
+                            }`}
+                          >
+                            Bloco #{block.blockIndex + 1} ({block.partsCount}×)
+                          </button>
+                        ))}
                       </div>
-                    );
-                  })}
-                </div>
+                    )}
+                    <FoamBlock3DViewer
+                      result={foam3dResult}
+                      selectedBlockIndex={selectedBlockIndex}
+                    />
+                  </div>
+                ) : (
+                  <div className="grid gap-4 max-h-[600px] overflow-y-auto">
+                    {foam3dResult.blockDetails.map((block) => {
+                      const blockPlacements = foam3dResult.placements.filter(
+                        (p) => p.blockIndex === block.blockIndex,
+                      );
+                      const scale = 0.15;
+                      const blockW = block.dimensions.width * scale;
+                      const blockL = block.dimensions.length * scale;
+
+                      return (
+                        <div
+                          key={block.blockIndex}
+                          className="border rounded p-3 bg-white"
+                        >
+                          <div className="text-xs font-medium mb-2">
+                            Bloco #{block.blockIndex + 1} - {block.partsCount}{" "}
+                            peça{block.partsCount !== 1 ? "s" : ""} -{" "}
+                            {block.utilizationPercent.toFixed(1)}% usado
+                          </div>
+                          <div className="text-xs text-muted-foreground mb-2">
+                            Dimensões: {block.dimensions.length}×
+                            {block.dimensions.width}×{block.dimensions.height}mm
+                          </div>
+                          {(() => {
+                            const uniqueLayers = Array.from(
+                              new Set(
+                                foam3dResult.placements
+                                  .filter(
+                                    (p) => p.blockIndex === block.blockIndex,
+                                  )
+                                  .map((p) => p.z),
+                              ),
+                            );
+                            return uniqueLayers.length > 1 ? (
+                              <div className="text-xs text-blue-600 mb-2 flex items-center gap-1">
+                                <Layers className="h-3 w-3" />
+                                Vista de topo - {uniqueLayers.length} camadas (L0,
+                                L1, L2...). Cores diferentes = profundidades
+                                diferentes (sem sobreposição real)
+                              </div>
+                            ) : null;
+                          })()}
+                          <svg
+                            width={Math.max(300, blockW + 20)}
+                            height={Math.max(200, blockL + 20)}
+                            className="border rounded bg-gray-50"
+                          >
+                            <rect
+                              x={10}
+                              y={10}
+                              width={blockW}
+                              height={blockL}
+                              fill="#f8f9fa"
+                              stroke="#adb5bd"
+                              strokeWidth={2}
+                            />
+                            {blockPlacements.map((part, idx) => {
+                              const px = 10 + part.x * scale;
+                              const py = 10 + part.y * scale;
+                              const pw = part.length * scale;
+                              const ph = part.width * scale;
+
+                              const zLayers = Array.from(
+                                new Set(blockPlacements.map((p) => p.z)),
+                              ).sort((a, b) => a - b);
+                              const layerIndex = zLayers.indexOf(part.z);
+                              const layerColors = [
+                                "#c7f9cc",
+                                "#a5d8ff",
+                                "#ffc9c9",
+                                "#ffe066",
+                                "#d0bfff",
+                                "#b2f2bb",
+                                "#99e9f2",
+                                "#ffdeeb",
+                                "#ffd8a8",
+                                "#e7f5ff",
+                              ];
+                              const color =
+                                layerColors[layerIndex % layerColors.length];
+                              const opacity = 0.7 + layerIndex * 0.1;
+
+                              return (
+                                <g key={idx}>
+                                  <rect
+                                    x={px}
+                                    y={py}
+                                    width={pw}
+                                    height={ph}
+                                    fill={color}
+                                    stroke="#2b8a3e"
+                                    strokeWidth={1.5}
+                                    opacity={Math.min(opacity, 0.95)}
+                                    strokeDasharray={
+                                      layerIndex > 0 ? "2,2" : "none"
+                                    }
+                                  />
+                                  <text
+                                    x={px + 3}
+                                    y={py + 10}
+                                    fontSize={8}
+                                    fill="#1a202c"
+                                    fontWeight="500"
+                                  >
+                                    #{idx + 1} L{layerIndex}
+                                  </text>
+                                  <text
+                                    x={px + 3}
+                                    y={py + 20}
+                                    fontSize={7}
+                                    fill="#495057"
+                                  >
+                                    {Math.round(part.length)}×
+                                    {Math.round(part.width)}×
+                                    {Math.round(part.height)}
+                                  </text>
+                                  <text
+                                    x={px + 3}
+                                    y={py + 29}
+                                    fontSize={6}
+                                    fill="#868e96"
+                                  >
+                                    z:{Math.round(part.z)}
+                                  </text>
+                                </g>
+                              );
+                            })}
+                          </svg>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="p-6 text-sm text-muted-foreground text-center">
