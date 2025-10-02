@@ -252,16 +252,28 @@ export function nestPartsInBlock(
     }
 
     // Se ainda não coube (primeira peça da primeira camada)
-    if (!placed && currentLayer.length === 0) {
-      const placement: PlacedPart = {
-        ...part,
-        x: margin,
-        y: margin,
-        z: currentZ,
-        blockIndex: 0,
-      };
-      placements.push(placement);
-      currentLayer.push(placement);
+    if (!placed && currentLayer.length === 0 && currentZ === margin) {
+      // Só coloca se for a primeira camada (z=margin) e não ultrapassar altura
+      if (currentZ + part.height + kerf <= block.height - margin) {
+        const placement: PlacedPart = {
+          ...part,
+          x: margin,
+          y: margin,
+          z: currentZ,
+          blockIndex: 0,
+        };
+        placements.push(placement);
+        currentLayer.push(placement);
+        placed = true;
+      }
+    }
+
+    // Se não conseguiu colocar, para de tentar neste bloco
+    if (!placed) {
+      console.log(
+        `[nestPartsInBlock] Peça ${part.length}x${part.width}x${part.height} não coube - bloco cheio`,
+      );
+      break; // Para e retorna o que foi colocado até agora
     }
   }
 
