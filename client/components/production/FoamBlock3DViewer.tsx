@@ -1,10 +1,10 @@
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Box, Text, Grid, PerspectiveCamera } from "@react-three/drei";
 import { Suspense } from "react";
-import type { Foam3DNestResult, PlacedPart } from "@/lib/foamBlockNesting";
+import type { BlockNestingResult, PlacedPart } from "@/lib/foamBlockNesting";
 
 type FoamBlock3DViewerProps = {
-  result: Foam3DNestResult;
+  result: BlockNestingResult;
   selectedBlockIndex?: number;
 };
 
@@ -93,7 +93,7 @@ function Scene({
   result,
   selectedBlockIndex = 0,
 }: {
-  result: Foam3DNestResult;
+  result: BlockNestingResult;
   selectedBlockIndex?: number;
 }) {
   const block = result.blockDetails[selectedBlockIndex];
