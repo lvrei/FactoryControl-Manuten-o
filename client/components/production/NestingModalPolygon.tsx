@@ -235,7 +235,76 @@ export default function NestingModalPolygon({
 
     const lines: ProductionOrderLine[] = [];
 
-    if (nestingMode === "polygon" && polygonResult) {
+    if (nestingMode === "foam3d" && foam3dResult) {
+      const foam =
+        foamTypes.find((f) => f.id === mappingFoamTypeId) || foamTypes[0];
+      if (!foam) {
+        alert("Selecione um tipo de espuma antes de aplicar.");
+        return;
+      }
+
+      const bzmMachine = machines.find((m) => m.type === "BZM");
+      const cncMachine = machines.find((m) => m.type === "CNC");
+
+      if (!bzmMachine || !cncMachine) {
+        alert("Máquinas BZM e CNC não encontradas. Configure as máquinas primeiro.");
+        return;
+      }
+
+      try {
+        const ops = convertNestingToOperations(
+          foam3dResult,
+          foam.id,
+          bzmMachine.id,
+          cncMachine.id
+        );
+
+        const bzmCuttingOp: CuttingOperation = {
+          id: `bzm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          machineId: ops.bzmOperation.machineId,
+          inputDimensions: ops.bzmOperation.inputDimensions,
+          outputDimensions: ops.bzmOperation.outputDimensions,
+          quantity: ops.bzmOperation.quantity,
+          completedQuantity: 0,
+          estimatedTime: ops.bzmOperation.quantity * 15,
+          status: "pending",
+          observations: `BZM: Cortar ${ops.bzmOperation.quantity} bloco(s) de ${ops.bzmOperation.outputDimensions.length}×${ops.bzmOperation.outputDimensions.width}×${ops.bzmOperation.outputDimensions.height}mm`,
+        };
+
+        const cncCuttingOp: CuttingOperation = {
+          id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          machineId: ops.cncOperation.machineId,
+          inputDimensions: ops.cncOperation.inputDimensions,
+          outputDimensions: ops.cncOperation.inputDimensions,
+          quantity: ops.cncOperation.quantity,
+          completedQuantity: 0,
+          estimatedTime: ops.cncOperation.quantity * 5,
+          status: "pending",
+          observations: `CNC: Nesting de ${ops.cncOperation.quantity} peça(s) em ${foam3dResult.totalBlocksNeeded} bloco(s). Aproveitamento: ${(foam3dResult.utilization * 100).toFixed(1)}%`,
+        };
+
+        const smallBlock = foam3dResult.smallBlocks[0];
+
+        lines.push({
+          id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          foamType: foam,
+          initialDimensions: ops.bzmOperation.inputDimensions,
+          finalDimensions: {
+            length: smallBlock.length,
+            width: smallBlock.width,
+            height: smallBlock.height,
+          },
+          quantity: foam3dResult.totalPartsPlaced,
+          completedQuantity: 0,
+          cuttingOperations: [bzmCuttingOp, cncCuttingOp],
+          status: "pending",
+          priority: 5,
+        } as any);
+      } catch (error: any) {
+        alert(`Erro ao gerar operações: ${error.message || error}`);
+        return;
+      }
+    } else if (nestingMode === "polygon" && polygonResult) {
       // Agrupa por sheet
       const bySheet = new Map<number, typeof polygonResult.placements>();
       for (const p of polygonResult.placements) {
