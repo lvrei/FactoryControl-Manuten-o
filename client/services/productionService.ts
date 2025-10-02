@@ -1393,7 +1393,10 @@ class ProductionService {
         await this.updateProductionOrder(orderId, order);
         console.log(`✅ [completeWorkItem] Dados sincronizados com API`);
       } catch (apiError) {
-        console.warn(`⚠️ [completeWorkItem] Falha ao sincronizar com API (continuando em modo local):`, apiError);
+        console.warn(
+          `⚠️ [completeWorkItem] Falha ao sincronizar com API (continuando em modo local):`,
+          apiError,
+        );
       }
 
       // Verificação pós-save (detecta problemas de quota/corrupção)
