@@ -1254,43 +1254,11 @@ class ProductionService {
       console.log("✅ Parsing completo:", { orderId, lineId, operationId });
 
       // Encontrar ordem
-      const order = data.productionOrders.find((o) => o.id === orderId);
-      if (!order) {
-        throw new Error(`Ordem não encontrada: ${orderId}`);
-      }
-
+      const order = foundOrder;
       // Encontrar linha
-      const line = order.lines?.find((l) => l.id === lineId);
-      if (!line) {
-        throw new Error(`Linha n��o encontrada: ${lineId}`);
-      }
 
       // Encontrar operação (estratégias múltiplas)
-      let operation = line.cuttingOperations?.find(
-        (op) => op.id === operationId,
-      );
-
-      if (!operation) {
-        // Estratégia 2: toString()
-        operation = line.cuttingOperations?.find(
-          (op) => op.id?.toString() === operationId,
-        );
-      }
-
-      if (!operation) {
-        // Estratégia 3: índice numérico
-        const numericIndex = parseInt(operationId);
-        if (
-          !isNaN(numericIndex) &&
-          line.cuttingOperations &&
-          line.cuttingOperations[numericIndex]
-        ) {
-          operation = line.cuttingOperations[numericIndex];
-        }
-      }
-
-      if (!operation) {
-        throw new Error(`Operação não encontrada: ${operationId}`);
+      const operation = foundOperation;
       }
 
       // Validações
