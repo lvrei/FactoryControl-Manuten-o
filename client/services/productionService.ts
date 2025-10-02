@@ -1352,6 +1352,11 @@ class ProductionService {
 
       order.updatedAt = new Date().toISOString();
 
+      console.log(`💾 [completeWorkItem] Salvando dados...`);
+      console.log(`   Ordem ${orderId} status: ${order.status}`);
+      console.log(`   Linha ${lineId} status: ${line.status}`);
+      console.log(`   Operação ${operationId} status: ${operation.status}, completed: ${operation.completedQuantity}/${opTargetQty}`);
+
       // Salvar os dados atualizados
       // Primeiro, obter todos os dados do localStorage
       const storedData = this.getStoredData() || {};
@@ -1359,6 +1364,8 @@ class ProductionService {
       storedData.productionOrders = orders;
       // Salvar de volta
       this.saveData(storedData);
+
+      console.log(`✅ [completeWorkItem] Dados salvos no localStorage`);
 
       // Verificação pós-save (detecta problemas de quota/corrupção)
       const verification = this.getStoredData();
@@ -1370,6 +1377,14 @@ class ProductionService {
         console.warn(
           "⚠️ Aviso: Verificação pós-save falhou, mas a operação foi completada",
         );
+      } else {
+        const verifyLine = verifyOrder.lines?.find((l) => l.id === lineId);
+        const verifyOp = verifyLine?.cuttingOperations?.find((op) => op.id === operationId);
+        console.log(`🔍 [completeWorkItem] Verificação pós-save:`, {
+          opStatus: verifyOp?.status,
+          opCompleted: verifyOp?.completedQuantity,
+          opTarget: verifyOp?.quantity
+        });
       }
 
       console.log("✅ Item completado com sucesso");
