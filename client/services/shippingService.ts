@@ -30,12 +30,17 @@ class ShippingService {
   // Generate available items for shipping based on completed production (always fresh data)
   async generateShippableItems(): Promise<ShippableItem[]> {
     try {
+      console.log('🔍 [generateShippableItems] Gerando lista de itens disponíveis...');
+
       // Always get fresh data from production service
       const [orders, labels, machines] = await Promise.all([
         productionService.getProductionOrders(),
         labelService.getLabels(),
         productionService.getMachines()
       ]);
+
+      console.log(`📊 [generateShippableItems] Total de ordens: ${orders.length}`);
+
       const machineById = new Map(machines.map(m => [m.id, m]));
       const shippableItems: ShippableItem[] = [];
 
@@ -44,6 +49,11 @@ class ShippingService {
 
       for (const order of orders) {
         for (const line of order.lines) {
+          // IMPORTANTE: Filtrar linhas que já foram shipped
+          if (line.status === 'shipped') {
+            console.log(`⏭️  [generateShippableItems] Linha ${line.id} já enviada, ignorando`);
+            continue;
+          }
           const ops = Array.isArray(line.cuttingOperations) ? line.cuttingOperations : [];
           if (ops.length === 0) continue;
 
