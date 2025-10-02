@@ -870,12 +870,105 @@ export default function NestingModalPolygon({
                     );
                   })}
               </svg>
+            ) : result && nestingMode === "foam3d" && foam3dResult ? (
+              <div className="p-4 space-y-4">
+                <div className="text-sm font-medium mb-2">
+                  Blocos de Espuma 3D ({foam3dResult.totalBlocksNeeded} bloco{foam3dResult.totalBlocksNeeded !== 1 ? 's' : ''})
+                </div>
+                <div className="grid gap-4 max-h-[600px] overflow-y-auto">
+                  {foam3dResult.blockDetails.map((block) => {
+                    const blockPlacements = foam3dResult.placements.filter(
+                      (p) => p.blockIndex === block.blockIndex
+                    );
+                    const scale = 0.15;
+                    const blockW = block.dimensions.width * scale;
+                    const blockL = block.dimensions.length * scale;
+
+                    return (
+                      <div key={block.blockIndex} className="border rounded p-3 bg-white">
+                        <div className="text-xs font-medium mb-2">
+                          Bloco #{block.blockIndex + 1} - {block.partsCount} peça{block.partsCount !== 1 ? 's' : ''} - {block.utilizationPercent.toFixed(1)}% usado
+                        </div>
+                        <div className="text-xs text-muted-foreground mb-2">
+                          Dimensões: {block.dimensions.length}×{block.dimensions.width}×{block.dimensions.height}mm
+                        </div>
+                        <svg
+                          width={Math.max(300, blockW + 20)}
+                          height={Math.max(200, blockL + 20)}
+                          className="border rounded bg-gray-50"
+                        >
+                          <rect
+                            x={10}
+                            y={10}
+                            width={blockW}
+                            height={blockL}
+                            fill="#f8f9fa"
+                            stroke="#adb5bd"
+                            strokeWidth={2}
+                          />
+                          {blockPlacements.map((part, idx) => {
+                            const px = 10 + part.x * scale;
+                            const py = 10 + part.y * scale;
+                            const pw = part.length * scale;
+                            const ph = part.width * scale;
+                            const colors = [
+                              "#c7f9cc", "#a5d8ff", "#ffc9c9", "#ffe066", "#d0bfff",
+                              "#b2f2bb", "#99e9f2", "#ffdeeb", "#ffd8a8", "#e7f5ff"
+                            ];
+                            const color = colors[idx % colors.length];
+
+                            return (
+                              <g key={idx}>
+                                <rect
+                                  x={px}
+                                  y={py}
+                                  width={pw}
+                                  height={ph}
+                                  fill={color}
+                                  stroke="#2b8a3e"
+                                  strokeWidth={1}
+                                  opacity={0.9}
+                                />
+                                <text
+                                  x={px + 3}
+                                  y={py + 10}
+                                  fontSize={8}
+                                  fill="#1a202c"
+                                  fontWeight="500"
+                                >
+                                  #{idx + 1}
+                                </text>
+                                <text
+                                  x={px + 3}
+                                  y={py + 20}
+                                  fontSize={7}
+                                  fill="#495057"
+                                >
+                                  {Math.round(part.length)}×{Math.round(part.width)}×{Math.round(part.height)}
+                                </text>
+                                <text
+                                  x={px + 3}
+                                  y={py + 29}
+                                  fontSize={6}
+                                  fill="#868e96"
+                                >
+                                  z:{Math.round(part.z)}
+                                </text>
+                              </g>
+                            );
+                          })}
+                        </svg>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             ) : (
               <div className="p-6 text-sm text-muted-foreground text-center">
                 <Upload className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p>Carregue um ficheiro DXF ou JSON para começar</p>
+                <p>Carregue um ficheiro DXF ou JSON ou adicione formas manualmente</p>
                 <p className="text-xs mt-2">
-                  Sistema suporta formas irregulares complexas!
+                  Sistema suporta formas irregulares complexas e blocos 3D!
                 </p>
               </div>
             )}
