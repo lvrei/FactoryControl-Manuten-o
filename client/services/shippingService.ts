@@ -245,10 +245,12 @@ class ShippingService {
   async completeLoad(loadId: string, truckPlate?: string, driverName?: string, notes?: string): Promise<void> {
     const { loads } = this.getStoredData();
     const load = loads.find(l => l.id === loadId);
-    
+
     if (!load) {
       throw new Error('Load not found');
     }
+
+    console.log(`🚚 [completeLoad] Concluindo carga ${load.loadNumber} com ${load.items.length} itens`);
 
     load.status = 'completed';
     load.endTime = new Date().toISOString();
@@ -259,19 +261,24 @@ class ShippingService {
     this.saveLoads(loads);
 
     // Mark items as shipped in production orders
+    console.log(`📦 [completeLoad] Marcando ${load.items.length} itens como enviados...`);
     for (const item of load.items) {
       try {
+        console.log(`  ✅ Marcando ${item.orderNumber} - linha ${item.lineId} como shipped`);
         await productionService.markOrderLineAsShipped(item.orderId, item.lineId);
       } catch (error) {
-        console.error('Error marking item as shipped:', error);
+        console.error('❌ Error marking item as shipped:', error);
       }
     }
 
-    // Remove shipped items from shippable items list
+    // Remove shipped items from shippable items list (localStorage apenas)
     const { shippableItems } = this.getStoredData();
     const shippedItemIds = load.items.map(item => item.id);
     const remainingItems = shippableItems.filter(item => !shippedItemIds.includes(item.id));
+    console.log(`🗑️  [completeLoad] Removendo ${load.items.length} itens da lista local (${shippableItems.length} -> ${remainingItems.length})`);
     this.saveShippableItems(remainingItems);
+
+    console.log(`✅ [completeLoad] Carga concluída com sucesso`);
   }
 
   // Barcode scanning methods
