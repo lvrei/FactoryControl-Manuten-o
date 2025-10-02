@@ -244,24 +244,35 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
     if (!currentLoad) return;
 
     try {
+      console.log('🔵 [MaterialShipping] Iniciando conclusão da carga...');
+
       await shippingService.completeLoad(
         currentLoad.id,
         loadCompletionData.truckPlate,
         loadCompletionData.driverName,
         loadCompletionData.notes
       );
-      
+
+      console.log('✅ [MaterialShipping] Carga concluída no service');
+
       setCurrentLoad(null);
       setShowCompleteModal(false);
       setLoadCompletionData({ truckPlate: '', driverName: '', notes: '' });
-      
-      // Force refresh of all data including shippable items
+
+      // Forçar espera para garantir que API (Neon) foi sincronizada
+      console.log('⏳ [MaterialShipping] Aguardando sincronização com Neon...');
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Force refresh of all data including shippable items (agora da API/Neon atualizada)
+      console.log('🔄 [MaterialShipping] Recarregando dados da API...');
       await loadData();
+
+      console.log('✅ [MaterialShipping] Dados recarregados');
       setActiveTab('history');
-      
+
       alert('Carga concluída com sucesso!');
     } catch (error) {
-      console.error('Error completing load:', error);
+      console.error('❌ [MaterialShipping] Error completing load:', error);
       alert('Erro ao concluir carga');
     }
   };
