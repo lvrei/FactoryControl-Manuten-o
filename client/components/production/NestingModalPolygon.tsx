@@ -89,13 +89,19 @@ export default function NestingModalPolygon({
   const [viewMode, setViewMode] = useState<"2d" | "3d">("3d"); // 3D por padrão para melhor experiência
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number>(0);
 
-  // Limites da m��quina CNC (padrão)
+  // Limites da máquina CNC (padrão)
   const [cncConstraints, setCncConstraints] = useState<BlockConstraints>({
     maxLength: 2500, // 2.5m
     maxWidth: 2300, // 2.3m
     maxHeight: 1300, // 1.3m
     kerf: 5,
     margin: 10,
+  });
+  const [foam3dMargins, setFoam3dMargins] = useState({
+    top: 10,
+    bottom: 10,
+    left: 10,
+    right: 10,
   });
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -258,7 +264,16 @@ export default function NestingModalPolygon({
 
     if (allParts.length === 0) return null;
 
-    return nestFoamParts(allParts, cncConstraints);
+    // Usa margens específicas para foam3d
+    const effectiveMargin = Math.max(
+      foam3dMargins.top,
+      foam3dMargins.bottom,
+      foam3dMargins.left,
+      foam3dMargins.right,
+    );
+    const constraintsWithMargins = { ...cncConstraints, margin: effectiveMargin };
+
+    return nestFoamParts(allParts, constraintsWithMargins);
   }, [
     drawing,
     cncConstraints,
@@ -266,6 +281,7 @@ export default function NestingModalPolygon({
     nestingMode,
     manualShapes,
     mappingFoamTypeId,
+    foam3dMargins,
   ]);
 
   // Reset selected block index when foam3d results change
@@ -820,80 +836,140 @@ export default function NestingModalPolygon({
             </div>
 
             {nestingMode === "foam3d" ? (
-              <div className="border rounded p-3 bg-muted/20">
-                <label className="block text-sm font-medium mb-2">
-                  Limites da Máquina CNC
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="block text-xs">Comp. Máx (mm)</label>
-                    <input
-                      type="number"
-                      value={cncConstraints.maxLength}
-                      onChange={(e) =>
-                        setCncConstraints((c) => ({
-                          ...c,
-                          maxLength: Number(e.target.value),
-                        }))
-                      }
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
+              <div className="space-y-3">
+                <div className="border rounded p-3 bg-muted/20">
+                  <label className="block text-sm font-medium mb-2">
+                    Limites da Máquina CNC
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-xs">Comp. Máx (mm)</label>
+                      <input
+                        type="number"
+                        value={cncConstraints.maxLength}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCncConstraints((c) => ({
+                            ...c,
+                            maxLength: val ? Number(val) : 0,
+                          }));
+                        }}
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Larg. Máx (mm)</label>
+                      <input
+                        type="number"
+                        value={cncConstraints.maxWidth}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCncConstraints((c) => ({
+                            ...c,
+                            maxWidth: val ? Number(val) : 0,
+                          }));
+                        }}
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Alt. Máx (mm)</label>
+                      <input
+                        type="number"
+                        value={cncConstraints.maxHeight}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCncConstraints((c) => ({
+                            ...c,
+                            maxHeight: val ? Number(val) : 0,
+                          }));
+                        }}
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Kerf (mm)</label>
+                      <input
+                        type="number"
+                        value={cncConstraints.kerf}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setCncConstraints((c) => ({
+                            ...c,
+                            kerf: val ? Number(val) : 0,
+                          }));
+                        }}
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-xs">Larg. Máx (mm)</label>
-                    <input
-                      type="number"
-                      value={cncConstraints.maxWidth}
-                      onChange={(e) =>
-                        setCncConstraints((c) => ({
-                          ...c,
-                          maxWidth: Number(e.target.value),
-                        }))
-                      }
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Alt. Máx (mm)</label>
-                    <input
-                      type="number"
-                      value={cncConstraints.maxHeight}
-                      onChange={(e) =>
-                        setCncConstraints((c) => ({
-                          ...c,
-                          maxHeight: Number(e.target.value),
-                        }))
-                      }
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Kerf (mm)</label>
-                    <input
-                      type="number"
-                      value={cncConstraints.kerf}
-                      onChange={(e) =>
-                        setCncConstraints((c) => ({
-                          ...c,
-                          kerf: Number(e.target.value),
-                        }))
-                      }
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs">Margem (mm)</label>
-                    <input
-                      type="number"
-                      value={cncConstraints.margin}
-                      onChange={(e) =>
-                        setCncConstraints((c) => ({
-                          ...c,
-                          margin: Number(e.target.value),
-                        }))
-                      }
-                      className="w-full border rounded px-2 py-1 text-sm"
-                    />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Margens Específicas
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs">Margem Topo (mm)</label>
+                      <input
+                        type="number"
+                        value={foam3dMargins.top}
+                        onChange={(e) =>
+                          setFoam3dMargins((m) => ({
+                            ...m,
+                            top: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Margem Base (mm)</label>
+                      <input
+                        type="number"
+                        value={foam3dMargins.bottom}
+                        onChange={(e) =>
+                          setFoam3dMargins((m) => ({
+                            ...m,
+                            bottom: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">
+                        Margem Esquerda (mm)
+                      </label>
+                      <input
+                        type="number"
+                        value={foam3dMargins.left}
+                        onChange={(e) =>
+                          setFoam3dMargins((m) => ({
+                            ...m,
+                            left: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">
+                        Margem Direita (mm)
+                      </label>
+                      <input
+                        type="number"
+                        value={foam3dMargins.right}
+                        onChange={(e) =>
+                          setFoam3dMargins((m) => ({
+                            ...m,
+                            right: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -935,35 +1011,33 @@ export default function NestingModalPolygon({
                   </div>
                 </div>
 
-                {nestingMode === "rectangle" && (
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Máquina de Corte
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => setSelectedMachine("CNC")}
-                        className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
-                          selectedMachine === "CNC"
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted"
-                        }`}
-                      >
-                        CNC
-                      </button>
-                      <button
-                        onClick={() => setSelectedMachine("Carousel")}
-                        className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
-                          selectedMachine === "Carousel"
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted"
-                        }`}
-                      >
-                        Carrossel
-                      </button>
-                    </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Máquina de Corte
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setSelectedMachine("CNC")}
+                      className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
+                        selectedMachine === "CNC"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      CNC
+                    </button>
+                    <button
+                      onClick={() => setSelectedMachine("Carousel")}
+                      className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
+                        selectedMachine === "Carousel"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      Carrossel
+                    </button>
                   </div>
-                )}
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
