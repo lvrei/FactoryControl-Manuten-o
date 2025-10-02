@@ -580,7 +580,7 @@ export default function NestingModalPolygon({
                       : "hover:bg-muted"
                   }`}
                 >
-                  <Cube className="h-4 w-4" />
+                  <Box className="h-4 w-4" />
                   Blocos 3D
                 </button>
               </div>
@@ -771,7 +771,7 @@ export default function NestingModalPolygon({
                 {nestingMode === "foam3d" && foam3dResult ? (
                   <>
                     <div className="flex items-center gap-2">
-                      <Cube className="h-4 w-4" /> Blocos necessários:{" "}
+                      <Box className="h-4 w-4" /> Blocos necessários:{" "}
                       <strong>{foam3dResult.totalBlocksNeeded}</strong>
                     </div>
                     <div>
