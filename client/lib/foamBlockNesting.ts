@@ -164,7 +164,9 @@ export function nestPartsInBlock(
 
   // As peças já vêm expandidas (quantity: 1) da função nestFoamParts
   // Ordena por volume decrescente (maiores primeiro)
-  const sortedParts = [...parts].sort((a, b) => calculateVolume(b) - calculateVolume(a));
+  const sortedParts = [...parts].sort(
+    (a, b) => calculateVolume(b) - calculateVolume(a),
+  );
 
   const usableLength = block.length - 2 * margin;
   const usableWidth = block.width - 2 * margin;
@@ -173,16 +175,22 @@ export function nestPartsInBlock(
   let currentZ = margin;
   let currentLayer: PlacedPart[] = [];
 
-  console.log(`[nestPartsInBlock] Tentando alocar ${sortedParts.length} peças em bloco ${block.length}x${block.width}x${block.height}`);
+  console.log(
+    `[nestPartsInBlock] Tentando alocar ${sortedParts.length} peças em bloco ${block.length}x${block.width}x${block.height}`,
+  );
 
   for (const part of sortedParts) {
     let placed = false;
 
     // Verifica se a peça cabe no bloco (dimensões básicas)
-    if (part.length + 2 * margin > block.length ||
-        part.width + 2 * margin > block.width ||
-        part.height + 2 * margin > block.height) {
-      console.warn(`[nestPartsInBlock] Peça ${part.length}x${part.width}x${part.height} NÃO CABE no bloco ${block.length}x${block.width}x${block.height}`);
+    if (
+      part.length + 2 * margin > block.length ||
+      part.width + 2 * margin > block.width ||
+      part.height + 2 * margin > block.height
+    ) {
+      console.warn(
+        `[nestPartsInBlock] Peça ${part.length}x${part.width}x${part.height} NÃO CABE no bloco ${block.length}x${block.width}x${block.height}`,
+      );
       continue; // Pula esta peça
     }
 
@@ -257,7 +265,9 @@ export function nestPartsInBlock(
     }
   }
 
-  console.log(`[nestPartsInBlock] Total alocado: ${placements.length} de ${sortedParts.length} peças`);
+  console.log(
+    `[nestPartsInBlock] Total alocado: ${placements.length} de ${sortedParts.length} peças`,
+  );
 
   return placements;
 }
@@ -343,9 +353,14 @@ export function nestFoamParts(
 
     // Se não colocou nenhuma peça neste bloco, algo está errado
     if (placedCount === 0) {
-      console.error('[Foam Nesting] ERRO: Nenhuma peça colocada no bloco! Verificar dimensões.');
-      console.error('[Foam Nesting] Bloco:', currentBlock);
-      console.error('[Foam Nesting] Primeira peça restante:', remainingParts[0]);
+      console.error(
+        "[Foam Nesting] ERRO: Nenhuma peça colocada no bloco! Verificar dimensões.",
+      );
+      console.error("[Foam Nesting] Bloco:", currentBlock);
+      console.error(
+        "[Foam Nesting] Primeira peça restante:",
+        remainingParts[0],
+      );
       break;
     }
 
