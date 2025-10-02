@@ -80,7 +80,7 @@ export default function NestingModalPolygon({
   const [viewMode, setViewMode] = useState<"2d" | "3d">("3d"); // 3D por padrão para melhor experiência
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number>(0);
 
-  // Limites da máquina CNC (padrão)
+  // Limites da m��quina CNC (padrão)
   const [cncConstraints, setCncConstraints] = useState<BlockConstraints>({
     maxLength: 2500, // 2.5m
     maxWidth: 2300, // 2.3m
@@ -400,43 +400,87 @@ export default function NestingModalPolygon({
         return;
       }
     } else if (nestingMode === "polygon" && polygonResult) {
-      // Agrupa por sheet
-      const bySheet = new Map<number, typeof polygonResult.placements>();
-      for (const p of polygonResult.placements) {
-        if (!bySheet.has(p.sheetIndex)) bySheet.set(p.sheetIndex, []);
-        bySheet.get(p.sheetIndex)!.push(p);
+      // Nesting de polígonos a partir de ficheiro
+      const foam =
+        foamTypes.find((f) => f.id === mappingFoamTypeId) || foamTypes[0];
+      if (!foam) {
+        alert("Selecione um tipo de espuma antes de aplicar.");
+        return;
       }
 
-      for (const [sheetIdx, placements] of bySheet) {
-        const foam =
-          foamTypes.find((f) => f.id === mappingFoamTypeId) || foamTypes[0];
-        if (!foam) continue;
+      const bzmMachine = machines.find((m) => m.type === "BZM");
+      const cncMachine = machines.find((m) => m.type === "CNC");
 
-        const totalArea = placements.reduce(
-          (sum, p) => sum + polygonArea(p.polygon),
-          0,
+      if (!bzmMachine || !cncMachine) {
+        alert(
+          "Máquinas BZM e CNC não encontradas. Configure as máquinas primeiro.",
         );
-
-        lines.push({
-          id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          foamType: foam,
-          initialDimensions: {
-            length: sheet.length,
-            width: sheet.width,
-            height: manualHeight,
-          },
-          finalDimensions: {
-            length: sheet.length,
-            width: sheet.width,
-            height: manualHeight,
-          },
-          quantity: placements.length,
-          completedQuantity: 0,
-          cuttingOperations: [],
-          status: "pending",
-          priority: 5,
-        } as any);
+        return;
       }
+
+      // Cria uma linha com operações BZM e CNC
+      const totalParts = polygonResult.placements.length;
+      const sheetsNeeded = polygonResult.sheetsUsed;
+
+      const bzmOperation: CuttingOperation = {
+        id: `bzm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        machineId: bzmMachine.id,
+        inputDimensions: {
+          length: sheet.length,
+          width: sheet.width,
+          height: manualHeight,
+        },
+        outputDimensions: {
+          length: sheet.length,
+          width: sheet.width,
+          height: manualHeight,
+        },
+        quantity: sheetsNeeded,
+        completedQuantity: 0,
+        estimatedTime: sheetsNeeded * 15,
+        status: "pending",
+        observations: `BZM: Cortar ${sheetsNeeded} painel(is) de ${sheet.length}×${sheet.width}×${manualHeight}mm`,
+      };
+
+      const cncOperation: CuttingOperation = {
+        id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        machineId: cncMachine.id,
+        inputDimensions: {
+          length: sheet.length,
+          width: sheet.width,
+          height: manualHeight,
+        },
+        outputDimensions: {
+          length: 0,
+          width: 0,
+          height: manualHeight,
+        },
+        quantity: totalParts,
+        completedQuantity: 0,
+        estimatedTime: totalParts * 5,
+        status: "pending",
+        observations: `CNC: Nesting de ${totalParts} peça(s) de polígonos em ${sheetsNeeded} painel(is). Aproveitamento: ${(polygonResult.utilization * 100).toFixed(1)}%`,
+      };
+
+      lines.push({
+        id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        foamType: foam,
+        initialDimensions: {
+          length: sheet.length,
+          width: sheet.width,
+          height: manualHeight,
+        },
+        finalDimensions: {
+          length: sheet.length,
+          width: sheet.width,
+          height: manualHeight,
+        },
+        quantity: totalParts,
+        completedQuantity: 0,
+        cuttingOperations: [bzmOperation, cncOperation],
+        status: "pending",
+        priority: 5,
+      } as any);
     } else if (rectangleResult) {
       // Lógica para retângulos (ficheiro + manual)
       // Agrupa peças por tipo de espuma e cria operações CNC separadas para cada forma distinta
