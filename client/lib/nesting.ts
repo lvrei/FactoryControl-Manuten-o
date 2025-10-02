@@ -78,41 +78,33 @@ export function packRectangles(parts: NestPart[], sheet: Sheet): NestResult {
     // If overflow vertically -> new sheet
     if (cursorY + h > sheet.length - sheet.margin) {
       nextSheet();
+      rowHeight = h;
     }
-    // If after moving sheet, still too big, force new sheet and place at origin
+
+    // Validação final: verifica se a peça cabe na posição atual
+    // Se não couber (peça maior que o painel), reporta erro
     if (
       cursorX + w > sheet.width - sheet.margin ||
       cursorY + h > sheet.length - sheet.margin
     ) {
+      if (
+        item.width + sheet.kerf > sheet.width - 2 * sheet.margin ||
+        item.length + sheet.kerf > sheet.length - 2 * sheet.margin
+      ) {
+        console.error(
+          `[Nesting] ERRO: Peça ${item.length}×${item.width}mm é maior que o painel ${sheet.length}×${sheet.width}mm e não pode ser colocada!`,
+        );
+        continue; // Pula esta peça
+      }
+      // Se a peça cabe no painel mas não na posição atual, vai para novo painel
       nextSheet();
+      rowHeight = h;
     }
 
-    // Validação: verifica se a peça realmente cabe antes de colocar
-    if (
-      cursorX + item.width + sheet.kerf <= sheet.width - sheet.margin &&
-      cursorY + item.length + sheet.kerf <= sheet.length - sheet.margin
-    ) {
-      placements.push({ ...item, x: cursorX, y: cursorY, sheetIndex });
-      usedAreaTotal += item.length * item.width;
-      cursorX += w;
-      rowHeight = Math.max(rowHeight, h);
-    } else {
-      // Não cabe: força novo painel
-      nextSheet();
-      if (
-        item.width + sheet.kerf <= sheet.width - 2 * sheet.margin &&
-        item.length + sheet.kerf <= sheet.length - 2 * sheet.margin
-      ) {
-        placements.push({ ...item, x: cursorX, y: cursorY, sheetIndex });
-        usedAreaTotal += item.length * item.width;
-        cursorX += w;
-        rowHeight = Math.max(rowHeight, h);
-      } else {
-        console.error(
-          `[Nesting] Peça ${item.length}×${item.width}mm não cabe no painel ${sheet.length}×${sheet.width}mm`,
-        );
-      }
-    }
+    placements.push({ ...item, x: cursorX, y: cursorY, sheetIndex });
+    usedAreaTotal += item.length * item.width;
+    cursorX += w;
+    rowHeight = Math.max(rowHeight, h);
   }
 
   const sheetsUsed = sheetIndex + 1;
