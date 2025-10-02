@@ -113,13 +113,19 @@ export function calculateOptimalBlockSize(
 
   // Valida que as peças cabem nos limites da CNC
   if (maxPartLength + 2 * constraints.margin > constraints.maxLength) {
-    throw new Error(`Peça com ${maxPartLength}mm de comprimento não cabe na CNC (máx: ${constraints.maxLength}mm)`);
+    throw new Error(
+      `Peça com ${maxPartLength}mm de comprimento não cabe na CNC (máx: ${constraints.maxLength}mm)`,
+    );
   }
   if (maxPartWidth + 2 * constraints.margin > constraints.maxWidth) {
-    throw new Error(`Peça com ${maxPartWidth}mm de largura não cabe na CNC (máx: ${constraints.maxWidth}mm)`);
+    throw new Error(
+      `Peça com ${maxPartWidth}mm de largura não cabe na CNC (máx: ${constraints.maxWidth}mm)`,
+    );
   }
   if (maxPartHeight + 2 * constraints.margin > constraints.maxHeight) {
-    throw new Error(`Peça com ${maxPartHeight}mm de altura não cabe na CNC (máx: ${constraints.maxHeight}mm)`);
+    throw new Error(
+      `Peça com ${maxPartHeight}mm de altura não cabe na CNC (máx: ${constraints.maxHeight}mm)`,
+    );
   }
 
   // Usa os LIMITES MÁXIMOS da CNC para aproveitar ao máximo
