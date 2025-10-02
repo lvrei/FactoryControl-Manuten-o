@@ -443,16 +443,16 @@ export default function NestingModalPolygon({
       }
 
       const bzmMachine = machines.find((m) => m.type === "BZM");
-      const cncMachine = machines.find((m) => m.type === "CNC");
+      const targetMachine = machines.find((m) => m.type === selectedMachine);
 
-      if (!bzmMachine || !cncMachine) {
+      if (!bzmMachine || !targetMachine) {
         alert(
-          "Máquinas BZM e CNC não encontradas. Configure as máquinas primeiro.",
+          `Máquinas BZM e ${selectedMachine} não encontradas. Configure as máquinas primeiro.`,
         );
         return;
       }
 
-      // Cria uma linha com operações BZM e CNC
+      // Cria uma linha com operações BZM e máquina selecionada
       const totalParts = polygonResult.placements.length;
       const sheetsNeeded = polygonResult.sheetsUsed;
 
@@ -476,9 +476,9 @@ export default function NestingModalPolygon({
         observations: `BZM: Cortar ${sheetsNeeded} painel(is) de ${sheet.length}×${sheet.width}×${manualHeight}mm`,
       };
 
-      const cncOperation: CuttingOperation = {
-        id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-        machineId: cncMachine.id,
+      const machineOperation: CuttingOperation = {
+        id: `${selectedMachine.toLowerCase()}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        machineId: targetMachine.id,
         inputDimensions: {
           length: sheet.length,
           width: sheet.width,
@@ -493,7 +493,7 @@ export default function NestingModalPolygon({
         completedQuantity: 0,
         estimatedTime: totalParts * 5,
         status: "pending",
-        observations: `CNC: Nesting de ${totalParts} peça(s) de polígonos em ${sheetsNeeded} painel(is). Aproveitamento: ${(polygonResult.utilization * 100).toFixed(1)}%`,
+        observations: `${selectedMachine}: Nesting de ${totalParts} peça(s) de polígonos em ${sheetsNeeded} painel(is). Aproveitamento: ${(polygonResult.utilization * 100).toFixed(1)}%`,
       };
 
       lines.push({
@@ -511,7 +511,7 @@ export default function NestingModalPolygon({
         },
         quantity: totalParts,
         completedQuantity: 0,
-        cuttingOperations: [bzmOperation, cncOperation],
+        cuttingOperations: [bzmOperation, machineOperation],
         status: "pending",
         priority: 5,
       } as any);
