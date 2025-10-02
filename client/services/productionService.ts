@@ -1253,13 +1253,10 @@ class ProductionService {
 
       console.log("✅ Parsing completo:", { orderId, lineId, operationId });
 
-      // Encontrar ordem
+      // Usar os objetos já encontrados
       const order = foundOrder;
-      // Encontrar linha
-
-      // Encontrar operação (estratégias múltiplas)
+      const line = foundLine;
       const operation = foundOperation;
-      }
 
       // Validações
       const currentCompleted = operation.completedQuantity || 0;
