@@ -739,6 +739,31 @@ productionRouter.patch("/orders/:id", async (req, res) => {
         o.notes,
       ],
     );
+
+    // Update nested lines and operations if provided
+    if (o.lines && Array.isArray(o.lines)) {
+      for (const line of o.lines) {
+        if (line.id) {
+          await query(
+            `UPDATE production_order_lines SET status=COALESCE($2,status), completed_quantity=COALESCE($3,completed_quantity), shipped_at=COALESCE($4,shipped_at) WHERE id=$1`,
+            [line.id, line.status, line.completedQuantity, line.shippedAt],
+          );
+
+          // Update operations within this line
+          if (line.cuttingOperations && Array.isArray(line.cuttingOperations)) {
+            for (const op of line.cuttingOperations) {
+              if (op.id) {
+                await query(
+                  `UPDATE cutting_operations SET completed_quantity=COALESCE($2,completed_quantity), status=COALESCE($3,status), observations=COALESCE($4,observations) WHERE id=$1`,
+                  [op.id, op.completedQuantity, op.status, op.observations],
+                );
+              }
+            }
+          }
+        }
+      }
+    }
+
     res.json({ ok: true });
   } catch (e: any) {
     console.error("PATCH /orders/:id error", e);
