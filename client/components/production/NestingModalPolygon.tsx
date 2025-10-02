@@ -71,7 +71,7 @@ export default function NestingModalPolygon({
     left: 10,
     right: 10,
   });
-  const [selectedMachine, setSelectedMachine] = useState<"CNC" | "Carousel">(
+  const [selectedMachine, setSelectedMachine] = useState<"CNC" | "CAROUSEL">(
     "CNC",
   );
   const [quantityMultiplier, setQuantityMultiplier] = useState<number>(1);
@@ -379,7 +379,7 @@ export default function NestingModalPolygon({
           );
         }
 
-        // Agrupa por dimensões
+        // Agrupa por dimens��es
         for (const part of allSourceParts) {
           const key = `${part.length}|${part.width}|${part.height}`;
           if (!shapeGroups.has(key)) {
@@ -924,9 +924,9 @@ export default function NestingModalPolygon({
                       CNC
                     </button>
                     <button
-                      onClick={() => setSelectedMachine("Carousel")}
+                      onClick={() => setSelectedMachine("CAROUSEL")}
                       className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
-                        selectedMachine === "Carousel"
+                        selectedMachine === "CAROUSEL"
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-muted"
                       }`}
@@ -1058,9 +1058,9 @@ export default function NestingModalPolygon({
                       CNC
                     </button>
                     <button
-                      onClick={() => setSelectedMachine("Carousel")}
+                      onClick={() => setSelectedMachine("CAROUSEL")}
                       className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
-                        selectedMachine === "Carousel"
+                        selectedMachine === "CAROUSEL"
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-muted"
                       }`}
