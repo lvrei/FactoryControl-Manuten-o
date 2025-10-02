@@ -528,21 +528,21 @@ export default function NestingModalPolygon({
               <label className="block text-sm font-medium mb-2">
                 Modo de Nesting
               </label>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 <button
                   onClick={() => setNestingMode("rectangle")}
-                  className={`px-3 py-2 border rounded flex items-center justify-center gap-2 ${
+                  className={`px-2 py-2 border rounded flex items-center justify-center gap-1 text-xs ${
                     nestingMode === "rectangle"
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted"
                   }`}
                 >
                   <Square className="h-4 w-4" />
-                  Retângulos
+                  2D
                 </button>
                 <button
                   onClick={() => setNestingMode("polygon")}
-                  className={`px-3 py-2 border rounded flex items-center justify-center gap-2 ${
+                  className={`px-2 py-2 border rounded flex items-center justify-center gap-1 text-xs ${
                     nestingMode === "polygon"
                       ? "bg-primary text-primary-foreground"
                       : "hover:bg-muted"
@@ -550,7 +550,18 @@ export default function NestingModalPolygon({
                   disabled={!drawing?.polygons || drawing.polygons.length === 0}
                 >
                   <Pentagon className="h-4 w-4" />
-                  Polígonos
+                  Polígono
+                </button>
+                <button
+                  onClick={() => setNestingMode("foam3d")}
+                  className={`px-2 py-2 border rounded flex items-center justify-center gap-1 text-xs ${
+                    nestingMode === "foam3d"
+                      ? "bg-primary text-primary-foreground"
+                      : "hover:bg-muted"
+                  }`}
+                >
+                  <Cube className="h-4 w-4" />
+                  Blocos 3D
                 </button>
               </div>
             </div>
