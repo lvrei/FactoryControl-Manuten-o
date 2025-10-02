@@ -244,6 +244,12 @@ export function ProductionOrderManager({
     updateLine(lineId, { cuttingOperations: updatedOperations });
   };
 
+  const handleNestingApply = (nestingLines: ProductionOrderLine[]) => {
+    // Adiciona as linhas vindas do nesting às linhas existentes
+    setLines((prev) => [...prev, ...nestingLines]);
+    setShowNestingModal(false);
+  };
+
   const calculateTotalVolume = () => {
     return lines.reduce((total, line) => {
       const volume =
