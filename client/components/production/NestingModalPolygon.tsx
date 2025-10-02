@@ -1063,14 +1063,18 @@ export default function NestingModalPolygon({
                           const uniqueLayers = Array.from(
                             new Set(
                               foam3dResult.placements
-                                .filter((p) => p.blockIndex === block.blockIndex)
-                                .map((p) => p.z)
-                            )
+                                .filter(
+                                  (p) => p.blockIndex === block.blockIndex,
+                                )
+                                .map((p) => p.z),
+                            ),
                           );
                           return uniqueLayers.length > 1 ? (
                             <div className="text-xs text-blue-600 mb-2 flex items-center gap-1">
                               <Layers className="h-3 w-3" />
-                              Vista de topo - {uniqueLayers.length} camadas (L0, L1, L2...). Cores diferentes = profundidades diferentes (sem sobreposição real)
+                              Vista de topo - {uniqueLayers.length} camadas (L0,
+                              L1, L2...). Cores diferentes = profundidades
+                              diferentes (sem sobreposição real)
                             </div>
                           ) : null;
                         })()}
@@ -1095,7 +1099,9 @@ export default function NestingModalPolygon({
                             const ph = part.width * scale;
 
                             // Cores diferentes por camada Z para mostrar profundidade
-                            const zLayers = Array.from(new Set(blockPlacements.map(p => p.z))).sort((a, b) => a - b);
+                            const zLayers = Array.from(
+                              new Set(blockPlacements.map((p) => p.z)),
+                            ).sort((a, b) => a - b);
                             const layerIndex = zLayers.indexOf(part.z);
                             const layerColors = [
                               "#c7f9cc", // Layer 0 - Verde claro
@@ -1109,10 +1115,11 @@ export default function NestingModalPolygon({
                               "#ffd8a8", // Layer 8 - Laranja
                               "#e7f5ff", // Layer 9 - Azul muito claro
                             ];
-                            const color = layerColors[layerIndex % layerColors.length];
+                            const color =
+                              layerColors[layerIndex % layerColors.length];
 
                             // Opacidade baseada na camada (camadas superiores mais opacas)
-                            const opacity = 0.7 + (layerIndex * 0.1);
+                            const opacity = 0.7 + layerIndex * 0.1;
 
                             return (
                               <g key={idx}>
@@ -1125,7 +1132,9 @@ export default function NestingModalPolygon({
                                   stroke="#2b8a3e"
                                   strokeWidth={1.5}
                                   opacity={Math.min(opacity, 0.95)}
-                                  strokeDasharray={layerIndex > 0 ? "2,2" : "none"}
+                                  strokeDasharray={
+                                    layerIndex > 0 ? "2,2" : "none"
+                                  }
                                 />
                                 <text
                                   x={px + 3}
