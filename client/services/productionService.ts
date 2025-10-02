@@ -1120,24 +1120,45 @@ class ProductionService {
         completedQuantity,
       );
 
-      // Parse robusto do ID (suporta order IDs com OP- prefix)
-      const parts = workItemId.split("-");
-      if (parts.length < 4) {
-        throw new Error(`ID inválido: ${workItemId}`);
-      }
-
-      // Reconstruct orderId with OP- prefix
-      const orderId = `${parts[0]}-${parts[1]}`; // "OP-1755848529731"
-      const lineId = parts[2]; // "1755848526881"
-      const operationParts = parts.slice(3); // ["1755848526881", "bzm"]
-      const operationId = operationParts.join("-"); // "1755848526881-bzm"
-
-      console.log("📋 Parsed:", { orderId, lineId, operationId });
-
+      // Parse robusto do ID (formato: ${orderId}-${lineId}-${operationId})
+      // Procurar dados primeiro para comparar IDs
       const data = this.getStoredData();
       if (!data?.productionOrders) {
         throw new Error("Dados de produção não encontrados");
       }
+
+      // Encontrar a ordem que corresponde ao workItemId
+      let orderId = "";
+      let lineId = "";
+      let operationId = "";
+      let foundMatch = false;
+
+      for (const order of data.productionOrders) {
+        // O workItemId começa com orderId
+        if (workItemId.startsWith(order.id + "-")) {
+          orderId = order.id;
+          const afterOrder = workItemId.substring(order.id.length + 1); // Remove "orderId-"
+
+          // Procurar a linha
+          for (const line of order.lines || []) {
+            if (afterOrder.startsWith(line.id + "-")) {
+              lineId = line.id;
+              const afterLine = afterOrder.substring(line.id.length + 1); // Remove "lineId-"
+              operationId = afterLine; // O resto é o operationId
+              foundMatch = true;
+              break;
+            }
+          }
+
+          if (foundMatch) break;
+        }
+      }
+
+      if (!foundMatch || !orderId || !lineId || !operationId) {
+        throw new Error(`Não foi possível analisar o ID: ${workItemId}`);
+      }
+
+      console.log("📋 Parsed:", { orderId, lineId, operationId });
 
       // Encontrar ordem
       const order = data.productionOrders.find((o) => o.id === orderId);
