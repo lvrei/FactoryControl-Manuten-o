@@ -12,6 +12,7 @@ import {
   User,
   Package,
   Settings,
+  Boxes,
 } from "lucide-react";
 import {
   ProductionOrder,
@@ -22,6 +23,7 @@ import {
 } from "@/types/production";
 import { productionService } from "@/services/productionService";
 import { cn } from "@/lib/utils";
+import NestingModalPolygon from "./NestingModalPolygon";
 
 interface ProductionOrderManagerProps {
   onClose?: () => void;
