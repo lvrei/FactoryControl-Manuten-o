@@ -1169,11 +1169,45 @@ class ProductionService {
       }
 
       if (!foundMatch || !orderId || !lineId || !operationId) {
-        console.error(`❌ Parsing falhou para: ${workItemId}`);
+        console.error(`❌ Parsing exato falhou para: ${workItemId}`);
         console.error(`   orderId: "${orderId}"`);
         console.error(`   lineId: "${lineId}"`);
         console.error(`   operationId: "${operationId}"`);
-        throw new Error(`Não foi possível analisar o ID: ${workItemId}`);
+
+        // Estratégia de fallback: tentar parsing por posição
+        console.log(`🔄 Tentando parsing alternativo...`);
+
+        // Formato esperado: OP-TIMESTAMP-line-TIMESTAMP-ID-machine-TIMESTAMP-ID
+        const parts = workItemId.split("-");
+        if (parts.length >= 6) {
+          // Tentar reconstruir baseado em padrões conhecidos
+          const testOrderId = `${parts[0]}-${parts[1]}`; // OP-1759415145430
+          const testOrder = data.productionOrders.find(o => o.id === testOrderId);
+
+          if (testOrder) {
+            console.log(`✅ Ordem encontrada via fallback: ${testOrderId}`);
+            orderId = testOrderId;
+
+            // Agora procurar a linha de forma mais flexível
+            for (const line of testOrder.lines || []) {
+              for (const op of line.cuttingOperations || []) {
+                // Verificar se o workItemId contém os IDs da linha e operação
+                if (workItemId.includes(line.id) && workItemId.includes(op.id)) {
+                  lineId = line.id;
+                  operationId = op.id;
+                  foundMatch = true;
+                  console.log(`✅ Match via fallback - Linha: ${lineId}, Op: ${operationId}`);
+                  break;
+                }
+              }
+              if (foundMatch) break;
+            }
+          }
+        }
+
+        if (!foundMatch || !orderId || !lineId || !operationId) {
+          throw new Error(`Não foi possível analisar o ID: ${workItemId}`);
+        }
       }
 
       console.log("📋 Parsed:", { orderId, lineId, operationId });
