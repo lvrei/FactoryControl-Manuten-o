@@ -1078,19 +1078,26 @@ export default function NestingModalPolygon({
                             const py = 10 + part.y * scale;
                             const pw = part.length * scale;
                             const ph = part.width * scale;
-                            const colors = [
-                              "#c7f9cc",
-                              "#a5d8ff",
-                              "#ffc9c9",
-                              "#ffe066",
-                              "#d0bfff",
-                              "#b2f2bb",
-                              "#99e9f2",
-                              "#ffdeeb",
-                              "#ffd8a8",
-                              "#e7f5ff",
+
+                            // Cores diferentes por camada Z para mostrar profundidade
+                            const zLayers = Array.from(new Set(blockPlacements.map(p => p.z))).sort((a, b) => a - b);
+                            const layerIndex = zLayers.indexOf(part.z);
+                            const layerColors = [
+                              "#c7f9cc", // Layer 0 - Verde claro
+                              "#a5d8ff", // Layer 1 - Azul claro
+                              "#ffc9c9", // Layer 2 - Vermelho claro
+                              "#ffe066", // Layer 3 - Amarelo
+                              "#d0bfff", // Layer 4 - Roxo
+                              "#b2f2bb", // Layer 5 - Verde
+                              "#99e9f2", // Layer 6 - Ciano
+                              "#ffdeeb", // Layer 7 - Rosa
+                              "#ffd8a8", // Layer 8 - Laranja
+                              "#e7f5ff", // Layer 9 - Azul muito claro
                             ];
-                            const color = colors[idx % colors.length];
+                            const color = layerColors[layerIndex % layerColors.length];
+
+                            // Opacidade baseada na camada (camadas superiores mais opacas)
+                            const opacity = 0.7 + (layerIndex * 0.1);
 
                             return (
                               <g key={idx}>
@@ -1101,8 +1108,9 @@ export default function NestingModalPolygon({
                                   height={ph}
                                   fill={color}
                                   stroke="#2b8a3e"
-                                  strokeWidth={1}
-                                  opacity={0.9}
+                                  strokeWidth={1.5}
+                                  opacity={Math.min(opacity, 0.95)}
+                                  strokeDasharray={layerIndex > 0 ? "2,2" : "none"}
                                 />
                                 <text
                                   x={px + 3}
@@ -1111,7 +1119,7 @@ export default function NestingModalPolygon({
                                   fill="#1a202c"
                                   fontWeight="500"
                                 >
-                                  #{idx + 1}
+                                  #{idx + 1} L{layerIndex}
                                 </text>
                                 <text
                                   x={px + 3}
