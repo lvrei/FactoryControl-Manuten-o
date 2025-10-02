@@ -87,10 +87,32 @@ export function packRectangles(parts: NestPart[], sheet: Sheet): NestResult {
       nextSheet();
     }
 
-    placements.push({ ...item, x: cursorX, y: cursorY, sheetIndex });
-    usedAreaTotal += item.length * item.width;
-    cursorX += w;
-    rowHeight = Math.max(rowHeight, h);
+    // Validação: verifica se a peça realmente cabe antes de colocar
+    if (
+      cursorX + item.width + sheet.kerf <= sheet.width - sheet.margin &&
+      cursorY + item.length + sheet.kerf <= sheet.length - sheet.margin
+    ) {
+      placements.push({ ...item, x: cursorX, y: cursorY, sheetIndex });
+      usedAreaTotal += item.length * item.width;
+      cursorX += w;
+      rowHeight = Math.max(rowHeight, h);
+    } else {
+      // Não cabe: força novo painel
+      nextSheet();
+      if (
+        item.width + sheet.kerf <= sheet.width - 2 * sheet.margin &&
+        item.length + sheet.kerf <= sheet.length - 2 * sheet.margin
+      ) {
+        placements.push({ ...item, x: cursorX, y: cursorY, sheetIndex });
+        usedAreaTotal += item.length * item.width;
+        cursorX += w;
+        rowHeight = Math.max(rowHeight, h);
+      } else {
+        console.error(
+          `[Nesting] Peça ${item.length}×${item.width}mm não cabe no painel ${sheet.length}×${sheet.width}mm`,
+        );
+      }
+    }
   }
 
   const sheetsUsed = sheetIndex + 1;
