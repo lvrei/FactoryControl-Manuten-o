@@ -1621,7 +1621,9 @@ class ProductionService {
 
       // IMPORTANTE: Sincronizar com API/Neon
       try {
-        console.log(`🌐 [markOrderLineAsShipped] Sincronizando com API/Neon...`);
+        console.log(
+          `🌐 [markOrderLineAsShipped] Sincronizando com API/Neon...`,
+        );
         await this.updateProductionOrder(orderId, order);
         console.log(`✅ [markOrderLineAsShipped] Sincronizado com API/Neon`);
       } catch (apiError) {

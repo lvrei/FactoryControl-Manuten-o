@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 import {
   Package,
   Search,
@@ -20,11 +20,16 @@ import {
   Calendar,
   Weight,
   Ruler,
-  FileBarChart
-} from 'lucide-react';
-import { ShippableItem, ShipmentLoad, ShippedItem, BarcodeScanner } from '@/types/production';
-import { shippingService } from '@/services/shippingService';
-import { cn } from '@/lib/utils';
+  FileBarChart,
+} from "lucide-react";
+import {
+  ShippableItem,
+  ShipmentLoad,
+  ShippedItem,
+  BarcodeScanner,
+} from "@/types/production";
+import { shippingService } from "@/services/shippingService";
+import { cn } from "@/lib/utils";
 
 interface MaterialShippingProps {
   operatorId: string;
@@ -32,22 +37,31 @@ interface MaterialShippingProps {
   onBack: () => void;
 }
 
-export default function MaterialShipping({ operatorId, operatorName, onBack }: MaterialShippingProps) {
+export default function MaterialShipping({
+  operatorId,
+  operatorName,
+  onBack,
+}: MaterialShippingProps) {
   const [shippableItems, setShippableItems] = useState<ShippableItem[]>([]);
   const [currentLoad, setCurrentLoad] = useState<ShipmentLoad | null>(null);
   const [recentLoads, setRecentLoads] = useState<ShipmentLoad[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCustomer, setSelectedCustomer] = useState('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState("all");
   const [scanner, setScanner] = useState<BarcodeScanner>({ isScanning: false });
-  const [scannerInput, setScannerInput] = useState('');
-  const [scanResult, setScanResult] = useState<{ item: ShippableItem | null; error?: string } | null>(null);
-  const [activeTab, setActiveTab] = useState<'available' | 'current-load' | 'history'>('available');
+  const [scannerInput, setScannerInput] = useState("");
+  const [scanResult, setScanResult] = useState<{
+    item: ShippableItem | null;
+    error?: string;
+  } | null>(null);
+  const [activeTab, setActiveTab] = useState<
+    "available" | "current-load" | "history"
+  >("available");
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [loadCompletionData, setLoadCompletionData] = useState({
-    truckPlate: '',
-    driverName: '',
-    notes: ''
+    truckPlate: "",
+    driverName: "",
+    notes: "",
   });
 
   // Camera scanning state
@@ -59,7 +73,7 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
 
   useEffect(() => {
     // Feature detection for BarcodeDetector and mediaDevices
-    const hasDetector = typeof (window as any).BarcodeDetector !== 'undefined';
+    const hasDetector = typeof (window as any).BarcodeDetector !== "undefined";
     const hasMedia = !!navigator.mediaDevices?.getUserMedia;
     setCameraSupported(hasDetector && hasMedia);
   }, []);
@@ -89,9 +103,8 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
       // Get recent loads
       const loads = await shippingService.getLoads(10);
       setRecentLoads(loads);
-
     } catch (error) {
-      console.error('Error loading shipping data:', error);
+      console.error("Error loading shipping data:", error);
     } finally {
       setLoading(false);
     }
@@ -99,12 +112,15 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
 
   const handleCreateNewLoad = async () => {
     try {
-      const newLoad = await shippingService.createNewLoad(operatorId, operatorName);
+      const newLoad = await shippingService.createNewLoad(
+        operatorId,
+        operatorName,
+      );
       setCurrentLoad(newLoad);
-      setActiveTab('current-load');
+      setActiveTab("current-load");
     } catch (error) {
-      console.error('Error creating new load:', error);
-      alert('Erro ao criar nova carga');
+      console.error("Error creating new load:", error);
+      alert("Erro ao criar nova carga");
     }
   };
 
@@ -126,7 +142,7 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
       scanTimerRef.current = null;
     }
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(t => t.stop());
+      streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
     setCameraActive(false);
@@ -134,11 +150,14 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
 
   const startCamera = async () => {
     if (!cameraSupported) {
-      alert('Leitura por câmera não suportada neste dispositivo/navegador.');
+      alert("Leitura por câmera não suportada neste dispositivo/navegador.");
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+        audio: false,
+      });
       streamRef.current = stream;
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
@@ -147,14 +166,16 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
       setCameraActive(true);
 
       const Detector = (window as any).BarcodeDetector;
-      const detector = new Detector({ formats: ['code_128', 'ean_13', 'ean_8', 'qr_code', 'upc_a', 'upc_e'] });
+      const detector = new Detector({
+        formats: ["code_128", "ean_13", "ean_8", "qr_code", "upc_a", "upc_e"],
+      });
 
       scanTimerRef.current = window.setInterval(async () => {
         try {
           if (!videoRef.current) return;
           const barcodes = await detector.detect(videoRef.current);
           if (barcodes && barcodes.length > 0) {
-            const value = (barcodes[0].rawValue || '').toString().trim();
+            const value = (barcodes[0].rawValue || "").toString().trim();
             if (value) {
               stopCamera();
               const state = shippingService.stopBarcodeScanning();
@@ -167,7 +188,7 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
         }
       }, 300);
     } catch (err) {
-      alert('Não foi possível aceder à câmera. Verifique permissões.');
+      alert("Não foi possível aceder à câmera. Verifique permissões.");
     }
   };
 
@@ -175,23 +196,26 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
     if (!barcodeId.trim()) return;
 
     try {
-      const result = await shippingService.processBarcodeScanned(barcodeId.trim().toUpperCase());
+      const result = await shippingService.processBarcodeScanned(
+        barcodeId.trim().toUpperCase(),
+      );
       setScanResult(result);
-      
+
       if (result.item) {
-        setScannerInput('');
+        setScannerInput("");
       }
     } catch (error) {
-      setScanResult({ 
-        item: null, 
-        error: error instanceof Error ? error.message : 'Erro ao processar código' 
+      setScanResult({
+        item: null,
+        error:
+          error instanceof Error ? error.message : "Erro ao processar código",
       });
     }
   };
 
   const handleAddItemToLoad = async (item: ShippableItem, fromScan = false) => {
     if (!currentLoad) {
-      alert('Crie uma nova carga primeiro');
+      alert("Crie uma nova carga primeiro");
       return;
     }
 
@@ -200,24 +224,24 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
         currentLoad.id,
         item,
         undefined,
-        fromScan ? new Date().toISOString() : undefined
+        fromScan ? new Date().toISOString() : undefined,
       );
       setCurrentLoad(updatedLoad);
-      
+
       // Refresh available items
       const items = await shippingService.getShippableItems();
       setShippableItems(items);
 
       if (fromScan) {
         setScanResult(null);
-        setScannerInput('');
+        setScannerInput("");
       }
     } catch (error) {
-      console.error('Error adding item to load:', error);
-      if (error.message === 'Item already in load') {
-        alert('Este item já foi adicionado à carga atual.');
+      console.error("Error adding item to load:", error);
+      if (error.message === "Item already in load") {
+        alert("Este item já foi adicionado à carga atual.");
       } else {
-        alert('Erro ao adicionar item à carga: ' + error.message);
+        alert("Erro ao adicionar item à carga: " + error.message);
       }
     }
   };
@@ -225,17 +249,20 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
   const handleRemoveItemFromLoad = async (shippedItemId: string) => {
     if (!currentLoad) return;
 
-    if (confirm('Remover este item da carga?')) {
+    if (confirm("Remover este item da carga?")) {
       try {
-        const updatedLoad = await shippingService.removeItemFromLoad(currentLoad.id, shippedItemId);
+        const updatedLoad = await shippingService.removeItemFromLoad(
+          currentLoad.id,
+          shippedItemId,
+        );
         setCurrentLoad(updatedLoad);
-        
+
         // Refresh available items
         const items = await shippingService.getShippableItems();
         setShippableItems(items);
       } catch (error) {
-        console.error('Error removing item from load:', error);
-        alert('Erro ao remover item da carga');
+        console.error("Error removing item from load:", error);
+        alert("Erro ao remover item da carga");
       }
     }
   };
@@ -244,36 +271,36 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
     if (!currentLoad) return;
 
     try {
-      console.log('🔵 [MaterialShipping] Iniciando conclusão da carga...');
+      console.log("🔵 [MaterialShipping] Iniciando conclusão da carga...");
 
       await shippingService.completeLoad(
         currentLoad.id,
         loadCompletionData.truckPlate,
         loadCompletionData.driverName,
-        loadCompletionData.notes
+        loadCompletionData.notes,
       );
 
-      console.log('✅ [MaterialShipping] Carga concluída no service');
+      console.log("✅ [MaterialShipping] Carga concluída no service");
 
       setCurrentLoad(null);
       setShowCompleteModal(false);
-      setLoadCompletionData({ truckPlate: '', driverName: '', notes: '' });
+      setLoadCompletionData({ truckPlate: "", driverName: "", notes: "" });
 
       // Forçar espera para garantir que API (Neon) foi sincronizada
-      console.log('⏳ [MaterialShipping] Aguardando sincronização com Neon...');
-      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log("⏳ [MaterialShipping] Aguardando sincronização com Neon...");
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Force refresh of all data including shippable items (agora da API/Neon atualizada)
-      console.log('🔄 [MaterialShipping] Recarregando dados da API...');
+      console.log("🔄 [MaterialShipping] Recarregando dados da API...");
       await loadData();
 
-      console.log('✅ [MaterialShipping] Dados recarregados');
-      setActiveTab('history');
+      console.log("✅ [MaterialShipping] Dados recarregados");
+      setActiveTab("history");
 
-      alert('Carga concluída com sucesso!');
+      alert("Carga concluída com sucesso!");
     } catch (error) {
-      console.error('❌ [MaterialShipping] Error completing load:', error);
-      alert('Erro ao concluir carga');
+      console.error("❌ [MaterialShipping] Error completing load:", error);
+      alert("Erro ao concluir carga");
     }
   };
 
@@ -287,20 +314,26 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
 
   // Helper function to check if item is already in current load
   const isItemInCurrentLoad = (itemId: string): boolean => {
-    return currentLoad?.items.some(loadItem => loadItem.id === itemId) || false;
+    return (
+      currentLoad?.items.some((loadItem) => loadItem.id === itemId) || false
+    );
   };
 
   // Filter items
-  const customers = Array.from(new Set(shippableItems.map(item => item.customerName)));
+  const customers = Array.from(
+    new Set(shippableItems.map((item) => item.customerName)),
+  );
 
-  const filteredItems = shippableItems.filter(item => {
+  const filteredItems = shippableItems.filter((item) => {
     const matchesSearch =
       item.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.foamType.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.barcodeId && item.barcodeId.toLowerCase().includes(searchTerm.toLowerCase()));
+      (item.barcodeId &&
+        item.barcodeId.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesCustomer = selectedCustomer === 'all' || item.customerName === selectedCustomer;
+    const matchesCustomer =
+      selectedCustomer === "all" || item.customerName === selectedCustomer;
 
     return matchesSearch && matchesCustomer;
   });
@@ -310,7 +343,9 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
       <div className="min-h-screen bg-background p-4 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="h-12 w-12 text-blue-600 mx-auto mb-4 animate-spin" />
-          <p className="text-muted-foreground">Carregando material disponível...</p>
+          <p className="text-muted-foreground">
+            Carregando material disponível...
+          </p>
         </div>
       </div>
     );
@@ -334,14 +369,22 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                 <Package className="h-6 w-6 text-blue-600" />
                 Saída de Material
               </h1>
-              <p className="text-muted-foreground">Gestão de cargas e expedição</p>
+              <p className="text-muted-foreground">
+                Gestão de cargas e expedição
+              </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-3">
             <div className="text-sm text-muted-foreground">
               <div>Operador: {operatorName}</div>
-              <div>{new Date().toLocaleDateString('pt-BR')} {new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</div>
+              <div>
+                {new Date().toLocaleDateString("pt-BR")}{" "}
+                {new Date().toLocaleTimeString("pt-BR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </div>
             </div>
           </div>
         </div>
@@ -353,15 +396,19 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
               <div className="flex items-center gap-3">
                 <Truck className="h-5 w-5 text-blue-600" />
                 <div>
-                  <div className="font-medium text-blue-900">Carga Ativa: {currentLoad.loadNumber}</div>
+                  <div className="font-medium text-blue-900">
+                    Carga Ativa: {currentLoad.loadNumber}
+                  </div>
                   <div className="text-sm text-blue-700">
-                    {currentLoad.totalItems} itens • {currentLoad.totalVolume.toFixed(2)} m³ • {currentLoad.totalWeight.toFixed(1)} kg
+                    {currentLoad.totalItems} itens •{" "}
+                    {currentLoad.totalVolume.toFixed(2)} m³ •{" "}
+                    {currentLoad.totalWeight.toFixed(1)} kg
                   </div>
                 </div>
               </div>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setActiveTab('current-load')}
+                  onClick={() => setActiveTab("current-load")}
                   className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
                   Ver Carga
@@ -381,36 +428,36 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
         {/* Tab Navigation */}
         <div className="flex rounded-lg bg-muted p-1 mb-6">
           <button
-            onClick={() => setActiveTab('available')}
+            onClick={() => setActiveTab("available")}
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2",
-              activeTab === 'available'
+              activeTab === "available"
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Package className="h-4 w-4" />
             Material Disponível ({filteredItems.length})
           </button>
           <button
-            onClick={() => setActiveTab('current-load')}
+            onClick={() => setActiveTab("current-load")}
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2",
-              activeTab === 'current-load'
+              activeTab === "current-load"
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Truck className="h-4 w-4" />
             Carga Atual ({currentLoad?.totalItems || 0})
           </button>
           <button
-            onClick={() => setActiveTab('history')}
+            onClick={() => setActiveTab("history")}
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-2",
-              activeTab === 'history'
+              activeTab === "history"
                 ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <FileBarChart className="h-4 w-4" />
@@ -419,7 +466,7 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
         </div>
 
         {/* Available Material Tab */}
-        {activeTab === 'available' && (
+        {activeTab === "available" && (
           <div className="space-y-6">
             {/* Actions Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -433,7 +480,7 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                     Nova Carga
                   </button>
                 )}
-                
+
                 <button
                   onClick={handleExportAvailable}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
@@ -454,15 +501,17 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                     className="pl-10 pr-4 py-2 border rounded-lg bg-background w-80"
                   />
                 </div>
-                
+
                 <select
                   value={selectedCustomer}
                   onChange={(e) => setSelectedCustomer(e.target.value)}
                   className="px-3 py-2 border rounded-lg bg-background"
                 >
                   <option value="all">Todos os clientes</option>
-                  {customers.map(customer => (
-                    <option key={customer} value={customer}>{customer}</option>
+                  {customers.map((customer) => (
+                    <option key={customer} value={customer}>
+                      {customer}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -490,9 +539,13 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                   disabled={!cameraSupported || cameraActive}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
-                    cameraActive ? 'bg-gray-200 text-gray-600' : 'bg-blue-600 text-white hover:bg-blue-700',
+                    cameraActive
+                      ? "bg-gray-200 text-gray-600"
+                      : "bg-blue-600 text-white hover:bg-blue-700",
                   )}
-                  title={!cameraSupported ? 'Câmera não suportada' : 'Ativar câmera'}
+                  title={
+                    !cameraSupported ? "Câmera não suportada" : "Ativar câmera"
+                  }
                 >
                   <CameraIcon className="h-4 w-4" />
                   Ativar Câmera
@@ -502,20 +555,30 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                   disabled={!cameraActive}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2 rounded-lg text-sm",
-                    !cameraActive ? 'bg-gray-200 text-gray-600' : 'bg-red-600 text-white hover:bg-red-700',
+                    !cameraActive
+                      ? "bg-gray-200 text-gray-600"
+                      : "bg-red-600 text-white hover:bg-red-700",
                   )}
                 >
                   <StopCircle className="h-4 w-4" />
                   Parar
                 </button>
                 {!cameraSupported && (
-                  <span className="text-xs text-muted-foreground">Este dispositivo/navegador não suporta leitura por câmera. Use o campo abaixo.</span>
+                  <span className="text-xs text-muted-foreground">
+                    Este dispositivo/navegador não suporta leitura por câmera.
+                    Use o campo abaixo.
+                  </span>
                 )}
               </div>
 
               {cameraActive && (
                 <div className="relative overflow-hidden rounded-lg border mb-3">
-                  <video ref={videoRef} className="w-full max-h-64 object-cover" playsInline muted />
+                  <video
+                    ref={videoRef}
+                    className="w-full max-h-64 object-cover"
+                    playsInline
+                    muted
+                  />
                   <div className="absolute inset-0 border-2 border-white/70 rounded-lg pointer-events-none m-6" />
                 </div>
               )}
@@ -526,7 +589,9 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                   placeholder="Digite ou escaneie o código de barras..."
                   value={scannerInput}
                   onChange={(e) => setScannerInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleBarcodeInput(scannerInput)}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && handleBarcodeInput(scannerInput)
+                  }
                   className="flex-1 px-3 py-2 border rounded-lg bg-background"
                 />
                 <button
@@ -539,23 +604,29 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
               </div>
 
               {scanResult && (
-                <div className={cn(
-                  "mt-4 p-4 rounded-lg border",
-                  scanResult.item 
-                    ? "bg-green-50 border-green-200" 
-                    : "bg-red-50 border-red-200"
-                )}>
+                <div
+                  className={cn(
+                    "mt-4 p-4 rounded-lg border",
+                    scanResult.item
+                      ? "bg-green-50 border-green-200"
+                      : "bg-red-50 border-red-200",
+                  )}
+                >
                   {scanResult.item ? (
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <div className="font-medium text-green-800">Material encontrado!</div>
+                        <div className="font-medium text-green-800">
+                          Material encontrado!
+                        </div>
                         {isItemInCurrentLoad(scanResult.item!.id) ? (
                           <span className="px-3 py-1 text-sm bg-orange-600 text-white rounded">
                             Já na Carga
                           </span>
                         ) : (
                           <button
-                            onClick={() => handleAddItemToLoad(scanResult.item!, true)}
+                            onClick={() =>
+                              handleAddItemToLoad(scanResult.item!, true)
+                            }
                             disabled={!currentLoad}
                             className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50"
                           >
@@ -564,11 +635,26 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                         )}
                       </div>
                       <div className="grid gap-2 text-sm text-green-700">
-                        <div><strong>OP:</strong> {scanResult.item.orderNumber}</div>
-                        <div><strong>Cliente:</strong> {scanResult.item.customerName}</div>
-                        <div><strong>Tipo:</strong> {scanResult.item.foamType}</div>
-                        <div><strong>Quantidade:</strong> {scanResult.item.quantity} un</div>
-                        <div><strong>Dimensões:</strong> {scanResult.item.dimensions.length}×{scanResult.item.dimensions.width}×{scanResult.item.dimensions.height}mm</div>
+                        <div>
+                          <strong>OP:</strong> {scanResult.item.orderNumber}
+                        </div>
+                        <div>
+                          <strong>Cliente:</strong>{" "}
+                          {scanResult.item.customerName}
+                        </div>
+                        <div>
+                          <strong>Tipo:</strong> {scanResult.item.foamType}
+                        </div>
+                        <div>
+                          <strong>Quantidade:</strong>{" "}
+                          {scanResult.item.quantity} un
+                        </div>
+                        <div>
+                          <strong>Dimensões:</strong>{" "}
+                          {scanResult.item.dimensions.length}×
+                          {scanResult.item.dimensions.width}×
+                          {scanResult.item.dimensions.height}mm
+                        </div>
                       </div>
                     </div>
                   ) : (
@@ -584,21 +670,23 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
             {/* Available Items List */}
             <div className="bg-card border rounded-lg">
               <div className="p-4 border-b">
-                <h3 className="font-medium">Material Disponível para Expedição</h3>
+                <h3 className="font-medium">
+                  Material Disponível para Expedição
+                </h3>
                 <p className="text-sm text-muted-foreground">
-                  Material que completou todas as operações e está pronto para carregamento
+                  Material que completou todas as operações e está pronto para
+                  carregamento
                 </p>
               </div>
-              
+
               <div className="overflow-x-auto">
                 {filteredItems.length === 0 ? (
                   <div className="text-center py-12">
                     <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
-                      {searchTerm || selectedCustomer !== 'all' 
-                        ? 'Nenhum material encontrado com os filtros aplicados'
-                        : 'Nenhum material disponível para expedição'
-                      }
+                      {searchTerm || selectedCustomer !== "all"
+                        ? "Nenhum material encontrado com os filtros aplicados"
+                        : "Nenhum material disponível para expedição"}
                     </p>
                   </div>
                 ) : (
@@ -645,20 +733,28 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                     </thead>
                     <tbody>
                       {filteredItems.map((item) => (
-                        <tr key={item.id} className="border-b hover:bg-muted/50">
-                          <td className="p-3 font-medium">{item.orderNumber}</td>
+                        <tr
+                          key={item.id}
+                          className="border-b hover:bg-muted/50"
+                        >
+                          <td className="p-3 font-medium">
+                            {item.orderNumber}
+                          </td>
                           <td className="p-3">{item.customerName}</td>
                           <td className="p-3">{item.foamType}</td>
                           <td className="p-3">{item.quantity} un</td>
                           <td className="p-3 text-sm">
-                            {item.dimensions.length}×{item.dimensions.width}×{item.dimensions.height}mm
+                            {item.dimensions.length}×{item.dimensions.width}×
+                            {item.dimensions.height}mm
                           </td>
                           <td className="p-3">{item.volume.toFixed(3)} m³</td>
                           <td className="p-3 text-xs font-mono">
-                            {item.barcodeId || 'N/A'}
+                            {item.barcodeId || "N/A"}
                           </td>
                           <td className="p-3 text-sm">
-                            {new Date(item.completedAt).toLocaleDateString('pt-BR')}
+                            {new Date(item.completedAt).toLocaleDateString(
+                              "pt-BR",
+                            )}
                           </td>
                           <td className="p-3">
                             {isItemInCurrentLoad(item.id) ? (
@@ -671,7 +767,11 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                                 onClick={() => handleAddItemToLoad(item)}
                                 disabled={!currentLoad}
                                 className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                                title={!currentLoad ? 'Crie uma nova carga primeiro' : 'Adicionar à carga'}
+                                title={
+                                  !currentLoad
+                                    ? "Crie uma nova carga primeiro"
+                                    : "Adicionar à carga"
+                                }
                               >
                                 <Plus className="h-3 w-3" />
                                 Adicionar
@@ -689,7 +789,7 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
         )}
 
         {/* Current Load Tab */}
-        {activeTab === 'current-load' && (
+        {activeTab === "current-load" && (
           <div className="space-y-6">
             {currentLoad ? (
               <>
@@ -697,9 +797,14 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                 <div className="bg-card border rounded-lg p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
-                      <h3 className="text-lg font-semibold">Carga {currentLoad.loadNumber}</h3>
+                      <h3 className="text-lg font-semibold">
+                        Carga {currentLoad.loadNumber}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
-                        Iniciada em {new Date(currentLoad.startTime).toLocaleString('pt-BR')}
+                        Iniciada em{" "}
+                        {new Date(currentLoad.startTime).toLocaleString(
+                          "pt-BR",
+                        )}
                       </p>
                     </div>
                     <div className="flex gap-2">
@@ -726,21 +831,29 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                       <Package className="h-8 w-8 text-blue-600" />
                       <div>
-                        <div className="text-xl font-bold">{currentLoad.totalItems}</div>
-                        <div className="text-sm text-muted-foreground">Itens</div>
+                        <div className="text-xl font-bold">
+                          {currentLoad.totalItems}
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          Itens
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                       <Ruler className="h-8 w-8 text-green-600" />
                       <div>
-                        <div className="text-xl font-bold">{currentLoad.totalVolume.toFixed(2)}</div>
+                        <div className="text-xl font-bold">
+                          {currentLoad.totalVolume.toFixed(2)}
+                        </div>
                         <div className="text-sm text-muted-foreground">m³</div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                       <Weight className="h-8 w-8 text-orange-600" />
                       <div>
-                        <div className="text-xl font-bold">{currentLoad.totalWeight.toFixed(1)}</div>
+                        <div className="text-xl font-bold">
+                          {currentLoad.totalWeight.toFixed(1)}
+                        </div>
                         <div className="text-sm text-muted-foreground">kg</div>
                       </div>
                     </div>
@@ -752,12 +865,14 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                   <div className="p-4 border-b">
                     <h3 className="font-medium">Itens na Carga</h3>
                   </div>
-                  
+
                   <div className="overflow-x-auto">
                     {currentLoad.items.length === 0 ? (
                       <div className="text-center py-12">
                         <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">Carga vazia. Adicione itens do material disponível.</p>
+                        <p className="text-muted-foreground">
+                          Carga vazia. Adicione itens do material disponível.
+                        </p>
                       </div>
                     ) : (
                       <table className="w-full">
@@ -799,14 +914,23 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                         </thead>
                         <tbody>
                           {currentLoad.items.map((item) => (
-                            <tr key={item.id} className="border-b hover:bg-muted/50">
-                              <td className="p-3 font-medium">{item.orderNumber}</td>
+                            <tr
+                              key={item.id}
+                              className="border-b hover:bg-muted/50"
+                            >
+                              <td className="p-3 font-medium">
+                                {item.orderNumber}
+                              </td>
                               <td className="p-3">{item.customerName}</td>
                               <td className="p-3">{item.foamType}</td>
                               <td className="p-3">{item.quantity} un</td>
-                              <td className="p-3">{item.volume.toFixed(3)} m³</td>
+                              <td className="p-3">
+                                {item.volume.toFixed(3)} m³
+                              </td>
                               <td className="p-3 text-sm">
-                                {new Date(item.addedToLoadAt).toLocaleTimeString('pt-BR')}
+                                {new Date(
+                                  item.addedToLoadAt,
+                                ).toLocaleTimeString("pt-BR")}
                               </td>
                               <td className="p-3">
                                 {item.scannedAt ? (
@@ -823,7 +947,9 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                               </td>
                               <td className="p-3">
                                 <button
-                                  onClick={() => handleRemoveItemFromLoad(item.id)}
+                                  onClick={() =>
+                                    handleRemoveItemFromLoad(item.id)
+                                  }
                                   className="flex items-center gap-1 px-2 py-1 text-sm text-red-600 hover:text-red-800"
                                 >
                                   <Trash2 className="h-3 w-3" />
@@ -841,7 +967,9 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
             ) : (
               <div className="text-center py-12">
                 <Truck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <p className="text-muted-foreground mb-4">Nenhuma carga ativa</p>
+                <p className="text-muted-foreground mb-4">
+                  Nenhuma carga ativa
+                </p>
                 <button
                   onClick={handleCreateNewLoad}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mx-auto"
@@ -855,7 +983,7 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
         )}
 
         {/* History Tab */}
-        {activeTab === 'history' && (
+        {activeTab === "history" && (
           <div className="space-y-6">
             <div className="bg-card border rounded-lg">
               <div className="p-4 border-b">
@@ -864,12 +992,14 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                   Cargas concluídas e informações de expedição
                 </p>
               </div>
-              
+
               <div className="overflow-x-auto">
                 {recentLoads.length === 0 ? (
                   <div className="text-center py-12">
                     <FileBarChart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">Nenhuma carga no histórico</p>
+                    <p className="text-muted-foreground">
+                      Nenhuma carga no histórico
+                    </p>
                   </div>
                 ) : (
                   <table className="w-full">
@@ -907,26 +1037,44 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                     </thead>
                     <tbody>
                       {recentLoads.map((load) => (
-                        <tr key={load.id} className="border-b hover:bg-muted/50">
+                        <tr
+                          key={load.id}
+                          className="border-b hover:bg-muted/50"
+                        >
                           <td className="p-3 font-medium">{load.loadNumber}</td>
                           <td className="p-3">{load.operatorName}</td>
                           <td className="p-3">
-                            <span className={cn(
-                              "inline-flex items-center gap-1 px-2 py-1 rounded text-xs",
-                              load.status === 'completed' ? "bg-green-100 text-green-800" :
-                              load.status === 'loading' ? "bg-blue-100 text-blue-800" :
-                              "bg-gray-100 text-gray-800"
-                            )}>
-                              {load.status === 'completed' && <CheckCircle className="h-3 w-3" />}
-                              {load.status === 'loading' && <Clock className="h-3 w-3" />}
-                              {load.status === 'completed' ? 'Concluída' : 
-                               load.status === 'loading' ? 'Carregando' : 'Cancelada'}
+                            <span
+                              className={cn(
+                                "inline-flex items-center gap-1 px-2 py-1 rounded text-xs",
+                                load.status === "completed"
+                                  ? "bg-green-100 text-green-800"
+                                  : load.status === "loading"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-gray-100 text-gray-800",
+                              )}
+                            >
+                              {load.status === "completed" && (
+                                <CheckCircle className="h-3 w-3" />
+                              )}
+                              {load.status === "loading" && (
+                                <Clock className="h-3 w-3" />
+                              )}
+                              {load.status === "completed"
+                                ? "Concluída"
+                                : load.status === "loading"
+                                  ? "Carregando"
+                                  : "Cancelada"}
                             </span>
                           </td>
                           <td className="p-3">{load.totalItems}</td>
-                          <td className="p-3">{load.totalVolume.toFixed(2)} m³</td>
+                          <td className="p-3">
+                            {load.totalVolume.toFixed(2)} m³
+                          </td>
                           <td className="p-3 text-sm">
-                            {new Date(load.startTime).toLocaleDateString('pt-BR')}
+                            {new Date(load.startTime).toLocaleDateString(
+                              "pt-BR",
+                            )}
                           </td>
                           <td className="p-3">
                             <button
@@ -953,7 +1101,9 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
             <div className="bg-background rounded-lg max-w-md w-full">
               <div className="p-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">Concluir Carga {currentLoad.loadNumber}</h3>
+                  <h3 className="text-lg font-semibold">
+                    Concluir Carga {currentLoad.loadNumber}
+                  </h3>
                   <button
                     onClick={() => setShowCompleteModal(false)}
                     className="text-muted-foreground hover:text-foreground"
@@ -964,32 +1114,53 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Matrícula do Camião</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Matrícula do Camião
+                    </label>
                     <input
                       type="text"
                       value={loadCompletionData.truckPlate}
-                      onChange={(e) => setLoadCompletionData(prev => ({ ...prev, truckPlate: e.target.value }))}
+                      onChange={(e) =>
+                        setLoadCompletionData((prev) => ({
+                          ...prev,
+                          truckPlate: e.target.value,
+                        }))
+                      }
                       placeholder="Ex: 12-AB-34"
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                     />
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium mb-2">Nome do Motorista</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Nome do Motorista
+                    </label>
                     <input
                       type="text"
                       value={loadCompletionData.driverName}
-                      onChange={(e) => setLoadCompletionData(prev => ({ ...prev, driverName: e.target.value }))}
+                      onChange={(e) =>
+                        setLoadCompletionData((prev) => ({
+                          ...prev,
+                          driverName: e.target.value,
+                        }))
+                      }
                       placeholder="Nome completo"
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                     />
                   </div>
-                  
+
                   <div>
-                    <label className="block text-sm font-medium mb-2">Observações</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Observações
+                    </label>
                     <textarea
                       value={loadCompletionData.notes}
-                      onChange={(e) => setLoadCompletionData(prev => ({ ...prev, notes: e.target.value }))}
+                      onChange={(e) =>
+                        setLoadCompletionData((prev) => ({
+                          ...prev,
+                          notes: e.target.value,
+                        }))
+                      }
                       placeholder="Observações sobre a carga..."
                       className="w-full px-3 py-2 border rounded-lg bg-background"
                       rows={3}
@@ -997,9 +1168,13 @@ export default function MaterialShipping({ operatorId, operatorName, onBack }: M
                   </div>
 
                   <div className="bg-muted/50 rounded-lg p-3">
-                    <div className="text-sm font-medium mb-1">Resumo da Carga:</div>
+                    <div className="text-sm font-medium mb-1">
+                      Resumo da Carga:
+                    </div>
                     <div className="text-sm text-muted-foreground">
-                      {currentLoad.totalItems} itens • {currentLoad.totalVolume.toFixed(2)} m³ • {currentLoad.totalWeight.toFixed(1)} kg
+                      {currentLoad.totalItems} itens •{" "}
+                      {currentLoad.totalVolume.toFixed(2)} m³ •{" "}
+                      {currentLoad.totalWeight.toFixed(1)} kg
                     </div>
                   </div>
                 </div>
