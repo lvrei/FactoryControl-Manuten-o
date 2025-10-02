@@ -140,17 +140,32 @@ export default function NestingModalPolygon({
   ]);
 
   const rectangleResult = useMemo(() => {
-    if (!drawing || !drawing.parts || nestingMode !== "rectangle") return null;
+    if (nestingMode !== "rectangle") return null;
 
-    const scaled = drawing.parts.map((p) => ({
-      ...p,
-      quantity: Math.max(
-        0,
-        Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
-      ),
-    }));
-    return packRectangles(scaled as NestPart[], sheet);
-  }, [drawing, sheet, quantityMultiplier, nestingMode]);
+    // Combina peças do ficheiro (se houver) com formas manuais
+    const allParts: NestPart[] = [];
+
+    // Adiciona peças do ficheiro
+    if (drawing && drawing.parts) {
+      const scaled = drawing.parts.map((p) => ({
+        ...p,
+        quantity: Math.max(
+          0,
+          Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
+        ),
+      }));
+      allParts.push(...(scaled as NestPart[]));
+    }
+
+    // Adiciona formas manuais
+    if (manualShapes.length > 0) {
+      allParts.push(...manualShapes);
+    }
+
+    if (allParts.length === 0) return null;
+
+    return packRectangles(allParts, sheet);
+  }, [drawing, sheet, quantityMultiplier, nestingMode, manualShapes]);
 
   const result = nestingMode === "polygon" ? polygonResult : rectangleResult;
 
@@ -198,18 +213,26 @@ export default function NestingModalPolygon({
         } as any);
       }
     } else if (rectangleResult) {
-      // Lógica existente para retângulos
+      // Lógica para retângulos (ficheiro + manual)
       const map = new Map<string, { part: NestPart; qty: number }>();
-      const parts = drawing!.parts as NestPart[];
-      const scaled = parts.map((p) => ({
-        ...p,
-        quantity: Math.max(
-          0,
-          Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
-        ),
-      }));
 
-      for (const p of scaled) {
+      // Combina peças do ficheiro com formas manuais
+      const allParts: NestPart[] = [];
+
+      if (drawing && drawing.parts) {
+        const scaled = (drawing.parts as NestPart[]).map((p) => ({
+          ...p,
+          quantity: Math.max(
+            0,
+            Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
+          ),
+        }));
+        allParts.push(...scaled);
+      }
+
+      allParts.push(...manualShapes);
+
+      for (const p of allParts) {
         const foamId =
           p.foamTypeId || mappingFoamTypeId || foamTypes[0]?.id || "";
         const key = `${foamId}|${p.length}|${p.width}|${p.height}`;
