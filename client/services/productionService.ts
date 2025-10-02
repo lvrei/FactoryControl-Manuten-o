@@ -1121,96 +1121,125 @@ class ProductionService {
       );
 
       // Parse robusto do ID (formato: ${orderId}-${lineId}-${operationId})
-      // Procurar dados primeiro para comparar IDs
       const data = this.getStoredData();
-      if (!data?.productionOrders) {
-        throw new Error("Dados de produção não encontrados");
+      if (!data?.productionOrders || data.productionOrders.length === 0) {
+        throw new Error("Não há ordens de produção no sistema");
       }
 
-      // Encontrar a ordem que corresponde ao workItemId
+      console.log(`🔍 Analisando workItemId: ${workItemId}`);
+      console.log(`📊 Total de ordens no sistema: ${data.productionOrders.length}`);
+
       let orderId = "";
       let lineId = "";
       let operationId = "";
-      let foundMatch = false;
 
-      console.log(`🔍 Procurando em ${data.productionOrders.length} ordens...`);
+      // Estratégia 1: Procurar a ordem e linha nos dados reais
+      let foundOrder: any = null;
+      let foundLine: any = null;
+      let foundOperation: any = null;
 
+      // Procurar em todas as ordens
       for (const order of data.productionOrders) {
-        // O workItemId começa com orderId
-        if (workItemId.startsWith(order.id + "-")) {
-          orderId = order.id;
-          const afterOrder = workItemId.substring(order.id.length + 1); // Remove "orderId-"
-          console.log(`✅ Ordem encontrada: ${orderId}`);
-          console.log(`📝 Procurando linha em: "${afterOrder}"`);
-          console.log(`📊 Ordem tem ${order.lines?.length || 0} linhas`);
-
-          // Procurar a linha
-          for (const line of order.lines || []) {
-            console.log(`  🔎 Testando linha: "${line.id}"`);
-            if (afterOrder.startsWith(line.id + "-")) {
+        for (const line of order.lines || []) {
+          for (const op of line.cuttingOperations || []) {
+            // Construir o ID esperado
+            const expectedId = `${order.id}-${line.id}-${op.id}`;
+            if (expectedId === workItemId) {
+              foundOrder = order;
+              foundLine = line;
+              foundOperation = op;
+              orderId = order.id;
               lineId = line.id;
-              const afterLine = afterOrder.substring(line.id.length + 1); // Remove "lineId-"
-              operationId = afterLine; // O resto é o operationId
-              foundMatch = true;
-              console.log(`✅ Linha encontrada: ${lineId}`);
-              console.log(`✅ Operação: ${operationId}`);
+              operationId = op.id;
+              console.log(`✅ Match exato encontrado!`);
               break;
             }
           }
-
-          if (foundMatch) break;
-
-          // Se chegou aqui, não encontrou a linha
-          if (!foundMatch) {
-            console.error(`❌ Nenhuma linha corresponde. IDs das linhas disponíveis:`);
-            order.lines?.forEach(l => console.error(`   - "${l.id}"`));
-          }
+          if (foundOperation) break;
         }
+        if (foundOperation) break;
       }
 
-      if (!foundMatch || !orderId || !lineId || !operationId) {
-        console.error(`❌ Parsing exato falhou para: ${workItemId}`);
-        console.error(`   orderId: "${orderId}"`);
-        console.error(`   lineId: "${lineId}"`);
-        console.error(`   operationId: "${operationId}"`);
+      // Estratégia 2: Se não encontrou match exato, tentar parsing por partes
+      if (!foundOperation) {
+        console.log(`🔄 Match exato não encontrado, tentando parsing por partes...`);
 
-        // Estratégia de fallback: tentar parsing por posição
-        console.log(`🔄 Tentando parsing alternativo...`);
+        // Primeiro, achar a ordem que começa o workItemId
+        for (const order of data.productionOrders) {
+          if (workItemId.startsWith(order.id + "-")) {
+            foundOrder = order;
+            orderId = order.id;
+            const remainder = workItemId.substring(order.id.length + 1);
 
-        // Formato esperado: OP-TIMESTAMP-line-TIMESTAMP-ID-machine-TIMESTAMP-ID
-        const parts = workItemId.split("-");
-        if (parts.length >= 6) {
-          // Tentar reconstruir baseado em padrões conhecidos
-          const testOrderId = `${parts[0]}-${parts[1]}`; // OP-1759415145430
-          const testOrder = data.productionOrders.find(o => o.id === testOrderId);
+            console.log(`✅ Ordem encontrada: ${orderId}`);
+            console.log(`📝 Restante para analisar: "${remainder}"`);
 
-          if (testOrder) {
-            console.log(`✅ Ordem encontrada via fallback: ${testOrderId}`);
-            orderId = testOrderId;
+            // Agora achar a linha
+            for (const line of order.lines || []) {
+              if (remainder.startsWith(line.id + "-")) {
+                foundLine = line;
+                lineId = line.id;
+                const opRemainder = remainder.substring(line.id.length + 1);
+                operationId = opRemainder;
 
-            // Agora procurar a linha de forma mais flexível
-            for (const line of testOrder.lines || []) {
-              for (const op of line.cuttingOperations || []) {
-                // Verificar se o workItemId contém os IDs da linha e operação
-                if (workItemId.includes(line.id) && workItemId.includes(op.id)) {
-                  lineId = line.id;
-                  operationId = op.id;
-                  foundMatch = true;
-                  console.log(`✅ Match via fallback - Linha: ${lineId}, Op: ${operationId}`);
+                // Verificar se a operação existe
+                foundOperation = line.cuttingOperations?.find(op => op.id === operationId);
+
+                if (foundOperation) {
+                  console.log(`✅ Linha: ${lineId}, Operação: ${operationId}`);
                   break;
                 }
               }
-              if (foundMatch) break;
             }
-          }
-        }
 
-        if (!foundMatch || !orderId || !lineId || !operationId) {
-          throw new Error(`Não foi possível analisar o ID: ${workItemId}`);
+            if (foundOperation) break;
+          }
         }
       }
 
-      console.log("📋 Parsed:", { orderId, lineId, operationId });
+      // Estratégia 3: Busca flexível se ainda não encontrou
+      if (!foundOperation && orderId) {
+        console.log(`🔄 Tentando busca flexível na ordem ${orderId}...`);
+        const order = data.productionOrders.find(o => o.id === orderId);
+
+        if (order) {
+          for (const line of order.lines || []) {
+            for (const op of line.cuttingOperations || []) {
+              // Verificar se os IDs estão contidos no workItemId
+              if (workItemId.includes(`-${line.id}-`) && workItemId.endsWith(`-${op.id}`)) {
+                foundLine = line;
+                foundOperation = op;
+                lineId = line.id;
+                operationId = op.id;
+                console.log(`✅ Match flexível - Linha: ${lineId}, Op: ${operationId}`);
+                break;
+              }
+            }
+            if (foundOperation) break;
+          }
+        }
+      }
+
+      // Verificação final
+      if (!foundOrder || !foundLine || !foundOperation) {
+        console.error(`❌ Não foi possível encontrar a operação`);
+        console.error(`   Parsed orderId: "${orderId}"`);
+        console.error(`   Parsed lineId: "${lineId}"`);
+        console.error(`   Parsed operationId: "${operationId}"`);
+        console.error(`\n📋 Ordens disponíveis:`);
+        data.productionOrders.forEach(o => {
+          console.error(`   Ordem: ${o.id} - ${o.orderNumber}`);
+          o.lines?.forEach(l => {
+            console.error(`     Linha: ${l.id}`);
+            l.cuttingOperations?.forEach(op => {
+              console.error(`       Op: ${op.id} - Status: ${op.status}`);
+            });
+          });
+        });
+        throw new Error(`Item de trabalho não encontrado no sistema: ${workItemId}`);
+      }
+
+      console.log("✅ Parsing completo:", { orderId, lineId, operationId });
 
       // Encontrar ordem
       const order = data.productionOrders.find((o) => o.id === orderId);
