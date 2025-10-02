@@ -1121,13 +1121,14 @@ class ProductionService {
       );
 
       // Parse robusto do ID (formato: ${orderId}-${lineId}-${operationId})
-      const data = this.getStoredData();
-      if (!data?.productionOrders || data.productionOrders.length === 0) {
+      // Usar getProductionOrders() ao invés de getStoredData() para garantir que temos os dados mais recentes
+      const orders = await this.getProductionOrders();
+      if (!orders || orders.length === 0) {
         throw new Error("Não há ordens de produção no sistema");
       }
 
       console.log(`🔍 Analisando workItemId: ${workItemId}`);
-      console.log(`📊 Total de ordens no sistema: ${data.productionOrders.length}`);
+      console.log(`📊 Total de ordens no sistema: ${orders.length}`);
 
       let orderId = "";
       let lineId = "";
@@ -1139,7 +1140,7 @@ class ProductionService {
       let foundOperation: any = null;
 
       // Procurar em todas as ordens
-      for (const order of data.productionOrders) {
+      for (const order of orders) {
         for (const line of order.lines || []) {
           for (const op of line.cuttingOperations || []) {
             // Construir o ID esperado
@@ -1165,7 +1166,7 @@ class ProductionService {
         console.log(`🔄 Match exato não encontrado, tentando parsing por partes...`);
 
         // Primeiro, achar a ordem que começa o workItemId
-        for (const order of data.productionOrders) {
+        for (const order of orders) {
           if (workItemId.startsWith(order.id + "-")) {
             foundOrder = order;
             orderId = order.id;
@@ -1200,7 +1201,7 @@ class ProductionService {
       // Estratégia 3: Busca flexível se ainda não encontrou
       if (!foundOperation && orderId) {
         console.log(`🔄 Tentando busca flexível na ordem ${orderId}...`);
-        const order = data.productionOrders.find(o => o.id === orderId);
+        const order = orders.find(o => o.id === orderId);
 
         if (order) {
           for (const line of order.lines || []) {
@@ -1227,7 +1228,7 @@ class ProductionService {
         console.error(`   Parsed lineId: "${lineId}"`);
         console.error(`   Parsed operationId: "${operationId}"`);
         console.error(`\n📋 Ordens disponíveis:`);
-        data.productionOrders.forEach(o => {
+        orders.forEach(o => {
           console.error(`   Ordem: ${o.id} - ${o.orderNumber}`);
           o.lines?.forEach(l => {
             console.error(`     Linha: ${l.id}`);
@@ -1627,7 +1628,7 @@ class ProductionService {
       "initializeCleanSystem",
     ];
 
-    console.log("🧪 Testando existência de métodos:");
+    console.log("🧪 Testando existência de m��todos:");
     methods.forEach((method) => {
       const exists = typeof this[method] === "function";
       console.log(
