@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   User,
   Factory,
@@ -23,19 +23,26 @@ import {
   Wrench,
   Zap,
   Gauge,
-  AlertCircle
-} from 'lucide-react';
-import { Machine, OperatorWorkItem, OperatorSession, ChatMessage, PrintLabel, MaintenanceRequest } from '@/types/production';
-import { productionService } from '@/services/productionService';
-import { labelService } from '@/services/labelService';
-import { PrinterSetup } from '@/components/PrinterSetup';
-import MaterialShipping from './MaterialShipping';
-import { authService } from '@/services/authService';
-import { maintenanceService } from '@/services/maintenanceService';
-import { MessageNotificationContainer } from '@/components/MessageNotification';
-import { cn } from '@/lib/utils';
-import { BackToOperatorButton } from '@/components/BackToOperatorButton';
-import { useNavigate } from 'react-router-dom';
+  AlertCircle,
+} from "lucide-react";
+import {
+  Machine,
+  OperatorWorkItem,
+  OperatorSession,
+  ChatMessage,
+  PrintLabel,
+  MaintenanceRequest,
+} from "@/types/production";
+import { productionService } from "@/services/productionService";
+import { labelService } from "@/services/labelService";
+import { PrinterSetup } from "@/components/PrinterSetup";
+import MaterialShipping from "./MaterialShipping";
+import { authService } from "@/services/authService";
+import { maintenanceService } from "@/services/maintenanceService";
+import { MessageNotificationContainer } from "@/components/MessageNotification";
+import { cn } from "@/lib/utils";
+import { BackToOperatorButton } from "@/components/BackToOperatorButton";
+import { useNavigate } from "react-router-dom";
 
 interface OperatorPortalProps {
   onClose?: () => void;
@@ -45,13 +52,15 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
   const navigate = useNavigate();
   const [machines, setMachines] = useState<Machine[]>([]);
   const [workItems, setWorkItems] = useState<OperatorWorkItem[]>([]);
-  const [currentSession, setCurrentSession] = useState<OperatorSession | null>(null);
+  const [currentSession, setCurrentSession] = useState<OperatorSession | null>(
+    null,
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   const [operatorData, setOperatorData] = useState({
-    id: '',
-    name: ''
+    id: "",
+    name: "",
   });
 
   // Get user from session
@@ -59,40 +68,54 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     const session = authService.getCurrentUser();
     if (session) {
       setOperatorData({
-        id: session.id || session.username || '',
-        name: session.name || session.username || ''
+        id: session.id || session.username || "",
+        name: session.name || session.username || "",
       });
     }
   }, []);
-  
-  const [selectedMachine, setSelectedMachine] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [priorityFilter, setPriorityFilter] = useState('all');
+
+  const [selectedMachine, setSelectedMachine] = useState<string>("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("all");
   const [showChat, setShowChat] = useState(false);
-  const [newMessage, setNewMessage] = useState('');
-  const [completionQuantity, setCompletionQuantity] = useState<{ [key: string]: number }>({});
+  const [newMessage, setNewMessage] = useState("");
+  const [completionQuantity, setCompletionQuantity] = useState<{
+    [key: string]: number;
+  }>({});
   const [showPrintPreview, setShowPrintPreview] = useState(false);
   const [currentLabel, setCurrentLabel] = useState<PrintLabel | null>(null);
 
   // Maintenance request state
   const [showMaintenanceRequest, setShowMaintenanceRequest] = useState(false);
   const [maintenanceForm, setMaintenanceForm] = useState({
-    urgencyLevel: 'medium' as 'low' | 'medium' | 'high' | 'critical',
-    category: 'mechanical' as 'mechanical' | 'electrical' | 'software' | 'preventive' | 'emergency' | 'other',
-    title: '',
-    description: '',
-    reportedIssues: [] as string[]
+    urgencyLevel: "medium" as "low" | "medium" | "high" | "critical",
+    category: "mechanical" as
+      | "mechanical"
+      | "electrical"
+      | "software"
+      | "preventive"
+      | "emergency"
+      | "other",
+    title: "",
+    description: "",
+    reportedIssues: [] as string[],
   });
 
   // Message notifications state
-  const [messageNotifications, setMessageNotifications] = useState<(ChatMessage & { id: string })[]>([]);
+  const [messageNotifications, setMessageNotifications] = useState<
+    (ChatMessage & { id: string })[]
+  >([]);
   const [lastMessageCount, setLastMessageCount] = useState(0);
 
   // Printer setup state
   const [showPrinterSetup, setShowPrinterSetup] = useState(false);
-  const [printerStatus, setPrinterStatus] = useState<{ connected: boolean; name?: string; message: string }>({
+  const [printerStatus, setPrinterStatus] = useState<{
+    connected: boolean;
+    name?: string;
+    message: string;
+  }>({
     connected: false,
-    message: 'Verificando...'
+    message: "Verificando...",
   });
 
   // Material shipping state
@@ -123,7 +146,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       const machinesData = await productionService.getMachines();
       setMachines(machinesData);
     } catch (error) {
-      console.error('Erro ao carregar máquinas:', error);
+      console.error("Erro ao carregar máquinas:", error);
     } finally {
       setLoading(false);
     }
@@ -133,35 +156,49 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     if (!selectedMachine) return;
 
     try {
-      console.log('🔍 [OperatorPortal] Carregando work items para máquina:', selectedMachine);
-      const items = await productionService.getOperatorWorkItems(selectedMachine);
-      console.log('📋 [OperatorPortal] Work items recebidos:', items.length, 'itens');
-      items.forEach(item => {
-        console.log(`  - ${item.orderNumber}: Restante ${item.remainingQuantity}/${item.quantity}`);
+      console.log(
+        "🔍 [OperatorPortal] Carregando work items para máquina:",
+        selectedMachine,
+      );
+      const items =
+        await productionService.getOperatorWorkItems(selectedMachine);
+      console.log(
+        "📋 [OperatorPortal] Work items recebidos:",
+        items.length,
+        "itens",
+      );
+      items.forEach((item) => {
+        console.log(
+          `  - ${item.orderNumber}: Restante ${item.remainingQuantity}/${item.quantity}`,
+        );
       });
       setWorkItems(items);
-      
+
       // Carregar mensagens para a máquina
-      const machineMessages = await productionService.getChatMessages(selectedMachine);
+      const machineMessages =
+        await productionService.getChatMessages(selectedMachine);
       setMessages(machineMessages);
 
       // Auto-refresh das mensagens a cada 3 segundos
       const chatInterval = setInterval(async () => {
-        const updatedMessages = await productionService.getChatMessages(selectedMachine);
+        const updatedMessages =
+          await productionService.getChatMessages(selectedMachine);
 
         // Check for new messages for notifications
-        const newBackendMessages = updatedMessages.filter(msg =>
-          msg.from === 'backend' && !msg.isRead &&
-          !messages.find(oldMsg => oldMsg.id === msg.id)
+        const newBackendMessages = updatedMessages.filter(
+          (msg) =>
+            msg.from === "backend" &&
+            !msg.isRead &&
+            !messages.find((oldMsg) => oldMsg.id === msg.id),
         );
 
         // Show notifications for new messages
         if (newBackendMessages.length > 0) {
-          const notifications = newBackendMessages.map(msg => ({
+          const notifications = newBackendMessages.map((msg) => ({
             ...msg,
-            id: `notification_${msg.id}_${Date.now()}`
+            id: `notification_${msg.id}_${Date.now()}`,
           }));
-          setMessageNotifications(prev => [...prev, ...notifications]);
+          setMessageNotifications((prev) => [...prev, ...notifications]);
         }
 
         // Mark new messages as read
@@ -174,13 +211,13 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
       return () => clearInterval(chatInterval);
     } catch (error) {
-      console.error('Erro ao carregar itens de trabalho:', error);
+      console.error("Erro ao carregar itens de trabalho:", error);
     }
   };
 
   const startSession = async () => {
     if (!operatorData.id || !operatorData.name || !selectedMachine) {
-      alert('Preencha seus dados e selecione uma máquina');
+      alert("Preencha seus dados e selecione uma máquina");
       return;
     }
 
@@ -188,14 +225,14 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       const session = await productionService.startOperatorSession(
         operatorData.id,
         operatorData.name,
-        selectedMachine
+        selectedMachine,
       );
       setCurrentSession(session);
       await loadData(); // Recarregar para atualizar status das máquinas
       await loadWorkItems();
     } catch (error) {
-      console.error('Erro ao iniciar sessão:', error);
-      alert('Erro ao iniciar sessão');
+      console.error("Erro ao iniciar sessão:", error);
+      alert("Erro ao iniciar sessão");
     }
   };
 
@@ -205,25 +242,26 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     try {
       await productionService.endOperatorSession(currentSession.id);
       setCurrentSession(null);
-      setSelectedMachine('');
+      setSelectedMachine("");
       await loadData();
     } catch (error) {
-      console.error('Erro ao encerrar sessão:', error);
-      alert('Erro ao encerrar sessão');
+      console.error("Erro ao encerrar sessão:", error);
+      alert("Erro ao encerrar sessão");
     }
   };
 
   const completeWorkItem = async (workItem: OperatorWorkItem) => {
-    const quantity = completionQuantity[workItem.id] || workItem.remainingQuantity;
+    const quantity =
+      completionQuantity[workItem.id] || workItem.remainingQuantity;
 
-    console.log('🔵 [OperatorPortal] Iniciando conclusão:', {
+    console.log("🔵 [OperatorPortal] Iniciando conclusão:", {
       workItemId: workItem.id,
       quantity,
-      remaining: workItem.remainingQuantity
+      remaining: workItem.remainingQuantity,
     });
 
     if (quantity <= 0 || quantity > workItem.remainingQuantity) {
-      alert('Quantidade inválida');
+      alert("Quantidade inválida");
       return;
     }
 
@@ -231,36 +269,43 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
       await productionService.completeWorkItem(
         workItem.id,
         quantity,
-        `Concluído por ${operatorData.name} na máquina ${workItem.machineName}`
+        `Concluído por ${operatorData.name} na máquina ${workItem.machineName}`,
       );
 
-      console.log('✅ [OperatorPortal] Item completado no service, recarregando lista...');
+      console.log(
+        "✅ [OperatorPortal] Item completado no service, recarregando lista...",
+      );
 
       // Resetar quantidade de conclusão
-      setCompletionQuantity(prev => ({ ...prev, [workItem.id]: 0 }));
+      setCompletionQuantity((prev) => ({ ...prev, [workItem.id]: 0 }));
 
       // Forçar espera para garantir que localStorage foi atualizado
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
       // Recarregar lista de trabalho
       await loadWorkItems();
 
-      console.log('🔄 [OperatorPortal] Lista de trabalho recarregada');
+      console.log("🔄 [OperatorPortal] Lista de trabalho recarregada");
 
       // Offer to print label
-      const shouldPrint = confirm(`${quantity} unidades concluídas! Deseja imprimir etiqueta?`);
+      const shouldPrint = confirm(
+        `${quantity} unidades concluídas! Deseja imprimir etiqueta?`,
+      );
       if (shouldPrint) {
         await createPrintLabel(workItem, quantity);
       }
     } catch (error) {
-      console.error('❌ [OperatorPortal] Erro ao concluir item:', error);
-      alert('Erro ao concluir item');
+      console.error("❌ [OperatorPortal] Erro ao concluir item:", error);
+      alert("Erro ao concluir item");
     }
   };
 
-  const createPrintLabel = async (workItem: OperatorWorkItem, quantity: number) => {
+  const createPrintLabel = async (
+    workItem: OperatorWorkItem,
+    quantity: number,
+  ) => {
     try {
-      const machine = machines.find(m => m.id === selectedMachine);
+      const machine = machines.find((m) => m.id === selectedMachine);
 
       const labelData = {
         orderId: workItem.orderId,
@@ -273,17 +318,17 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
         dimensions: workItem.outputDimensions,
         operatorName: operatorData.name,
         machineId: selectedMachine,
-        machineName: machine?.name || 'Máquina não identificada',
+        machineName: machine?.name || "Máquina não identificada",
         completionDate: new Date().toISOString(),
-        printedBy: operatorData.name
+        printedBy: operatorData.name,
       };
 
       const label = await labelService.createLabel(labelData);
       setCurrentLabel(label);
       setShowPrintPreview(true);
     } catch (error) {
-      console.error('Erro ao criar etiqueta:', error);
-      alert('Erro ao criar etiqueta');
+      console.error("Erro ao criar etiqueta:", error);
+      alert("Erro ao criar etiqueta");
     }
   };
 
@@ -294,7 +339,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     } catch (error) {
       setPrinterStatus({
         connected: false,
-        message: 'Erro ao verificar impressora'
+        message: "Erro ao verificar impressora",
       });
     }
   };
@@ -305,17 +350,17 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     try {
       const result = await labelService.printLabel(currentLabel, true); // Try direct printing
       if (result.success) {
-        alert(result.message || 'Etiqueta enviada para impressão!');
+        alert(result.message || "Etiqueta enviada para impressão!");
         setShowPrintPreview(false);
         setCurrentLabel(null);
         // Refresh printer status
         await checkPrinterStatus();
       } else {
-        alert(`Erro ao imprimir: ${result.message || 'Erro desconhecido'}`);
+        alert(`Erro ao imprimir: ${result.message || "Erro desconhecido"}`);
       }
     } catch (error) {
-      console.error('Erro ao imprimir:', error);
-      alert('Erro ao imprimir etiqueta');
+      console.error("Erro ao imprimir:", error);
+      alert("Erro ao imprimir etiqueta");
     }
   };
 
@@ -324,69 +369,78 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
     try {
       await productionService.sendChatMessage({
-        from: 'operator',
-        to: 'backend',
+        from: "operator",
+        to: "backend",
         machineId: currentSession.machineId,
         operatorId: currentSession.operatorId,
-        message: newMessage
+        message: newMessage,
       });
 
-      setNewMessage('');
+      setNewMessage("");
 
       // Recarregar mensagens
-      const machineMessages = await productionService.getChatMessages(currentSession.machineId);
+      const machineMessages = await productionService.getChatMessages(
+        currentSession.machineId,
+      );
       setMessages(machineMessages);
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      console.error("Erro ao enviar mensagem:", error);
     }
   };
 
   const submitMaintenanceRequest = async () => {
-    if (!currentSession || !maintenanceForm.title.trim() || !maintenanceForm.description.trim()) {
-      alert('Preencha o título e descrição da solicitação');
+    if (
+      !currentSession ||
+      !maintenanceForm.title.trim() ||
+      !maintenanceForm.description.trim()
+    ) {
+      alert("Preencha o título e descrição da solicitação");
       return;
     }
 
     try {
-      const machine = machines.find(m => m.id === currentSession.machineId);
+      const machine = machines.find((m) => m.id === currentSession.machineId);
 
       await maintenanceService.createMaintenanceRequest({
         machineId: currentSession.machineId,
-        machineName: machine?.name || 'Máquina não identificada',
+        machineName: machine?.name || "Máquina não identificada",
         operatorId: currentSession.operatorId,
         operatorName: currentSession.operatorName,
         urgencyLevel: maintenanceForm.urgencyLevel,
         category: maintenanceForm.category,
         title: maintenanceForm.title,
         description: maintenanceForm.description,
-        reportedIssues: maintenanceForm.reportedIssues
+        reportedIssues: maintenanceForm.reportedIssues,
       });
 
-      alert(`Solicitação de manutenção criada com sucesso!${maintenanceForm.urgencyLevel === 'critical' ? '\n\nAVISO: Devido à urgência crítica, a máquina foi automaticamente marcada como em manutenção.' : ''}`);
+      alert(
+        `Solicitação de manutenção criada com sucesso!${maintenanceForm.urgencyLevel === "critical" ? "\n\nAVISO: Devido à urgência crítica, a máquina foi automaticamente marcada como em manutenção." : ""}`,
+      );
 
       // Reset form
       setMaintenanceForm({
-        urgencyLevel: 'medium',
-        category: 'mechanical',
-        title: '',
-        description: '',
-        reportedIssues: []
+        urgencyLevel: "medium",
+        category: "mechanical",
+        title: "",
+        description: "",
+        reportedIssues: [],
       });
       setShowMaintenanceRequest(false);
 
       // If critical, immediately update machine status display
-      if (maintenanceForm.urgencyLevel === 'critical') {
+      if (maintenanceForm.urgencyLevel === "critical") {
         await loadData(); // Refresh machine status
       }
-
     } catch (error) {
-      console.error('Erro ao criar solicitação de manutenção:', error);
-      alert('Erro ao criar solicitação de manutenção');
+      console.error("Erro ao criar solicitação de manutenção:", error);
+      alert("Erro ao criar solicitação de manutenção");
     }
   };
 
   const handleDismissNotification = (notificationId: string) => {
-    setMessageNotifications(prev => prev.filter(n => n.id !== notificationId));
+    setMessageNotifications((prev) =>
+      prev.filter((n) => n.id !== notificationId),
+    );
   };
 
   const handleViewChat = () => {
@@ -394,24 +448,28 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
     setMessageNotifications([]); // Clear notifications when viewing chat
   };
 
-  const filteredWorkItems = workItems.filter(item => {
-    const matchesSearch = item.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.foamType.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesPriority = priorityFilter === 'all' || 
-                           (priorityFilter === 'high' && item.priority >= 7) ||
-                           (priorityFilter === 'medium' && item.priority >= 4 && item.priority < 7) ||
-                           (priorityFilter === 'low' && item.priority < 4);
-    
+  const filteredWorkItems = workItems.filter((item) => {
+    const matchesSearch =
+      item.orderNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.foamType.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesPriority =
+      priorityFilter === "all" ||
+      (priorityFilter === "high" && item.priority >= 7) ||
+      (priorityFilter === "medium" &&
+        item.priority >= 4 &&
+        item.priority < 7) ||
+      (priorityFilter === "low" && item.priority < 4);
+
     return matchesSearch && matchesPriority;
   });
 
   const priorityColor = (priority: number) => {
-    if (priority >= 8) return 'text-red-600 bg-red-50';
-    if (priority >= 6) return 'text-orange-600 bg-orange-50';
-    if (priority >= 4) return 'text-yellow-600 bg-yellow-50';
-    return 'text-green-600 bg-green-50';
+    if (priority >= 8) return "text-red-600 bg-red-50";
+    if (priority >= 6) return "text-orange-600 bg-orange-50";
+    if (priority >= 4) return "text-yellow-600 bg-yellow-50";
+    return "text-green-600 bg-green-50";
   };
 
   // Show material shipping if requested
@@ -432,8 +490,12 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Portal do Operador</h1>
-              <p className="text-muted-foreground">Sistema de produção - Corte de espuma</p>
+              <h1 className="text-3xl font-bold text-foreground">
+                Portal do Operador
+              </h1>
+              <p className="text-muted-foreground">
+                Sistema de produção - Corte de espuma
+              </p>
             </div>
             <div className="flex gap-2">
               {onClose && (
@@ -445,7 +507,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                 </button>
               )}
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate("/")}
                 className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
                 title="Voltar ao Escritório"
               >
@@ -460,25 +522,36 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
               <User className="h-5 w-5" />
               Identificação do Operador
             </h2>
-            
+
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-medium mb-2">ID do Operador</label>
+                <label className="block text-sm font-medium mb-2">
+                  ID do Operador
+                </label>
                 <input
                   type="text"
                   value={operatorData.id}
-                  onChange={(e) => setOperatorData(prev => ({ ...prev, id: e.target.value }))}
+                  onChange={(e) =>
+                    setOperatorData((prev) => ({ ...prev, id: e.target.value }))
+                  }
                   className="w-full px-3 py-2 border rounded-lg bg-background"
                   placeholder="Ex: OP001"
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium mb-2">Nome Completo</label>
+                <label className="block text-sm font-medium mb-2">
+                  Nome Completo
+                </label>
                 <input
                   type="text"
                   value={operatorData.name}
-                  onChange={(e) => setOperatorData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setOperatorData((prev) => ({
+                      ...prev,
+                      name: e.target.value,
+                    }))
+                  }
                   className="w-full px-3 py-2 border rounded-lg bg-background"
                   placeholder="Seu nome completo"
                 />
@@ -513,48 +586,62 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
             {loading ? (
               <div className="text-center py-8">
-                <div className="text-muted-foreground">Carregando máquinas...</div>
+                <div className="text-muted-foreground">
+                  Carregando máquinas...
+                </div>
               </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {machines.map(machine => (
+                {machines.map((machine) => (
                   <div
                     key={machine.id}
                     className={cn(
                       "border rounded-lg p-4 cursor-pointer transition-all",
-                      selectedMachine === machine.id 
-                        ? "border-primary bg-primary/5" 
+                      selectedMachine === machine.id
+                        ? "border-primary bg-primary/5"
                         : "hover:border-muted-foreground/50",
-                      machine.status === 'offline' || machine.status === 'maintenance'
+                      machine.status === "offline" ||
+                        machine.status === "maintenance"
                         ? "opacity-50 cursor-not-allowed"
-                        : ""
+                        : "",
                     )}
                     onClick={() => {
-                      if (machine.status === 'available' || machine.status === 'busy') {
+                      if (
+                        machine.status === "available" ||
+                        machine.status === "busy"
+                      ) {
                         setSelectedMachine(machine.id);
                       }
                     }}
                   >
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="font-semibold">{machine.name}</h3>
-                      <div className={cn(
-                        "px-2 py-1 rounded-full text-xs font-medium",
-                        machine.status === 'available' && "bg-green-100 text-green-800",
-                        machine.status === 'busy' && "bg-yellow-100 text-yellow-800",
-                        machine.status === 'maintenance' && "bg-red-100 text-red-800",
-                        machine.status === 'offline' && "bg-gray-100 text-gray-800"
-                      )}>
-                        {machine.status === 'available' && 'Disponível'}
-                        {machine.status === 'busy' && 'Ocupada'}
-                        {machine.status === 'maintenance' && 'Manutenção'}
-                        {machine.status === 'offline' && 'Offline'}
+                      <div
+                        className={cn(
+                          "px-2 py-1 rounded-full text-xs font-medium",
+                          machine.status === "available" &&
+                            "bg-green-100 text-green-800",
+                          machine.status === "busy" &&
+                            "bg-yellow-100 text-yellow-800",
+                          machine.status === "maintenance" &&
+                            "bg-red-100 text-red-800",
+                          machine.status === "offline" &&
+                            "bg-gray-100 text-gray-800",
+                        )}
+                      >
+                        {machine.status === "available" && "Disponível"}
+                        {machine.status === "busy" && "Ocupada"}
+                        {machine.status === "maintenance" && "Manutenção"}
+                        {machine.status === "offline" && "Offline"}
                       </div>
                     </div>
-                    
+
                     <div className="text-sm text-muted-foreground space-y-1">
                       <div>Tipo: {machine.type}</div>
                       <div>
-                        Max: {machine.maxDimensions.length/1000}×{machine.maxDimensions.width/1000}×{machine.maxDimensions.height/1000}m
+                        Max: {machine.maxDimensions.length / 1000}×
+                        {machine.maxDimensions.width / 1000}×
+                        {machine.maxDimensions.height / 1000}m
                       </div>
                       <div>Precisão: {machine.cuttingPrecision}mm</div>
                       {machine.currentOperator && (
@@ -572,12 +659,14 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
               <div className="mt-6 pt-6 border-t">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-muted-foreground">Máquina selecionada:</p>
+                    <p className="text-sm text-muted-foreground">
+                      Máquina selecionada:
+                    </p>
                     <p className="font-semibold">
-                      {machines.find(m => m.id === selectedMachine)?.name}
+                      {machines.find((m) => m.id === selectedMachine)?.name}
                     </p>
                   </div>
-                  
+
                   <button
                     onClick={startSession}
                     disabled={!operatorData.id || !operatorData.name}
@@ -603,7 +692,11 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
           <div className="flex items-center gap-4">
             <BackToOperatorButton
               onClick={() => {
-                if (confirm('Voltar ao portal principal? A sessão continuará ativa.')) {
+                if (
+                  confirm(
+                    "Voltar ao portal principal? A sessão continuará ativa.",
+                  )
+                ) {
                   setCurrentSession(null);
                 }
               }}
@@ -614,14 +707,15 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                 Lista de Trabalho - {currentSession.machineName}
               </h1>
               <p className="text-muted-foreground">
-                Operador: {currentSession.operatorName} | Sessão iniciada: {new Date(currentSession.startTime).toLocaleTimeString()}
+                Operador: {currentSession.operatorName} | Sessão iniciada:{" "}
+                {new Date(currentSession.startTime).toLocaleTimeString()}
               </p>
             </div>
           </div>
-          
+
           <div className="flex gap-2">
             <button
-              onClick={() => navigate('/')}
+              onClick={() => navigate("/")}
               className="px-3 py-2 border rounded-lg hover:bg-muted"
               title="Voltar ao Escritório"
             >
@@ -634,12 +728,14 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                 "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
                 printerStatus.connected
                   ? "bg-green-100 text-green-700 hover:bg-green-200"
-                  : "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                  : "bg-orange-100 text-orange-700 hover:bg-orange-200",
               )}
               title={printerStatus.message}
             >
               <Printer className="h-4 w-4" />
-              {printerStatus.connected ? printerStatus.name : 'Configurar Impressora'}
+              {printerStatus.connected
+                ? printerStatus.name
+                : "Configurar Impressora"}
             </button>
 
             <button
@@ -656,9 +752,13 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
             >
               <MessageCircle className="h-4 w-4" />
               Chat
-              {messages.filter(m => !m.isRead && m.from === 'backend').length > 0 && (
+              {messages.filter((m) => !m.isRead && m.from === "backend")
+                .length > 0 && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {messages.filter(m => !m.isRead && m.from === 'backend').length}
+                  {
+                    messages.filter((m) => !m.isRead && m.from === "backend")
+                      .length
+                  }
                 </span>
               )}
             </button>
@@ -688,7 +788,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                   className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background"
                 />
               </div>
-              
+
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
@@ -710,35 +810,43 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                     Nenhum trabalho pendente
                   </h3>
                   <p className="text-muted-foreground">
-                    {searchTerm || priorityFilter !== 'all' 
-                      ? 'Nenhum item encontrado com os filtros aplicados'
-                      : 'Não há trabalhos pendentes para esta máquina'
-                    }
+                    {searchTerm || priorityFilter !== "all"
+                      ? "Nenhum item encontrado com os filtros aplicados"
+                      : "Não há trabalhos pendentes para esta máquina"}
                   </p>
                 </div>
               ) : (
-                filteredWorkItems.map(item => (
+                filteredWorkItems.map((item) => (
                   <div key={item.id} className="bg-card border rounded-lg p-4">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-lg">{item.orderNumber}</h3>
-                          <span className={cn(
-                            "px-2 py-1 rounded-full text-xs font-medium",
-                            priorityColor(item.priority)
-                          )}>
+                          <h3 className="font-semibold text-lg">
+                            {item.orderNumber}
+                          </h3>
+                          <span
+                            className={cn(
+                              "px-2 py-1 rounded-full text-xs font-medium",
+                              priorityColor(item.priority),
+                            )}
+                          >
                             Prioridade {item.priority}
                           </span>
                         </div>
-                        
+
                         <div className="text-sm text-muted-foreground space-y-1">
                           <div>Cliente: {item.customer}</div>
                           <div>Tipo de espuma: {item.foamType}</div>
-                          <div>Entrega: {new Date(item.expectedDeliveryDate).toLocaleDateString()}</div>
+                          <div>
+                            Entrega:{" "}
+                            {new Date(
+                              item.expectedDeliveryDate,
+                            ).toLocaleDateString()}
+                          </div>
                           <div>Tempo estimado: {item.estimatedTime} min</div>
                         </div>
                       </div>
-                      
+
                       {new Date(item.expectedDeliveryDate) < new Date() && (
                         <AlertTriangle className="h-5 w-5 text-red-500" />
                       )}
@@ -746,21 +854,28 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
                     <div className="grid gap-4 md:grid-cols-2 mb-4">
                       <div>
-                        <div className="text-sm font-medium mb-1">Dimensões de Entrada (mm)</div>
+                        <div className="text-sm font-medium mb-1">
+                          Dimensões de Entrada (mm)
+                        </div>
                         <div className="text-sm text-muted-foreground">
-                          {item.inputDimensions.length} × {item.inputDimensions.width} × {item.inputDimensions.height}
+                          {item.inputDimensions.length} ×{" "}
+                          {item.inputDimensions.width} ×{" "}
+                          {item.inputDimensions.height}
                         </div>
                       </div>
 
                       <div>
                         <div className="text-sm font-medium mb-1">
-                          {item.machineType === 'CAROUSEL' || item.machineType === 'PRE_CNC' || item.machineType === 'CNC'
-                            ? 'Medidas Finais (mm)'
-                            : 'Dimensões de Saída (mm)'
-                          }
+                          {item.machineType === "CAROUSEL" ||
+                          item.machineType === "PRE_CNC" ||
+                          item.machineType === "CNC"
+                            ? "Medidas Finais (mm)"
+                            : "Dimensões de Saída (mm)"}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {item.outputDimensions.length} × {item.outputDimensions.width} × {item.outputDimensions.height}
+                          {item.outputDimensions.length} ×{" "}
+                          {item.outputDimensions.width} ×{" "}
+                          {item.outputDimensions.height}
                         </div>
                       </div>
                     </div>
@@ -768,8 +883,12 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                     {/* Observações */}
                     {item.observations && (
                       <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                        <div className="text-sm font-medium text-yellow-800 mb-1">📋 Observações:</div>
-                        <div className="text-sm text-yellow-700">{item.observations}</div>
+                        <div className="text-sm font-medium text-yellow-800 mb-1">
+                          📋 Observações:
+                        </div>
+                        <div className="text-sm text-yellow-700">
+                          {item.observations}
+                        </div>
                       </div>
                     )}
 
@@ -777,38 +896,47 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                       <div className="flex items-center gap-4">
                         <div className="text-sm">
                           <span className="font-medium">
-                            {item.machineType === 'CAROUSEL' || item.machineType === 'PRE_CNC'
-                              ? 'Coxins Restantes: '
-                              : 'Restante: '
-                            }
+                            {item.machineType === "CAROUSEL" ||
+                            item.machineType === "PRE_CNC"
+                              ? "Coxins Restantes: "
+                              : "Restante: "}
                           </span>
-                          <span className="text-lg font-bold text-primary">{item.remainingQuantity}</span>
-                          <span className="text-muted-foreground"> / {item.quantity}</span>
+                          <span className="text-lg font-bold text-primary">
+                            {item.remainingQuantity}
+                          </span>
+                          <span className="text-muted-foreground">
+                            {" "}
+                            / {item.quantity}
+                          </span>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground">Concluir:</span>
+                          <span className="text-sm text-muted-foreground">
+                            Concluir:
+                          </span>
                           <input
                             type="number"
                             min="1"
                             max={item.remainingQuantity}
-                            value={completionQuantity[item.id] || ''}
-                            onChange={(e) => setCompletionQuantity(prev => ({
-                              ...prev,
-                              [item.id]: Number(e.target.value)
-                            }))}
+                            value={completionQuantity[item.id] || ""}
+                            onChange={(e) =>
+                              setCompletionQuantity((prev) => ({
+                                ...prev,
+                                [item.id]: Number(e.target.value),
+                              }))
+                            }
                             className="w-20 px-2 py-1 border rounded text-sm"
                             placeholder={item.remainingQuantity.toString()}
                           />
                           <span className="text-sm text-muted-foreground">
-                            {item.machineType === 'CAROUSEL' || item.machineType === 'PRE_CNC'
-                              ? 'coxins'
-                              : 'unidades'
-                            }
+                            {item.machineType === "CAROUSEL" ||
+                            item.machineType === "PRE_CNC"
+                              ? "coxins"
+                              : "unidades"}
                           </span>
                         </div>
                       </div>
-                      
+
                       <button
                         onClick={() => completeWorkItem(item)}
                         className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
@@ -831,24 +959,32 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                 <Target className="h-4 w-4" />
                 Resumo
               </h3>
-              
+
               <div className="space-y-3 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Total de itens:</span>
                   <span className="font-medium">{workItems.length}</span>
                 </div>
-                
+
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Alta prioridade:</span>
+                  <span className="text-muted-foreground">
+                    Alta prioridade:
+                  </span>
                   <span className="font-medium text-red-600">
-                    {workItems.filter(item => item.priority >= 7).length}
+                    {workItems.filter((item) => item.priority >= 7).length}
                   </span>
                 </div>
-                
+
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Tempo estimado:</span>
                   <span className="font-medium">
-                    {Math.round(workItems.reduce((total, item) => total + item.estimatedTime, 0) / 60)}h
+                    {Math.round(
+                      workItems.reduce(
+                        (total, item) => total + item.estimatedTime,
+                        0,
+                      ) / 60,
+                    )}
+                    h
                   </span>
                 </div>
               </div>
@@ -861,38 +997,38 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                   <MessageCircle className="h-4 w-4" />
                   Chat com Escritório
                 </h3>
-                
+
                 <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
                   {messages.length === 0 ? (
                     <div className="text-sm text-muted-foreground text-center py-4">
                       Nenhuma mensagem
                     </div>
                   ) : (
-                    messages.map(message => (
+                    messages.map((message) => (
                       <div
                         key={message.id}
                         className={cn(
                           "p-2 rounded text-sm",
-                          message.from === 'operator' 
-                            ? "bg-primary text-primary-foreground ml-4" 
-                            : "bg-muted text-foreground mr-4"
+                          message.from === "operator"
+                            ? "bg-primary text-primary-foreground ml-4"
+                            : "bg-muted text-foreground mr-4",
                         )}
                       >
                         <div className="font-medium text-xs mb-1">
-                          {message.from === 'operator' ? 'Você' : 'Escritório'}
+                          {message.from === "operator" ? "Você" : "Escritório"}
                         </div>
                         {message.message}
                       </div>
                     ))
                   )}
                 </div>
-                
+
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                    onKeyPress={(e) => e.key === "Enter" && sendMessage()}
                     className="flex-1 px-2 py-1 border rounded text-sm"
                     placeholder="Digite sua mensagem..."
                   />
@@ -915,7 +1051,9 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
           <div className="bg-background rounded-lg max-w-lg w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-semibold">Pré-visualização da Etiqueta</h3>
+                <h3 className="text-xl font-semibold">
+                  Pré-visualização da Etiqueta
+                </h3>
                 <button
                   onClick={() => {
                     setShowPrintPreview(false);
@@ -929,36 +1067,52 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
               {/* Label Preview */}
               <div className="mb-6 p-4 border-2 border-dashed border-muted rounded-lg">
-                <div dangerouslySetInnerHTML={{
-                  __html: labelService.generatePreviewHTML(currentLabel)
-                }} />
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: labelService.generatePreviewHTML(currentLabel),
+                  }}
+                />
               </div>
 
               {/* Label Info */}
               <div className="space-y-3 text-sm mb-6">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Código de Barras:</span>
-                  <span className="font-mono font-medium">{currentLabel.barcodeId}</span>
+                  <span className="text-muted-foreground">
+                    Código de Barras:
+                  </span>
+                  <span className="font-mono font-medium">
+                    {currentLabel.barcodeId}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Cliente:</span>
-                  <span className="font-medium">{currentLabel.customerName}</span>
+                  <span className="font-medium">
+                    {currentLabel.customerName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">OP:</span>
-                  <span className="font-medium">{currentLabel.orderNumber}</span>
+                  <span className="font-medium">
+                    {currentLabel.orderNumber}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Quantidade:</span>
-                  <span className="font-medium">{currentLabel.quantity} unidades</span>
+                  <span className="font-medium">
+                    {currentLabel.quantity} unidades
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Máquina:</span>
-                  <span className="font-medium">{currentLabel.machineName}</span>
+                  <span className="font-medium">
+                    {currentLabel.machineName}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Operador:</span>
-                  <span className="font-medium">{currentLabel.operatorName}</span>
+                  <span className="font-medium">
+                    {currentLabel.operatorName}
+                  </span>
                 </div>
               </div>
 
@@ -968,7 +1122,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                   onClick={() => {
                     const zplCode = labelService.generateZPLCode(currentLabel);
                     navigator.clipboard.writeText(zplCode);
-                    alert('Código ZPL copiado para área de transferência');
+                    alert("Código ZPL copiado para área de transferência");
                   }}
                   className="px-4 py-2 text-sm font-medium border rounded-lg hover:bg-muted flex items-center gap-2"
                 >
@@ -1018,37 +1172,54 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
               <div className="space-y-4">
                 {/* Urgency Level */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Nível de Urgência</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Nível de Urgência
+                  </label>
                   <select
                     value={maintenanceForm.urgencyLevel}
-                    onChange={(e) => setMaintenanceForm(prev => ({
-                      ...prev,
-                      urgencyLevel: e.target.value as any
-                    }))}
+                    onChange={(e) =>
+                      setMaintenanceForm((prev) => ({
+                        ...prev,
+                        urgencyLevel: e.target.value as any,
+                      }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                   >
-                    <option value="low">🟢 Baixa - Manutenção preventiva</option>
-                    <option value="medium">🟡 Média - Problema não crítico</option>
-                    <option value="high">🟠 Alta - Problema afeta produção</option>
-                    <option value="critical">🔴 Crítica - Máquina parada</option>
+                    <option value="low">
+                      🟢 Baixa - Manutenção preventiva
+                    </option>
+                    <option value="medium">
+                      🟡 Média - Problema não crítico
+                    </option>
+                    <option value="high">
+                      🟠 Alta - Problema afeta produção
+                    </option>
+                    <option value="critical">
+                      🔴 Crítica - Máquina parada
+                    </option>
                   </select>
-                  {maintenanceForm.urgencyLevel === 'critical' && (
+                  {maintenanceForm.urgencyLevel === "critical" && (
                     <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
                       <AlertCircle className="h-4 w-4" />
-                      ATENÇÃO: A máquina será automaticamente marcada como parada
+                      ATENÇÃO: A máquina será automaticamente marcada como
+                      parada
                     </p>
                   )}
                 </div>
 
                 {/* Category */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Categoria</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Categoria
+                  </label>
                   <select
                     value={maintenanceForm.category}
-                    onChange={(e) => setMaintenanceForm(prev => ({
-                      ...prev,
-                      category: e.target.value as any
-                    }))}
+                    onChange={(e) =>
+                      setMaintenanceForm((prev) => ({
+                        ...prev,
+                        category: e.target.value as any,
+                      }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                   >
                     <option value="mechanical">🔧 Mecânico</option>
@@ -1062,14 +1233,18 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Título da Solicitação</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Título da Solicitação
+                  </label>
                   <input
                     type="text"
                     value={maintenanceForm.title}
-                    onChange={(e) => setMaintenanceForm(prev => ({
-                      ...prev,
-                      title: e.target.value
-                    }))}
+                    onChange={(e) =>
+                      setMaintenanceForm((prev) => ({
+                        ...prev,
+                        title: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background"
                     placeholder="Ex: Ruído estranho no motor principal"
                   />
@@ -1077,13 +1252,17 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-sm font-medium mb-2">Descrição Detalhada</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Descrição Detalhada
+                  </label>
                   <textarea
                     value={maintenanceForm.description}
-                    onChange={(e) => setMaintenanceForm(prev => ({
-                      ...prev,
-                      description: e.target.value
-                    }))}
+                    onChange={(e) =>
+                      setMaintenanceForm((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
                     className="w-full px-3 py-2 border rounded-lg bg-background h-24"
                     placeholder="Descreva o problema em detalhes: o que aconteceu, quando começou, sintomas observados, etc."
                   />
@@ -1093,9 +1272,15 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                 <div className="p-3 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2">Informações da Máquina</h4>
                   <div className="text-sm space-y-1">
-                    <div>Máquina: {machines.find(m => m.id === currentSession?.machineId)?.name}</div>
+                    <div>
+                      Máquina:{" "}
+                      {
+                        machines.find((m) => m.id === currentSession?.machineId)
+                          ?.name
+                      }
+                    </div>
                     <div>Operador: {currentSession?.operatorName}</div>
-                    <div>Data/Hora: {new Date().toLocaleString('pt-BR')}</div>
+                    <div>Data/Hora: {new Date().toLocaleString("pt-BR")}</div>
                   </div>
                 </div>
               </div>
@@ -1110,7 +1295,10 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
                 </button>
                 <button
                   onClick={submitMaintenanceRequest}
-                  disabled={!maintenanceForm.title.trim() || !maintenanceForm.description.trim()}
+                  disabled={
+                    !maintenanceForm.title.trim() ||
+                    !maintenanceForm.description.trim()
+                  }
                   className="px-4 py-2 text-sm font-medium bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 >
                   <Wrench className="h-4 w-4" />
@@ -1127,7 +1315,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
         isOpen={showPrinterSetup}
         onClose={() => setShowPrinterSetup(false)}
         onPrinterConfigured={async (printerInfo) => {
-          console.log('Printer configured:', printerInfo);
+          console.log("Printer configured:", printerInfo);
           await checkPrinterStatus();
         }}
       />

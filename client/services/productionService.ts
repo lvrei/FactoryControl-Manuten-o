@@ -1018,8 +1018,13 @@ class ProductionService {
       const orders = await this.getProductionOrders();
       const workItems: OperatorWorkItem[] = [];
 
-      console.log('🔍 [getOperatorWorkItems] Analisando ordens para machineId:', machineId);
-      console.log(`📊 [getOperatorWorkItems] Total de ordens: ${orders.length}`);
+      console.log(
+        "🔍 [getOperatorWorkItems] Analisando ordens para machineId:",
+        machineId,
+      );
+      console.log(
+        `📊 [getOperatorWorkItems] Total de ordens: ${orders.length}`,
+      );
 
       for (const order of orders) {
         if (
@@ -1031,7 +1036,9 @@ class ProductionService {
 
         for (const line of order.lines || []) {
           if (line.status === "completed") {
-            console.log(`⏭️  [getOperatorWorkItems] Linha ${line.id} já completa, ignorando`);
+            console.log(
+              `⏭️  [getOperatorWorkItems] Linha ${line.id} já completa, ignorando`,
+            );
             continue;
           }
 
@@ -1039,7 +1046,9 @@ class ProductionService {
             const opId = `${order.id}-${line.id}-${operation.id}`;
 
             if (operation.status === "completed") {
-              console.log(`✅ [getOperatorWorkItems] Op ${opId} status=completed, ignorando`);
+              console.log(
+                `✅ [getOperatorWorkItems] Op ${opId} status=completed, ignorando`,
+              );
               continue;
             }
             if (machineId && operation.machineId !== machineId) continue;
@@ -1048,11 +1057,15 @@ class ProductionService {
             const remainingQty =
               operation.quantity - (operation.completedQuantity || 0);
 
-            console.log(`🔢 [getOperatorWorkItems] Op ${opId}: qty=${operation.quantity}, completed=${operation.completedQuantity || 0}, remaining=${remainingQty}, status=${operation.status}`);
+            console.log(
+              `🔢 [getOperatorWorkItems] Op ${opId}: qty=${operation.quantity}, completed=${operation.completedQuantity || 0}, remaining=${remainingQty}, status=${operation.status}`,
+            );
 
             // Skip if no work remaining (additional safety check)
             if (remainingQty <= 0) {
-              console.log(`⏭️  [getOperatorWorkItems] Op ${opId} sem trabalho restante (${remainingQty}), ignorando`);
+              console.log(
+                `⏭️  [getOperatorWorkItems] Op ${opId} sem trabalho restante (${remainingQty}), ignorando`,
+              );
               continue;
             }
 
@@ -1311,7 +1324,7 @@ class ProductionService {
         completedQuantity: operation.completedQuantity,
         targetQuantity: opTargetQty,
         status: operation.status,
-        remaining: opTargetQty - operation.completedQuantity
+        remaining: opTargetQty - operation.completedQuantity,
       });
 
       if (operatorNotes) {
@@ -1337,7 +1350,7 @@ class ProductionService {
       console.log(`📝 [completeWorkItem] Linha atualizada:`, {
         lineId: line.id,
         status: line.status,
-        allOpsCompleted
+        allOpsCompleted,
       });
 
       // Atualizar ordem
@@ -1355,7 +1368,9 @@ class ProductionService {
       console.log(`💾 [completeWorkItem] Salvando dados...`);
       console.log(`   Ordem ${orderId} status: ${order.status}`);
       console.log(`   Linha ${lineId} status: ${line.status}`);
-      console.log(`   Operação ${operationId} status: ${operation.status}, completed: ${operation.completedQuantity}/${opTargetQty}`);
+      console.log(
+        `   Operação ${operationId} status: ${operation.status}, completed: ${operation.completedQuantity}/${opTargetQty}`,
+      );
 
       // Salvar os dados atualizados
       // Primeiro, obter todos os dados do localStorage
@@ -1379,11 +1394,13 @@ class ProductionService {
         );
       } else {
         const verifyLine = verifyOrder.lines?.find((l) => l.id === lineId);
-        const verifyOp = verifyLine?.cuttingOperations?.find((op) => op.id === operationId);
+        const verifyOp = verifyLine?.cuttingOperations?.find(
+          (op) => op.id === operationId,
+        );
         console.log(`🔍 [completeWorkItem] Verificação pós-save:`, {
           opStatus: verifyOp?.status,
           opCompleted: verifyOp?.completedQuantity,
-          opTarget: verifyOp?.quantity
+          opTarget: verifyOp?.quantity,
         });
       }
 
