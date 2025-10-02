@@ -910,6 +910,34 @@ export default function NestingModalPolygon({
 
                 <div>
                   <label className="block text-sm font-medium mb-2">
+                    Máquina de Corte
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setSelectedMachine("CNC")}
+                      className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
+                        selectedMachine === "CNC"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      CNC
+                    </button>
+                    <button
+                      onClick={() => setSelectedMachine("Carousel")}
+                      className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
+                        selectedMachine === "Carousel"
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted"
+                      }`}
+                    >
+                      Carrossel
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
                     Margens Específicas
                   </label>
                   <div className="grid grid-cols-2 gap-2">
