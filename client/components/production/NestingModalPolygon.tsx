@@ -726,16 +726,38 @@ export default function NestingModalPolygon({
 
             {result && (
               <div className="p-2 border rounded bg-muted/30 text-sm space-y-1">
-                <div className="flex items-center gap-2">
-                  <Package className="h-4 w-4" /> Painéis necessários:{" "}
-                  <strong>{result.sheetsUsed}</strong>
-                </div>
-                <div>Utilização: {(result.utilization * 100).toFixed(1)}%</div>
-                {nestingMode === "polygon" && polygonResult && (
-                  <div>
-                    Formas colocadas:{" "}
-                    <strong>{polygonResult.placements.length}</strong>
-                  </div>
+                {nestingMode === "foam3d" && foam3dResult ? (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Cube className="h-4 w-4" /> Blocos necessários:{" "}
+                      <strong>{foam3dResult.totalBlocksNeeded}</strong>
+                    </div>
+                    <div>
+                      Peças a cortar: <strong>{foam3dResult.totalPartsPlaced}</strong>
+                    </div>
+                    <div>Aproveitamento: {(foam3dResult.utilization * 100).toFixed(1)}%</div>
+                    {foam3dResult.smallBlocks.length > 0 && (
+                      <div className="pt-1 border-t text-xs">
+                        Bloco CNC: {foam3dResult.smallBlocks[0].length}×
+                        {foam3dResult.smallBlocks[0].width}×
+                        {foam3dResult.smallBlocks[0].height}mm
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <Package className="h-4 w-4" /> Painéis necessários:{" "}
+                      <strong>{result.sheetsUsed}</strong>
+                    </div>
+                    <div>Utilização: {(result.utilization * 100).toFixed(1)}%</div>
+                    {nestingMode === "polygon" && polygonResult && (
+                      <div>
+                        Formas colocadas:{" "}
+                        <strong>{polygonResult.placements.length}</strong>
+                      </div>
+                    )}
+                  </>
                 )}
                 {inputMode === "manual" && manualShapes.length > 0 && (
                   <div className="pt-1 border-t">
