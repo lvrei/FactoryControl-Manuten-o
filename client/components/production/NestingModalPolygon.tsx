@@ -12,7 +12,7 @@ import {
   Edit3,
 } from "lucide-react";
 import { productionService } from "@/services/productionService";
-import { FoamBlock, FoamType, ProductionOrderLine } from "@/types/production";
+import { FoamBlock, FoamType, ProductionOrderLine, Machine, CuttingOperation } from "@/types/production";
 import {
   fileLoaderService,
   FileLoaderError,
@@ -45,6 +45,7 @@ export default function NestingModalPolygon({
   onApply,
 }: NestingModalPolygonProps) {
   const [foamTypes, setFoamTypes] = useState<FoamType[]>([]);
+  const [machines, setMachines] = useState<Machine[]>([]);
   const [fileName, setFileName] = useState<string>("");
   const [drawing, setDrawing] = useState<LoadedDrawing | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -82,6 +83,10 @@ export default function NestingModalPolygon({
       try {
         const types = await productionService.getFoamTypes();
         setFoamTypes(types);
+      } catch {}
+      try {
+        const machinesData = await productionService.getMachines();
+        setMachines(machinesData);
       } catch {}
       try {
         const anySvc: any = productionService as any;
