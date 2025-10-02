@@ -131,9 +131,14 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
 
   const loadWorkItems = async () => {
     if (!selectedMachine) return;
-    
+
     try {
+      console.log('🔍 [OperatorPortal] Carregando work items para máquina:', selectedMachine);
       const items = await productionService.getOperatorWorkItems(selectedMachine);
+      console.log('📋 [OperatorPortal] Work items recebidos:', items.length, 'itens');
+      items.forEach(item => {
+        console.log(`  - ${item.orderNumber}: Restante ${item.remainingQuantity}/${item.quantity}`);
+      });
       setWorkItems(items);
       
       // Carregar mensagens para a máquina
@@ -211,6 +216,12 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
   const completeWorkItem = async (workItem: OperatorWorkItem) => {
     const quantity = completionQuantity[workItem.id] || workItem.remainingQuantity;
 
+    console.log('🔵 [OperatorPortal] Iniciando conclusão:', {
+      workItemId: workItem.id,
+      quantity,
+      remaining: workItem.remainingQuantity
+    });
+
     if (quantity <= 0 || quantity > workItem.remainingQuantity) {
       alert('Quantidade inválida');
       return;
@@ -223,11 +234,18 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
         `Concluído por ${operatorData.name} na máquina ${workItem.machineName}`
       );
 
+      console.log('✅ [OperatorPortal] Item completado no service, recarregando lista...');
+
       // Resetar quantidade de conclusão
       setCompletionQuantity(prev => ({ ...prev, [workItem.id]: 0 }));
 
+      // Forçar espera para garantir que localStorage foi atualizado
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Recarregar lista de trabalho
       await loadWorkItems();
+
+      console.log('🔄 [OperatorPortal] Lista de trabalho recarregada');
 
       // Offer to print label
       const shouldPrint = confirm(`${quantity} unidades concluídas! Deseja imprimir etiqueta?`);
@@ -235,7 +253,7 @@ function OperatorPortal({ onClose }: OperatorPortalProps) {
         await createPrintLabel(workItem, quantity);
       }
     } catch (error) {
-      console.error('Erro ao concluir item:', error);
+      console.error('❌ [OperatorPortal] Erro ao concluir item:', error);
       alert('Erro ao concluir item');
     }
   };
