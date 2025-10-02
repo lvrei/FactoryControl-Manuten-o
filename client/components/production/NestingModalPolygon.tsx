@@ -284,30 +284,7 @@ export default function NestingModalPolygon({
           cncMachine.id,
         );
 
-        // Obtém as dimensões das peças introduzidas (não do bloco)
-        let pieceDimensions = { length: 0, width: 0, height: 0 };
-
-        if (manualShapes.length > 0) {
-          // Usa a primeira forma manual como referência
-          const firstShape = manualShapes[0];
-          pieceDimensions = {
-            length: firstShape.length,
-            width: firstShape.width,
-            height: firstShape.height,
-          };
-        } else if (drawing?.parts && drawing.parts.length > 0) {
-          // Usa a primeira peça do ficheiro
-          const firstPart = drawing.parts[0];
-          pieceDimensions = {
-            length: firstPart.length,
-            width: firstPart.width,
-            height: firstPart.height,
-          };
-        } else {
-          // Fallback: usa dimensões do bloco
-          pieceDimensions = ops.cncOperation.inputDimensions;
-        }
-
+        // Operação BZM (cortar blocos)
         const bzmCuttingOp: CuttingOperation = {
           id: `bzm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           machineId: ops.bzmOperation.machineId,
@@ -320,28 +297,90 @@ export default function NestingModalPolygon({
           observations: `BZM: Cortar ${ops.bzmOperation.quantity} bloco(s) de ${ops.bzmOperation.outputDimensions.length}×${ops.bzmOperation.outputDimensions.width}×${ops.bzmOperation.outputDimensions.height}mm`,
         };
 
-        const cncCuttingOp: CuttingOperation = {
-          id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          machineId: ops.cncOperation.machineId,
-          inputDimensions: ops.cncOperation.inputDimensions,
-          outputDimensions: pieceDimensions,
-          quantity: ops.cncOperation.quantity,
-          completedQuantity: 0,
-          estimatedTime: ops.cncOperation.quantity * 5,
-          status: "pending",
-          observations: `CNC: Nesting de ${ops.cncOperation.quantity} peça(s) de ${pieceDimensions.length}×${pieceDimensions.width}×${pieceDimensions.height}mm em ${foam3dResult.totalBlocksNeeded} bloco(s). Aproveitamento: ${(foam3dResult.utilization * 100).toFixed(1)}%`,
-        };
+        // Agrupa formas distintas para criar múltiplas operações CNC
+        const shapeGroups = new Map<string, { part: FoamPart; qty: number }>();
 
-        const smallBlock = foam3dResult.smallBlocks[0];
+        // Combina peças do ficheiro com formas manuais
+        const allSourceParts: FoamPart[] = [];
+
+        if (drawing && drawing.parts) {
+          const scaled = drawing.parts.map((p) => ({
+            length: p.length,
+            width: p.width,
+            height: p.height,
+            quantity: Math.max(
+              0,
+              Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
+            ),
+            label: p.label,
+            foamTypeId: p.foamTypeId || mappingFoamTypeId,
+          }));
+          allSourceParts.push(...scaled);
+        }
+
+        if (manualShapes.length > 0) {
+          allSourceParts.push(
+            ...manualShapes.map((s) => ({
+              length: s.length,
+              width: s.width,
+              height: s.height,
+              quantity: s.quantity,
+              label: s.label,
+              foamTypeId: s.foamTypeId || mappingFoamTypeId,
+            })),
+          );
+        }
+
+        // Agrupa por dimensões
+        for (const part of allSourceParts) {
+          const key = `${part.length}|${part.width}|${part.height}`;
+          if (!shapeGroups.has(key)) {
+            shapeGroups.set(key, { part, qty: 0 });
+          }
+          shapeGroups.get(key)!.qty += part.quantity;
+        }
+
+        // Cria uma operação CNC para cada forma distinta
+        const cuttingOperations: CuttingOperation[] = [bzmCuttingOp];
+
+        for (const { part, qty } of shapeGroups.values()) {
+          const cncOp: CuttingOperation = {
+            id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            machineId: cncMachine.id,
+            inputDimensions: ops.cncOperation.inputDimensions,
+            outputDimensions: {
+              length: part.length,
+              width: part.width,
+              height: part.height,
+            },
+            quantity: qty,
+            completedQuantity: 0,
+            estimatedTime: qty * 5,
+            status: "pending",
+            observations: `CNC: Cortar ${qty} peça(s) de ${part.length}×${part.width}×${part.height}mm${part.label ? ` (${part.label})` : ""}`,
+          };
+          cuttingOperations.push(cncOp);
+        }
+
+        // Usa as dimensões da primeira forma como referência
+        const firstPart = Array.from(shapeGroups.values())[0]?.part || {
+          length: ops.cncOperation.inputDimensions.length,
+          width: ops.cncOperation.inputDimensions.width,
+          height: ops.cncOperation.inputDimensions.height,
+        };
 
         lines.push({
           id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
           foamType: foam,
           initialDimensions: ops.bzmOperation.inputDimensions,
-          finalDimensions: pieceDimensions,
+          finalDimensions: {
+            length: firstPart.length,
+            width: firstPart.width,
+            height: firstPart.height,
+          },
           quantity: foam3dResult.totalPartsPlaced,
           completedQuantity: 0,
-          cuttingOperations: [bzmCuttingOp, cncCuttingOp],
+          cuttingOperations,
           status: "pending",
           priority: 5,
         } as any);
