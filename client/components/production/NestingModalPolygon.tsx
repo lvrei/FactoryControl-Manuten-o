@@ -25,6 +25,13 @@ import {
   polygonArea,
   type PolygonPart,
 } from "@/lib/polygonNesting";
+import {
+  nestFoamParts,
+  convertNestingToOperations,
+  type FoamPart,
+  type BlockConstraints,
+  type BlockNestingResult,
+} from "@/lib/foamBlockNesting";
 import DxfDebugPanel from "./DxfDebugPanel";
 import ManualShapeInput, { type ManualShape } from "./ManualShapeInput";
 
@@ -53,11 +60,20 @@ export default function NestingModalPolygon({
   const [stockWarning, setStockWarning] = useState<string>("");
   const [manualHeight, setManualHeight] = useState<number>(50);
   const [mappingFoamTypeId, setMappingFoamTypeId] = useState<string>("");
-  const [nestingMode, setNestingMode] = useState<"rectangle" | "polygon">(
-    "rectangle",
+  const [nestingMode, setNestingMode] = useState<"rectangle" | "polygon" | "foam3d">(
+    "foam3d", // Modo padrão para blocos de espuma
   );
-  const [inputMode, setInputMode] = useState<"file" | "manual">("file");
+  const [inputMode, setInputMode] = useState<"file" | "manual">("manual"); // Manual por padrão
   const [manualShapes, setManualShapes] = useState<ManualShape[]>([]);
+
+  // Limites da máquina CNC (padrão)
+  const [cncConstraints, setCncConstraints] = useState<BlockConstraints>({
+    maxLength: 2500, // 2.5m
+    maxWidth: 2300, // 2.3m
+    maxHeight: 1300, // 1.3m
+    kerf: 5,
+    margin: 10,
+  });
 
   const svgRef = useRef<SVGSVGElement>(null);
 
