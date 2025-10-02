@@ -9,12 +9,14 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ### ✅ O Que Foi Adicionado
 
 **2 modos de entrada de peças:**
+
 1. **Ficheiro** (DXF/JSON) - modo existente
 2. **Manual** (novo!) - criar quadrados e retângulos diretamente na interface
 
 ### ✅ Componente Criado
 
 **`client/components/production/ManualShapeInput.tsx`** (263 linhas)
+
 - Formulário intuitivo para adicionar formas
 - Suporte para quadrados e retângulos
 - Lista de formas adicionadas com preview
@@ -24,6 +26,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ### ✅ Integração no Modal
 
 **`client/components/production/NestingModalPolygon.tsx`**
+
 - Novo seletor: "Ficheiro" vs "Manual"
 - Combina formas manuais com formas de ficheiros
 - Estatísticas mostram formas manuais
@@ -34,6 +37,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ## Como Usar
 
 ### Passo 1: Abrir Modal de Nesting
+
 ```
 1. Ir para página "Produção"
 2. Clicar em "Nova OP (nesting)"
@@ -41,6 +45,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ```
 
 ### Passo 2: Escolher "Manual"
+
 ```
 1. Ver seletor "Origem das Peças"
 2. Clicar em "Manual" (ícone de lápis)
@@ -50,6 +55,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ### Passo 3: Adicionar Formas
 
 #### Para Retângulo:
+
 ```
 1. Deixar "Retângulo" selecionado (padrão)
 2. Comprimento: 500mm
@@ -61,6 +67,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ```
 
 #### Para Quadrado:
+
 ```
 1. Clicar em "Quadrado"
 2. Lado: 400mm (largura fica igual automaticamente)
@@ -71,6 +78,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ```
 
 ### Passo 4: Revisar Lista
+
 ```
 ✅ Vê formas adicionadas
 ✅ Total de peças calculado
@@ -78,6 +86,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ```
 
 ### Passo 5: Configurar Nesting
+
 ```
 1. Tipo de Espuma: selecionar
 2. Dimensões do Painel: 2000×1000mm
@@ -87,6 +96,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ```
 
 ### Passo 6: Aplicar na OP
+
 ```
 1. Revisar estatísticas:
    - Painéis necessários
@@ -101,6 +111,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ## Interface do Formulário
 
 ### Tipo de Forma
+
 ```
 ┌─────────────┬─────────────┐
 │ Retângulo   │  Quadrado   │  ← Seletor
@@ -108,6 +119,7 @@ Sistema de nesting agora permite **criar formas manualmente** sem precisar de fi
 ```
 
 ### Campos (Retângulo)
+
 ```
 Comprimento (mm):  [500    ]
 Largura (mm):      [300    ]
@@ -117,6 +129,7 @@ Etiqueta:          [Tampa A]  ← Opcional
 ```
 
 ### Campos (Quadrado)
+
 ```
 Lado (mm):         [400    ]
 Largura (mm):      [400    ]  ← Bloqueado (igual ao lado)
@@ -126,6 +139,7 @@ Etiqueta:          [Base   ]  ← Opcional
 ```
 
 ### Lista de Formas Adicionadas
+
 ```
 ┌──────────────────────────────────────┐
 │ Formas Adicionadas (3)               │
@@ -148,18 +162,22 @@ Etiqueta:          [Base   ]  ← Opcional
 ## Funcionalidades
 
 ### ✅ Validação Automática
+
 - ❌ Medidas ≤ 0 → Erro "Medidas devem ser maiores que zero"
 - ❌ Quantidade ≤ 0 → Erro "Quantidade deve ser maior que zero"
 - ✅ Valores válidos → Forma adicionada
 
 ### ✅ Quadrado Inteligente
+
 - Ao selecionar "Quadrado":
   - Campo "Largura" fica bloqueado
   - Largura = Lado (sincronizado automaticamente)
   - Ao mudar "Lado", "Largura" atualiza junto
 
 ### ✅ Reset de Formulário
+
 Após adicionar forma:
+
 - ✅ Comprimento/Lado resetado para 100mm
 - ✅ Largura resetada para 100mm
 - ✅ Quantidade resetada para 1
@@ -167,11 +185,14 @@ Após adicionar forma:
 - ✅ **Espessura mantida** (conveniente para várias peças da mesma espessura)
 
 ### ✅ Etiquetas Automáticas
+
 Se não fornecer etiqueta:
+
 - Retângulo: "Retângulo 500×300mm"
 - Quadrado: "Quadrado 400mm"
 
 ### ✅ Ícones Visuais
+
 - 🔲 Retângulo horizontal
 - ⬜ Quadrado
 - 🗑️ Remover
@@ -183,6 +204,7 @@ Se não fornecer etiqueta:
 ### Combinação de Fontes
 
 Pode usar **ambos** os modos simultaneamente:
+
 ```
 1. Carregar DXF (5 formas)
 2. Adicionar 3 formas manuais
@@ -192,10 +214,11 @@ Pode usar **ambos** os modos simultaneamente:
 ### Cálculo de Nesting
 
 Sistema combina todas as fontes:
+
 ```typescript
 const allParts = [
-  ...formasDoDXF,      // Se ficheiro carregado
-  ...formasManuais,    // Se formas adicionadas
+  ...formasDoDXF, // Se ficheiro carregado
+  ...formasManuais, // Se formas adicionadas
 ];
 
 const result = packRectangles(allParts, sheet);
@@ -204,6 +227,7 @@ const result = packRectangles(allParts, sheet);
 ### Estatísticas Atualizadas
 
 No painel de resultados:
+
 ```
 ┌────────────────────────────────┐
 │ Painéis necessários: 3         │
@@ -218,7 +242,9 @@ No painel de resultados:
 ## Casos de Uso
 
 ### 1. Peças Simples Repetitivas
+
 **Cenário**: Precisa cortar 100 quadrados de 500mm
+
 ```
 ✅ Manual é mais rápido que criar DXF
 ✅ Menos passos
@@ -226,27 +252,33 @@ No painel de resultados:
 ```
 
 **Como fazer**:
+
 1. Modo "Manual"
 2. Quadrado: 500mm
 3. Quantidade: 100
 4. Aplicar
 
 ### 2. Mix de Peças
+
 **Cenário**: Cliente pediu peças de vários tamanhos
+
 ```
 Peça A: 500×300mm × 20 unidades
-Peça B: 400×400mm × 15 unidades  
+Peça B: 400×400mm × 15 unidades
 Peça C: 600×200mm × 30 unidades
 ```
 
 **Como fazer**:
+
 1. Adicionar Peça A (retângulo)
 2. Adicionar Peça B (quadrado)
 3. Adicionar Peça C (retângulo)
 4. Aplicar → Nesting otimizado!
 
 ### 3. Combinação DXF + Manual
+
 **Cenário**: DXF tem formas complexas + precisa adicionar margens simples
+
 ```
 ✅ Carregar DXF (formas irregulares)
 ✅ Adicionar manualmente retângulos de margem
@@ -254,7 +286,9 @@ Peça C: 600×200mm × 30 unidades
 ```
 
 ### 4. Prototipagem Rápida
+
 **Cenário**: Testar quantos painéis precisa antes de fazer DXF
+
 ```
 ✅ Entrada manual: rápida
 ✅ Ver resultado imediatamente
@@ -266,14 +300,14 @@ Peça C: 600×200mm × 30 unidades
 
 ## Vantagens vs DXF
 
-| Aspecto | DXF | Manual |
-|---------|-----|--------|
-| **Velocidade** | 🐢 Lento (CAD → Exportar → Carregar) | ⚡ Rápido (direto na interface) |
-| **Complexidade** | ✅ Qualquer forma | ⚠️ Só retângulos/quadrados |
-| **Precisão** | ✅ Exata | ✅ Exata |
-| **Facilidade** | ⚠️ Requer conhecimento CAD | ✅ Qualquer pessoa consegue |
-| **Flexibilidade** | ⚠️ Difícil ajustar | ✅ Fácil ajustar/remover |
-| **Uso Ideal** | Formas irregulares complexas | Peças retangulares simples |
+| Aspecto           | DXF                                  | Manual                          |
+| ----------------- | ------------------------------------ | ------------------------------- |
+| **Velocidade**    | 🐢 Lento (CAD → Exportar → Carregar) | ⚡ Rápido (direto na interface) |
+| **Complexidade**  | ✅ Qualquer forma                    | ⚠️ Só retângulos/quadrados      |
+| **Precisão**      | ✅ Exata                             | ✅ Exata                        |
+| **Facilidade**    | ⚠️ Requer conhecimento CAD           | ✅ Qualquer pessoa consegue     |
+| **Flexibilidade** | ⚠️ Difícil ajustar                   | ✅ Fácil ajustar/remover        |
+| **Uso Ideal**     | Formas irregulares complexas         | Peças retangulares simples      |
 
 ---
 
@@ -299,16 +333,19 @@ Preciso fazer nesting de peças?
 ## Validações e Regras
 
 ### ✅ Validações de Entrada
+
 1. **Medidas > 0**: Comprimento, largura, espessura devem ser positivos
 2. **Quantidade ≥ 1**: Mínimo 1 peça
 3. **Etiqueta**: Opcional (máx 100 caracteres)
 
 ### ✅ Limite de Formas
+
 - Não há limite teórico
 - **Recomendado**: < 50 formas diferentes para performance
 - Se > 50 tipos, considerar usar JSON/DXF
 
 ### ✅ Combinação de Modos
+
 - ✅ Pode usar ficheiro E manual juntos
 - ✅ Sistema combina automaticamente
 - ✅ Estatísticas separadas
@@ -318,6 +355,7 @@ Preciso fazer nesting de peças?
 ## Exemplos Práticos
 
 ### Exemplo 1: Caixas Simples
+
 ```
 Cliente: "Preciso tampas e bases para caixas"
 
@@ -328,6 +366,7 @@ Solução:
 ```
 
 ### Exemplo 2: Embalagens
+
 ```
 Cliente: "Laterais e divisórias"
 
@@ -339,6 +378,7 @@ Solução:
 ```
 
 ### Exemplo 3: Protótipos
+
 ```
 Designer: "Quero testar tamanhos antes de decidir"
 
@@ -356,6 +396,7 @@ Workflow:
 ## Estatísticas e Feedback
 
 ### No Painel de Resultados
+
 ```
 ┌──────────────────────────────────┐
 │ 📦 Painéis necessários: 3        │
@@ -367,6 +408,7 @@ Workflow:
 ```
 
 ### Na Lista de Formas
+
 ```
 Total de peças: 45
 Tipos diferentes: 5
@@ -379,6 +421,7 @@ Tipos diferentes: 5
 ## Limitações Conhecidas
 
 ### ⚠️ Formas Suportadas
+
 - ✅ Retângulos
 - ✅ Quadrados
 - ❌ Círculos (usar DXF)
@@ -386,11 +429,13 @@ Tipos diferentes: 5
 - ❌ Formas com furos (usar DXF)
 
 ### ⚠️ Funcionalidades
+
 - ❌ Não permite rotação manual (automática no nesting)
 - ❌ Não permite preview individual de forma
 - ❌ Não permite editar forma já adicionada (só remover e readicionar)
 
 ### 🔧 Melhorias Futuras
+
 - [ ] Editar formas já adicionadas
 - [ ] Duplicar forma existente
 - [ ] Importar/exportar lista de formas (CSV)
@@ -402,18 +447,23 @@ Tipos diferentes: 5
 ## Troubleshooting
 
 ### Problema: "Aplicar na OP" está desabilitado
+
 **Causa**: Nenhuma forma adicionada
 **Solução**: Adicionar pelo menos 1 forma manual ou carregar ficheiro
 
 ### Problema: Formas não aparecem no preview
+
 **Causa**: Modo de nesting incompatível
-**Solução**: 
+**Solução**:
+
 - Formas manuais → Usar modo "Retângulos"
 - DXF irregular → Usar modo "Polígonos"
 
 ### Problema: Utilização muito baixa (< 30%)
+
 **Causa**: Peças muito pequenas ou painel muito grande
 **Solução**:
+
 - Reduzir dimensões do painel
 - Aumentar quantidade de peças
 - Ajustar kerf/margem
@@ -423,7 +473,9 @@ Tipos diferentes: 5
 ## Código Relevante
 
 ### Arquivos Modificados
+
 1. **`client/components/production/ManualShapeInput.tsx`** (novo)
+
    - Componente de entrada manual
    - 263 linhas
 
@@ -433,16 +485,17 @@ Tipos diferentes: 5
    - UI atualizada
 
 ### Tipo de Dados
+
 ```typescript
 export type ManualShape = NestPart & {
-  id: string;      // ID único gerado
-  label?: string;  // Etiqueta opcional
+  id: string; // ID único gerado
+  label?: string; // Etiqueta opcional
 };
 
 export type NestPart = {
-  length: number;   // mm
-  width: number;    // mm
-  height: number;   // mm (espessura)
+  length: number; // mm
+  width: number; // mm
+  height: number; // mm (espessura)
   quantity: number; // unidades
   foamTypeId?: string;
   label?: string;
@@ -456,6 +509,7 @@ export type NestPart = {
 🎉 **Sistema agora é muito mais acessível!**
 
 Antes:
+
 ```
 ❌ Precisava CAD para qualquer peça
 ❌ Workflow longo (CAD → DXF → Upload)
@@ -463,6 +517,7 @@ Antes:
 ```
 
 Agora:
+
 ```
 ✅ Peças simples → Entrada manual (segundos!)
 ✅ Peças complexas → DXF (quando necessário)
@@ -473,6 +528,7 @@ Agora:
 **Teste agora!** 🚀
 
 Crie uma OP com formas manuais:
+
 1. Nova OP (nesting)
 2. Modo: Manual
 3. Adicionar 3 retângulos diferentes

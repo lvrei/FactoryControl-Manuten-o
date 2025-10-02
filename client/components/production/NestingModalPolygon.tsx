@@ -527,8 +527,9 @@ export default function NestingModalPolygon({
                 )}
                 {inputMode === "manual" && manualShapes.length > 0 && (
                   <div className="pt-1 border-t">
-                    Formas manuais: <strong>{manualShapes.length}</strong> tipos •{" "}
-                    {manualShapes.reduce((sum, s) => sum + s.quantity, 0)} peças
+                    Formas manuais: <strong>{manualShapes.length}</strong> tipos
+                    • {manualShapes.reduce((sum, s) => sum + s.quantity, 0)}{" "}
+                    peças
                   </div>
                 )}
               </div>
@@ -541,7 +542,10 @@ export default function NestingModalPolygon({
               <button
                 onClick={applyToOrder}
                 className="px-3 py-2 bg-primary text-primary-foreground rounded disabled:opacity-50"
-                disabled={!result || (inputMode === "manual" && manualShapes.length === 0)}
+                disabled={
+                  !result ||
+                  (inputMode === "manual" && manualShapes.length === 0)
+                }
               >
                 Aplicar na OP
               </button>
