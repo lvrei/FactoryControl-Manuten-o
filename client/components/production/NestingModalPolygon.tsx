@@ -389,7 +389,9 @@ export default function NestingModalPolygon({
       }
     } else if (rectangleResult) {
       // Lógica para retângulos (ficheiro + manual)
-      const map = new Map<string, { part: NestPart; qty: number }>();
+      // Agrupa peças por tipo de espuma e cria operações CNC separadas para cada forma distinta
+
+      const foamGroups = new Map<string, Map<string, { part: NestPart; qty: number }>>();
 
       // Combina peças do ficheiro com formas manuais
       const allParts: NestPart[] = [];
@@ -407,22 +409,65 @@ export default function NestingModalPolygon({
 
       allParts.push(...manualShapes);
 
+      // Agrupa por tipo de espuma e depois por dimensões
       for (const p of allParts) {
-        const foamId =
-          p.foamTypeId || mappingFoamTypeId || foamTypes[0]?.id || "";
-        const key = `${foamId}|${p.length}|${p.width}|${p.height}`;
-        if (!map.has(key))
-          map.set(key, { part: { ...p, foamTypeId: foamId }, qty: 0 });
-        const rec = map.get(key)!;
+        const foamId = p.foamTypeId || mappingFoamTypeId || foamTypes[0]?.id || "";
+
+        if (!foamGroups.has(foamId)) {
+          foamGroups.set(foamId, new Map());
+        }
+
+        const dimensionsKey = `${p.length}|${p.width}|${p.height}`;
+        const partsMap = foamGroups.get(foamId)!;
+
+        if (!partsMap.has(dimensionsKey)) {
+          partsMap.set(dimensionsKey, { part: { ...p, foamTypeId: foamId }, qty: 0 });
+        }
+
+        const rec = partsMap.get(dimensionsKey)!;
         rec.qty += p.quantity;
       }
 
-      for (const { part, qty } of map.values()) {
-        const foam =
-          foamTypes.find(
-            (f) => f.id === (part.foamTypeId || mappingFoamTypeId),
-          ) || foamTypes[0];
+      // Cria uma linha por tipo de espuma com múltiplas operações CNC
+      for (const [foamId, partsMap] of foamGroups) {
+        const foam = foamTypes.find((f) => f.id === foamId) || foamTypes[0];
         if (!foam) continue;
+
+        const cncMachine = machines.find((m) => m.type === "CNC");
+        if (!cncMachine) continue;
+
+        // Cria uma operação CNC para cada forma distinta
+        const cuttingOperations: CuttingOperation[] = [];
+        let totalQuantity = 0;
+
+        for (const { part, qty } of partsMap.values()) {
+          totalQuantity += qty;
+
+          const cncOp: CuttingOperation = {
+            id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            machineId: cncMachine.id,
+            inputDimensions: {
+              length: sheet.length,
+              width: sheet.width,
+              height: part.height,
+            },
+            outputDimensions: {
+              length: part.length,
+              width: part.width,
+              height: part.height,
+            },
+            quantity: qty,
+            completedQuantity: 0,
+            estimatedTime: qty * 5, // 5min por peça
+            status: "pending",
+            observations: `CNC: Cortar ${qty} peça(s) de ${part.length}×${part.width}×${part.height}mm${part.label ? ` (${part.label})` : ""}`,
+          };
+
+          cuttingOperations.push(cncOp);
+        }
+
+        // Usa as dimensões da primeira forma como referência para a linha
+        const firstPart = Array.from(partsMap.values())[0].part;
 
         lines.push({
           id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -430,16 +475,16 @@ export default function NestingModalPolygon({
           initialDimensions: {
             length: sheet.length,
             width: sheet.width,
-            height: part.height,
+            height: firstPart.height,
           },
           finalDimensions: {
-            length: part.length,
-            width: part.width,
-            height: part.height,
+            length: firstPart.length,
+            width: firstPart.width,
+            height: firstPart.height,
           },
-          quantity: qty,
+          quantity: totalQuantity,
           completedQuantity: 0,
-          cuttingOperations: [],
+          cuttingOperations,
           status: "pending",
           priority: 5,
         } as any);
