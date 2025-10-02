@@ -183,7 +183,52 @@ export default function NestingModalPolygon({
     return packRectangles(allParts, sheet);
   }, [drawing, sheet, quantityMultiplier, nestingMode, manualShapes]);
 
-  const result = nestingMode === "polygon" ? polygonResult : rectangleResult;
+  // Nesting 3D para blocos de espuma
+  const foam3dResult = useMemo(() => {
+    if (nestingMode !== "foam3d") return null;
+
+    // Combina peças do ficheiro (se houver) com formas manuais
+    const allParts: FoamPart[] = [];
+
+    // Adiciona peças do ficheiro
+    if (drawing && drawing.parts) {
+      const scaled = drawing.parts.map((p) => ({
+        length: p.length,
+        width: p.width,
+        height: p.height,
+        quantity: Math.max(
+          0,
+          Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
+        ),
+        label: p.label,
+        foamTypeId: p.foamTypeId || mappingFoamTypeId,
+      }));
+      allParts.push(...scaled);
+    }
+
+    // Adiciona formas manuais
+    if (manualShapes.length > 0) {
+      allParts.push(
+        ...manualShapes.map((s) => ({
+          length: s.length,
+          width: s.width,
+          height: s.height,
+          quantity: s.quantity,
+          label: s.label,
+          foamTypeId: s.foamTypeId || mappingFoamTypeId,
+        }))
+      );
+    }
+
+    if (allParts.length === 0) return null;
+
+    return nestFoamParts(allParts, cncConstraints);
+  }, [drawing, cncConstraints, quantityMultiplier, nestingMode, manualShapes, mappingFoamTypeId]);
+
+  const result =
+    nestingMode === "polygon" ? polygonResult :
+    nestingMode === "foam3d" ? foam3dResult :
+    rectangleResult;
 
   function applyToOrder() {
     if (!result) return;
