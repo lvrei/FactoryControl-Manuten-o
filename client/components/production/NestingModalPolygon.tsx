@@ -111,6 +111,13 @@ export default function NestingModalPolygon({
     })();
   }, []);
 
+  // Reset selected block index when foam3d results change
+  useEffect(() => {
+    if (foam3dResult && selectedBlockIndex >= foam3dResult.totalBlocksNeeded) {
+      setSelectedBlockIndex(0);
+    }
+  }, [foam3dResult, selectedBlockIndex]);
+
   async function handleFile(file: File) {
     setFileName(file.name);
     setIsLoading(true);
