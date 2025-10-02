@@ -65,6 +65,15 @@ export default function NestingModalPolygon({
     kerf: 5,
     margin: 10,
   });
+  const [margins, setMargins] = useState({
+    top: 10,
+    bottom: 10,
+    left: 10,
+    right: 10,
+  });
+  const [selectedMachine, setSelectedMachine] = useState<"CNC" | "Carousel">(
+    "CNC",
+  );
   const [quantityMultiplier, setQuantityMultiplier] = useState<number>(1);
   const [stockBlocks, setStockBlocks] = useState<FoamBlock[] | null>(null);
   const [stockWarning, setStockWarning] = useState<string>("");
@@ -198,8 +207,17 @@ export default function NestingModalPolygon({
 
     if (allParts.length === 0) return null;
 
-    return packRectangles(allParts, sheet);
-  }, [drawing, sheet, quantityMultiplier, nestingMode, manualShapes]);
+    // Usa margens específicas
+    const effectiveMargin = Math.max(
+      margins.top,
+      margins.bottom,
+      margins.left,
+      margins.right,
+    );
+    const sheetWithMargins = { ...sheet, margin: effectiveMargin };
+
+    return packRectangles(allParts, sheetWithMargins);
+  }, [drawing, sheet, quantityMultiplier, nestingMode, manualShapes, margins]);
 
   // Nesting 3D para blocos de espuma
   const foam3dResult = useMemo(() => {
@@ -483,12 +501,24 @@ export default function NestingModalPolygon({
       } as any);
     } else if (rectangleResult) {
       // Lógica para retângulos (ficheiro + manual)
-      // Agrupa peças por tipo de espuma e cria operações CNC separadas para cada forma distinta
+      // Agrupa peças por tipo de espuma e cria operações separadas para cada forma distinta
 
-      const foamGroups = new Map<
-        string,
-        Map<string, { part: NestPart; qty: number }>
-      >();
+      const foam =
+        foamTypes.find((f) => f.id === mappingFoamTypeId) || foamTypes[0];
+      if (!foam) {
+        alert("Selecione um tipo de espuma antes de aplicar.");
+        return;
+      }
+
+      const bzmMachine = machines.find((m) => m.type === "BZM");
+      const targetMachine = machines.find((m) => m.type === selectedMachine);
+
+      if (!bzmMachine || !targetMachine) {
+        alert(
+          `Máquinas BZM e ${selectedMachine} não encontradas. Configure as máquinas primeiro.`,
+        );
+        return;
+      }
 
       // Combina peças do ficheiro com formas manuais
       const allParts: NestPart[] = [];
@@ -506,90 +536,97 @@ export default function NestingModalPolygon({
 
       allParts.push(...manualShapes);
 
-      // Agrupa por tipo de espuma e depois por dimensões
+      // Agrupa por dimensões
+      const shapeGroups = new Map<string, { part: NestPart; qty: number }>();
+
       for (const p of allParts) {
-        const foamId =
-          p.foamTypeId || mappingFoamTypeId || foamTypes[0]?.id || "";
-
-        if (!foamGroups.has(foamId)) {
-          foamGroups.set(foamId, new Map());
-        }
-
         const dimensionsKey = `${p.length}|${p.width}|${p.height}`;
-        const partsMap = foamGroups.get(foamId)!;
 
-        if (!partsMap.has(dimensionsKey)) {
-          partsMap.set(dimensionsKey, {
-            part: { ...p, foamTypeId: foamId },
+        if (!shapeGroups.has(dimensionsKey)) {
+          shapeGroups.set(dimensionsKey, {
+            part: p,
             qty: 0,
           });
         }
 
-        const rec = partsMap.get(dimensionsKey)!;
+        const rec = shapeGroups.get(dimensionsKey)!;
         rec.qty += p.quantity;
       }
 
-      // Cria uma linha por tipo de espuma com múltiplas operações CNC
-      for (const [foamId, partsMap] of foamGroups) {
-        const foam = foamTypes.find((f) => f.id === foamId) || foamTypes[0];
-        if (!foam) continue;
+      // Cria operação BZM (cortar painéis)
+      const sheetsNeeded = rectangleResult.sheetsUsed;
+      const bzmOperation: CuttingOperation = {
+        id: `bzm-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        machineId: bzmMachine.id,
+        inputDimensions: {
+          length: sheet.length,
+          width: sheet.width,
+          height: manualHeight,
+        },
+        outputDimensions: {
+          length: sheet.length,
+          width: sheet.width,
+          height: manualHeight,
+        },
+        quantity: sheetsNeeded,
+        completedQuantity: 0,
+        estimatedTime: sheetsNeeded * 15,
+        status: "pending",
+        observations: `BZM: Cortar ${sheetsNeeded} painel(is) de ${sheet.length}×${sheet.width}×${manualHeight}mm`,
+      };
 
-        const cncMachine = machines.find((m) => m.type === "CNC");
-        if (!cncMachine) continue;
+      // Cria uma operação para cada forma distinta
+      const cuttingOperations: CuttingOperation[] = [bzmOperation];
+      let totalQuantity = 0;
 
-        // Cria uma operação CNC para cada forma distinta
-        const cuttingOperations: CuttingOperation[] = [];
-        let totalQuantity = 0;
+      for (const { part, qty } of shapeGroups.values()) {
+        totalQuantity += qty;
 
-        for (const { part, qty } of partsMap.values()) {
-          totalQuantity += qty;
-
-          const cncOp: CuttingOperation = {
-            id: `cnc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            machineId: cncMachine.id,
-            inputDimensions: {
-              length: sheet.length,
-              width: sheet.width,
-              height: part.height,
-            },
-            outputDimensions: {
-              length: part.length,
-              width: part.width,
-              height: part.height,
-            },
-            quantity: qty,
-            completedQuantity: 0,
-            estimatedTime: qty * 5, // 5min por peça
-            status: "pending",
-            observations: `CNC: Cortar ${qty} peça(s) de ${part.length}×${part.width}×${part.height}mm${part.label ? ` (${part.label})` : ""}`,
-          };
-
-          cuttingOperations.push(cncOp);
-        }
-
-        // Usa as dimensões da primeira forma como referência para a linha
-        const firstPart = Array.from(partsMap.values())[0].part;
-
-        lines.push({
-          id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          foamType: foam,
-          initialDimensions: {
+        const machineOp: CuttingOperation = {
+          id: `${selectedMachine.toLowerCase()}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          machineId: targetMachine.id,
+          inputDimensions: {
             length: sheet.length,
             width: sheet.width,
-            height: firstPart.height,
+            height: part.height,
           },
-          finalDimensions: {
-            length: firstPart.length,
-            width: firstPart.width,
-            height: firstPart.height,
+          outputDimensions: {
+            length: part.length,
+            width: part.width,
+            height: part.height,
           },
-          quantity: totalQuantity,
+          quantity: qty,
           completedQuantity: 0,
-          cuttingOperations,
+          estimatedTime: qty * 5,
           status: "pending",
-          priority: 5,
-        } as any);
+          observations: `${selectedMachine}: Cortar ${qty} peça(s) de ${part.length}×${part.width}×${part.height}mm${part.label ? ` (${part.label})` : ""}. Aproveitamento: ${(rectangleResult.utilization * 100).toFixed(1)}%`,
+        };
+
+        cuttingOperations.push(machineOp);
       }
+
+      // Usa as dimensões da primeira forma como referência para a linha
+      const firstPart = Array.from(shapeGroups.values())[0].part;
+
+      lines.push({
+        id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        foamType: foam,
+        initialDimensions: {
+          length: sheet.length,
+          width: sheet.width,
+          height: firstPart.height,
+        },
+        finalDimensions: {
+          length: firstPart.length,
+          width: firstPart.width,
+          height: firstPart.height,
+        },
+        quantity: totalQuantity,
+        completedQuantity: 0,
+        cuttingOperations,
+        status: "pending",
+        priority: 5,
+      } as any);
     }
 
     if (stockWarning) {
@@ -861,34 +898,141 @@ export default function NestingModalPolygon({
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-3">
                 <div>
-                  <label className="block text-sm">Largura painel (mm)</label>
-                  <input
-                    type="number"
-                    value={sheet.width}
-                    onChange={(e) =>
-                      setSheet((s) => ({ ...s, width: Number(e.target.value) }))
-                    }
-                    className="w-full border rounded px-2 py-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm">
-                    Comprimento painel (mm)
+                  <label className="block text-sm font-medium mb-2">
+                    Dimensões do Painel
                   </label>
-                  <input
-                    type="number"
-                    value={sheet.length}
-                    onChange={(e) =>
-                      setSheet((s) => ({
-                        ...s,
-                        length: Number(e.target.value),
-                      }))
-                    }
-                    className="w-full border rounded px-2 py-1"
-                  />
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs">Largura (mm)</label>
+                      <input
+                        type="number"
+                        value={sheet.width}
+                        onChange={(e) =>
+                          setSheet((s) => ({
+                            ...s,
+                            width: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Comprimento (mm)</label>
+                      <input
+                        type="number"
+                        value={sheet.length}
+                        onChange={(e) =>
+                          setSheet((s) => ({
+                            ...s,
+                            length: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {nestingMode === "rectangle" && (
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      Máquina de Corte
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setSelectedMachine("CNC")}
+                        className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
+                          selectedMachine === "CNC"
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-muted"
+                        }`}
+                      >
+                        CNC
+                      </button>
+                      <button
+                        onClick={() => setSelectedMachine("Carousel")}
+                        className={`px-3 py-2 border rounded flex items-center justify-center gap-2 text-sm ${
+                          selectedMachine === "Carousel"
+                            ? "bg-primary text-primary-foreground"
+                            : "hover:bg-muted"
+                        }`}
+                      >
+                        Carrossel
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Margens Específicas
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs">Margem Topo (mm)</label>
+                      <input
+                        type="number"
+                        value={margins.top}
+                        onChange={(e) =>
+                          setMargins((m) => ({
+                            ...m,
+                            top: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">Margem Base (mm)</label>
+                      <input
+                        type="number"
+                        value={margins.bottom}
+                        onChange={(e) =>
+                          setMargins((m) => ({
+                            ...m,
+                            bottom: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">
+                        Margem Esquerda (mm)
+                      </label>
+                      <input
+                        type="number"
+                        value={margins.left}
+                        onChange={(e) =>
+                          setMargins((m) => ({
+                            ...m,
+                            left: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs">
+                        Margem Direita (mm)
+                      </label>
+                      <input
+                        type="number"
+                        value={margins.right}
+                        onChange={(e) =>
+                          setMargins((m) => ({
+                            ...m,
+                            right: Number(e.target.value),
+                          }))
+                        }
+                        className="w-full border rounded px-2 py-1 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-sm">Kerf (mm)</label>
                   <input
@@ -897,21 +1041,7 @@ export default function NestingModalPolygon({
                     onChange={(e) =>
                       setSheet((s) => ({ ...s, kerf: Number(e.target.value) }))
                     }
-                    className="w-full border rounded px-2 py-1"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm">Margem (mm)</label>
-                  <input
-                    type="number"
-                    value={sheet.margin}
-                    onChange={(e) =>
-                      setSheet((s) => ({
-                        ...s,
-                        margin: Number(e.target.value),
-                      }))
-                    }
-                    className="w-full border rounded px-2 py-1"
+                    className="w-full border rounded px-2 py-1 text-sm"
                   />
                 </div>
               </div>
@@ -1009,7 +1139,148 @@ export default function NestingModalPolygon({
           </div>
 
           <div className="md:col-span-2 border rounded p-2 bg-white overflow-auto">
-            {result && nestingMode === "polygon" && polygonResult ? (
+            {result && nestingMode === "rectangle" && rectangleResult ? (
+              <div className="p-4 space-y-4">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-sm font-medium">
+                    Nesting 2D/3D - Retângulos ({rectangleResult.sheetsUsed}{" "}
+                    painel{rectangleResult.sheetsUsed !== 1 ? "is" : ""})
+                  </div>
+                  <div className="flex items-center gap-2 bg-muted rounded-lg p-1">
+                    <button
+                      onClick={() => setViewMode("2d")}
+                      className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                        viewMode === "2d"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Layers className="h-3.5 w-3.5 inline mr-1" />
+                      Vista 2D
+                    </button>
+                    <button
+                      onClick={() => setViewMode("3d")}
+                      className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                        viewMode === "3d"
+                          ? "bg-background text-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      <Maximize2 className="h-3.5 w-3.5 inline mr-1" />
+                      Vista 3D
+                    </button>
+                  </div>
+                </div>
+
+                {viewMode === "3d" ? (
+                  <FoamBlock3DViewer
+                    result={{
+                      placements: rectangleResult.placements.map((p, idx) => ({
+                        x: p.x,
+                        y: p.y,
+                        z: p.sheetIndex * (manualHeight + 10),
+                        length: p.length,
+                        width: p.width,
+                        height: manualHeight,
+                        blockIndex: p.sheetIndex,
+                        label: p.label,
+                      })),
+                      blockDetails: Array.from(
+                        { length: rectangleResult.sheetsUsed },
+                        (_, i) => ({
+                          blockIndex: i,
+                          dimensions: {
+                            length: sheet.length,
+                            width: sheet.width,
+                            height: manualHeight,
+                          },
+                          partsCount: rectangleResult.placements.filter(
+                            (p) => p.sheetIndex === i,
+                          ).length,
+                          utilizationPercent:
+                            rectangleResult.utilization * 100,
+                        }),
+                      ),
+                      totalBlocksNeeded: rectangleResult.sheetsUsed,
+                      totalPartsPlaced: rectangleResult.placements.length,
+                      utilization: rectangleResult.utilization,
+                      smallBlocks: [],
+                    }}
+                    selectedBlockIndex={selectedBlockIndex}
+                  />
+                ) : (
+                  <svg
+                    width={Math.max(420, sheet.width * svgScale)}
+                    height={sheet.length * svgScale + 20}
+                    style={{ background: "#f7fafc" }}
+                  >
+                    <rect
+                      x={10}
+                      y={10}
+                      width={sheet.width * svgScale}
+                      height={sheet.length * svgScale}
+                      fill="#fff"
+                      stroke="#e2e8f0"
+                    />
+                    {rectangleResult.placements
+                      .filter((p) => p.sheetIndex === selectedBlockIndex)
+                      .map((p, idx) => {
+                        const x = 10 + p.x * svgScale;
+                        const y = 10 + p.y * svgScale;
+                        const w = p.width * svgScale;
+                        const h = p.length * svgScale;
+                        return (
+                          <g key={idx}>
+                            <rect
+                              x={x}
+                              y={y}
+                              width={w}
+                              height={h}
+                              fill="#c7f9cc"
+                              stroke="#2b8a3e"
+                            />
+                            <text
+                              x={x + 4}
+                              y={y + 12}
+                              fontSize={10}
+                              fill="#1a202c"
+                            >
+                              {Math.round(p.length)}×{Math.round(p.width)}
+                            </text>
+                          </g>
+                        );
+                      })}
+                  </svg>
+                )}
+
+                {rectangleResult.sheetsUsed > 1 && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      Selecionar painel:
+                    </span>
+                    {Array.from({ length: rectangleResult.sheetsUsed }).map(
+                      (_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setSelectedBlockIndex(i)}
+                          className={`px-3 py-1.5 text-xs rounded border transition-colors ${
+                            selectedBlockIndex === i
+                              ? "bg-primary text-primary-foreground border-primary"
+                              : "bg-background hover:bg-muted border-border"
+                          }`}
+                        >
+                          Painel #{i + 1} (
+                          {rectangleResult.placements.filter(
+                            (p) => p.sheetIndex === i,
+                          ).length}
+                          ×)
+                        </button>
+                      ),
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : result && nestingMode === "polygon" && polygonResult ? (
               <svg
                 ref={svgRef}
                 width={Math.max(420, sheet.width * svgScale)}
@@ -1049,44 +1320,6 @@ export default function NestingModalPolygon({
                           fill="#1a202c"
                         >
                           #{idx + 1} {placement.rotation}°
-                        </text>
-                      </g>
-                    );
-                  })}
-              </svg>
-            ) : result && nestingMode === "rectangle" && rectangleResult ? (
-              <svg
-                width={Math.max(420, sheet.width * svgScale)}
-                height={sheet.length * svgScale + 20}
-                style={{ background: "#f7fafc" }}
-              >
-                <rect
-                  x={10}
-                  y={10}
-                  width={sheet.width * svgScale}
-                  height={sheet.length * svgScale}
-                  fill="#fff"
-                  stroke="#e2e8f0"
-                />
-                {rectangleResult.placements
-                  .filter((p) => p.sheetIndex === 0)
-                  .map((p, idx) => {
-                    const x = 10 + p.x * svgScale;
-                    const y = 10 + p.y * svgScale;
-                    const w = p.width * svgScale;
-                    const h = p.length * svgScale;
-                    return (
-                      <g key={idx}>
-                        <rect
-                          x={x}
-                          y={y}
-                          width={w}
-                          height={h}
-                          fill="#c7f9cc"
-                          stroke="#2b8a3e"
-                        />
-                        <text x={x + 4} y={y + 12} fontSize={10} fill="#1a202c">
-                          {Math.round(p.length)}×{Math.round(p.width)}
                         </text>
                       </g>
                     );
