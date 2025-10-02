@@ -178,6 +178,14 @@ export function nestPartsInBlock(
   for (const part of sortedParts) {
     let placed = false;
 
+    // Verifica se a peça cabe no bloco (dimensões básicas)
+    if (part.length + 2 * margin > block.length ||
+        part.width + 2 * margin > block.width ||
+        part.height + 2 * margin > block.height) {
+      console.warn(`[nestPartsInBlock] Peça ${part.length}x${part.width}x${part.height} NÃO CABE no bloco ${block.length}x${block.width}x${block.height}`);
+      continue; // Pula esta peça
+    }
+
     // Tenta colocar na camada atual
     if (currentZ + part.height + kerf <= block.height - margin) {
       // Tenta posições em grade na camada
