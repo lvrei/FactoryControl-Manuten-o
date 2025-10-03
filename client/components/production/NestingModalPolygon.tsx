@@ -1615,22 +1615,29 @@ export default function NestingModalPolygon({
                   <FoamBlock3DViewer
                     result={{
                       placements: polygonResult.placements.map((p) => {
-                        // Calcula bounding box do polígono para dimensões básicas
+                        // O polígono em p.polygon já está traduzido para (p.x, p.y)
+                        // Precisamos normalizar de volta para (0,0) para evitar dupla translação
                         const minX = Math.min(...p.polygon.map(([x, y]) => x));
                         const maxX = Math.max(...p.polygon.map(([x, y]) => x));
                         const minY = Math.min(...p.polygon.map(([x, y]) => y));
                         const maxY = Math.max(...p.polygon.map(([x, y]) => y));
 
+                        // Normaliza polígono para origem (0,0)
+                        const normalizedPolygon = p.polygon.map(([x, y]) => [
+                          x - minX,
+                          y - minY,
+                        ]) as [number, number][];
+
                         return {
-                          x: p.x,
-                          y: p.y,
+                          x: minX, // Usa minX como posição X real
+                          y: minY, // Usa minY como posição Y real
                           z: 0, // Z é sempre 0 pois cada bloco é visualizado separadamente
                           length: maxX - minX,
                           width: maxY - minY,
                           height: manualHeight,
                           blockIndex: p.sheetIndex,
                           label: p.part?.label,
-                          polygon: p.polygon, // Passa os dados do polígono real
+                          polygon: normalizedPolygon, // Polígono normalizado para (0,0)
                         } as any;
                       }),
                       blockDetails: Array.from(
