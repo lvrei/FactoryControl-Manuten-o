@@ -1456,6 +1456,14 @@ export function ProductionOrderManager({
           onApply={handleNestingApply}
         />
       )}
+
+      {/* Modal de Nesting Carrossel */}
+      {showNestingCarouselModal && (
+        <NestingModalCarousel
+          onClose={() => setShowNestingCarouselModal(false)}
+          onApply={handleCarouselNestingApply}
+        />
+      )}
     </div>
   );
 }
