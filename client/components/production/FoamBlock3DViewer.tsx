@@ -69,9 +69,8 @@ function PolygonPart3D({
     // Fallback to box if no polygon data
     const x = part.x + part.length / 2 - blockDimensions.length / 2;
 
-    // Normaliza Z para estar sempre dentro do bloco
-    const normalizedZ = part.z % blockDimensions.height;
-    const y = normalizedZ + part.height / 2 - blockDimensions.height / 2;
+    // Usa Z diretamente da peça (já filtrado por bloco)
+    const y = part.z + part.height / 2 - blockDimensions.height / 2;
 
     const z = -(part.y + part.width / 2 - blockDimensions.width / 2);
 
@@ -115,9 +114,8 @@ function PolygonPart3D({
   // Ajusta posição para centrar no bloco
   const posX = part.x - blockDimensions.length / 2;
 
-  // Normaliza Z para estar sempre dentro do bloco
-  const normalizedZ = part.z % blockDimensions.height;
-  const posY = normalizedZ + part.height / 2 - blockDimensions.height / 2;
+  // Usa Z diretamente da peça (já filtrado por bloco)
+  const posY = part.z + part.height / 2 - blockDimensions.height / 2;
 
   const posZ = -(part.y - blockDimensions.width / 2);
 
@@ -151,10 +149,8 @@ function Part3D({
   // Ajusta para que o bloco esteja centrado em (0,0,0)
   const x = part.x + part.length / 2 - blockDimensions.length / 2;
 
-  // Normaliza Z para estar sempre dentro do bloco
-  // part.z pode ter valores grandes (camadas acumuladas), mas o bloco tem altura limitada
-  const normalizedZ = part.z % blockDimensions.height;
-  const y = normalizedZ + part.height / 2 - blockDimensions.height / 2;
+  // Usa Z diretamente da peça (já filtrado por bloco)
+  const y = part.z + part.height / 2 - blockDimensions.height / 2;
 
   const z = -(part.y + part.width / 2 - blockDimensions.width / 2);
 
