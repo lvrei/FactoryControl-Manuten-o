@@ -178,18 +178,28 @@ export function nestPartsInBlock(
   console.log(
     `[nestPartsInBlock] Tentando alocar ${sortedParts.length} peças em bloco ${block.length}x${block.width}x${block.height}`,
   );
+  console.log(
+    `[nestPartsInBlock] Espaço disponível: ${block.length - 2 * margin}x${block.width - 2 * margin}x${block.height - 2 * margin} (após margens de ${margin}mm)`,
+  );
 
   for (const part of sortedParts) {
     let placed = false;
 
-    // Verifica se a peça cabe no bloco (dimensões básicas)
+    // Verifica se a peça cabe no bloco (dimensões básicas + margens + kerf)
+    const needsLength = part.length + kerf;
+    const needsWidth = part.width + kerf;
+    const needsHeight = part.height + kerf;
+    const availLength = block.length - 2 * margin;
+    const availWidth = block.width - 2 * margin;
+    const availHeight = block.height - 2 * margin;
+
     if (
-      part.length + 2 * margin > block.length ||
-      part.width + 2 * margin > block.width ||
-      part.height + 2 * margin > block.height
+      needsLength > availLength ||
+      needsWidth > availWidth ||
+      needsHeight > availHeight
     ) {
       console.warn(
-        `[nestPartsInBlock] Peça ${part.length}x${part.width}x${part.height} NÃO CABE no bloco ${block.length}x${block.width}x${block.height}`,
+        `[nestPartsInBlock] Peça ${part.length}x${part.width}x${part.height} + kerf=${kerf} NÃO CABE no espaço disponível ${availLength}x${availWidth}x${availHeight}`,
       );
       continue; // Pula esta peça
     }
