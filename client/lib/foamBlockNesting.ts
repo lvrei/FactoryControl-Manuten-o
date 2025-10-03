@@ -174,9 +174,12 @@ export function calculateOptimalBlockSize(
   let blockHeight = constraints.maxHeight;
 
   return {
-    length: blockLength,
-    width: blockWidth,
-    height: blockHeight,
+    block: {
+      length: blockLength,
+      width: blockWidth,
+      height: blockHeight,
+    },
+    adjustedMargin,
   };
 }
 
