@@ -230,8 +230,8 @@ export function calculateOptimalBlockSize(
 }
 
 /**
- * Algoritmo de nesting 3D simplificado
- * Usa estratégia de camadas (layers) em Z
+ * Algoritmo de nesting 3D otimizado
+ * Usa estratégia de empacotamento em camadas com melhor aproveitamento de espaço
  */
 export function nestPartsInBlock(
   parts: FoamPart[],
@@ -241,134 +241,94 @@ export function nestPartsInBlock(
 ): PlacedPart[] {
   const placements: PlacedPart[] = [];
 
-  // As peças já vêm expandidas (quantity: 1) da função nestFoamParts
-  // Ordena por volume decrescente (maiores primeiro)
+  // Ordena por área decrescente (maiores primeiro para melhor empacotamento)
   const sortedParts = [...parts].sort(
-    (a, b) => calculateVolume(b) - calculateVolume(a),
+    (a, b) => (b.length * b.width) - (a.length * a.width),
   );
 
   const usableLength = block.length - 2 * margin;
   const usableWidth = block.width - 2 * margin;
   const usableHeight = block.height - 2 * margin;
 
-  let currentZ = margin;
-  let currentLayer: PlacedPart[] = [];
-
   console.log(
-    `[nestPartsInBlock] Tentando alocar ${sortedParts.length} peças em bloco ${block.length}x${block.width}x${block.height}`,
+    `[nestPartsInBlock] 🎯 Alocando ${sortedParts.length} peças em bloco ${block.length}×${block.width}×${block.height}mm`,
   );
   console.log(
-    `[nestPartsInBlock] Espaço disponível: ${block.length - 2 * margin}x${block.width - 2 * margin}x${block.height - 2 * margin} (após margens de ${margin}mm)`,
+    `[nestPartsInBlock] 📦 Espaço útil: ${usableLength}×${usableWidth}×${usableHeight}mm (margens ${margin}mm, kerf ${kerf}mm)`,
   );
 
-  for (const part of sortedParts) {
-    let placed = false;
+  // Calcula quantas peças cabem por camada (padrão regular)
+  if (sortedParts.length > 0) {
+    const firstPart = sortedParts[0];
 
-    // Verifica se a peça cabe no bloco (dimensões básicas + margens + kerf)
-    const needsLength = part.length + kerf;
-    const needsWidth = part.width + kerf;
-    const needsHeight = part.height + kerf;
-    const availLength = block.length - 2 * margin;
-    const availWidth = block.width - 2 * margin;
-    const availHeight = block.height - 2 * margin;
+    // Tenta orientações diferentes para maximizar
+    const orientation1 = {
+      perLength: Math.floor(usableLength / (firstPart.length + kerf)),
+      perWidth: Math.floor(usableWidth / (firstPart.width + kerf)),
+      total: Math.floor(usableLength / (firstPart.length + kerf)) *
+             Math.floor(usableWidth / (firstPart.width + kerf)),
+    };
 
-    if (
-      needsLength > availLength ||
-      needsWidth > availWidth ||
-      needsHeight > availHeight
-    ) {
-      console.warn(
-        `[nestPartsInBlock] Peça ${part.length}x${part.width}x${part.height} + kerf=${kerf} NÃO CABE no espaço disponível ${availLength}x${availWidth}x${availHeight}`,
-      );
-      continue; // Pula esta peça
-    }
+    // Rotação 90° (troca length <-> width)
+    const orientation2 = {
+      perLength: Math.floor(usableLength / (firstPart.width + kerf)),
+      perWidth: Math.floor(usableWidth / (firstPart.length + kerf)),
+      total: Math.floor(usableLength / (firstPart.width + kerf)) *
+             Math.floor(usableWidth / (firstPart.length + kerf)),
+    };
 
-    // Tenta colocar na camada atual
-    if (currentZ + part.height + kerf <= block.height - margin) {
-      // Tenta posições em grade na camada
-      const step = 50; // passo de 50mm
+    const bestOrientation = orientation1.total >= orientation2.total ? orientation1 : orientation2;
+    const useRotation = orientation2.total > orientation1.total;
 
-      for (let y = margin; y <= usableWidth - part.width; y += step) {
-        if (placed) break;
+    console.log(`[nestPartsInBlock] 🔄 Orientação: ${useRotation ? 'ROTACIONADA 90°' : 'PADRÃO'}`);
+    console.log(`[nestPartsInBlock] 📐 Peças por camada: ${bestOrientation.perLength} × ${bestOrientation.perWidth} = ${bestOrientation.total}`);
 
-        for (let x = margin; x <= usableLength - part.length; x += step) {
-          // Verifica colisão com peças já colocadas nesta camada
-          const collision = currentLayer.some((p) => {
-            return !(
-              x + part.length + kerf <= p.x ||
-              p.x + p.length + kerf <= x ||
-              y + part.width + kerf <= p.y ||
-              p.y + p.width + kerf <= y
-            );
-          });
+    // Calcula quantas camadas cabem em Z
+    const layersZ = Math.floor(usableHeight / (firstPart.height + kerf));
+    console.log(`[nestPartsInBlock] 📏 Camadas em Z: ${layersZ} (altura peça: ${firstPart.height}mm + kerf ${kerf}mm)`);
 
-          if (!collision) {
-            const placement: PlacedPart = {
+    // Empacotamento em grade regular 3D
+    let partIndex = 0;
+    for (let z = 0; z < layersZ && partIndex < sortedParts.length; z++) {
+      const currentZ = margin + z * (firstPart.height + kerf);
+
+      for (let ix = 0; ix < bestOrientation.perLength && partIndex < sortedParts.length; ix++) {
+        for (let iy = 0; iy < bestOrientation.perWidth && partIndex < sortedParts.length; iy++) {
+          const part = sortedParts[partIndex];
+
+          // Aplica rotação se necessário
+          const partLength = useRotation ? part.width : part.length;
+          const partWidth = useRotation ? part.length : part.width;
+
+          const x = margin + ix * (partLength + kerf);
+          const y = margin + iy * (partWidth + kerf);
+
+          // Verifica se cabe
+          if (x + partLength <= block.length - margin &&
+              y + partWidth <= block.width - margin &&
+              currentZ + part.height <= block.height - margin) {
+
+            placements.push({
               ...part,
+              length: partLength,
+              width: partWidth,
               x,
               y,
               z: currentZ,
-              blockIndex: 0, // será ajustado depois
-            };
-            placements.push(placement);
-            currentLayer.push(placement);
-            placed = true;
-            break;
+              blockIndex: 0,
+            });
+            partIndex++;
           }
         }
       }
     }
 
-    // Se não coube na camada atual, tenta nova camada
-    if (!placed && currentLayer.length > 0) {
-      const maxHeightInLayer = Math.max(...currentLayer.map((p) => p.height));
-      currentZ += maxHeightInLayer + kerf;
-      currentLayer = [];
-
-      // Tenta colocar na nova camada
-      if (currentZ + part.height + kerf <= block.height - margin) {
-        const placement: PlacedPart = {
-          ...part,
-          x: margin,
-          y: margin,
-          z: currentZ,
-          blockIndex: 0,
-        };
-        placements.push(placement);
-        currentLayer.push(placement);
-        placed = true;
-      }
-    }
-
-    // Se ainda não coube (primeira peça da primeira camada)
-    if (!placed && currentLayer.length === 0 && currentZ === margin) {
-      // Só coloca se for a primeira camada (z=margin) e não ultrapassar altura
-      if (currentZ + part.height + kerf <= block.height - margin) {
-        const placement: PlacedPart = {
-          ...part,
-          x: margin,
-          y: margin,
-          z: currentZ,
-          blockIndex: 0,
-        };
-        placements.push(placement);
-        currentLayer.push(placement);
-        placed = true;
-      }
-    }
-
-    // Se não conseguiu colocar, para de tentar neste bloco
-    if (!placed) {
-      console.log(
-        `[nestPartsInBlock] Peça ${part.length}x${part.width}x${part.height} não coube - bloco cheio`,
-      );
-      break; // Para e retorna o que foi colocado até agora
-    }
+    const capacity = bestOrientation.total * layersZ;
+    const efficiency = (placements.length / Math.min(capacity, sortedParts.length)) * 100;
+    console.log(
+      `[nestPartsInBlock] ✅ Alocado: ${placements.length}/${sortedParts.length} peças (capacidade: ${capacity}, eficiência: ${efficiency.toFixed(1)}%)`,
+    );
   }
-
-  console.log(
-    `[nestPartsInBlock] Total alocado: ${placements.length} de ${sortedParts.length} peças`,
-  );
 
   return placements;
 }
