@@ -3,6 +3,7 @@ import { X, Plus, Trash2, Layers, Info } from "lucide-react";
 import { ProductionOrderLine, FoamType } from "@/types/production";
 import { productionService } from "@/services/productionService";
 import FoamBlock3DViewer from "./FoamBlock3DViewer";
+import type { BlockNestingResult } from "@/lib/foamBlockNesting";
 
 type CarouselCut = {
   id: string;
