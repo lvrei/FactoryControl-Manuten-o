@@ -159,27 +159,39 @@ export function calculateOptimalBlockSize(
     );
   }
 
-  // Calcula tamanho MÍNIMO necessário para comprimento e largura (usando margens ajustadas)
-  const minBlockLength =
-    maxPartLength + 2 * adjustedMargin + constraints.kerf;
-  const minBlockWidth =
-    maxPartWidth + 2 * adjustedMargin + constraints.kerf;
+  let blockLength: number;
+  let blockWidth: number;
+  let blockHeight: number;
 
-  // Arredonda PARA CIMA para múltiplos de 50mm (garante que cabe)
-  let blockLength = Math.ceil(minBlockLength / 50) * 50;
-  let blockWidth = Math.ceil(minBlockWidth / 50) * 50;
+  if (maximize) {
+    // MODO MAXIMIZAR: Usa limites MÁXIMOS da CNC para aproveitar todo o espaço
+    // Ideal para o primeiro bloco quando queremos colocar o máximo de peças possível
+    console.log("🔧 Modo MAXIMIZAR: Usando limites máximos da CNC");
+    blockLength = constraints.maxLength;
+    blockWidth = constraints.maxWidth;
+    blockHeight = constraints.maxHeight;
+  } else {
+    // MODO OTIMIZAR: Calcula tamanho MÍNIMO necessário para as peças restantes
+    // Ideal para blocos subsequentes com menos peças
+    console.log("🔧 Modo OTIMIZAR: Calculando tamanho mínimo necessário");
+    const minBlockLength = maxPartLength + 2 * adjustedMargin + constraints.kerf;
+    const minBlockWidth = maxPartWidth + 2 * adjustedMargin + constraints.kerf;
 
-  // Limita ao máximo da CNC (não deve acontecer se validação acima passou)
-  blockLength = Math.min(blockLength, constraints.maxLength);
-  blockWidth = Math.min(blockWidth, constraints.maxWidth);
+    // Arredonda PARA CIMA para múltiplos de 50mm (garante que cabe)
+    blockLength = Math.ceil(minBlockLength / 50) * 50;
+    blockWidth = Math.ceil(minBlockWidth / 50) * 50;
 
-  // Garante mínimo de 500mm em comprimento e largura
-  blockLength = Math.max(500, blockLength);
-  blockWidth = Math.max(500, blockWidth);
+    // Limita ao máximo da CNC (não deve acontecer se validação acima passou)
+    blockLength = Math.min(blockLength, constraints.maxLength);
+    blockWidth = Math.min(blockWidth, constraints.maxWidth);
 
-  // ALTURA: Usa o MÁXIMO da CNC para permitir empilhamento em múltiplas camadas (Z)
-  // Não otimiza altura - usa toda a altura disponível para nesting em camadas
-  let blockHeight = constraints.maxHeight;
+    // Garante mínimo de 500mm em comprimento e largura
+    blockLength = Math.max(500, blockLength);
+    blockWidth = Math.max(500, blockWidth);
+
+    // ALTURA: Usa o MÁXIMO da CNC para permitir empilhamento em múltiplas camadas (Z)
+    blockHeight = constraints.maxHeight;
+  }
 
   return {
     block: {
@@ -220,7 +232,7 @@ export function nestPartsInBlock(
     `[nestPartsInBlock] Tentando alocar ${sortedParts.length} peças em bloco ${block.length}x${block.width}x${block.height}`,
   );
   console.log(
-    `[nestPartsInBlock] Espaço disponível: ${block.length - 2 * margin}x${block.width - 2 * margin}x${block.height - 2 * margin} (após margens de ${margin}mm)`,
+    `[nestPartsInBlock] Espaço disponível: ${block.length - 2 * margin}x${block.width - 2 * margin}x${block.height - 2 * margin} (ap��s margens de ${margin}mm)`,
   );
 
   for (const part of sortedParts) {
