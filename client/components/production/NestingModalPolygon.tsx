@@ -1624,7 +1624,7 @@ export default function NestingModalPolygon({
                         return {
                           x: p.x,
                           y: p.y,
-                          z: p.sheetIndex * (manualHeight + 10),
+                          z: 0, // Z é sempre 0 pois cada bloco é visualizado separadamente
                           length: maxX - minX,
                           width: maxY - minY,
                           height: manualHeight,
