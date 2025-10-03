@@ -151,11 +151,11 @@ export function calculateOptimalBlockSize(
     );
   }
 
-  // Calcula tamanho MÍNIMO necessário para comprimento e largura
+  // Calcula tamanho MÍNIMO necessário para comprimento e largura (usando margens ajustadas)
   const minBlockLength =
-    maxPartLength + 2 * constraints.margin + constraints.kerf;
+    maxPartLength + 2 * adjustedMargin + constraints.kerf;
   const minBlockWidth =
-    maxPartWidth + 2 * constraints.margin + constraints.kerf;
+    maxPartWidth + 2 * adjustedMargin + constraints.kerf;
 
   // Arredonda PARA CIMA para múltiplos de 50mm (garante que cabe)
   let blockLength = Math.ceil(minBlockLength / 50) * 50;
