@@ -24,6 +24,7 @@ import {
 import { productionService } from "@/services/productionService";
 import { cn } from "@/lib/utils";
 import NestingModalPolygon from "./NestingModalPolygon";
+import NestingModalCarousel from "./NestingModalCarousel";
 
 interface ProductionOrderManagerProps {
   onClose?: () => void;
