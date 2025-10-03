@@ -52,9 +52,13 @@ export default function ManualShapeInput({
     const partHeightWithMargin = formData.height + cuttingMargins.height;
 
     // Calcula quantas peças cabem em cada dimensão do limite da máquina
-    const piecesInLength = Math.floor(machineLimits.length / partLengthWithMargin);
+    const piecesInLength = Math.floor(
+      machineLimits.length / partLengthWithMargin,
+    );
     const piecesInWidth = Math.floor(machineLimits.width / partWidthWithMargin);
-    const piecesInHeight = Math.floor(machineLimits.height / partHeightWithMargin);
+    const piecesInHeight = Math.floor(
+      machineLimits.height / partHeightWithMargin,
+    );
 
     // Total de peças que cabem no bloco máximo
     const totalPiecesFit = piecesInLength * piecesInWidth * piecesInHeight;
@@ -78,17 +82,29 @@ export default function ManualShapeInput({
     } else if (quantityNeeded <= piecesInLength * piecesInWidth) {
       // Cabem todas em 1 camada (comprimento x largura)
       const rows = Math.ceil(quantityNeeded / piecesInLength);
-      optimalLength = Math.min(piecesInLength * partLengthWithMargin, machineLimits.length);
+      optimalLength = Math.min(
+        piecesInLength * partLengthWithMargin,
+        machineLimits.length,
+      );
       optimalWidth = rows * partWidthWithMargin;
       optimalHeight = partHeightWithMargin;
     } else {
       // Necessita múltiplas camadas - usa o máximo eficiente
-      optimalLength = Math.min(piecesInLength * partLengthWithMargin, machineLimits.length);
-      optimalWidth = Math.min(piecesInWidth * partWidthWithMargin, machineLimits.width);
+      optimalLength = Math.min(
+        piecesInLength * partLengthWithMargin,
+        machineLimits.length,
+      );
+      optimalWidth = Math.min(
+        piecesInWidth * partWidthWithMargin,
+        machineLimits.width,
+      );
 
       const piecesPerLayer = piecesInLength * piecesInWidth;
       const layersNeeded = Math.ceil(quantityNeeded / piecesPerLayer);
-      optimalHeight = Math.min(layersNeeded * partHeightWithMargin, machineLimits.height);
+      optimalHeight = Math.min(
+        layersNeeded * partHeightWithMargin,
+        machineLimits.height,
+      );
     }
 
     // Arredonda para múltiplos de 10mm (mais prático)
@@ -106,8 +122,13 @@ export default function ManualShapeInput({
       width: optimalWidth,
       height: optimalHeight,
       waste: {
-        length: optimalLength - formData.length * Math.min(piecesInLength, quantityNeeded),
-        width: optimalWidth - formData.width * Math.min(piecesInWidth, Math.ceil(quantityNeeded / piecesInLength)),
+        length:
+          optimalLength -
+          formData.length * Math.min(piecesInLength, quantityNeeded),
+        width:
+          optimalWidth -
+          formData.width *
+            Math.min(piecesInWidth, Math.ceil(quantityNeeded / piecesInLength)),
         height: optimalHeight - formData.height,
       },
     };
