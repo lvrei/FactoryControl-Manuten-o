@@ -48,6 +48,7 @@ export default function NestingModalCarousel({
   });
   const [selectedFoamType, setSelectedFoamType] = useState<string>("");
   const [show3DView, setShow3DView] = useState(false);
+  const [selectedBlockIndex, setSelectedBlockIndex] = useState(0);
 
   // Limites da máquina Carrossel
   const [machineLimits] = useState({
@@ -492,9 +493,9 @@ export default function NestingModalCarousel({
 
                 {show3DView && nestingResult.placements && (() => {
                   // Cria objeto result compatível com BlockNestingResult
-                  const block = nestingResult.blocks[0];
+                  const block = nestingResult.blocks[selectedBlockIndex];
                   const blockPlacements = nestingResult.placements.filter(
-                    (p) => p.blockIndex === 0
+                    (p) => p.blockIndex === selectedBlockIndex
                   );
 
                   const result3D = {
@@ -504,7 +505,7 @@ export default function NestingModalCarousel({
                     totalPartsPlaced: blockPlacements.length,
                     utilization: 0,
                     blockDetails: [{
-                      blockIndex: 0,
+                      blockIndex: selectedBlockIndex,
                       dimensions: block,
                       partsCount: blockPlacements.length,
                       utilizationPercent: 0,
@@ -513,8 +514,29 @@ export default function NestingModalCarousel({
 
                   return (
                     <div className="border rounded bg-white dark:bg-gray-900 p-2">
-                      <div className="text-sm font-medium mb-2 text-center">
-                        Visualização 3D - Bloco 1
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="text-sm font-medium">
+                          Visualização 3D
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => setSelectedBlockIndex(Math.max(0, selectedBlockIndex - 1))}
+                            disabled={selectedBlockIndex === 0}
+                            className="px-2 py-1 text-xs border rounded hover:bg-muted disabled:opacity-50"
+                          >
+                            ←
+                          </button>
+                          <span className="text-xs">
+                            Bloco {selectedBlockIndex + 1} / {nestingResult.blocks.length}
+                          </span>
+                          <button
+                            onClick={() => setSelectedBlockIndex(Math.min(nestingResult.blocks.length - 1, selectedBlockIndex + 1))}
+                            disabled={selectedBlockIndex === nestingResult.blocks.length - 1}
+                            className="px-2 py-1 text-xs border rounded hover:bg-muted disabled:opacity-50"
+                          >
+                            →
+                          </button>
+                        </div>
                       </div>
                       <FoamBlock3DViewer result={result3D} selectedBlockIndex={0} />
                     </div>
