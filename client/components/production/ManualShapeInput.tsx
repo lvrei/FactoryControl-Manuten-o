@@ -260,6 +260,51 @@ export default function ManualShapeInput({
           />
         </div>
 
+        {/* Otimização de desperdício */}
+        <div className="mb-3 p-2 border rounded bg-muted/30">
+          <label className="flex items-start gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={optimizeWaste}
+              onChange={(e) => setOptimizeWaste(e.target.checked)}
+              className="mt-0.5"
+            />
+            <div className="flex-1">
+              <div className="text-xs font-medium">Otimizar tamanho do bloco</div>
+              <div className="text-xs text-muted-foreground mt-0.5">
+                Ajusta automaticamente o tamanho do bloco para reduzir desperdício
+              </div>
+            </div>
+          </label>
+          {optimizeWaste && formData.length > 0 && formData.width > 0 && formData.height > 0 && (() => {
+            const opt = calculateOptimizedBlockSize();
+            const wastePercent = ((opt.waste.length + opt.waste.width + opt.waste.height) /
+                                  (opt.length + opt.width + opt.height)) * 100;
+            return (
+              <div className="mt-2 pt-2 border-t text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Peça:</span>
+                  <span className="font-mono">{formData.length}×{formData.width}×{formData.height}mm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Bloco sugerido:</span>
+                  <span className="font-mono text-green-700">{opt.length}×{opt.width}×{opt.height}mm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Margem total:</span>
+                  <span className="font-mono">{opt.waste.length}×{opt.waste.width}×{opt.waste.height}mm</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Desperdício:</span>
+                  <span className={`font-medium ${wastePercent < 20 ? 'text-green-600' : wastePercent < 40 ? 'text-yellow-600' : 'text-red-600'}`}>
+                    {wastePercent.toFixed(1)}%
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+        </div>
+
         <button
           onClick={handleAdd}
           className="w-full px-3 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90 flex items-center justify-center gap-2"
