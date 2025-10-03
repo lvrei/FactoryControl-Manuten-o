@@ -46,30 +46,69 @@ export default function ManualShapeInput({
   const [optimizeWaste, setOptimizeWaste] = useState(true);
 
   const calculateOptimizedBlockSize = () => {
-    const partLength = formData.length + cuttingMargins.length;
-    const partWidth = formData.width + cuttingMargins.width;
-    const partHeight = formData.height + cuttingMargins.height;
+    // Calcula o tamanho de cada peça COM margens de corte
+    const partLengthWithMargin = formData.length + cuttingMargins.length;
+    const partWidthWithMargin = formData.width + cuttingMargins.width;
+    const partHeightWithMargin = formData.height + cuttingMargins.height;
 
     // Calcula quantas peças cabem em cada dimensão do limite da máquina
-    const piecesInLength = Math.floor(machineLimits.length / partLength);
-    const piecesInWidth = Math.floor(machineLimits.width / partWidth);
-    const piecesInHeight = Math.floor(machineLimits.height / partHeight);
+    const piecesInLength = Math.floor(machineLimits.length / partLengthWithMargin);
+    const piecesInWidth = Math.floor(machineLimits.width / partWidthWithMargin);
+    const piecesInHeight = Math.floor(machineLimits.height / partHeightWithMargin);
 
-    // Se só cabe 1 peça em cada dimensão, usa o tamanho da peça + margem
-    const optimizedLength =
-      piecesInLength <= 1 ? partLength : machineLimits.length;
-    const optimizedWidth = piecesInWidth <= 1 ? partWidth : machineLimits.width;
-    const optimizedHeight =
-      piecesInHeight <= 1 ? partHeight : machineLimits.height;
+    // Total de peças que cabem no bloco máximo
+    const totalPiecesFit = piecesInLength * piecesInWidth * piecesInHeight;
+    const quantityNeeded = formData.quantity;
+
+    // Calcula distribuição ideal baseada na quantidade necessária
+    let optimalLength: number;
+    let optimalWidth: number;
+    let optimalHeight: number;
+
+    if (quantityNeeded === 1) {
+      // Para 1 peça, usa apenas o espaço necessário
+      optimalLength = partLengthWithMargin;
+      optimalWidth = partWidthWithMargin;
+      optimalHeight = partHeightWithMargin;
+    } else if (quantityNeeded <= piecesInLength) {
+      // Cabem todas em linha (comprimento)
+      optimalLength = quantityNeeded * partLengthWithMargin;
+      optimalWidth = partWidthWithMargin;
+      optimalHeight = partHeightWithMargin;
+    } else if (quantityNeeded <= piecesInLength * piecesInWidth) {
+      // Cabem todas em 1 camada (comprimento x largura)
+      const rows = Math.ceil(quantityNeeded / piecesInLength);
+      optimalLength = Math.min(piecesInLength * partLengthWithMargin, machineLimits.length);
+      optimalWidth = rows * partWidthWithMargin;
+      optimalHeight = partHeightWithMargin;
+    } else {
+      // Necessita múltiplas camadas - usa o máximo eficiente
+      optimalLength = Math.min(piecesInLength * partLengthWithMargin, machineLimits.length);
+      optimalWidth = Math.min(piecesInWidth * partWidthWithMargin, machineLimits.width);
+
+      const piecesPerLayer = piecesInLength * piecesInWidth;
+      const layersNeeded = Math.ceil(quantityNeeded / piecesPerLayer);
+      optimalHeight = Math.min(layersNeeded * partHeightWithMargin, machineLimits.height);
+    }
+
+    // Arredonda para múltiplos de 10mm (mais prático)
+    optimalLength = Math.ceil(optimalLength / 10) * 10;
+    optimalWidth = Math.ceil(optimalWidth / 10) * 10;
+    optimalHeight = Math.ceil(optimalHeight / 10) * 10;
+
+    // Garante que não ultrapassa limites da máquina
+    optimalLength = Math.min(optimalLength, machineLimits.length);
+    optimalWidth = Math.min(optimalWidth, machineLimits.width);
+    optimalHeight = Math.min(optimalHeight, machineLimits.height);
 
     return {
-      length: optimizedLength,
-      width: optimizedWidth,
-      height: optimizedHeight,
+      length: optimalLength,
+      width: optimalWidth,
+      height: optimalHeight,
       waste: {
-        length: optimizedLength - formData.length,
-        width: optimizedWidth - formData.width,
-        height: optimizedHeight - formData.height,
+        length: optimalLength - formData.length * Math.min(piecesInLength, quantityNeeded),
+        width: optimalWidth - formData.width * Math.min(piecesInWidth, Math.ceil(quantityNeeded / piecesInLength)),
+        height: optimalHeight - formData.height,
       },
     };
   };
@@ -98,7 +137,7 @@ export default function ManualShapeInput({
       console.log(`🔧 Otimização de desperdício:`, {
         original: `${formData.length}×${formData.width}×${formData.height}mm`,
         optimized: `${optimizedSize.length}×${optimizedSize.width}×${optimizedSize.height}mm`,
-        waste: `${optimizedSize.waste.length}×${optimizedSize.waste.width}×${optimizedSize.waste.height}mm`,
+        waste: `${optimizedSize.waste.length}��${optimizedSize.waste.width}×${optimizedSize.waste.height}mm`,
         wastePercent: `${wastePercent.toFixed(1)}%`,
       });
 
