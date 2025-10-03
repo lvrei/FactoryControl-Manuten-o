@@ -375,13 +375,6 @@ function ProductionNew() {
             <Layers className="h-4 w-4" />
             Nova OP (nesting)
           </button>
-          <button
-            onClick={() => setShowNestingCarousel(true)}
-            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:bg-secondary/90 flex items-center gap-2"
-            title="Nesting otimizado para Carrossel (corte vertical)"
-          >
-            🔄 Nesting Carrossel
-          </button>
         </div>
       </div>
 
