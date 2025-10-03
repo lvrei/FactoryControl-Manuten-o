@@ -88,6 +88,7 @@ export default function NestingModalPolygon({
   const [manualShapes, setManualShapes] = useState<ManualShape[]>([]);
   const [viewMode, setViewMode] = useState<"2d" | "3d">("3d"); // 3D por padrão para melhor experiência
   const [selectedBlockIndex, setSelectedBlockIndex] = useState<number>(0);
+  const [optimizeWaste, setOptimizeWaste] = useState(true);
 
   // Limites da máquina CNC (padrão)
   const [cncConstraints, setCncConstraints] = useState<BlockConstraints>({
@@ -713,30 +714,176 @@ export default function NestingModalPolygon({
 
             {/* Entrada de Ficheiro */}
             {inputMode === "file" && (
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Ficheiro DXF/JSON
-                </label>
-                <input
-                  type="file"
-                  accept=".json,.dxf"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) handleFile(f);
-                  }}
-                  disabled={isLoading}
-                  className="w-full"
-                />
-                {fileName && (
-                  <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
-                    {isLoading ? (
-                      <>
-                        <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
-                        A carregar...
-                      </>
-                    ) : (
-                      fileName
-                    )}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    Ficheiro DXF/JSON
+                  </label>
+                  <input
+                    type="file"
+                    accept=".json,.dxf"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0];
+                      if (f) handleFile(f);
+                    }}
+                    disabled={isLoading}
+                    className="w-full"
+                  />
+                  {fileName && (
+                    <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
+                      {isLoading ? (
+                        <>
+                          <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+                          A carregar...
+                        </>
+                      ) : (
+                        fileName
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Otimização de desperdício para ficheiro */}
+                {drawing && drawing.parts && drawing.parts.length > 0 && (
+                  <div className="p-3 border rounded bg-muted/30">
+                    <label className="flex items-start gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={optimizeWaste}
+                        onChange={(e) => setOptimizeWaste(e.target.checked)}
+                        className="mt-0.5"
+                      />
+                      <div className="flex-1">
+                        <div className="text-sm font-medium">
+                          Otimizar tamanho do bloco
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          Ajusta automaticamente os limites da máquina CNC com base nas peças do ficheiro
+                        </div>
+                      </div>
+                    </label>
+                    {optimizeWaste &&
+                      (() => {
+                        const allParts: FoamPart[] = [];
+
+                        if (drawing && drawing.parts) {
+                          const scaled = drawing.parts.map((p) => ({
+                            length: p.length,
+                            width: p.width,
+                            height: p.height,
+                            quantity: Math.max(
+                              0,
+                              Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
+                            ),
+                            label: p.label,
+                            foamTypeId: p.foamTypeId || mappingFoamTypeId,
+                          }));
+                          allParts.push(...scaled);
+                        }
+
+                        const maxPartLength = Math.max(...allParts.map((p) => p.length));
+                        const maxPartWidth = Math.max(...allParts.map((p) => p.width));
+                        const maxPartHeight = Math.max(...allParts.map((p) => p.height));
+
+                        const effectiveMargin = Math.max(
+                          foam3dMargins.top,
+                          foam3dMargins.bottom,
+                          foam3dMargins.left,
+                          foam3dMargins.right,
+                        );
+
+                        const optLength = Math.min(
+                          cncConstraints.maxLength,
+                          maxPartLength + effectiveMargin * 2,
+                        );
+                        const optWidth = Math.min(
+                          cncConstraints.maxWidth,
+                          maxPartWidth + effectiveMargin * 2,
+                        );
+                        const optHeight = Math.min(
+                          cncConstraints.maxHeight,
+                          maxPartHeight + effectiveMargin,
+                        );
+
+                        const currentWaste =
+                          ((cncConstraints.maxLength - maxPartLength +
+                            (cncConstraints.maxWidth - maxPartWidth) +
+                            (cncConstraints.maxHeight - maxPartHeight)) /
+                            (cncConstraints.maxLength + cncConstraints.maxWidth + cncConstraints.maxHeight)) *
+                          100;
+                        const optimizedWaste =
+                          ((optLength - maxPartLength +
+                            (optWidth - maxPartWidth) +
+                            (optHeight - maxPartHeight)) /
+                            (optLength + optWidth + optHeight)) *
+                          100;
+
+                        return (
+                          <div className="mt-2 pt-2 border-t text-xs space-y-1">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Peça maior:</span>
+                              <span className="font-mono">
+                                {maxPartLength}×{maxPartWidth}×{maxPartHeight}mm
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Limites atuais:</span>
+                              <span className="font-mono">
+                                {cncConstraints.maxLength}×{cncConstraints.maxWidth}×{cncConstraints.maxHeight}mm
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Sugestão otimizada:</span>
+                              <span className="font-mono text-green-700">
+                                {optLength}×{optWidth}×{optHeight}mm
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Desperdício atual:</span>
+                              <span
+                                className={`font-medium ${
+                                  currentWaste < 20
+                                    ? "text-green-600"
+                                    : currentWaste < 40
+                                      ? "text-yellow-600"
+                                      : "text-red-600"
+                                }`}
+                              >
+                                {currentWaste.toFixed(1)}%
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Desperdício otimizado:</span>
+                              <span
+                                className={`font-medium ${
+                                  optimizedWaste < 20
+                                    ? "text-green-600"
+                                    : optimizedWaste < 40
+                                      ? "text-yellow-600"
+                                      : "text-red-600"
+                                }`}
+                              >
+                                {optimizedWaste.toFixed(1)}%
+                              </span>
+                            </div>
+                            {currentWaste > optimizedWaste + 5 && (
+                              <button
+                                onClick={() => {
+                                  setCncConstraints((c) => ({
+                                    ...c,
+                                    maxLength: optLength,
+                                    maxWidth: optWidth,
+                                    maxHeight: optHeight,
+                                  }));
+                                }}
+                                className="w-full mt-2 px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                              >
+                                Aplicar limites otimizados automaticamente
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })()}
                   </div>
                 )}
               </div>
@@ -756,6 +903,15 @@ export default function NestingModalPolygon({
                   length: foam3dMargins.left + foam3dMargins.right,
                   width: foam3dMargins.top + foam3dMargins.bottom,
                   height: 20,
+                }}
+                onOptimizedSizeApply={(optimized) => {
+                  // Atualiza automaticamente os limites da máquina CNC
+                  setCncConstraints((c) => ({
+                    ...c,
+                    maxLength: optimized.length,
+                    maxWidth: optimized.width,
+                    maxHeight: optimized.height,
+                  }));
                 }}
               />
             )}
