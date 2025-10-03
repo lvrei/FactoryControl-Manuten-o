@@ -587,25 +587,37 @@ export default function NestingModalCarousel({
                     .filter((p) => p.blockIndex === selectedBlockIndex)
                     .map((p) => ({ ...p, blockIndex: 0 })); // Normaliza para blockIndex 0
 
+                  // Calcular aproveitamento do bloco
+                  const blockVolume = (block.length * block.width * block.height) / 1e9; // m³
+                  const usedVolume = blockPlacements.reduce((sum, p) =>
+                    sum + (p.length * p.width * p.height) / 1e9, 0
+                  );
+                  const utilizationPercent = blockVolume > 0 ? (usedVolume / blockVolume) * 100 : 0;
+
                   const result3D = {
                     smallBlocks: [block],
                     placements: blockPlacements,
                     totalBlocksNeeded: 1,
                     totalPartsPlaced: blockPlacements.length,
-                    utilization: 0,
+                    utilization: utilizationPercent / 100,
                     blockDetails: [{
                       blockIndex: 0, // Sempre 0 pois só mostramos 1 bloco
                       dimensions: block,
                       partsCount: blockPlacements.length,
-                      utilizationPercent: 0,
+                      utilizationPercent: utilizationPercent,
                     }],
                   };
 
                   return (
                     <div className="border rounded bg-white dark:bg-gray-900 p-2">
                       <div className="flex items-center justify-between mb-2">
-                        <div className="text-sm font-medium">
-                          Visualização 3D
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-medium">
+                            Visualização 3D
+                          </div>
+                          <div className="text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                            Aproveitamento: {utilizationPercent.toFixed(1)}%
+                          </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <button
