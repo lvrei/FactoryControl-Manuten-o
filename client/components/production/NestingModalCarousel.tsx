@@ -489,19 +489,36 @@ export default function NestingModalCarousel({
                   </div>
                 </div>
 
-                {show3DView && nestingResult.placements && (
-                  <div className="border rounded bg-white dark:bg-gray-900 p-2">
-                    <div className="text-sm font-medium mb-2 text-center">
-                      Visualização 3D - Bloco 1
+                {show3DView && nestingResult.placements && (() => {
+                  // Cria objeto result compatível com BlockNestingResult
+                  const block = nestingResult.blocks[0];
+                  const blockPlacements = nestingResult.placements.filter(
+                    (p) => p.blockIndex === 0
+                  );
+
+                  const result3D = {
+                    smallBlocks: [block],
+                    placements: blockPlacements,
+                    totalBlocksNeeded: 1,
+                    totalPartsPlaced: blockPlacements.length,
+                    utilization: 0,
+                    blockDetails: [{
+                      blockIndex: 0,
+                      dimensions: block,
+                      partsCount: blockPlacements.length,
+                      utilizationPercent: 0,
+                    }],
+                  };
+
+                  return (
+                    <div className="border rounded bg-white dark:bg-gray-900 p-2">
+                      <div className="text-sm font-medium mb-2 text-center">
+                        Visualização 3D - Bloco 1
+                      </div>
+                      <FoamBlock3DViewer result={result3D} selectedBlockIndex={0} />
                     </div>
-                    <FoamBlock3DViewer
-                      block={nestingResult.blocks[0]}
-                      placements={nestingResult.placements.filter(
-                        (p) => p.blockIndex === 0
-                      )}
-                    />
-                  </div>
-                )}
+                  );
+                })()}
 
                 {!show3DView && (
                   <div className="border rounded max-h-96 overflow-auto">
