@@ -74,6 +74,13 @@ export default function NestingModalCarousel({
     })();
   }, []); // Run only once on mount
 
+  // Reset selected block index when nesting result changes
+  useEffect(() => {
+    if (nestingResult && selectedBlockIndex >= nestingResult.blocks.length) {
+      setSelectedBlockIndex(0);
+    }
+  }, [nestingResult, selectedBlockIndex]);
+
   // Adiciona novo corte à lista
   const handleAddCut = useCallback(() => {
     if (newCut.length <= 0 || newCut.width <= 0 || newCut.height <= 0) {
