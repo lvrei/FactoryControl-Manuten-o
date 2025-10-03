@@ -378,7 +378,6 @@ export function nestFoamParts(
 
   // Primeiro bloco: MAXIMIZA uso da CNC para caber o máximo de peças possível
   // Blocos seguintes: OTIMIZA tamanho para peças restantes
-  let firstBlockCalculated = false;
   let adjustedMargin: number;
 
   // Debug: mostra maior peça
@@ -544,7 +543,7 @@ export function convertNestingToOperations(
     machineId: string;
     quantity: number; // número total de peças
     inputDimensions: FoamBlock; // bloco menor
-    parts: PlacedPart[]; // peças com posi��ões
+    parts: PlacedPart[]; // peças com posições
   };
 } {
   if (nestingResult.smallBlocks.length === 0) {
