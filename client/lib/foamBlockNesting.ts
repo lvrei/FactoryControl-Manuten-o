@@ -142,28 +142,27 @@ export function calculateOptimalBlockSize(
     );
   }
 
-  // Calcula tamanho MÍNIMO necessário para caber a peça + margens + kerf
+  // Calcula tamanho MÍNIMO necessário para comprimento e largura
   const minBlockLength =
     maxPartLength + 2 * constraints.margin + constraints.kerf;
   const minBlockWidth =
     maxPartWidth + 2 * constraints.margin + constraints.kerf;
-  const minBlockHeight =
-    maxPartHeight + 2 * constraints.margin + constraints.kerf;
 
   // Arredonda PARA CIMA para múltiplos de 50mm (garante que cabe)
   let blockLength = Math.ceil(minBlockLength / 50) * 50;
   let blockWidth = Math.ceil(minBlockWidth / 50) * 50;
-  let blockHeight = Math.ceil(minBlockHeight / 50) * 50;
 
   // Limita ao máximo da CNC (não deve acontecer se validação acima passou)
   blockLength = Math.min(blockLength, constraints.maxLength);
   blockWidth = Math.min(blockWidth, constraints.maxWidth);
-  blockHeight = Math.min(blockHeight, constraints.maxHeight);
 
-  // Garante mínimo de 500mm em comprimento e largura, 100mm em altura
+  // Garante mínimo de 500mm em comprimento e largura
   blockLength = Math.max(500, blockLength);
   blockWidth = Math.max(500, blockWidth);
-  blockHeight = Math.max(100, blockHeight);
+
+  // ALTURA: Usa o MÁXIMO da CNC para permitir empilhamento em múltiplas camadas (Z)
+  // Não otimiza altura - usa toda a altura disponível para nesting em camadas
+  let blockHeight = constraints.maxHeight;
 
   return {
     length: blockLength,
