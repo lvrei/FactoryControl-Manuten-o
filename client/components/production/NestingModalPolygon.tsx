@@ -811,10 +811,6 @@ export default function NestingModalPolygon({
                           maxPartWidth +
                           effectiveMargin * 2 +
                           cncConstraints.kerf;
-                        const minHeight =
-                          maxPartHeight +
-                          effectiveMargin * 2 +
-                          cncConstraints.kerf;
 
                         // Arredonda para cima em múltiplos de 50mm (mesma lógica do calculateOptimalBlockSize)
                         const optLength = Math.min(
@@ -825,10 +821,9 @@ export default function NestingModalPolygon({
                           cncConstraints.maxWidth,
                           Math.ceil(minWidth / 50) * 50,
                         );
-                        const optHeight = Math.min(
-                          cncConstraints.maxHeight,
-                          Math.ceil(minHeight / 50) * 50,
-                        );
+
+                        // ALTURA PERMANECE FIXA - não é otimizada (apenas operador pode editar)
+                        const optHeight = cncConstraints.maxHeight;
 
                         const currentWaste =
                           ((cncConstraints.maxLength -
