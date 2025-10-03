@@ -123,39 +123,64 @@ export function calculateOptimalBlockSize(
   let adjustedMargin = constraints.margin;
 
   // Verifica se as peças cabem com as margens atuais
-  const spaceNeededLength = maxPartLength + 2 * constraints.margin + constraints.kerf;
-  const spaceNeededWidth = maxPartWidth + 2 * constraints.margin + constraints.kerf;
-  const spaceNeededHeight = maxPartHeight + 2 * constraints.margin + constraints.kerf;
+  const spaceNeededLength =
+    maxPartLength + 2 * constraints.margin + constraints.kerf;
+  const spaceNeededWidth =
+    maxPartWidth + 2 * constraints.margin + constraints.kerf;
+  const spaceNeededHeight =
+    maxPartHeight + 2 * constraints.margin + constraints.kerf;
 
   // Se não couber, reduz margens automaticamente (mínimo 5mm)
-  if (spaceNeededLength > constraints.maxLength ||
-      spaceNeededWidth > constraints.maxWidth ||
-      spaceNeededHeight > constraints.maxHeight) {
-
+  if (
+    spaceNeededLength > constraints.maxLength ||
+    spaceNeededWidth > constraints.maxWidth ||
+    spaceNeededHeight > constraints.maxHeight
+  ) {
     // Calcula margem máxima possível para cada dimensão
-    const maxMarginLength = Math.floor((constraints.maxLength - maxPartLength - constraints.kerf) / 2);
-    const maxMarginWidth = Math.floor((constraints.maxWidth - maxPartWidth - constraints.kerf) / 2);
-    const maxMarginHeight = Math.floor((constraints.maxHeight - maxPartHeight - constraints.kerf) / 2);
+    const maxMarginLength = Math.floor(
+      (constraints.maxLength - maxPartLength - constraints.kerf) / 2,
+    );
+    const maxMarginWidth = Math.floor(
+      (constraints.maxWidth - maxPartWidth - constraints.kerf) / 2,
+    );
+    const maxMarginHeight = Math.floor(
+      (constraints.maxHeight - maxPartHeight - constraints.kerf) / 2,
+    );
 
-    adjustedMargin = Math.max(5, Math.min(maxMarginLength, maxMarginWidth, maxMarginHeight));
+    adjustedMargin = Math.max(
+      5,
+      Math.min(maxMarginLength, maxMarginWidth, maxMarginHeight),
+    );
 
     // Se mesmo com margens mínimas não couber, erro
     if (adjustedMargin < 5) {
-      const dimension = maxPartLength + constraints.kerf > constraints.maxLength ? 'comprimento' :
-                       maxPartWidth + constraints.kerf > constraints.maxWidth ? 'largura' : 'altura';
-      const partSize = dimension === 'comprimento' ? maxPartLength :
-                      dimension === 'largura' ? maxPartWidth : maxPartHeight;
-      const maxSize = dimension === 'comprimento' ? constraints.maxLength :
-                     dimension === 'largura' ? constraints.maxWidth : constraints.maxHeight;
+      const dimension =
+        maxPartLength + constraints.kerf > constraints.maxLength
+          ? "comprimento"
+          : maxPartWidth + constraints.kerf > constraints.maxWidth
+            ? "largura"
+            : "altura";
+      const partSize =
+        dimension === "comprimento"
+          ? maxPartLength
+          : dimension === "largura"
+            ? maxPartWidth
+            : maxPartHeight;
+      const maxSize =
+        dimension === "comprimento"
+          ? constraints.maxLength
+          : dimension === "largura"
+            ? constraints.maxWidth
+            : constraints.maxHeight;
 
       throw new Error(
         `Peça muito grande! ${dimension.charAt(0).toUpperCase() + dimension.slice(1)}: ${partSize}mm + kerf (${constraints.kerf}mm) = ${partSize + constraints.kerf}mm excede limite da CNC (${maxSize}mm). ` +
-        `Não é possível aplicar margens mínimas de segurança.`
+          `Não é possível aplicar margens mínimas de segurança.`,
       );
     }
 
     console.warn(
-      `⚠️ Margens reduzidas automaticamente de ${constraints.margin}mm para ${adjustedMargin}mm para caber peças no limite da CNC`
+      `⚠️ Margens reduzidas automaticamente de ${constraints.margin}mm para ${adjustedMargin}mm para caber peças no limite da CNC`,
     );
   }
 
@@ -174,7 +199,8 @@ export function calculateOptimalBlockSize(
     // MODO OTIMIZAR: Calcula tamanho MÍNIMO necessário para as peças restantes
     // Ideal para blocos subsequentes com menos peças
     console.log("🔧 Modo OTIMIZAR: Calculando tamanho mínimo necessário");
-    const minBlockLength = maxPartLength + 2 * adjustedMargin + constraints.kerf;
+    const minBlockLength =
+      maxPartLength + 2 * adjustedMargin + constraints.kerf;
     const minBlockWidth = maxPartWidth + 2 * adjustedMargin + constraints.kerf;
 
     // Arredonda PARA CIMA para múltiplos de 50mm (garante que cabe)
@@ -414,19 +440,20 @@ export function nestFoamParts(
     // Primeiro bloco: MAXIMIZA espaço da CNC
     // Blocos seguintes: OTIMIZA para peças restantes
     const isFirstBlock = blockIndex === 0;
-    const { block: currentBlock, adjustedMargin: blockMargin } = calculateOptimalBlockSize(
-      remainingParts,
-      constraints,
-      isFirstBlock, // maximize = true para primeiro bloco
-    );
+    const { block: currentBlock, adjustedMargin: blockMargin } =
+      calculateOptimalBlockSize(
+        remainingParts,
+        constraints,
+        isFirstBlock, // maximize = true para primeiro bloco
+      );
 
     adjustedMargin = blockMargin;
     blocks.push(currentBlock);
 
     console.log(
-      `[Foam Nesting] Bloco ${blockIndex + 1} (${isFirstBlock ? 'MAXIMIZADO' : 'OTIMIZADO'}):`,
+      `[Foam Nesting] Bloco ${blockIndex + 1} (${isFirstBlock ? "MAXIMIZADO" : "OTIMIZADO"}):`,
       currentBlock,
-      `| Margens: ${blockMargin}mm`
+      `| Margens: ${blockMargin}mm`,
     );
 
     const placements = nestPartsInBlock(
