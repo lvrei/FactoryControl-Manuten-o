@@ -186,8 +186,9 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
         priority: 5,
       });
     }
+    // Stock warning é apenas informativo, não bloqueia criação
     if (stockWarning) {
-      alert(stockWarning + "\nA OP será criada mesmo assim.");
+      console.warn('⚠️ Stock warning:', stockWarning);
     }
     onApply(lines);
     onClose();
@@ -227,16 +228,32 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
               <label className="block text-sm font-medium mb-1">
                 Ficheiro DXF/JSON
               </label>
-              <input
-                type="file"
-                accept=".json,.dxf"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) handleFile(f);
-                }}
-                disabled={isLoading}
-                className="w-full"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="file"
+                  accept=".json,.dxf"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) handleFile(f);
+                  }}
+                  disabled={isLoading}
+                  className="flex-1"
+                />
+                {fileName && !isLoading && (
+                  <button
+                    onClick={() => {
+                      setFileName('');
+                      setDrawing(null);
+                      setParts([]);
+                      setErrorMessage('');
+                    }}
+                    className="px-3 py-1 border rounded text-sm hover:bg-muted flex items-center gap-1"
+                    title="Limpar ficheiro"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
               {fileName && (
                 <div className="text-xs text-muted-foreground mt-1 flex items-center gap-2">
                   {isLoading ? (
@@ -406,8 +423,12 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
 
             {stockWarning && (
               <div className="p-2 border rounded bg-yellow-50 text-yellow-700 text-sm flex gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                {stockWarning}
+                <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+                <div>
+                  <div className="font-medium mb-1">⚠️ Aviso de Stock</div>
+                  <div className="text-xs">{stockWarning}</div>
+                  <div className="text-xs mt-1 opacity-75">A OP pode ser criada mesmo assim.</div>
+                </div>
               </div>
             )}
 
