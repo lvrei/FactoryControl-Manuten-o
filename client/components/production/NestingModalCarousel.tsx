@@ -58,7 +58,7 @@ export default function NestingModalCarousel({
     kerf: 5,
   });
 
-  useState(() => {
+  useEffect(() => {
     (async () => {
       try {
         const types = await productionService.getFoamTypes();
@@ -68,7 +68,7 @@ export default function NestingModalCarousel({
         console.error("Erro ao carregar tipos de espuma:", error);
       }
     })();
-  });
+  }, []); // Run only once on mount
 
   // Adiciona novo corte à lista
   const handleAddCut = () => {
