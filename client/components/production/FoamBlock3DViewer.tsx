@@ -264,40 +264,39 @@ export default function FoamBlock3DViewer({
   }
 
   return (
-    <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg overflow-hidden border shadow-lg">
+    <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg border shadow-lg" style={{ overflow: 'hidden' }}>
       {/* Info overlay */}
-      <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
-        <div className="text-sm font-semibold text-slate-800 mb-1">
+      <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border max-w-[200px]">
+        <div className="text-xs font-semibold text-slate-800 mb-1">
           Bloco #{selectedBlockIndex + 1}
         </div>
         <div className="text-xs text-slate-600 space-y-0.5">
-          <div>
-            📦 {block.dimensions.length}×{block.dimensions.width}×
-            {block.dimensions.height}mm
+          <div className="truncate">
+            📦 {block.dimensions.length}×{block.dimensions.width}×{block.dimensions.height}mm
           </div>
           <div>
             🔢 {block.partsCount} peça{block.partsCount !== 1 ? "s" : ""}
           </div>
-          <div>📊 {block.utilizationPercent.toFixed(1)}% utilizado</div>
+          <div>📊 {block.utilizationPercent.toFixed(1)}%</div>
         </div>
       </div>
 
       {/* Controls info */}
-      <div className="absolute bottom-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
-        <div className="text-xs text-slate-600 space-y-1">
-          <div className="font-medium text-slate-800 mb-1.5">🎮 Controlos</div>
-          <div>🖱️ Arrastar: Rodar vista</div>
-          <div>🔍 Scroll: Zoom in/out</div>
-          <div>⌨️ Shift+Arrastar: Pan</div>
+      <div className="absolute bottom-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border max-w-[180px]">
+        <div className="text-xs text-slate-600 space-y-0.5">
+          <div className="font-medium text-slate-800 mb-1">🎮 Controlos</div>
+          <div className="truncate">🖱️ Arrastar: Rodar</div>
+          <div className="truncate">🔍 Scroll: Zoom</div>
+          <div className="truncate">⌨️ Shift: Pan</div>
         </div>
       </div>
 
       {/* Legenda de cores */}
-      <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border max-w-[200px]">
-        <div className="text-xs font-medium text-slate-800 mb-2">
-          🎨 Camadas (altura Z)
+      <div className="absolute top-4 right-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border max-w-[160px]">
+        <div className="text-xs font-medium text-slate-800 mb-1.5">
+          🎨 Camadas Z
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="grid grid-cols-2 gap-1.5">
           {[
             { color: "#22c55e", label: "L0" },
             { color: "#3b82f6", label: "L1" },
@@ -306,7 +305,7 @@ export default function FoamBlock3DViewer({
           ].map((layer) => (
             <div key={layer.label} className="flex items-center gap-1">
               <div
-                className="w-3 h-3 rounded"
+                className="w-2.5 h-2.5 rounded"
                 style={{ backgroundColor: layer.color }}
               />
               <span className="text-xs text-slate-600">{layer.label}</span>
