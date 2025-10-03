@@ -397,23 +397,39 @@ export function nestFoamParts(
 
   // Preenche blocos até todas as peças serem alocadas
   while (remainingParts.length > 0) {
-    // Primeiro bloco: MAXIMIZA espaço da CNC
-    // Blocos seguintes: OTIMIZA para peças restantes
-    const isFirstBlock = blockIndex === 0;
+    // ESTRATÉGIA INTELIGENTE:
+    // - MAXIMIZA se tiver muitas peças restantes (>= 50% da capacidade de 1 bloco)
+    // - OTIMIZA se tiver poucas peças (< 50% da capacidade)
+
+    // Calcula capacidade estimada de 1 bloco para decidir estratégia
+    const samplePart = remainingParts[0];
+    const estimatedPerLayer = Math.max(1,
+      Math.floor((constraints.maxLength - 2 * constraints.margin) / (samplePart.length + constraints.kerf)) *
+      Math.floor((constraints.maxWidth - 2 * constraints.margin) / (samplePart.width + constraints.kerf))
+    );
+    const estimatedLayers = Math.max(1,
+      Math.floor((constraints.maxHeight - 2 * constraints.margin) / (samplePart.height + constraints.kerf))
+    );
+    const estimatedCapacity = estimatedPerLayer * estimatedLayers;
+
+    // Se temos peças >= 50% da capacidade de um bloco completo, MAXIMIZA
+    // Caso contrário, OTIMIZA
+    const shouldMaximize = remainingParts.length >= estimatedCapacity * 0.5;
+
     const { block: currentBlock, adjustedMargin: blockMargin } =
       calculateOptimalBlockSize(
         remainingParts,
         constraints,
-        isFirstBlock, // maximize = true para primeiro bloco
+        shouldMaximize,
       );
 
     adjustedMargin = blockMargin;
     blocks.push(currentBlock);
 
     console.log(
-      `[Foam Nesting] Bloco ${blockIndex + 1} (${isFirstBlock ? "MAXIMIZADO" : "OTIMIZADO"}):`,
+      `[Foam Nesting] 📦 Bloco ${blockIndex + 1} (${shouldMaximize ? "🔝 MAXIMIZADO" : "🎯 OTIMIZADO"}):`,
       currentBlock,
-      `| Margens: ${blockMargin}mm`,
+      `| Peças restantes: ${remainingParts.length} | Capacidade estimada: ${estimatedCapacity} | Margens: ${blockMargin}mm`,
     );
 
     const placements = nestPartsInBlock(
