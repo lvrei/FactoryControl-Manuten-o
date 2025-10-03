@@ -112,9 +112,12 @@ export function calculateOptimalBlockSize(
   const maxPartHeight = Math.max(...parts.map((p) => p.height));
 
   // Calcula tamanho MÍNIMO necessário para caber a peça + margens + kerf
-  const minBlockLength = maxPartLength + 2 * constraints.margin + constraints.kerf;
-  const minBlockWidth = maxPartWidth + 2 * constraints.margin + constraints.kerf;
-  const minBlockHeight = maxPartHeight + 2 * constraints.margin + constraints.kerf;
+  const minBlockLength =
+    maxPartLength + 2 * constraints.margin + constraints.kerf;
+  const minBlockWidth =
+    maxPartWidth + 2 * constraints.margin + constraints.kerf;
+  const minBlockHeight =
+    maxPartHeight + 2 * constraints.margin + constraints.kerf;
 
   // Arredonda PARA CIMA para múltiplos de 50mm (garante que cabe)
   let blockLength = Math.ceil(minBlockLength / 50) * 50;
@@ -329,7 +332,9 @@ export function nestFoamParts(
 
   // Debug: mostra maior peça
   const maxPart = parts.reduce((max, p) =>
-    (p.length * p.width * p.height > max.length * max.width * max.height) ? p : max
+    p.length * p.width * p.height > max.length * max.width * max.height
+      ? p
+      : max,
   );
   console.log("[Foam Nesting] Maior peça:", {
     dims: `${maxPart.length}×${maxPart.width}×${maxPart.height}mm`,
@@ -337,7 +342,7 @@ export function nestFoamParts(
       length: maxPart.length + 2 * constraints.margin + constraints.kerf,
       width: maxPart.width + 2 * constraints.margin + constraints.kerf,
       height: maxPart.height + 2 * constraints.margin + constraints.kerf,
-    }
+    },
   });
 
   const allPlacements: PlacedPart[] = [];
