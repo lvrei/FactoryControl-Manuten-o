@@ -804,15 +804,15 @@ export default function NestingModalPolygon({
 
                         const optLength = Math.min(
                           cncConstraints.maxLength,
-                          maxPartLength + effectiveMargin * 2,
+                          maxPartLength + effectiveMargin * 2 + cncConstraints.kerf,
                         );
                         const optWidth = Math.min(
                           cncConstraints.maxWidth,
-                          maxPartWidth + effectiveMargin * 2,
+                          maxPartWidth + effectiveMargin * 2 + cncConstraints.kerf,
                         );
                         const optHeight = Math.min(
                           cncConstraints.maxHeight,
-                          maxPartHeight + effectiveMargin,
+                          maxPartHeight + effectiveMargin * 2 + cncConstraints.kerf,
                         );
 
                         const currentWaste =
