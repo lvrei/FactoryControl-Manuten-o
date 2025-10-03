@@ -46,14 +46,15 @@ export default function NestingModalCarousel({
     label: "",
   });
   const [selectedFoamType, setSelectedFoamType] = useState<string>("");
-  
+  const [show3DView, setShow3DView] = useState(false);
+
   // Limites da máquina Carrossel
   const [machineLimits] = useState({
     maxLength: 2500,
     maxWidth: 2300,
     maxHeight: 1300,
   });
-  
+
   const [margins] = useState({
     margin: 10,
     kerf: 5,
