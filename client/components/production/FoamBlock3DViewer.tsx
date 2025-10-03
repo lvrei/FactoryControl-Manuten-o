@@ -110,7 +110,11 @@ function PolygonPart3D({
 
   // Ajusta posição para centrar no bloco
   const posX = part.x - blockDimensions.length / 2;
-  const posY = part.z + part.height / 2 - blockDimensions.height / 2;
+
+  // Normaliza Z para estar sempre dentro do bloco
+  const normalizedZ = part.z % blockDimensions.height;
+  const posY = normalizedZ + part.height / 2 - blockDimensions.height / 2;
+
   const posZ = -(part.y - blockDimensions.width / 2);
 
   return (
