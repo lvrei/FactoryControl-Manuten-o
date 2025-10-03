@@ -92,7 +92,8 @@ export default function NestingModalCarousel({
       height: newCut.height,
       quantity: newCut.quantity,
       foamTypeId: selectedFoamType,
-      label: newCut.label || `${newCut.length}×${newCut.width}×${newCut.height}`,
+      label:
+        newCut.label || `${newCut.length}×${newCut.width}×${newCut.height}`,
     };
 
     setCuts((prev) => [...prev, cut]);
@@ -116,7 +117,7 @@ export default function NestingModalCarousel({
     if (cuts.length === 0) return null;
 
     const blocks: CarouselBlock[] = [];
-    
+
     // Expande cortes em peças individuais
     const allPieces: CarouselCut[] = [];
     cuts.forEach((cut) => {
@@ -127,10 +128,12 @@ export default function NestingModalCarousel({
 
     // Ordena por área (maiores primeiro)
     const sortedPieces = [...allPieces].sort(
-      (a, b) => b.length * b.width - a.length * a.width
+      (a, b) => b.length * b.width - a.length * a.width,
     );
 
-    console.log(`[Carrossel Nesting] 🎯 Iniciando nesting de ${sortedPieces.length} peças`);
+    console.log(
+      `[Carrossel Nesting] 🎯 Iniciando nesting de ${sortedPieces.length} peças`,
+    );
 
     let remainingPieces = [...sortedPieces];
     let blockIndex = 0;
@@ -138,17 +141,17 @@ export default function NestingModalCarousel({
     while (remainingPieces.length > 0) {
       // Calcula dimensões do bloco
       const piece = remainingPieces[0];
-      
+
       // Largura e comprimento do bloco = máximo da peça + margens
       const blockLength = Math.min(
         machineLimits.maxLength,
-        Math.ceil((piece.length + 2 * margins.margin + margins.kerf) / 50) * 50
+        Math.ceil((piece.length + 2 * margins.margin + margins.kerf) / 50) * 50,
       );
       const blockWidth = Math.min(
         machineLimits.maxWidth,
-        Math.ceil((piece.width + 2 * margins.margin + margins.kerf) / 50) * 50
+        Math.ceil((piece.width + 2 * margins.margin + margins.kerf) / 50) * 50,
       );
-      
+
       // Altura = máximo disponível para empilhamento
       const blockHeight = machineLimits.maxHeight;
 
@@ -166,7 +169,7 @@ export default function NestingModalCarousel({
 
       for (let i = 0; i < remainingPieces.length; i++) {
         const p = remainingPieces[i];
-        
+
         // Verifica se peça cabe no bloco (X, Y)
         if (
           p.length + 2 * margins.margin + margins.kerf <= blockLength &&
@@ -178,11 +181,11 @@ export default function NestingModalCarousel({
             cut: p,
             z: currentZ,
           });
-          
+
           // Próxima camada (empilha em Z)
           currentZ += p.height + margins.kerf;
           block.totalPieces++;
-          
+
           // Remove peça da lista
           remainingPieces.splice(i, 1);
           i--; // Ajusta índice
@@ -193,14 +196,14 @@ export default function NestingModalCarousel({
       if (block.totalPieces > 0) {
         blocks.push(block);
         console.log(
-          `[Carrossel Nesting] 📦 Bloco ${blockIndex + 1}: ${blockLength}×${blockWidth}×${blockHeight}mm | ${block.totalPieces} camadas | ${remainingPieces.length} peças restantes`
+          `[Carrossel Nesting] 📦 Bloco ${blockIndex + 1}: ${blockLength}×${blockWidth}×${blockHeight}mm | ${block.totalPieces} camadas | ${remainingPieces.length} peças restantes`,
         );
         blockIndex++;
       } else {
         // Não conseguiu colocar nenhuma peça - erro
         console.error(
           `[Carrossel Nesting] ❌ ERRO: Peça não cabe no bloco máximo!`,
-          remainingPieces[0]
+          remainingPieces[0],
         );
         break;
       }
@@ -209,7 +212,7 @@ export default function NestingModalCarousel({
     const totalPieces = blocks.reduce((sum, b) => sum + b.totalPieces, 0);
     const totalVolume = blocks.reduce(
       (sum, b) => sum + (b.length * b.width * b.height) / 1e9,
-      0
+      0,
     );
 
     // Converte para placements para visualização 3D
@@ -220,11 +223,11 @@ export default function NestingModalCarousel({
         y: margins.margin, // Centralizado em Y
         z: layer.z,
         blockIndex: blockIdx,
-      }))
+      })),
     );
 
     console.log(
-      `[Carrossel Nesting] ✅ Resultado: ${blocks.length} blocos, ${totalPieces} peças, ${totalVolume.toFixed(3)} m³`
+      `[Carrossel Nesting] ✅ Resultado: ${blocks.length} blocos, ${totalPieces} peças, ${totalVolume.toFixed(3)} m³`,
     );
 
     return {
@@ -258,26 +261,30 @@ export default function NestingModalCarousel({
     const carouselMachine = machines.find((m) => m.type === "CAROUSEL");
 
     // Agrupa cortes por tipo e dimensões
-    const linesMap = new Map<string, {
-      cut: CarouselCut;
-      totalQty: number;
-      blockIndices: Set<number>;
-    }>();
+    const linesMap = new Map<
+      string,
+      {
+        cut: CarouselCut;
+        totalQty: number;
+        blockIndices: Set<number>;
+      }
+    >();
 
     // Primeiro, mapear quais blocos contêm cada corte
     nestingResult.placements.forEach((placement) => {
       const key = `${placement.foamTypeId || cuts[0]?.foamTypeId}|${placement.length}|${placement.width}|${placement.height}`;
       if (!linesMap.has(key)) {
-        const cut = cuts.find(c =>
-          c.length === placement.length &&
-          c.width === placement.width &&
-          c.height === placement.height
+        const cut = cuts.find(
+          (c) =>
+            c.length === placement.length &&
+            c.width === placement.width &&
+            c.height === placement.height,
         );
         if (cut) {
           linesMap.set(key, {
             cut,
             totalQty: 0,
-            blockIndices: new Set()
+            blockIndices: new Set(),
           });
         }
       }
@@ -291,7 +298,8 @@ export default function NestingModalCarousel({
     // Cria linhas de produção com operações
     const lines: ProductionOrderLine[] = [];
     linesMap.forEach(({ cut, totalQty, blockIndices }) => {
-      const foam = foamTypes.find((f) => f.id === cut.foamTypeId) || foamTypes[0];
+      const foam =
+        foamTypes.find((f) => f.id === cut.foamTypeId) || foamTypes[0];
       if (!foam) return;
 
       const cuttingOperations: any[] = [];
@@ -580,69 +588,94 @@ export default function NestingModalCarousel({
                   </div>
                 </div>
 
-                {show3DView && nestingResult.placements && (() => {
-                  // Cria objeto result compatível com BlockNestingResult
-                  const block = nestingResult.blocks[selectedBlockIndex];
-                  const blockPlacements = nestingResult.placements
-                    .filter((p) => p.blockIndex === selectedBlockIndex)
-                    .map((p) => ({ ...p, blockIndex: 0 })); // Normaliza para blockIndex 0
+                {show3DView &&
+                  nestingResult.placements &&
+                  (() => {
+                    // Cria objeto result compatível com BlockNestingResult
+                    const block = nestingResult.blocks[selectedBlockIndex];
+                    const blockPlacements = nestingResult.placements
+                      .filter((p) => p.blockIndex === selectedBlockIndex)
+                      .map((p) => ({ ...p, blockIndex: 0 })); // Normaliza para blockIndex 0
 
-                  // Calcular aproveitamento do bloco
-                  const blockVolume = (block.length * block.width * block.height) / 1e9; // m³
-                  const usedVolume = blockPlacements.reduce((sum, p) =>
-                    sum + (p.length * p.width * p.height) / 1e9, 0
-                  );
-                  const utilizationPercent = blockVolume > 0 ? (usedVolume / blockVolume) * 100 : 0;
+                    // Calcular aproveitamento do bloco
+                    const blockVolume =
+                      (block.length * block.width * block.height) / 1e9; // m³
+                    const usedVolume = blockPlacements.reduce(
+                      (sum, p) => sum + (p.length * p.width * p.height) / 1e9,
+                      0,
+                    );
+                    const utilizationPercent =
+                      blockVolume > 0 ? (usedVolume / blockVolume) * 100 : 0;
 
-                  const result3D = {
-                    smallBlocks: [block],
-                    placements: blockPlacements,
-                    totalBlocksNeeded: 1,
-                    totalPartsPlaced: blockPlacements.length,
-                    utilization: utilizationPercent / 100,
-                    blockDetails: [{
-                      blockIndex: 0, // Sempre 0 pois só mostramos 1 bloco
-                      dimensions: block,
-                      partsCount: blockPlacements.length,
-                      utilizationPercent: utilizationPercent,
-                    }],
-                  };
+                    const result3D = {
+                      smallBlocks: [block],
+                      placements: blockPlacements,
+                      totalBlocksNeeded: 1,
+                      totalPartsPlaced: blockPlacements.length,
+                      utilization: utilizationPercent / 100,
+                      blockDetails: [
+                        {
+                          blockIndex: 0, // Sempre 0 pois só mostramos 1 bloco
+                          dimensions: block,
+                          partsCount: blockPlacements.length,
+                          utilizationPercent: utilizationPercent,
+                        },
+                      ],
+                    };
 
-                  return (
-                    <div className="border rounded bg-white dark:bg-gray-900 p-2">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="text-sm font-medium">
-                            Visualização 3D
+                    return (
+                      <div className="border rounded bg-white dark:bg-gray-900 p-2">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium">
+                              Visualização 3D
+                            </div>
+                            <div className="text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
+                              Aproveitamento: {utilizationPercent.toFixed(1)}%
+                            </div>
                           </div>
-                          <div className="text-xs px-2 py-1 rounded bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300">
-                            Aproveitamento: {utilizationPercent.toFixed(1)}%
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() =>
+                                setSelectedBlockIndex(
+                                  Math.max(0, selectedBlockIndex - 1),
+                                )
+                              }
+                              disabled={selectedBlockIndex === 0}
+                              className="px-2 py-1 text-xs border rounded hover:bg-muted disabled:opacity-50"
+                            >
+                              ←
+                            </button>
+                            <span className="text-xs">
+                              Bloco {selectedBlockIndex + 1} /{" "}
+                              {nestingResult.blocks.length}
+                            </span>
+                            <button
+                              onClick={() =>
+                                setSelectedBlockIndex(
+                                  Math.min(
+                                    nestingResult.blocks.length - 1,
+                                    selectedBlockIndex + 1,
+                                  ),
+                                )
+                              }
+                              disabled={
+                                selectedBlockIndex ===
+                                nestingResult.blocks.length - 1
+                              }
+                              className="px-2 py-1 text-xs border rounded hover:bg-muted disabled:opacity-50"
+                            >
+                              →
+                            </button>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setSelectedBlockIndex(Math.max(0, selectedBlockIndex - 1))}
-                            disabled={selectedBlockIndex === 0}
-                            className="px-2 py-1 text-xs border rounded hover:bg-muted disabled:opacity-50"
-                          >
-                            ←
-                          </button>
-                          <span className="text-xs">
-                            Bloco {selectedBlockIndex + 1} / {nestingResult.blocks.length}
-                          </span>
-                          <button
-                            onClick={() => setSelectedBlockIndex(Math.min(nestingResult.blocks.length - 1, selectedBlockIndex + 1))}
-                            disabled={selectedBlockIndex === nestingResult.blocks.length - 1}
-                            className="px-2 py-1 text-xs border rounded hover:bg-muted disabled:opacity-50"
-                          >
-                            →
-                          </button>
-                        </div>
+                        <FoamBlock3DViewer
+                          result={result3D}
+                          selectedBlockIndex={0}
+                        />
                       </div>
-                      <FoamBlock3DViewer result={result3D} selectedBlockIndex={0} />
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
 
                 {!show3DView && (
                   <div className="border rounded max-h-96 overflow-auto">
@@ -656,7 +689,8 @@ export default function NestingModalCarousel({
                             Bloco {idx + 1}
                           </div>
                           <div className="text-xs text-muted-foreground mb-2">
-                            Dimensões: {block.length}×{block.width}×{block.height}
+                            Dimensões: {block.length}×{block.width}×
+                            {block.height}
                             mm
                           </div>
                           <div className="text-xs">
