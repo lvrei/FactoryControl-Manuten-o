@@ -116,37 +116,27 @@ export function calculateOptimalBlockSize(
   const minBlockWidth = maxPartWidth + 2 * constraints.margin + constraints.kerf;
   const minBlockHeight = maxPartHeight + 2 * constraints.margin + constraints.kerf;
 
-  // Valida que as peças cabem nos limites da CNC
-  if (minBlockLength > constraints.maxLength) {
-    throw new Error(
-      `Peça com ${maxPartLength}mm de comprimento não cabe na CNC (máx: ${constraints.maxLength}mm com margens)`,
-    );
-  }
-  if (minBlockWidth > constraints.maxWidth) {
-    throw new Error(
-      `Peça com ${maxPartWidth}mm de largura não cabe na CNC (máx: ${constraints.maxWidth}mm com margens)`,
-    );
-  }
-  if (minBlockHeight > constraints.maxHeight) {
-    throw new Error(
-      `Peça com ${maxPartHeight}mm de altura não cabe na CNC (máx: ${constraints.maxHeight}mm com margens)`,
-    );
-  }
-
-  // Usa o MÁXIMO entre o mínimo necessário e os limites da CNC
-  let blockLength = Math.max(minBlockLength, constraints.maxLength);
-  let blockWidth = Math.max(minBlockWidth, constraints.maxWidth);
-  let blockHeight = Math.max(minBlockHeight, constraints.maxHeight);
-
   // Arredonda PARA CIMA para múltiplos de 50mm (garante que cabe)
-  blockLength = Math.ceil(blockLength / 50) * 50;
-  blockWidth = Math.ceil(blockWidth / 50) * 50;
-  blockHeight = Math.ceil(blockHeight / 50) * 50;
+  let blockLength = Math.ceil(minBlockLength / 50) * 50;
+  let blockWidth = Math.ceil(minBlockWidth / 50) * 50;
+  let blockHeight = Math.ceil(minBlockHeight / 50) * 50;
 
-  // Garante que não ultrapassa limites da máquina após arredondamento
-  blockLength = Math.min(blockLength, constraints.maxLength);
-  blockWidth = Math.min(blockWidth, constraints.maxWidth);
-  blockHeight = Math.min(blockHeight, constraints.maxHeight);
+  // Valida que as peças cabem nos limites da CNC (após arredondamento)
+  if (blockLength > constraints.maxLength) {
+    throw new Error(
+      `Peça com ${maxPartLength}mm + margens (${blockLength}mm total) não cabe na CNC (máx: ${constraints.maxLength}mm)`,
+    );
+  }
+  if (blockWidth > constraints.maxWidth) {
+    throw new Error(
+      `Peça com ${maxPartWidth}mm + margens (${blockWidth}mm total) não cabe na CNC (máx: ${constraints.maxWidth}mm)`,
+    );
+  }
+  if (blockHeight > constraints.maxHeight) {
+    throw new Error(
+      `Peça com ${maxPartHeight}mm + margens (${blockHeight}mm total) não cabe na CNC (máx: ${constraints.maxHeight}mm)`,
+    );
+  }
 
   // Garante mínimo de 500mm em comprimento e largura, 100mm em altura
   blockLength = Math.max(500, blockLength);
