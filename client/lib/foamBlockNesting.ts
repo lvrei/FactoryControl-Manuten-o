@@ -91,7 +91,7 @@ export function canFitInBlock(
 }
 
 /**
- * Calcula as dimensões ótimas do bloco menor baseado nas peças
+ * Calcula as dimens��es ótimas do bloco menor baseado nas peças
  *
  * @param parts - Peças a serem cortadas
  * @param constraints - Limites da máquina CNC
@@ -232,7 +232,7 @@ export function nestPartsInBlock(
     `[nestPartsInBlock] Tentando alocar ${sortedParts.length} peças em bloco ${block.length}x${block.width}x${block.height}`,
   );
   console.log(
-    `[nestPartsInBlock] Espaço disponível: ${block.length - 2 * margin}x${block.width - 2 * margin}x${block.height - 2 * margin} (ap��s margens de ${margin}mm)`,
+    `[nestPartsInBlock] Espaço disponível: ${block.length - 2 * margin}x${block.width - 2 * margin}x${block.height - 2 * margin} (após margens de ${margin}mm)`,
   );
 
   for (const part of sortedParts) {
@@ -376,10 +376,10 @@ export function nestFoamParts(
   );
   console.log("[Foam Nesting] Limites CNC:", constraints);
 
-  // Calcula dimensões ótimas do bloco menor e margens ajustadas
-  const { block: blockSize, adjustedMargin } = calculateOptimalBlockSize(parts, constraints);
-  console.log("[Foam Nesting] Tamanho do bloco otimizado:", blockSize);
-  console.log("[Foam Nesting] Margens ajustadas:", adjustedMargin, "mm");
+  // Primeiro bloco: MAXIMIZA uso da CNC para caber o máximo de peças possível
+  // Blocos seguintes: OTIMIZA tamanho para peças restantes
+  let firstBlockCalculated = false;
+  let adjustedMargin: number;
 
   // Debug: mostra maior peça
   const maxPart = parts.reduce((max, p) =>
