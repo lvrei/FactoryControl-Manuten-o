@@ -825,21 +825,16 @@ export default function NestingModalPolygon({
                         // ALTURA PERMANECE FIXA - não é otimizada (apenas operador pode editar)
                         const optHeight = cncConstraints.maxHeight;
 
+                        // Desperdício calculado apenas em comprimento e largura (altura é fixa)
                         const currentWaste =
-                          ((cncConstraints.maxLength -
-                            maxPartLength +
-                            (cncConstraints.maxWidth - maxPartWidth) +
-                            (cncConstraints.maxHeight - maxPartHeight)) /
-                            (cncConstraints.maxLength +
-                              cncConstraints.maxWidth +
-                              cncConstraints.maxHeight)) *
+                          ((cncConstraints.maxLength - maxPartLength +
+                            (cncConstraints.maxWidth - maxPartWidth)) /
+                            (cncConstraints.maxLength + cncConstraints.maxWidth)) *
                           100;
                         const optimizedWaste =
-                          ((optLength -
-                            maxPartLength +
-                            (optWidth - maxPartWidth) +
-                            (optHeight - maxPartHeight)) /
-                            (optLength + optWidth + optHeight)) *
+                          ((optLength - maxPartLength +
+                            (optWidth - maxPartWidth)) /
+                            (optLength + optWidth)) *
                           100;
 
                         return (
