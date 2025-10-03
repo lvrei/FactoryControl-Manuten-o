@@ -100,9 +100,12 @@ export function calculateOptimalBlockSize(
 ): { block: FoamBlock; adjustedMargin: number } {
   if (parts.length === 0) {
     return {
-      length: Math.min(2500, constraints.maxLength),
-      width: Math.min(2300, constraints.maxWidth),
-      height: Math.min(1300, constraints.maxHeight),
+      block: {
+        length: Math.min(2500, constraints.maxLength),
+        width: Math.min(2300, constraints.maxWidth),
+        height: Math.min(1300, constraints.maxHeight),
+      },
+      adjustedMargin: constraints.margin, // Usa margem padrão se não há peças
     };
   }
 
@@ -437,7 +440,7 @@ export function nestFoamParts(
 
     blockIndex++;
 
-    // Segurança: máximo 100 blocos (evita loop infinito)
+    // Segurança: m��ximo 100 blocos (evita loop infinito)
     if (blockIndex >= 100) {
       console.error("[Foam Nesting] ERRO: Máximo de blocos atingido!");
       break;
