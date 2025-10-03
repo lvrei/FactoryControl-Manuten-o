@@ -243,7 +243,7 @@ export function nestPartsInBlock(
 
   // Ordena por área decrescente (maiores primeiro para melhor empacotamento)
   const sortedParts = [...parts].sort(
-    (a, b) => (b.length * b.width) - (a.length * a.width),
+    (a, b) => b.length * b.width - a.length * a.width,
   );
 
   const usableLength = block.length - 2 * margin;
@@ -265,35 +265,52 @@ export function nestPartsInBlock(
     const orientation1 = {
       perLength: Math.floor(usableLength / (firstPart.length + kerf)),
       perWidth: Math.floor(usableWidth / (firstPart.width + kerf)),
-      total: Math.floor(usableLength / (firstPart.length + kerf)) *
-             Math.floor(usableWidth / (firstPart.width + kerf)),
+      total:
+        Math.floor(usableLength / (firstPart.length + kerf)) *
+        Math.floor(usableWidth / (firstPart.width + kerf)),
     };
 
     // Rotação 90° (troca length <-> width)
     const orientation2 = {
       perLength: Math.floor(usableLength / (firstPart.width + kerf)),
       perWidth: Math.floor(usableWidth / (firstPart.length + kerf)),
-      total: Math.floor(usableLength / (firstPart.width + kerf)) *
-             Math.floor(usableWidth / (firstPart.length + kerf)),
+      total:
+        Math.floor(usableLength / (firstPart.width + kerf)) *
+        Math.floor(usableWidth / (firstPart.length + kerf)),
     };
 
-    const bestOrientation = orientation1.total >= orientation2.total ? orientation1 : orientation2;
+    const bestOrientation =
+      orientation1.total >= orientation2.total ? orientation1 : orientation2;
     const useRotation = orientation2.total > orientation1.total;
 
-    console.log(`[nestPartsInBlock] 🔄 Orientação: ${useRotation ? 'ROTACIONADA 90°' : 'PADRÃO'}`);
-    console.log(`[nestPartsInBlock] 📐 Peças por camada: ${bestOrientation.perLength} × ${bestOrientation.perWidth} = ${bestOrientation.total}`);
+    console.log(
+      `[nestPartsInBlock] 🔄 Orientação: ${useRotation ? "ROTACIONADA 90°" : "PADRÃO"}`,
+    );
+    console.log(
+      `[nestPartsInBlock] 📐 Peças por camada: ${bestOrientation.perLength} × ${bestOrientation.perWidth} = ${bestOrientation.total}`,
+    );
 
     // Calcula quantas camadas cabem em Z
     const layersZ = Math.floor(usableHeight / (firstPart.height + kerf));
-    console.log(`[nestPartsInBlock] 📏 Camadas em Z: ${layersZ} (altura peça: ${firstPart.height}mm + kerf ${kerf}mm)`);
+    console.log(
+      `[nestPartsInBlock] 📏 Camadas em Z: ${layersZ} (altura peça: ${firstPart.height}mm + kerf ${kerf}mm)`,
+    );
 
     // Empacotamento em grade regular 3D
     let partIndex = 0;
     for (let z = 0; z < layersZ && partIndex < sortedParts.length; z++) {
       const currentZ = margin + z * (firstPart.height + kerf);
 
-      for (let ix = 0; ix < bestOrientation.perLength && partIndex < sortedParts.length; ix++) {
-        for (let iy = 0; iy < bestOrientation.perWidth && partIndex < sortedParts.length; iy++) {
+      for (
+        let ix = 0;
+        ix < bestOrientation.perLength && partIndex < sortedParts.length;
+        ix++
+      ) {
+        for (
+          let iy = 0;
+          iy < bestOrientation.perWidth && partIndex < sortedParts.length;
+          iy++
+        ) {
           const part = sortedParts[partIndex];
 
           // Aplica rotação se necessário
@@ -304,10 +321,11 @@ export function nestPartsInBlock(
           const y = margin + iy * (partWidth + kerf);
 
           // Verifica se cabe
-          if (x + partLength <= block.length - margin &&
-              y + partWidth <= block.width - margin &&
-              currentZ + part.height <= block.height - margin) {
-
+          if (
+            x + partLength <= block.length - margin &&
+            y + partWidth <= block.width - margin &&
+            currentZ + part.height <= block.height - margin
+          ) {
             placements.push({
               ...part,
               length: partLength,
@@ -324,7 +342,8 @@ export function nestPartsInBlock(
     }
 
     const capacity = bestOrientation.total * layersZ;
-    const efficiency = (placements.length / Math.min(capacity, sortedParts.length)) * 100;
+    const efficiency =
+      (placements.length / Math.min(capacity, sortedParts.length)) * 100;
     console.log(
       `[nestPartsInBlock] ✅ Alocado: ${placements.length}/${sortedParts.length} peças (capacidade: ${capacity}, eficiência: ${efficiency.toFixed(1)}%)`,
     );
@@ -403,12 +422,23 @@ export function nestFoamParts(
 
     // Calcula capacidade estimada de 1 bloco para decidir estratégia
     const samplePart = remainingParts[0];
-    const estimatedPerLayer = Math.max(1,
-      Math.floor((constraints.maxLength - 2 * constraints.margin) / (samplePart.length + constraints.kerf)) *
-      Math.floor((constraints.maxWidth - 2 * constraints.margin) / (samplePart.width + constraints.kerf))
+    const estimatedPerLayer = Math.max(
+      1,
+      Math.floor(
+        (constraints.maxLength - 2 * constraints.margin) /
+          (samplePart.length + constraints.kerf),
+      ) *
+        Math.floor(
+          (constraints.maxWidth - 2 * constraints.margin) /
+            (samplePart.width + constraints.kerf),
+        ),
     );
-    const estimatedLayers = Math.max(1,
-      Math.floor((constraints.maxHeight - 2 * constraints.margin) / (samplePart.height + constraints.kerf))
+    const estimatedLayers = Math.max(
+      1,
+      Math.floor(
+        (constraints.maxHeight - 2 * constraints.margin) /
+          (samplePart.height + constraints.kerf),
+      ),
     );
     const estimatedCapacity = estimatedPerLayer * estimatedLayers;
 
@@ -417,11 +447,7 @@ export function nestFoamParts(
     const shouldMaximize = remainingParts.length >= estimatedCapacity * 0.5;
 
     const { block: currentBlock, adjustedMargin: blockMargin } =
-      calculateOptimalBlockSize(
-        remainingParts,
-        constraints,
-        shouldMaximize,
-      );
+      calculateOptimalBlockSize(remainingParts, constraints, shouldMaximize);
 
     adjustedMargin = blockMargin;
     blocks.push(currentBlock);
