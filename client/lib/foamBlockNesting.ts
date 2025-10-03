@@ -97,7 +97,7 @@ export function canFitInBlock(
 export function calculateOptimalBlockSize(
   parts: FoamPart[],
   constraints: BlockConstraints,
-): FoamBlock {
+): { block: FoamBlock; adjustedMargin: number } {
   if (parts.length === 0) {
     return {
       length: Math.min(2500, constraints.maxLength),
