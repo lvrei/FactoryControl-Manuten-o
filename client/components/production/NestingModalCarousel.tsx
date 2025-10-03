@@ -503,39 +503,41 @@ export default function NestingModalCarousel({
                   </div>
                 )}
 
-                <div className="border rounded max-h-96 overflow-auto">
-                  <div className="p-2 bg-muted font-medium text-sm sticky top-0">
-                    Detalhes dos Blocos
-                  </div>
-                  <div className="divide-y">
-                    {nestingResult.blocks.map((block, idx) => (
-                      <div key={idx} className="p-3">
-                        <div className="font-medium text-sm mb-2">
-                          Bloco {idx + 1}
-                        </div>
-                        <div className="text-xs text-muted-foreground mb-2">
-                          Dimensões: {block.length}×{block.width}×{block.height}
-                          mm
-                        </div>
-                        <div className="text-xs">
-                          <strong>{block.layers.length} camadas:</strong>
-                          <div className="mt-1 space-y-1">
-                            {block.layers.map((layer, layerIdx) => (
-                              <div
-                                key={layerIdx}
-                                className="pl-2 border-l-2 border-blue-300"
-                              >
-                                Camada {layerIdx + 1} (Z={layer.z}mm):{" "}
-                                {layer.cut.length}×{layer.cut.width}×
-                                {layer.cut.height}mm
-                              </div>
-                            ))}
+                {!show3DView && (
+                  <div className="border rounded max-h-96 overflow-auto">
+                    <div className="p-2 bg-muted font-medium text-sm sticky top-0">
+                      Detalhes dos Blocos
+                    </div>
+                    <div className="divide-y">
+                      {nestingResult.blocks.map((block, idx) => (
+                        <div key={idx} className="p-3">
+                          <div className="font-medium text-sm mb-2">
+                            Bloco {idx + 1}
+                          </div>
+                          <div className="text-xs text-muted-foreground mb-2">
+                            Dimensões: {block.length}×{block.width}×{block.height}
+                            mm
+                          </div>
+                          <div className="text-xs">
+                            <strong>{block.layers.length} camadas:</strong>
+                            <div className="mt-1 space-y-1">
+                              {block.layers.map((layer, layerIdx) => (
+                                <div
+                                  key={layerIdx}
+                                  className="pl-2 border-l-2 border-blue-300"
+                                >
+                                  Camada {layerIdx + 1} (Z={layer.z}mm):{" "}
+                                  {layer.cut.length}×{layer.cut.width}×
+                                  {layer.cut.height}mm
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             )}
           </div>
