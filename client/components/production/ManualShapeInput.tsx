@@ -136,12 +136,12 @@ export default function ManualShapeInput({
         wastePercent: `${wastePercent.toFixed(1)}%`,
       });
 
-      // Chama callback para atualizar limites da máquina automaticamente
+      // Chama callback para atualizar limites da máquina automaticamente (apenas length e width)
       if (onOptimizedSizeApply) {
         onOptimizedSizeApply({
           length: optimizedSize.length,
           width: optimizedSize.width,
-          height: optimizedSize.height,
+          height: machineLimits.height, // Mantém altura original (não otimizada)
         });
       }
     }
