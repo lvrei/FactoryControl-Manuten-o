@@ -71,7 +71,7 @@ export default function NestingModalCarousel({
   }, []); // Run only once on mount
 
   // Adiciona novo corte à lista
-  const handleAddCut = () => {
+  const handleAddCut = useCallback(() => {
     if (newCut.length <= 0 || newCut.width <= 0 || newCut.height <= 0) {
       alert("Dimensões devem ser maiores que zero");
       return;
@@ -91,8 +91,8 @@ export default function NestingModalCarousel({
       label: newCut.label || `${newCut.length}×${newCut.width}×${newCut.height}`,
     };
 
-    setCuts([...cuts, cut]);
-    
+    setCuts((prev) => [...prev, cut]);
+
     // Reseta formulário
     setNewCut({
       length: 1000,
@@ -101,11 +101,11 @@ export default function NestingModalCarousel({
       quantity: 1,
       label: "",
     });
-  };
+  }, [newCut, selectedFoamType]);
 
-  const handleRemoveCut = (id: string) => {
-    setCuts(cuts.filter((c) => c.id !== id));
-  };
+  const handleRemoveCut = useCallback((id: string) => {
+    setCuts((prev) => prev.filter((c) => c.id !== id));
+  }, []);
 
   // Algoritmo de nesting para Carrossel (CORTE VERTICAL APENAS)
   const nestingResult = useMemo(() => {
