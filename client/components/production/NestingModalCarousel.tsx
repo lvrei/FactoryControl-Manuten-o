@@ -583,9 +583,9 @@ export default function NestingModalCarousel({
                 {show3DView && nestingResult.placements && (() => {
                   // Cria objeto result compatível com BlockNestingResult
                   const block = nestingResult.blocks[selectedBlockIndex];
-                  const blockPlacements = nestingResult.placements.filter(
-                    (p) => p.blockIndex === selectedBlockIndex
-                  );
+                  const blockPlacements = nestingResult.placements
+                    .filter((p) => p.blockIndex === selectedBlockIndex)
+                    .map((p) => ({ ...p, blockIndex: 0 })); // Normaliza para blockIndex 0
 
                   const result3D = {
                     smallBlocks: [block],
@@ -594,7 +594,7 @@ export default function NestingModalCarousel({
                     totalPartsPlaced: blockPlacements.length,
                     utilization: 0,
                     blockDetails: [{
-                      blockIndex: selectedBlockIndex,
+                      blockIndex: 0, // Sempre 0 pois só mostramos 1 bloco
                       dimensions: block,
                       partsCount: blockPlacements.length,
                       utilizationPercent: 0,
