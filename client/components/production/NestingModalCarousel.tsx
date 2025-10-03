@@ -236,43 +236,125 @@ export default function NestingModalCarousel({
     };
   }, [cuts, machineLimits, margins]);
 
-  const handleApplyToOrder = useCallback(() => {
+  const handleApplyToOrder = useCallback(async () => {
     if (!nestingResult || cuts.length === 0) return;
 
-    // Agrupa cortes por tipo e dimensões
-    const linesMap = new Map<string, { cut: CarouselCut; totalQty: number }>();
+    // Buscar máquinas para criar operações
+    let machines: any[] = [];
+    try {
+      machines = await productionService.getMachines();
+    } catch (error) {
+      console.error("Erro ao buscar máquinas:", error);
+    }
 
-    cuts.forEach((cut) => {
-      const key = `${cut.foamTypeId}|${cut.length}|${cut.width}|${cut.height}`;
+    const bzmMachine = machines.find((m) => m.type === "BZM");
+    const carouselMachine = machines.find((m) => m.type === "CAROUSEL");
+
+    // Agrupa cortes por tipo e dimensões
+    const linesMap = new Map<string, {
+      cut: CarouselCut;
+      totalQty: number;
+      blockIndices: Set<number>;
+    }>();
+
+    // Primeiro, mapear quais blocos contêm cada corte
+    nestingResult.placements.forEach((placement) => {
+      const key = `${placement.foamTypeId || cuts[0]?.foamTypeId}|${placement.length}|${placement.width}|${placement.height}`;
       if (!linesMap.has(key)) {
-        linesMap.set(key, { cut, totalQty: 0 });
+        const cut = cuts.find(c =>
+          c.length === placement.length &&
+          c.width === placement.width &&
+          c.height === placement.height
+        );
+        if (cut) {
+          linesMap.set(key, {
+            cut,
+            totalQty: 0,
+            blockIndices: new Set()
+          });
+        }
       }
-      const entry = linesMap.get(key)!;
-      entry.totalQty += cut.quantity;
+      const entry = linesMap.get(key);
+      if (entry) {
+        entry.totalQty += 1;
+        entry.blockIndices.add(placement.blockIndex);
+      }
     });
 
-    // Cria linhas de produção
+    // Cria linhas de produção com operações
     const lines: ProductionOrderLine[] = [];
-    linesMap.forEach(({ cut, totalQty }) => {
+    linesMap.forEach(({ cut, totalQty, blockIndices }) => {
       const foam = foamTypes.find((f) => f.id === cut.foamTypeId) || foamTypes[0];
       if (!foam) return;
+
+      const cuttingOperations: any[] = [];
+
+      // Encontrar dimensões do bloco para este corte (usar o primeiro bloco que contém este corte)
+      const firstBlockIndex = Array.from(blockIndices)[0];
+      const blockDimensions = nestingResult.blocks[firstBlockIndex];
+
+      // Operação BZM - cortar blocos para preparar para Carrossel
+      if (bzmMachine) {
+        cuttingOperations.push({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          machineId: bzmMachine.id,
+          inputDimensions: {
+            length: blockDimensions.length,
+            width: blockDimensions.width,
+            height: blockDimensions.height,
+          },
+          outputDimensions: {
+            length: blockDimensions.length,
+            width: blockDimensions.width,
+            height: blockDimensions.height,
+          },
+          quantity: blockIndices.size, // Número de blocos necessários
+          completedQuantity: 0,
+          estimatedTime: 30 * blockIndices.size,
+          status: "pending",
+          observations: `Preparar ${blockIndices.size} bloco(s) de ${blockDimensions.length}×${blockDimensions.width}×${blockDimensions.height}mm para corte no Carrossel`,
+        });
+      }
+
+      // Operação Carrossel - cortar peças finais
+      if (carouselMachine) {
+        cuttingOperations.push({
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          machineId: carouselMachine.id,
+          inputDimensions: {
+            length: blockDimensions.length,
+            width: blockDimensions.width,
+            height: blockDimensions.height,
+          },
+          outputDimensions: {
+            length: cut.length,
+            width: cut.width,
+            height: cut.height,
+          },
+          quantity: totalQty, // Número total de peças a cortar
+          completedQuantity: 0,
+          estimatedTime: 15 * totalQty, // Tempo por peça
+          status: "pending",
+          observations: `Cortar ${totalQty} peça(s) de ${cut.length}×${cut.width}×${cut.height}mm (corte vertical em camadas)`,
+        });
+      }
 
       lines.push({
         id: `line-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
         foamType: foam,
         initialDimensions: {
-          length: nestingResult.blocks[0]?.length || cut.length,
-          width: nestingResult.blocks[0]?.width || cut.width,
-          height: cut.height,
+          length: blockDimensions.length,
+          width: blockDimensions.width,
+          height: blockDimensions.height,
         },
         finalDimensions: {
           length: cut.length,
           width: cut.width,
           height: cut.height,
         },
-        quantity: totalQty,
+        quantity: blockIndices.size, // Número de blocos
         completedQuantity: 0,
-        cuttingOperations: [],
+        cuttingOperations,
         status: "pending",
         priority: 5,
       });
