@@ -91,7 +91,7 @@ export function canFitInBlock(
 }
 
 /**
- * Calcula as dimens��es ótimas do bloco menor baseado nas peças
+ * Calcula as dimensões ótimas do bloco menor baseado nas peças
  *
  * @param parts - Peças a serem cortadas
  * @param constraints - Limites da máquina CNC
@@ -417,14 +417,29 @@ export function nestFoamParts(
 
   // Preenche blocos até todas as peças serem alocadas
   while (remainingParts.length > 0) {
-    const currentBlock = { ...blockSize };
+    // Primeiro bloco: MAXIMIZA espaço da CNC
+    // Blocos seguintes: OTIMIZA para peças restantes
+    const isFirstBlock = blockIndex === 0;
+    const { block: currentBlock, adjustedMargin: blockMargin } = calculateOptimalBlockSize(
+      remainingParts,
+      constraints,
+      isFirstBlock, // maximize = true para primeiro bloco
+    );
+
+    adjustedMargin = blockMargin;
     blocks.push(currentBlock);
+
+    console.log(
+      `[Foam Nesting] Bloco ${blockIndex + 1} (${isFirstBlock ? 'MAXIMIZADO' : 'OTIMIZADO'}):`,
+      currentBlock,
+      `| Margens: ${blockMargin}mm`
+    );
 
     const placements = nestPartsInBlock(
       remainingParts,
       currentBlock,
       constraints.kerf,
-      adjustedMargin, // Usa margem ajustada automaticamente
+      blockMargin, // Usa margem específica deste bloco
     );
 
     // Marca índice do bloco
@@ -529,7 +544,7 @@ export function convertNestingToOperations(
     machineId: string;
     quantity: number; // número total de peças
     inputDimensions: FoamBlock; // bloco menor
-    parts: PlacedPart[]; // peças com posições
+    parts: PlacedPart[]; // peças com posi��ões
   };
 } {
   if (nestingResult.smallBlocks.length === 0) {
