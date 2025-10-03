@@ -246,11 +246,17 @@ export function ProductionOrderManager({
     updateLine(lineId, { cuttingOperations: updatedOperations });
   };
 
-  const handleNestingApply = (nestingLines: ProductionOrderLine[]) => {
+  const handleNestingApply = useCallback((nestingLines: ProductionOrderLine[]) => {
     // Adiciona as linhas vindas do nesting às linhas existentes
     setLines((prev) => [...prev, ...nestingLines]);
     setShowNestingModal(false);
-  };
+  }, []);
+
+  const handleCarouselNestingApply = useCallback((nestingLines: ProductionOrderLine[]) => {
+    // Adiciona as linhas vindas do nesting carrossel às linhas existentes
+    setLines((prev) => [...prev, ...nestingLines]);
+    setShowNestingCarouselModal(false);
+  }, []);
 
   const calculateTotalVolume = () => {
     return lines.reduce((total, line) => {
