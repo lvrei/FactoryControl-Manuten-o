@@ -236,6 +236,13 @@ export default function NestingModalCarousel({
     };
   }, [cuts, machineLimits, margins]);
 
+  // Reset selected block index when nesting result changes
+  useEffect(() => {
+    if (nestingResult && selectedBlockIndex >= nestingResult.blocks.length) {
+      setSelectedBlockIndex(0);
+    }
+  }, [nestingResult, selectedBlockIndex]);
+
   const handleApplyToOrder = useCallback(async () => {
     if (!nestingResult || cuts.length === 0) return;
 
