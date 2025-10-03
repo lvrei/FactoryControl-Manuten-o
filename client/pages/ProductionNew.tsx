@@ -32,6 +32,7 @@ import {
 import { productionService } from "@/services/productionService";
 import { ProductionOrderManager } from "@/components/production/ProductionOrderManager";
 import NestingModalPolygon from "@/components/production/NestingModalPolygon";
+import NestingModalCarousel from "@/components/production/NestingModalCarousel";
 import { Layers } from "lucide-react";
 import { ProductSheetsManager } from "@/components/production/ProductSheetsManager";
 import {
