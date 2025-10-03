@@ -370,9 +370,9 @@ export function nestFoamParts(
   console.log("[Foam Nesting] Maior peça:", {
     dims: `${maxPart.length}×${maxPart.width}×${maxPart.height}mm`,
     minBlockNeeded: {
-      length: maxPart.length + 2 * constraints.margin + constraints.kerf,
-      width: maxPart.width + 2 * constraints.margin + constraints.kerf,
-      height: maxPart.height + 2 * constraints.margin + constraints.kerf,
+      length: maxPart.length + 2 * adjustedMargin + constraints.kerf,
+      width: maxPart.width + 2 * adjustedMargin + constraints.kerf,
+      height: maxPart.height + 2 * adjustedMargin + constraints.kerf,
     },
   });
 
