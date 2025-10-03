@@ -640,6 +640,14 @@ export function ProductionOrderManager({
                   </button>
                   <button
                     type="button"
+                    onClick={() => setShowNestingCarouselModal(true)}
+                    className="px-3 py-2 border border-secondary text-secondary-foreground rounded-lg hover:bg-secondary/20 flex items-center gap-2"
+                    title="Nesting Carrossel (corte vertical)"
+                  >
+                    🔄 Carrossel
+                  </button>
+                  <button
+                    type="button"
                     onClick={addNewLine}
                     className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
                   >
