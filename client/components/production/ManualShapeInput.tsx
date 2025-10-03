@@ -20,6 +20,11 @@ export type ManualShapeInputProps = {
     width: number;
     height: number;
   };
+  onOptimizedSizeApply?: (optimized: {
+    length: number;
+    width: number;
+    height: number;
+  }) => void;
 };
 
 export default function ManualShapeInput({
@@ -27,6 +32,7 @@ export default function ManualShapeInput({
   onShapesChange,
   machineLimits = { length: 2500, width: 2300, height: 1300 },
   cuttingMargins = { length: 50, width: 50, height: 20 },
+  onOptimizedSizeApply,
 }: ManualShapeInputProps) {
   const [formData, setFormData] = useState({
     length: 100,
@@ -95,6 +101,15 @@ export default function ManualShapeInput({
         waste: `${optimizedSize.waste.length}×${optimizedSize.waste.width}×${optimizedSize.waste.height}mm`,
         wastePercent: `${wastePercent.toFixed(1)}%`,
       });
+
+      // Chama callback para atualizar limites da máquina automaticamente
+      if (onOptimizedSizeApply) {
+        onOptimizedSizeApply({
+          length: optimizedSize.length,
+          width: optimizedSize.width,
+          height: optimizedSize.height,
+        });
+      }
     }
 
     const newShape: ManualShape = {
