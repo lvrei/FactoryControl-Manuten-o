@@ -210,12 +210,24 @@ export default function NestingModalCarousel({
       0
     );
 
+    // Converte para placements para visualização 3D
+    const placements = blocks.flatMap((block, blockIdx) =>
+      block.layers.map((layer) => ({
+        ...layer.cut,
+        x: margins.margin, // Centralizado em X
+        y: margins.margin, // Centralizado em Y
+        z: layer.z,
+        blockIndex: blockIdx,
+      }))
+    );
+
     console.log(
       `[Carrossel Nesting] ✅ Resultado: ${blocks.length} blocos, ${totalPieces} peças, ${totalVolume.toFixed(3)} m³`
     );
 
     return {
       blocks,
+      placements,
       totalBlocks: blocks.length,
       totalPieces,
       totalVolume,
