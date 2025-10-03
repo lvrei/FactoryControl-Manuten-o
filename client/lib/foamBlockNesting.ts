@@ -317,6 +317,19 @@ export function nestFoamParts(
   const blockSize = calculateOptimalBlockSize(parts, constraints);
   console.log("[Foam Nesting] Tamanho do bloco otimizado:", blockSize);
 
+  // Debug: mostra maior peça
+  const maxPart = parts.reduce((max, p) =>
+    (p.length * p.width * p.height > max.length * max.width * max.height) ? p : max
+  );
+  console.log("[Foam Nesting] Maior peça:", {
+    dims: `${maxPart.length}×${maxPart.width}×${maxPart.height}mm`,
+    minBlockNeeded: {
+      length: maxPart.length + 2 * constraints.margin + constraints.kerf,
+      width: maxPart.width + 2 * constraints.margin + constraints.kerf,
+      height: maxPart.height + 2 * constraints.margin + constraints.kerf,
+    }
+  });
+
   const allPlacements: PlacedPart[] = [];
   const blocks: FoamBlock[] = [];
   let blockIndex = 0;
