@@ -1475,7 +1475,7 @@ export default function NestingModalPolygon({
                       placements: rectangleResult.placements.map((p, idx) => ({
                         x: p.x,
                         y: p.y,
-                        z: p.sheetIndex * (manualHeight + 10),
+                        z: 0, // Z é sempre 0 pois cada bloco é visualizado separadamente
                         length: p.length,
                         width: p.width,
                         height: manualHeight,
