@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { X, Plus, Trash2, Layers, Info } from "lucide-react";
 import { ProductionOrderLine, FoamType } from "@/types/production";
 import { productionService } from "@/services/productionService";
+import FoamBlock3DViewer from "./FoamBlock3DViewer";
 
 type CarouselCut = {
   id: string;
