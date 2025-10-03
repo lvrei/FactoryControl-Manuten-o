@@ -747,6 +747,16 @@ export default function NestingModalPolygon({
               <ManualShapeInput
                 shapes={manualShapes}
                 onShapesChange={setManualShapes}
+                machineLimits={{
+                  length: cncConstraints.maxLength,
+                  width: cncConstraints.maxWidth,
+                  height: cncConstraints.maxHeight,
+                }}
+                cuttingMargins={{
+                  length: foam3dMargins.left + foam3dMargins.right,
+                  width: foam3dMargins.top + foam3dMargins.bottom,
+                  height: 20,
+                }}
               />
             )}
 
