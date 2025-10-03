@@ -356,9 +356,10 @@ export function nestFoamParts(
   );
   console.log("[Foam Nesting] Limites CNC:", constraints);
 
-  // Calcula dimensões ótimas do bloco menor
-  const blockSize = calculateOptimalBlockSize(parts, constraints);
+  // Calcula dimensões ótimas do bloco menor e margens ajustadas
+  const { block: blockSize, adjustedMargin } = calculateOptimalBlockSize(parts, constraints);
   console.log("[Foam Nesting] Tamanho do bloco otimizado:", blockSize);
+  console.log("[Foam Nesting] Margens ajustadas:", adjustedMargin, "mm");
 
   // Debug: mostra maior peça
   const maxPart = parts.reduce((max, p) =>
