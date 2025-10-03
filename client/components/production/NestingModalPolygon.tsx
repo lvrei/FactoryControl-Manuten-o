@@ -802,17 +802,23 @@ export default function NestingModalPolygon({
                           foam3dMargins.right,
                         );
 
+                        // Calcula tamanho mínimo necessário
+                        const minLength = maxPartLength + effectiveMargin * 2 + cncConstraints.kerf;
+                        const minWidth = maxPartWidth + effectiveMargin * 2 + cncConstraints.kerf;
+                        const minHeight = maxPartHeight + effectiveMargin * 2 + cncConstraints.kerf;
+
+                        // Arredonda para cima em múltiplos de 50mm (mesma lógica do calculateOptimalBlockSize)
                         const optLength = Math.min(
                           cncConstraints.maxLength,
-                          maxPartLength + effectiveMargin * 2 + cncConstraints.kerf,
+                          Math.ceil(minLength / 50) * 50,
                         );
                         const optWidth = Math.min(
                           cncConstraints.maxWidth,
-                          maxPartWidth + effectiveMargin * 2 + cncConstraints.kerf,
+                          Math.ceil(minWidth / 50) * 50,
                         );
                         const optHeight = Math.min(
                           cncConstraints.maxHeight,
-                          maxPartHeight + effectiveMargin * 2 + cncConstraints.kerf,
+                          Math.ceil(minHeight / 50) * 50,
                         );
 
                         const currentWaste =
