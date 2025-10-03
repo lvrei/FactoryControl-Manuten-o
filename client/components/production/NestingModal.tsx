@@ -41,6 +41,9 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
     null,
   );
   const svgRef = useRef<SVGSVGElement>(null);
+  const [optimizeWaste, setOptimizeWaste] = useState(true);
+  const [machineLimits] = useState({ length: 2500, width: 2300, height: 1300 });
+  const [cuttingMargins] = useState({ length: 50, width: 50, height: 20 });
 
   useEffect(() => {
     (async () => {
