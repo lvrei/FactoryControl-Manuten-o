@@ -112,37 +112,43 @@ export function calculateOptimalBlockSize(
   const maxPartHeight = Math.max(...parts.map((p) => p.height));
 
   // Calcula o tamanho máximo que uma peça pode ter com margens
-  const maxAllowedPartLength = constraints.maxLength - 2 * constraints.margin - constraints.kerf;
-  const maxAllowedPartWidth = constraints.maxWidth - 2 * constraints.margin - constraints.kerf;
-  const maxAllowedPartHeight = constraints.maxHeight - 2 * constraints.margin - constraints.kerf;
+  const maxAllowedPartLength =
+    constraints.maxLength - 2 * constraints.margin - constraints.kerf;
+  const maxAllowedPartWidth =
+    constraints.maxWidth - 2 * constraints.margin - constraints.kerf;
+  const maxAllowedPartHeight =
+    constraints.maxHeight - 2 * constraints.margin - constraints.kerf;
 
   // Verifica se alguma peça excede os limites ANTES de aplicar margens
   if (maxPartLength > maxAllowedPartLength) {
     throw new Error(
       `Peça com ${maxPartLength}mm excede o limite da CNC. ` +
-      `Máximo permitido (considerando margens de ${constraints.margin}mm e kerf de ${constraints.kerf}mm): ${Math.floor(maxAllowedPartLength)}mm. ` +
-      `Reduza a peça ou use margens menores.`
+        `Máximo permitido (considerando margens de ${constraints.margin}mm e kerf de ${constraints.kerf}mm): ${Math.floor(maxAllowedPartLength)}mm. ` +
+        `Reduza a peça ou use margens menores.`,
     );
   }
   if (maxPartWidth > maxAllowedPartWidth) {
     throw new Error(
       `Largura da peça (${maxPartWidth}mm) excede o limite da CNC. ` +
-      `Máximo permitido (considerando margens de ${constraints.margin}mm e kerf de ${constraints.kerf}mm): ${Math.floor(maxAllowedPartWidth)}mm. ` +
-      `Reduza a peça ou use margens menores.`
+        `Máximo permitido (considerando margens de ${constraints.margin}mm e kerf de ${constraints.kerf}mm): ${Math.floor(maxAllowedPartWidth)}mm. ` +
+        `Reduza a peça ou use margens menores.`,
     );
   }
   if (maxPartHeight > maxAllowedPartHeight) {
     throw new Error(
       `Altura da peça (${maxPartHeight}mm) excede o limite da CNC. ` +
-      `Máximo permitido (considerando margens de ${constraints.margin}mm e kerf de ${constraints.kerf}mm): ${Math.floor(maxAllowedPartHeight)}mm. ` +
-      `Reduza a peça ou use margens menores.`
+        `Máximo permitido (considerando margens de ${constraints.margin}mm e kerf de ${constraints.kerf}mm): ${Math.floor(maxAllowedPartHeight)}mm. ` +
+        `Reduza a peça ou use margens menores.`,
     );
   }
 
   // Calcula tamanho MÍNIMO necessário para caber a peça + margens + kerf
-  const minBlockLength = maxPartLength + 2 * constraints.margin + constraints.kerf;
-  const minBlockWidth = maxPartWidth + 2 * constraints.margin + constraints.kerf;
-  const minBlockHeight = maxPartHeight + 2 * constraints.margin + constraints.kerf;
+  const minBlockLength =
+    maxPartLength + 2 * constraints.margin + constraints.kerf;
+  const minBlockWidth =
+    maxPartWidth + 2 * constraints.margin + constraints.kerf;
+  const minBlockHeight =
+    maxPartHeight + 2 * constraints.margin + constraints.kerf;
 
   // Arredonda PARA CIMA para múltiplos de 50mm (garante que cabe)
   let blockLength = Math.ceil(minBlockLength / 50) * 50;
