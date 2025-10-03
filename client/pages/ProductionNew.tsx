@@ -933,6 +933,17 @@ function ProductionNew() {
           }}
         />
       )}
+
+      {showNestingCarousel && (
+        <NestingModalCarousel
+          onClose={() => setShowNestingCarousel(false)}
+          onApply={(lines) => {
+            setNestingLines(lines);
+            setShowNestingCarousel(false);
+            setShowOrderForm(true);
+          }}
+        />
+      )}
     </div>
   );
 }
