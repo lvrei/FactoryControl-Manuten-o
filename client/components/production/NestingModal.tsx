@@ -191,7 +191,7 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
     }
     // Stock warning é apenas informativo, não bloqueia criação
     if (stockWarning) {
-      console.warn('⚠️ Stock warning:', stockWarning);
+      console.warn("⚠️ Stock warning:", stockWarning);
     }
     onApply(lines);
     onClose();
@@ -245,10 +245,10 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                 {fileName && !isLoading && (
                   <button
                     onClick={() => {
-                      setFileName('');
+                      setFileName("");
                       setDrawing(null);
                       setParts([]);
-                      setErrorMessage('');
+                      setErrorMessage("");
                     }}
                     className="px-3 py-1 border rounded text-sm hover:bg-muted flex items-center gap-1"
                     title="Limpar ficheiro"
@@ -417,63 +417,111 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                   className="mt-0.5"
                 />
                 <div className="flex-1">
-                  <div className="text-sm font-medium">Otimizar tamanho do bloco</div>
+                  <div className="text-sm font-medium">
+                    Otimizar tamanho do bloco
+                  </div>
                   <div className="text-xs text-muted-foreground mt-0.5">
-                    Ajusta automaticamente o tamanho do painel para reduzir desperdício com base nos limites da máquina CNC ({machineLimits.length}×{machineLimits.width}×{machineLimits.height}mm)
+                    Ajusta automaticamente o tamanho do painel para reduzir
+                    desperdício com base nos limites da máquina CNC (
+                    {machineLimits.length}×{machineLimits.width}×
+                    {machineLimits.height}mm)
                   </div>
                 </div>
               </label>
-              {optimizeWaste && parts.length > 0 && (() => {
-                const maxPartLength = Math.max(...parts.map(p => p.length));
-                const maxPartWidth = Math.max(...parts.map(p => p.width));
-                const maxPartHeight = Math.max(...parts.map(p => p.height));
+              {optimizeWaste &&
+                parts.length > 0 &&
+                (() => {
+                  const maxPartLength = Math.max(...parts.map((p) => p.length));
+                  const maxPartWidth = Math.max(...parts.map((p) => p.width));
+                  const maxPartHeight = Math.max(...parts.map((p) => p.height));
 
-                const optLength = Math.min(machineLimits.length, maxPartLength + cuttingMargins.length);
-                const optWidth = Math.min(machineLimits.width, maxPartWidth + cuttingMargins.width);
-                const optHeight = Math.min(machineLimits.height, maxPartHeight + cuttingMargins.height);
+                  const optLength = Math.min(
+                    machineLimits.length,
+                    maxPartLength + cuttingMargins.length,
+                  );
+                  const optWidth = Math.min(
+                    machineLimits.width,
+                    maxPartWidth + cuttingMargins.width,
+                  );
+                  const optHeight = Math.min(
+                    machineLimits.height,
+                    maxPartHeight + cuttingMargins.height,
+                  );
 
-                const currentWaste = ((sheet.length - maxPartLength) + (sheet.width - maxPartWidth)) / (sheet.length + sheet.width) * 100;
-                const optimizedWaste = ((optLength - maxPartLength) + (optWidth - maxPartWidth)) / (optLength + optWidth) * 100;
+                  const currentWaste =
+                    ((sheet.length -
+                      maxPartLength +
+                      (sheet.width - maxPartWidth)) /
+                      (sheet.length + sheet.width)) *
+                    100;
+                  const optimizedWaste =
+                    ((optLength - maxPartLength + (optWidth - maxPartWidth)) /
+                      (optLength + optWidth)) *
+                    100;
 
-                return (
-                  <div className="mt-2 pt-2 border-t text-xs space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Peça maior:</span>
-                      <span className="font-mono">{maxPartLength}×{maxPartWidth}×{maxPartHeight}mm</span>
+                  return (
+                    <div className="mt-2 pt-2 border-t text-xs space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Peça maior:
+                        </span>
+                        <span className="font-mono">
+                          {maxPartLength}×{maxPartWidth}×{maxPartHeight}mm
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Painel atual:
+                        </span>
+                        <span className="font-mono">
+                          {sheet.length}×{sheet.width}mm
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Sugestão otimizada:
+                        </span>
+                        <span className="font-mono text-green-700">
+                          {optLength}×{optWidth}mm
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Desperdício atual:
+                        </span>
+                        <span
+                          className={`font-medium ${currentWaste < 20 ? "text-green-600" : currentWaste < 40 ? "text-yellow-600" : "text-red-600"}`}
+                        >
+                          {currentWaste.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          Desperdício otimizado:
+                        </span>
+                        <span
+                          className={`font-medium ${optimizedWaste < 20 ? "text-green-600" : optimizedWaste < 40 ? "text-yellow-600" : "text-red-600"}`}
+                        >
+                          {optimizedWaste.toFixed(1)}%
+                        </span>
+                      </div>
+                      {currentWaste > optimizedWaste + 5 && (
+                        <button
+                          onClick={() => {
+                            setSheet((s) => ({
+                              ...s,
+                              length: optLength,
+                              width: optWidth,
+                            }));
+                          }}
+                          className="w-full mt-2 px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                        >
+                          Aplicar tamanho otimizado
+                        </button>
+                      )}
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Painel atual:</span>
-                      <span className="font-mono">{sheet.length}×{sheet.width}mm</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Sugestão otimizada:</span>
-                      <span className="font-mono text-green-700">{optLength}×{optWidth}mm</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Desperdício atual:</span>
-                      <span className={`font-medium ${currentWaste < 20 ? 'text-green-600' : currentWaste < 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {currentWaste.toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Desperdício otimizado:</span>
-                      <span className={`font-medium ${optimizedWaste < 20 ? 'text-green-600' : optimizedWaste < 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {optimizedWaste.toFixed(1)}%
-                      </span>
-                    </div>
-                    {currentWaste > optimizedWaste + 5 && (
-                      <button
-                        onClick={() => {
-                          setSheet(s => ({ ...s, length: optLength, width: optWidth }));
-                        }}
-                        className="w-full mt-2 px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
-                      >
-                        Aplicar tamanho otimizado
-                      </button>
-                    )}
-                  </div>
-                );
-              })()}
+                  );
+                })()}
             </div>
 
             {result && (
@@ -499,7 +547,9 @@ export default function NestingModal({ onClose, onApply }: NestingModalProps) {
                 <div>
                   <div className="font-medium mb-1">⚠️ Aviso de Stock</div>
                   <div className="text-xs">{stockWarning}</div>
-                  <div className="text-xs mt-1 opacity-75">A OP pode ser criada mesmo assim.</div>
+                  <div className="text-xs mt-1 opacity-75">
+                    A OP pode ser criada mesmo assim.
+                  </div>
                 </div>
               </div>
             )}

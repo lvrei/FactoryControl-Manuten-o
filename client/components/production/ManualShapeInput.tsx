@@ -50,9 +50,11 @@ export default function ManualShapeInput({
     const piecesInHeight = Math.floor(machineLimits.height / partHeight);
 
     // Se só cabe 1 peça em cada dimensão, usa o tamanho da peça + margem
-    const optimizedLength = piecesInLength <= 1 ? partLength : machineLimits.length;
+    const optimizedLength =
+      piecesInLength <= 1 ? partLength : machineLimits.length;
     const optimizedWidth = piecesInWidth <= 1 ? partWidth : machineLimits.width;
-    const optimizedHeight = piecesInHeight <= 1 ? partHeight : machineLimits.height;
+    const optimizedHeight =
+      piecesInHeight <= 1 ? partHeight : machineLimits.height;
 
     return {
       length: optimizedLength,
@@ -62,7 +64,7 @@ export default function ManualShapeInput({
         length: optimizedLength - formData.length,
         width: optimizedWidth - formData.width,
         height: optimizedHeight - formData.height,
-      }
+      },
     };
   };
 
@@ -80,14 +82,18 @@ export default function ManualShapeInput({
     const optimizedSize = optimizeWaste ? calculateOptimizedBlockSize() : null;
 
     if (optimizedSize && optimizeWaste) {
-      const wastePercent = ((optimizedSize.waste.length + optimizedSize.waste.width + optimizedSize.waste.height) /
-                            (optimizedSize.length + optimizedSize.width + optimizedSize.height)) * 100;
+      const wastePercent =
+        ((optimizedSize.waste.length +
+          optimizedSize.waste.width +
+          optimizedSize.waste.height) /
+          (optimizedSize.length + optimizedSize.width + optimizedSize.height)) *
+        100;
 
       console.log(`🔧 Otimização de desperdício:`, {
         original: `${formData.length}×${formData.width}×${formData.height}mm`,
         optimized: `${optimizedSize.length}×${optimizedSize.width}×${optimizedSize.height}mm`,
         waste: `${optimizedSize.waste.length}×${optimizedSize.waste.width}×${optimizedSize.waste.height}mm`,
-        wastePercent: `${wastePercent.toFixed(1)}%`
+        wastePercent: `${wastePercent.toFixed(1)}%`,
       });
     }
 
@@ -270,39 +276,58 @@ export default function ManualShapeInput({
               className="mt-0.5"
             />
             <div className="flex-1">
-              <div className="text-xs font-medium">Otimizar tamanho do bloco</div>
+              <div className="text-xs font-medium">
+                Otimizar tamanho do bloco
+              </div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                Ajusta automaticamente o tamanho do bloco para reduzir desperdício
+                Ajusta automaticamente o tamanho do bloco para reduzir
+                desperdício
               </div>
             </div>
           </label>
-          {optimizeWaste && formData.length > 0 && formData.width > 0 && formData.height > 0 && (() => {
-            const opt = calculateOptimizedBlockSize();
-            const wastePercent = ((opt.waste.length + opt.waste.width + opt.waste.height) /
-                                  (opt.length + opt.width + opt.height)) * 100;
-            return (
-              <div className="mt-2 pt-2 border-t text-xs space-y-1">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Peça:</span>
-                  <span className="font-mono">{formData.length}×{formData.width}×{formData.height}mm</span>
+          {optimizeWaste &&
+            formData.length > 0 &&
+            formData.width > 0 &&
+            formData.height > 0 &&
+            (() => {
+              const opt = calculateOptimizedBlockSize();
+              const wastePercent =
+                ((opt.waste.length + opt.waste.width + opt.waste.height) /
+                  (opt.length + opt.width + opt.height)) *
+                100;
+              return (
+                <div className="mt-2 pt-2 border-t text-xs space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Peça:</span>
+                    <span className="font-mono">
+                      {formData.length}×{formData.width}×{formData.height}mm
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Bloco sugerido:
+                    </span>
+                    <span className="font-mono text-green-700">
+                      {opt.length}×{opt.width}×{opt.height}mm
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Margem total:</span>
+                    <span className="font-mono">
+                      {opt.waste.length}×{opt.waste.width}×{opt.waste.height}mm
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Desperdício:</span>
+                    <span
+                      className={`font-medium ${wastePercent < 20 ? "text-green-600" : wastePercent < 40 ? "text-yellow-600" : "text-red-600"}`}
+                    >
+                      {wastePercent.toFixed(1)}%
+                    </span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Bloco sugerido:</span>
-                  <span className="font-mono text-green-700">{opt.length}×{opt.width}×{opt.height}mm</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Margem total:</span>
-                  <span className="font-mono">{opt.waste.length}×{opt.waste.width}×{opt.waste.height}mm</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Desperdício:</span>
-                  <span className={`font-medium ${wastePercent < 20 ? 'text-green-600' : wastePercent < 40 ? 'text-yellow-600' : 'text-red-600'}`}>
-                    {wastePercent.toFixed(1)}%
-                  </span>
-                </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
         </div>
 
         <button

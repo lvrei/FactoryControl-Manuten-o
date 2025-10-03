@@ -264,7 +264,10 @@ export default function FoamBlock3DViewer({
   }
 
   return (
-    <div className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg border shadow-lg" style={{ overflow: 'hidden' }}>
+    <div
+      className="relative w-full h-[600px] bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg border shadow-lg"
+      style={{ overflow: "hidden" }}
+    >
       {/* Info overlay */}
       <div className="absolute top-4 left-4 z-10 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg border max-w-[200px]">
         <div className="text-xs font-semibold text-slate-800 mb-1">
@@ -272,7 +275,8 @@ export default function FoamBlock3DViewer({
         </div>
         <div className="text-xs text-slate-600 space-y-0.5">
           <div className="truncate">
-            📦 {block.dimensions.length}×{block.dimensions.width}×{block.dimensions.height}mm
+            📦 {block.dimensions.length}×{block.dimensions.width}×
+            {block.dimensions.height}mm
           </div>
           <div>
             🔢 {block.partsCount} peça{block.partsCount !== 1 ? "s" : ""}
