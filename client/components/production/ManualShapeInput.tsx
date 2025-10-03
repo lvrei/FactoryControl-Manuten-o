@@ -39,6 +39,33 @@ export default function ManualShapeInput({
 
   const [optimizeWaste, setOptimizeWaste] = useState(true);
 
+  const calculateOptimizedBlockSize = () => {
+    const partLength = formData.length + cuttingMargins.length;
+    const partWidth = formData.width + cuttingMargins.width;
+    const partHeight = formData.height + cuttingMargins.height;
+
+    // Calcula quantas peças cabem em cada dimensão do limite da máquina
+    const piecesInLength = Math.floor(machineLimits.length / partLength);
+    const piecesInWidth = Math.floor(machineLimits.width / partWidth);
+    const piecesInHeight = Math.floor(machineLimits.height / partHeight);
+
+    // Se só cabe 1 peça em cada dimensão, usa o tamanho da peça + margem
+    const optimizedLength = piecesInLength <= 1 ? partLength : machineLimits.length;
+    const optimizedWidth = piecesInWidth <= 1 ? partWidth : machineLimits.width;
+    const optimizedHeight = piecesInHeight <= 1 ? partHeight : machineLimits.height;
+
+    return {
+      length: optimizedLength,
+      width: optimizedWidth,
+      height: optimizedHeight,
+      waste: {
+        length: optimizedLength - formData.length,
+        width: optimizedWidth - formData.width,
+        height: optimizedHeight - formData.height,
+      }
+    };
+  };
+
   const handleAdd = () => {
     if (formData.length <= 0 || formData.width <= 0 || formData.height <= 0) {
       alert("As medidas devem ser maiores que zero");
@@ -48,6 +75,20 @@ export default function ManualShapeInput({
     if (formData.quantity <= 0) {
       alert("A quantidade deve ser maior que zero");
       return;
+    }
+
+    const optimizedSize = optimizeWaste ? calculateOptimizedBlockSize() : null;
+
+    if (optimizedSize && optimizeWaste) {
+      const wastePercent = ((optimizedSize.waste.length + optimizedSize.waste.width + optimizedSize.waste.height) /
+                            (optimizedSize.length + optimizedSize.width + optimizedSize.height)) * 100;
+
+      console.log(`🔧 Otimização de desperdício:`, {
+        original: `${formData.length}×${formData.width}×${formData.height}mm`,
+        optimized: `${optimizedSize.length}×${optimizedSize.width}×${optimizedSize.height}mm`,
+        waste: `${optimizedSize.waste.length}×${optimizedSize.waste.width}×${optimizedSize.waste.height}mm`,
+        wastePercent: `${wastePercent.toFixed(1)}%`
+      });
     }
 
     const newShape: ManualShape = {
