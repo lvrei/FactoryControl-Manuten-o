@@ -404,7 +404,7 @@ export function nestFoamParts(
       remainingParts,
       currentBlock,
       constraints.kerf,
-      constraints.margin,
+      adjustedMargin, // Usa margem ajustada automaticamente
     );
 
     // Marca índice do bloco
