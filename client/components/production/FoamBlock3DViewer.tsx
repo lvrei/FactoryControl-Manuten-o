@@ -251,7 +251,7 @@ function Scene({
       />
 
       {/* Peças cortadas */}
-      {blockPlacements.map((part, idx) => {
+      {validatedPlacements.map((part, idx) => {
         const extendedPart = part as ExtendedPlacedPart;
         if (extendedPart.polygon && extendedPart.polygon.length >= 3) {
           return (
