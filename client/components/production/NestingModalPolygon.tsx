@@ -758,7 +758,8 @@ export default function NestingModalPolygon({
                           Otimizar tamanho do bloco
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">
-                          Ajusta automaticamente os limites da máquina CNC com base nas peças do ficheiro
+                          Ajusta automaticamente os limites da máquina CNC com
+                          base nas peças do ficheiro
                         </div>
                       </div>
                     </label>
@@ -773,7 +774,10 @@ export default function NestingModalPolygon({
                             height: p.height,
                             quantity: Math.max(
                               0,
-                              Math.floor((p.quantity || 1) * Math.max(1, quantityMultiplier)),
+                              Math.floor(
+                                (p.quantity || 1) *
+                                  Math.max(1, quantityMultiplier),
+                              ),
                             ),
                             label: p.label,
                             foamTypeId: p.foamTypeId || mappingFoamTypeId,
@@ -781,9 +785,15 @@ export default function NestingModalPolygon({
                           allParts.push(...scaled);
                         }
 
-                        const maxPartLength = Math.max(...allParts.map((p) => p.length));
-                        const maxPartWidth = Math.max(...allParts.map((p) => p.width));
-                        const maxPartHeight = Math.max(...allParts.map((p) => p.height));
+                        const maxPartLength = Math.max(
+                          ...allParts.map((p) => p.length),
+                        );
+                        const maxPartWidth = Math.max(
+                          ...allParts.map((p) => p.width),
+                        );
+                        const maxPartHeight = Math.max(
+                          ...allParts.map((p) => p.height),
+                        );
 
                         const effectiveMargin = Math.max(
                           foam3dMargins.top,
@@ -806,13 +816,17 @@ export default function NestingModalPolygon({
                         );
 
                         const currentWaste =
-                          ((cncConstraints.maxLength - maxPartLength +
+                          ((cncConstraints.maxLength -
+                            maxPartLength +
                             (cncConstraints.maxWidth - maxPartWidth) +
                             (cncConstraints.maxHeight - maxPartHeight)) /
-                            (cncConstraints.maxLength + cncConstraints.maxWidth + cncConstraints.maxHeight)) *
+                            (cncConstraints.maxLength +
+                              cncConstraints.maxWidth +
+                              cncConstraints.maxHeight)) *
                           100;
                         const optimizedWaste =
-                          ((optLength - maxPartLength +
+                          ((optLength -
+                            maxPartLength +
                             (optWidth - maxPartWidth) +
                             (optHeight - maxPartHeight)) /
                             (optLength + optWidth + optHeight)) *
@@ -821,25 +835,35 @@ export default function NestingModalPolygon({
                         return (
                           <div className="mt-2 pt-2 border-t text-xs space-y-1">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Peça maior:</span>
+                              <span className="text-muted-foreground">
+                                Peça maior:
+                              </span>
                               <span className="font-mono">
                                 {maxPartLength}×{maxPartWidth}×{maxPartHeight}mm
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Limites atuais:</span>
+                              <span className="text-muted-foreground">
+                                Limites atuais:
+                              </span>
                               <span className="font-mono">
-                                {cncConstraints.maxLength}×{cncConstraints.maxWidth}×{cncConstraints.maxHeight}mm
+                                {cncConstraints.maxLength}×
+                                {cncConstraints.maxWidth}×
+                                {cncConstraints.maxHeight}mm
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Sugestão otimizada:</span>
+                              <span className="text-muted-foreground">
+                                Sugestão otimizada:
+                              </span>
                               <span className="font-mono text-green-700">
                                 {optLength}×{optWidth}×{optHeight}mm
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Desperdício atual:</span>
+                              <span className="text-muted-foreground">
+                                Desperdício atual:
+                              </span>
                               <span
                                 className={`font-medium ${
                                   currentWaste < 20
@@ -853,7 +877,9 @@ export default function NestingModalPolygon({
                               </span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Desperdício otimizado:</span>
+                              <span className="text-muted-foreground">
+                                Desperdício otimizado:
+                              </span>
                               <span
                                 className={`font-medium ${
                                   optimizedWaste < 20
