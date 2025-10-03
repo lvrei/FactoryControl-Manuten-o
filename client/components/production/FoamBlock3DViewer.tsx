@@ -211,17 +211,31 @@ function Scene({
   ];
 
   // Valida que as peças estão dentro dos limites do bloco
-  const validatedPlacements = blockPlacements.map((p) => {
+  const validatedPlacements = blockPlacements.map((p, idx) => {
     // Garante que as coordenadas + dimensões não ultrapassam o bloco
     const maxX = Math.min(p.x, blockDims.length - p.length);
     const maxY = Math.min(p.y, blockDims.width - p.width);
     const maxZ = Math.min(p.z || 0, blockDims.height - p.height);
 
+    const correctedX = Math.max(0, maxX);
+    const correctedY = Math.max(0, maxY);
+    const correctedZ = Math.max(0, maxZ);
+
+    // Debug: detecta peças fora dos limites
+    if (p.x !== correctedX || p.y !== correctedY || (p.z || 0) !== correctedZ) {
+      console.warn(`⚠️ Peça ${idx} ajustada para caber no bloco:`, {
+        original: { x: p.x, y: p.y, z: p.z || 0 },
+        corrected: { x: correctedX, y: correctedY, z: correctedZ },
+        partSize: { length: p.length, width: p.width, height: p.height },
+        blockSize: blockDims,
+      });
+    }
+
     return {
       ...p,
-      x: Math.max(0, maxX),
-      y: Math.max(0, maxY),
-      z: Math.max(0, maxZ),
+      x: correctedX,
+      y: correctedY,
+      z: correctedZ,
     };
   });
 
