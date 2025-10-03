@@ -218,9 +218,16 @@ function Scene({
     const validHeight = Math.min(p.height, blockDims.height);
 
     // Garante que as coordenadas + dimensões não ultrapassam o bloco
-    const maxX = p.x + validLength > blockDims.length ? blockDims.length - validLength : p.x;
-    const maxY = p.y + validWidth > blockDims.width ? blockDims.width - validWidth : p.y;
-    const maxZ = (p.z || 0) + validHeight > blockDims.height ? blockDims.height - validHeight : (p.z || 0);
+    const maxX =
+      p.x + validLength > blockDims.length
+        ? blockDims.length - validLength
+        : p.x;
+    const maxY =
+      p.y + validWidth > blockDims.width ? blockDims.width - validWidth : p.y;
+    const maxZ =
+      (p.z || 0) + validHeight > blockDims.height
+        ? blockDims.height - validHeight
+        : p.z || 0;
 
     const correctedX = Math.max(0, maxX);
     const correctedY = Math.max(0, maxY);
@@ -239,11 +246,11 @@ function Scene({
       console.warn(`⚠️ Peça ${idx} ajustada para caber no bloco:`, {
         original: {
           pos: { x: p.x, y: p.y, z: p.z || 0 },
-          size: { length: p.length, width: p.width, height: p.height }
+          size: { length: p.length, width: p.width, height: p.height },
         },
         corrected: {
           pos: { x: correctedX, y: correctedY, z: correctedZ },
-          size: { length: validLength, width: validWidth, height: validHeight }
+          size: { length: validLength, width: validWidth, height: validHeight },
         },
         blockSize: blockDims,
       });
