@@ -462,9 +462,17 @@ export default function NestingModalCarousel({
             {nestingResult && (
               <>
                 <div className="p-4 border rounded bg-green-50 dark:bg-green-950/20">
-                  <h4 className="font-medium text-green-700 dark:text-green-300 mb-2">
-                    ✅ Resultado do Nesting
-                  </h4>
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-green-700 dark:text-green-300">
+                      ✅ Resultado do Nesting
+                    </h4>
+                    <button
+                      onClick={() => setShow3DView(!show3DView)}
+                      className="px-3 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 flex items-center gap-1"
+                    >
+                      {show3DView ? "📋 Detalhes" : "🎨 Ver 3D"}
+                    </button>
+                  </div>
                   <div className="text-sm space-y-1">
                     <div>
                       Blocos necessários:{" "}
@@ -480,6 +488,20 @@ export default function NestingModalCarousel({
                     </div>
                   </div>
                 </div>
+
+                {show3DView && nestingResult.placements && (
+                  <div className="border rounded bg-white dark:bg-gray-900 p-2">
+                    <div className="text-sm font-medium mb-2 text-center">
+                      Visualização 3D - Bloco 1
+                    </div>
+                    <FoamBlock3DViewer
+                      block={nestingResult.blocks[0]}
+                      placements={nestingResult.placements.filter(
+                        (p) => p.blockIndex === 0
+                      )}
+                    />
+                  </div>
+                )}
 
                 <div className="border rounded max-h-96 overflow-auto">
                   <div className="p-2 bg-muted font-medium text-sm sticky top-0">
