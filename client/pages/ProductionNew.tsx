@@ -135,7 +135,6 @@ function ProductionNew() {
   };
   const [showOrderForm, setShowOrderForm] = useState(false);
   const [showNesting, setShowNesting] = useState(false);
-  const [showNestingCarousel, setShowNestingCarousel] = useState(false);
   const [nestingLines, setNestingLines] = useState<
     ProductionOrderLine[] | null
   >(null);
