@@ -142,7 +142,12 @@ function Part3D({
   // Converte coordenadas: SVG usa top-left, Three.js usa centro
   // Ajusta para que o bloco esteja centrado em (0,0,0)
   const x = part.x + part.length / 2 - blockDimensions.length / 2;
-  const y = part.z + part.height / 2 - blockDimensions.height / 2;
+
+  // Normaliza Z para estar sempre dentro do bloco
+  // part.z pode ter valores grandes (camadas acumuladas), mas o bloco tem altura limitada
+  const normalizedZ = part.z % blockDimensions.height;
+  const y = normalizedZ + part.height / 2 - blockDimensions.height / 2;
+
   const z = -(part.y + part.width / 2 - blockDimensions.width / 2);
 
   const layerColors = [
