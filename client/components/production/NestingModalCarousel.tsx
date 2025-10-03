@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { X, Plus, Trash2, Layers, Info } from "lucide-react";
 import { ProductionOrderLine, FoamType } from "@/types/production";
 import { productionService } from "@/services/productionService";
