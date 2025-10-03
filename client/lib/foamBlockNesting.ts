@@ -92,11 +92,16 @@ export function canFitInBlock(
 
 /**
  * Calcula as dimensões ótimas do bloco menor baseado nas peças
- * Usa os limites MÁXIMOS da CNC para aproveitar ao máximo
+ *
+ * @param parts - Peças a serem cortadas
+ * @param constraints - Limites da máquina CNC
+ * @param maximize - Se true, usa limites MÁXIMOS da CNC para aproveitar ao máximo (primeiro bloco)
+ *                   Se false, otimiza para o tamanho mínimo necessário (blocos seguintes)
  */
 export function calculateOptimalBlockSize(
   parts: FoamPart[],
   constraints: BlockConstraints,
+  maximize: boolean = false,
 ): { block: FoamBlock; adjustedMargin: number } {
   if (parts.length === 0) {
     return {
@@ -440,7 +445,7 @@ export function nestFoamParts(
 
     blockIndex++;
 
-    // Segurança: m��ximo 100 blocos (evita loop infinito)
+    // Segurança: máximo 100 blocos (evita loop infinito)
     if (blockIndex >= 100) {
       console.error("[Foam Nesting] ERRO: Máximo de blocos atingido!");
       break;
