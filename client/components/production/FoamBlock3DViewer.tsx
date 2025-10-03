@@ -212,21 +212,39 @@ function Scene({
 
   // Valida que as peças estão dentro dos limites do bloco
   const validatedPlacements = blockPlacements.map((p, idx) => {
+    // Valida dimensões da peça (não podem ser maiores que o bloco)
+    const validLength = Math.min(p.length, blockDims.length);
+    const validWidth = Math.min(p.width, blockDims.width);
+    const validHeight = Math.min(p.height, blockDims.height);
+
     // Garante que as coordenadas + dimensões não ultrapassam o bloco
-    const maxX = Math.min(p.x, blockDims.length - p.length);
-    const maxY = Math.min(p.y, blockDims.width - p.width);
-    const maxZ = Math.min(p.z || 0, blockDims.height - p.height);
+    const maxX = p.x + validLength > blockDims.length ? blockDims.length - validLength : p.x;
+    const maxY = p.y + validWidth > blockDims.width ? blockDims.width - validWidth : p.y;
+    const maxZ = (p.z || 0) + validHeight > blockDims.height ? blockDims.height - validHeight : (p.z || 0);
 
     const correctedX = Math.max(0, maxX);
     const correctedY = Math.max(0, maxY);
     const correctedZ = Math.max(0, maxZ);
 
-    // Debug: detecta peças fora dos limites
-    if (p.x !== correctedX || p.y !== correctedY || (p.z || 0) !== correctedZ) {
+    // Debug: detecta peças fora dos limites ou com dimensões inválidas
+    const needsCorrection =
+      p.x !== correctedX ||
+      p.y !== correctedY ||
+      (p.z || 0) !== correctedZ ||
+      p.length !== validLength ||
+      p.width !== validWidth ||
+      p.height !== validHeight;
+
+    if (needsCorrection) {
       console.warn(`⚠️ Peça ${idx} ajustada para caber no bloco:`, {
-        original: { x: p.x, y: p.y, z: p.z || 0 },
-        corrected: { x: correctedX, y: correctedY, z: correctedZ },
-        partSize: { length: p.length, width: p.width, height: p.height },
+        original: {
+          pos: { x: p.x, y: p.y, z: p.z || 0 },
+          size: { length: p.length, width: p.width, height: p.height }
+        },
+        corrected: {
+          pos: { x: correctedX, y: correctedY, z: correctedZ },
+          size: { length: validLength, width: validWidth, height: validHeight }
+        },
         blockSize: blockDims,
       });
     }
@@ -236,6 +254,9 @@ function Scene({
       x: correctedX,
       y: correctedY,
       z: correctedZ,
+      length: validLength,
+      width: validWidth,
+      height: validHeight,
     };
   });
 
