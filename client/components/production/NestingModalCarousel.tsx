@@ -220,7 +220,7 @@ export default function NestingModalCarousel({
     };
   }, [cuts, machineLimits, margins]);
 
-  const handleApplyToOrder = () => {
+  const handleApplyToOrder = useCallback(() => {
     if (!nestingResult || cuts.length === 0) return;
 
     // Agrupa cortes por tipo e dimensões
@@ -264,7 +264,7 @@ export default function NestingModalCarousel({
 
     onApply(lines);
     onClose();
-  };
+  }, [nestingResult, cuts, foamTypes, onApply, onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
