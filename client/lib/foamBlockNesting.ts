@@ -143,6 +143,11 @@ export function calculateOptimalBlockSize(
   blockWidth = Math.ceil(blockWidth / 50) * 50;
   blockHeight = Math.ceil(blockHeight / 50) * 50;
 
+  // Garante que não ultrapassa limites da máquina após arredondamento
+  blockLength = Math.min(blockLength, constraints.maxLength);
+  blockWidth = Math.min(blockWidth, constraints.maxWidth);
+  blockHeight = Math.min(blockHeight, constraints.maxHeight);
+
   // Garante mínimo de 500mm em comprimento e largura, 100mm em altura
   blockLength = Math.max(500, blockLength);
   blockWidth = Math.max(500, blockWidth);
