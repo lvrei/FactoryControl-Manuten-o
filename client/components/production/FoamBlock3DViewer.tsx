@@ -68,7 +68,11 @@ function PolygonPart3D({
   if (!part.polygon || part.polygon.length < 3) {
     // Fallback to box if no polygon data
     const x = part.x + part.length / 2 - blockDimensions.length / 2;
-    const y = part.z + part.height / 2 - blockDimensions.height / 2;
+
+    // Normaliza Z para estar sempre dentro do bloco
+    const normalizedZ = part.z % blockDimensions.height;
+    const y = normalizedZ + part.height / 2 - blockDimensions.height / 2;
+
     const z = -(part.y + part.width / 2 - blockDimensions.width / 2);
 
     return (
