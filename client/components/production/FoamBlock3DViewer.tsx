@@ -210,6 +210,21 @@ function Scene({
     blockDims.width,
   ];
 
+  // Valida que as peças estão dentro dos limites do bloco
+  const validatedPlacements = blockPlacements.map((p) => {
+    // Garante que as coordenadas + dimensões não ultrapassam o bloco
+    const maxX = Math.min(p.x, blockDims.length - p.length);
+    const maxY = Math.min(p.y, blockDims.width - p.width);
+    const maxZ = Math.min(p.z || 0, blockDims.height - p.height);
+
+    return {
+      ...p,
+      x: Math.max(0, maxX),
+      y: Math.max(0, maxY),
+      z: Math.max(0, maxZ),
+    };
+  });
+
   // Calcula escala para caber na viewport (normaliza para ~400 unidades)
   const maxDim = Math.max(blockDims.length, blockDims.width, blockDims.height);
   const scale = 400 / maxDim;
