@@ -10,11 +10,23 @@ export type ManualShape = NestPart & {
 export type ManualShapeInputProps = {
   shapes: ManualShape[];
   onShapesChange: (shapes: ManualShape[]) => void;
+  machineLimits?: {
+    length: number;
+    width: number;
+    height: number;
+  };
+  cuttingMargins?: {
+    length: number;
+    width: number;
+    height: number;
+  };
 };
 
 export default function ManualShapeInput({
   shapes,
   onShapesChange,
+  machineLimits = { length: 2500, width: 2300, height: 1300 },
+  cuttingMargins = { length: 50, width: 50, height: 20 },
 }: ManualShapeInputProps) {
   const [formData, setFormData] = useState({
     length: 100,
@@ -24,6 +36,8 @@ export default function ManualShapeInput({
     label: "",
     isSquare: false,
   });
+
+  const [optimizeWaste, setOptimizeWaste] = useState(true);
 
   const handleAdd = () => {
     if (formData.length <= 0 || formData.width <= 0 || formData.height <= 0) {
