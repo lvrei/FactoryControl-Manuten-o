@@ -21,7 +21,6 @@ import { cn } from "@/lib/utils";
 import { authService } from "@/services/authService";
 import { LoginSession } from "@/types/production";
 import { APP_VERSION } from "@/version";
-import { FloatingQRScanner } from "./FloatingQRScanner";
 
 interface LayoutProps {
   children?: ReactNode;
@@ -242,8 +241,6 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </nav>
 
-      {/* Floating QR Scanner Button */}
-      <FloatingQRScanner />
     </div>
   );
 }
