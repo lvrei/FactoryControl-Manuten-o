@@ -1,10 +1,24 @@
+export interface ROI {
+  id: string;
+  name: string;
+  description: string;
+  analysisType: 'people_count' | 'motion_detection' | 'zone_occupancy' | 'custom';
+  coordinates: {
+    x: number;      // percentage 0-100
+    y: number;      // percentage 0-100
+    width: number;  // percentage 0-100
+    height: number; // percentage 0-100
+  };
+  enabled: boolean;
+}
+
 export type CameraRecord = {
   id: string;
   machineId: string | null;
   name: string;
   url: string;
   protocol?: string;
-  rois?: any[];
+  rois?: ROI[];
   thresholds?: Record<string, any>;
   schedule?: Record<string, any>;
   enabled?: boolean;
