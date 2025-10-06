@@ -1,3 +1,4 @@
+import { apiFetch } from "@/config/api";
 export type FactoryRecord = {
   id: string;
   name: string;
@@ -6,12 +7,12 @@ export type FactoryRecord = {
 
 class FactoriesService {
   async list(): Promise<FactoryRecord[]> {
-    const r = await fetch("/api/factories");
+    const r = await apiFetch("api/factories");
     if (!r.ok) throw new Error("Falha ao listar fábricas");
     return r.json();
   }
   async create(data: { id?: string; name: string }): Promise<FactoryRecord> {
-    const r = await fetch("/api/factories", {
+    const r = await apiFetch("api/factories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

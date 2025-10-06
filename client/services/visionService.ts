@@ -1,3 +1,4 @@
+import { apiFetch } from "@/config/api";
 export type VisionStatus = {
   scope: "machine" | "camera";
   id: string;
@@ -37,7 +38,7 @@ class VisionService {
     const q = new URLSearchParams({ machineId });
     if (from) q.set("from", from);
     if (to) q.set("to", to);
-    const resp = await fetch(`/api/vision/uptime?${q.toString()}`);
+    const resp = await apiFetch(`api/vision/uptime?${q.toString()}`);
     if (!resp.ok) throw new Error("Falha ao obter uptime");
     return resp.json();
   }
@@ -49,7 +50,7 @@ class VisionService {
     const q = new URLSearchParams({ cameraId });
     if (from) q.set("from", from);
     if (to) q.set("to", to);
-    const resp = await fetch(`/api/vision/uptime?${q.toString()}`);
+    const resp = await apiFetch(`api/vision/uptime?${q.toString()}`);
     if (!resp.ok) throw new Error("Falha ao obter uptime");
     return resp.json();
   }
@@ -61,7 +62,7 @@ class VisionService {
     createdAt?: string;
     id?: string;
   }): Promise<any> {
-    const resp = await fetch("/api/vision/mock-event", {
+    const resp = await apiFetch("api/vision/mock-event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
