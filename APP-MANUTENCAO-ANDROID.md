@@ -234,7 +234,7 @@ npm install
 npm run build
 ```
 
-### **Passo 2: Configurar Capacitor**
+### **Passo 3: Configurar Capacitor**
 
 ```bash
 # Sincronizar com Android
@@ -244,7 +244,7 @@ npx cap sync android
 npx cap open android
 ```
 
-### **Passo 3: Gerar APK no Android Studio**
+### **Passo 4: Gerar APK no Android Studio**
 
 1. **Build → Generate Signed Bundle / APK**
 2. Escolher **APK**
