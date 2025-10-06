@@ -9,12 +9,12 @@ import { apiFetch } from "@/config/api";
 class MaintenanceService {
   // DB-backed Scheduled Maintenances (plans)
   async getMaintenancePlans(): Promise<any[]> {
-    const r = await fetch("/api/maintenance/plans");
+    const r = await apiFetch("api/maintenance/plans");
     if (!r.ok) throw new Error("Falha ao listar manutenções programadas");
     return r.json();
   }
   async createMaintenancePlan(plan: any): Promise<string> {
-    const r = await fetch("/api/maintenance/plans", {
+    const r = await apiFetch("api/maintenance/plans", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(plan),
@@ -24,7 +24,7 @@ class MaintenanceService {
     return j.id;
   }
   async updateMaintenancePlan(id: string, patch: any): Promise<void> {
-    const r = await fetch(`/api/maintenance/plans/${id}`, {
+    const r = await apiFetch(`api/maintenance/plans/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
@@ -32,7 +32,7 @@ class MaintenanceService {
     if (!r.ok) throw new Error("Falha ao atualizar manutenção");
   }
   async deleteMaintenancePlan(id: string): Promise<void> {
-    const r = await fetch(`/api/maintenance/plans/${id}`, { method: "DELETE" });
+    const r = await apiFetch(`api/maintenance/plans/${id}`, { method: "DELETE" });
     if (!r.ok) throw new Error("Falha ao apagar manutenção");
   }
 
