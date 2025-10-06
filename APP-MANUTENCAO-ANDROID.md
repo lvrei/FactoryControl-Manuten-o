@@ -69,6 +69,54 @@ Versão nativa Android (APK) para equipas de manutenção.
 
 ---
 
+## ⚙️ Configuração da API
+
+**IMPORTANTE**: Para que a app Android consiga conectar ao servidor, você precisa configurar o URL da API.
+
+### Configurar URL do Servidor:
+
+1. **Criar ficheiro `.env.local`** (ou editar `.env`):
+
+```bash
+# URL completo do servidor backend
+# Exemplo com IP local:
+VITE_API_URL=http://192.168.1.100:5000
+
+# Ou com domínio:
+VITE_API_URL=https://seu-servidor.com
+```
+
+2. **Descobrir o IP do seu servidor**:
+
+```bash
+# Windows
+ipconfig
+
+# Linux/Mac
+ifconfig
+```
+
+3. **Garantir que o servidor está acessível**:
+   - O servidor deve estar rodando (`npm run dev` ou `npm start`)
+   - O firewall deve permitir conexões na porta (ex: 5000)
+   - O dispositivo Android deve estar na mesma rede (WiFi)
+
+### ⚠️ Problemas Comuns:
+
+| Problema | Solução |
+|----------|---------|
+| "Não tenho ligação ao servidor" | Verificar `VITE_API_URL` em `.env.local` |
+| Timeout nas chamadas | Verificar firewall e se servidor está ativo |
+| CORS errors | Configurar CORS no servidor para aceitar o IP do dispositivo |
+
+### 🔍 Verificar Configuração:
+
+Abra a app e verifique o console do browser (DevTools):
+- Deve aparecer o URL da API sendo usado
+- Se aparecer `http://localhost`, o `.env` não está configurado
+
+---
+
 ## 📦 Componentes Criados
 
 ### 1. **QRCodeGenerator**
