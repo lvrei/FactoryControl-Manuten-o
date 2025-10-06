@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { camerasService, CameraRecord, ROI } from "@/services/camerasService";
 import { productionService } from "@/services/productionService";
 import { visionService } from "@/services/visionService";
-import { Plus, X, Trash2, Edit, Video, Link as LinkIcon, Camera } from "lucide-react";
+import { Plus, X, Trash2, Edit, Video, Link as LinkIcon, Camera, BarChart3 } from "lucide-react";
 import { ROIEditor } from "@/components/cameras/ROIEditor";
 
 interface MachineOption {
@@ -217,15 +217,23 @@ export default function CamerasPage() {
             Associe câmaras aos equipamentos e configure zonas de interesse para análise.
           </p>
         </div>
-        <button
-          onClick={() => {
-            resetForm();
-            setShowForm(true);
-          }}
-          className="px-4 py-2.5 bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] transition-all font-semibold flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" /> Nova Câmara
-        </button>
+        <div className="flex gap-3">
+          <a
+            href="/camera-reports"
+            className="px-4 py-2.5 border-2 border-input rounded-xl hover:bg-gradient-to-r hover:from-accent hover:to-accent/80 hover:border-primary/30 hover:shadow-md flex items-center gap-2 transition-all duration-300 font-semibold hover:scale-[1.02] active:scale-95"
+          >
+            <BarChart3 className="h-4 w-4" /> Ver Relatórios
+          </a>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+            className="px-4 py-2.5 bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] transition-all font-semibold flex items-center gap-2"
+          >
+            <Plus className="h-4 w-4" /> Nova Câmara
+          </button>
+        </div>
       </div>
 
       <div className="flex gap-3">
