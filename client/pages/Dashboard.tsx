@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo } from "react";
 import {
   Factory,
   AlertTriangle,
@@ -9,80 +9,121 @@ import {
   Activity,
   Wrench,
   Timer,
-  AlertCircle
+  AlertCircle,
 } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { productionService } from '@/services/productionService';
-import { maintenanceService } from '@/services/maintenanceService';
-import { ProductionOrder, Machine, MachineDowntime, MaintenanceRequest } from '@/types/production';
-import { MaintenancePopupContainer } from '@/components/MaintenancePopup';
+import { productionService } from "@/services/productionService";
+import { maintenanceService } from "@/services/maintenanceService";
+import {
+  ProductionOrder,
+  Machine,
+  MachineDowntime,
+  MaintenanceRequest,
+} from "@/types/production";
+import { MaintenancePopupContainer } from "@/components/MaintenancePopup";
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
 
   const ordersQuery = useQuery<ProductionOrder[]>({
-    queryKey: ['productionOrders'],
+    queryKey: ["productionOrders"],
     queryFn: () => productionService.getProductionOrders(),
     staleTime: 10_000,
     refetchInterval: 30_000,
   });
 
   const machinesQuery = useQuery<Machine[]>({
-    queryKey: ['machines'],
+    queryKey: ["machines"],
     queryFn: () => productionService.getMachines(),
     staleTime: 10_000,
     refetchInterval: 30_000,
   });
 
   const downtimeQuery = useQuery<MachineDowntime[]>({
-    queryKey: ['machineDowntime'],
+    queryKey: ["machineDowntime"],
     queryFn: () => maintenanceService.getMachineDowntime(),
     staleTime: 10_000,
     refetchInterval: 30_000,
   });
 
   const requestsQuery = useQuery<MaintenanceRequest[]>({
-    queryKey: ['maintenanceRequests'],
+    queryKey: ["maintenanceRequests"],
     queryFn: () => maintenanceService.getMaintenanceRequests(),
     staleTime: 10_000,
     refetchInterval: 30_000,
   });
 
-  const loading = ordersQuery.isLoading || machinesQuery.isLoading || downtimeQuery.isLoading || requestsQuery.isLoading;
+  const loading =
+    ordersQuery.isLoading ||
+    machinesQuery.isLoading ||
+    downtimeQuery.isLoading ||
+    requestsQuery.isLoading;
 
-  const { productionOrders, machines, machineDowntime, maintenanceRequests } = useMemo(() => ({
-    productionOrders: ordersQuery.data || [],
-    machines: machinesQuery.data || [],
-    machineDowntime: downtimeQuery.data || [],
-    maintenanceRequests: requestsQuery.data || [],
-  }), [ordersQuery.data, machinesQuery.data, downtimeQuery.data, requestsQuery.data]);
+  const { productionOrders, machines, machineDowntime, maintenanceRequests } =
+    useMemo(
+      () => ({
+        productionOrders: ordersQuery.data || [],
+        machines: machinesQuery.data || [],
+        machineDowntime: downtimeQuery.data || [],
+        maintenanceRequests: requestsQuery.data || [],
+      }),
+      [
+        ordersQuery.data,
+        machinesQuery.data,
+        downtimeQuery.data,
+        requestsQuery.data,
+      ],
+    );
 
   const totalOrders = productionOrders.length;
-  const activeOrders = productionOrders.filter(o => o.status === 'in_progress').length;
-  const completedToday = productionOrders.filter(o =>
-    o.status === 'completed' &&
-    new Date(o.updatedAt).toDateString() === new Date().toDateString()
+  const activeOrders = productionOrders.filter(
+    (o) => o.status === "in_progress",
   ).length;
-  const urgentOrders = productionOrders.filter(o => o.priority === 'urgent').length;
+  const completedToday = productionOrders.filter(
+    (o) =>
+      o.status === "completed" &&
+      new Date(o.updatedAt).toDateString() === new Date().toDateString(),
+  ).length;
+  const urgentOrders = productionOrders.filter(
+    (o) => o.priority === "urgent",
+  ).length;
 
-  const activeMachineDowntime = machineDowntime.filter(d => d.status === 'ongoing');
-  const machinesInMaintenance = machines.filter(m => m.status === 'maintenance').length;
-  const pendingMaintenanceRequests = maintenanceRequests.filter(r => r.status === 'pending').length;
-  const criticalMaintenanceRequests = maintenanceRequests.filter(r => r.urgencyLevel === 'critical' && r.status !== 'completed').length;
+  const activeMachineDowntime = machineDowntime.filter(
+    (d) => d.status === "ongoing",
+  );
+  const machinesInMaintenance = machines.filter(
+    (m) => m.status === "maintenance",
+  ).length;
+  const pendingMaintenanceRequests = maintenanceRequests.filter(
+    (r) => r.status === "pending",
+  ).length;
+  const criticalMaintenanceRequests = maintenanceRequests.filter(
+    (r) => r.urgencyLevel === "critical" && r.status !== "completed",
+  ).length;
 
-  const activeMachines = machines.filter(m => m.status === 'busy').length;
+  const activeMachines = machines.filter((m) => m.status === "busy").length;
   const totalMachines = machines.length || 1;
-  
-  const blocksInProduction = productionOrders
-    .filter(o => o.status === 'in_progress')
-    .reduce((total, order) => total + order.lines.reduce((lineTotal, line) => lineTotal + line.quantity, 0), 0);
 
-  const totalVolume = productionOrders.reduce((total, order) => total + order.totalVolume, 0);
+  const blocksInProduction = productionOrders
+    .filter((o) => o.status === "in_progress")
+    .reduce(
+      (total, order) =>
+        total +
+        order.lines.reduce((lineTotal, line) => lineTotal + line.quantity, 0),
+      0,
+    );
+
+  const totalVolume = productionOrders.reduce(
+    (total, order) => total + order.totalVolume,
+    0,
+  );
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-muted-foreground">Carregando dashboard...</div>
+        <div className="text-lg text-muted-foreground">
+          Carregando dashboard...
+        </div>
       </div>
     );
   }
@@ -105,9 +146,15 @@ export default function Dashboard() {
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Ordens Ativas</p>
-              <p className="text-4xl font-extrabold text-card-foreground mt-2">{activeOrders}</p>
-              <p className="text-xs text-muted-foreground mt-1">de {totalOrders} total</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+                Ordens Ativas
+              </p>
+              <p className="text-4xl font-extrabold text-card-foreground mt-2">
+                {activeOrders}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                de {totalOrders} total
+              </p>
             </div>
             <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-3 group-hover:scale-110 transition-transform duration-300">
               <Factory className="h-8 w-8 text-primary" />
@@ -119,9 +166,15 @@ export default function Dashboard() {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Blocos em Produção</p>
-              <p className="text-4xl font-extrabold text-card-foreground mt-2">{blocksInProduction}</p>
-              <p className="text-xs text-muted-foreground mt-1">blocos de espuma</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+                Blocos em Produção
+              </p>
+              <p className="text-4xl font-extrabold text-card-foreground mt-2">
+                {blocksInProduction}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                blocos de espuma
+              </p>
             </div>
             <div className="rounded-xl bg-gradient-to-br from-blue-600/10 to-blue-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
               <Package className="h-8 w-8 text-blue-600" />
@@ -133,9 +186,15 @@ export default function Dashboard() {
           <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Máquinas Ativas</p>
-              <p className="text-4xl font-extrabold text-card-foreground mt-2">{activeMachines}</p>
-              <p className="text-xs text-muted-foreground mt-1">de {totalMachines} máquinas</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+                Máquinas Ativas
+              </p>
+              <p className="text-4xl font-extrabold text-card-foreground mt-2">
+                {activeMachines}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                de {totalMachines} máquinas
+              </p>
             </div>
             <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-green-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
               <Activity className="h-8 w-8 text-green-600" />
@@ -147,9 +206,15 @@ export default function Dashboard() {
           <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Concluídas Hoje</p>
-              <p className="text-4xl font-extrabold text-card-foreground mt-2">{completedToday}</p>
-              <p className="text-xs text-muted-foreground mt-1">ordens finalizadas</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+                Concluídas Hoje
+              </p>
+              <p className="text-4xl font-extrabold text-card-foreground mt-2">
+                {completedToday}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                ordens finalizadas
+              </p>
             </div>
             <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-emerald-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
               <CheckCircle className="h-8 w-8 text-green-600" />
@@ -160,25 +225,41 @@ export default function Dashboard() {
 
       {/* Status das Máquinas */}
       <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card/95 to-card/90 p-6 shadow-lg">
-        <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">Status das Máquinas</h3>
+        <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          Status das Máquinas
+        </h3>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {machines.map(machine => (
-            <div key={machine.id} className="group border border-border/40 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-card/50 to-transparent">
+          {machines.map((machine) => (
+            <div
+              key={machine.id}
+              className="group border border-border/40 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-card/50 to-transparent"
+            >
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">{machine.name}</h4>
-                <div className={`w-3 h-3 rounded-full ${
-                  machine.status === 'busy' ? 'bg-yellow-500' :
-                  machine.status === 'available' ? 'bg-green-500' :
-                  machine.status === 'maintenance' ? 'bg-red-500' : 'bg-gray-500'
-                }`} />
+                <div
+                  className={`w-3 h-3 rounded-full ${
+                    machine.status === "busy"
+                      ? "bg-yellow-500"
+                      : machine.status === "available"
+                        ? "bg-green-500"
+                        : machine.status === "maintenance"
+                          ? "bg-red-500"
+                          : "bg-gray-500"
+                  }`}
+                />
               </div>
               <div className="text-sm text-muted-foreground">
                 <div>Tipo: {machine.type}</div>
-                <div>Status: {
-                  machine.status === 'busy' ? 'Em Uso' :
-                  machine.status === 'available' ? 'Disponível' :
-                  machine.status === 'maintenance' ? 'Manutenção' : 'Offline'
-                }</div>
+                <div>
+                  Status:{" "}
+                  {machine.status === "busy"
+                    ? "Em Uso"
+                    : machine.status === "available"
+                      ? "Disponível"
+                      : machine.status === "maintenance"
+                        ? "Manutenção"
+                        : "Offline"}
+                </div>
                 {machine.currentOperator && (
                   <div>Operador: {machine.currentOperator}</div>
                 )}
@@ -196,7 +277,9 @@ export default function Dashboard() {
             <div>
               <h3 className="font-semibold text-red-900">Ordens Urgentes</h3>
               <p className="text-sm text-red-700">
-                {urgentOrders} {urgentOrders === 1 ? 'ordem requer' : 'ordens requerem'} atenção imediata
+                {urgentOrders}{" "}
+                {urgentOrders === 1 ? "ordem requer" : "ordens requerem"}{" "}
+                atenção imediata
               </p>
             </div>
           </div>
@@ -211,7 +294,10 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-4">
-        <a href="/production" className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card to-card/95 p-6 hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 hover:border-primary/30 relative overflow-hidden">
+        <a
+          href="/production"
+          className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card to-card/95 p-6 hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 hover:border-primary/30 relative overflow-hidden"
+        >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center gap-3 mb-4 relative z-10">
             <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
@@ -224,7 +310,10 @@ export default function Dashboard() {
           </div>
         </a>
 
-        <a href="/operator" className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors">
+        <a
+          href="/operator"
+          className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors"
+        >
           <div className="flex items-center gap-3 mb-4">
             <div className="rounded-lg bg-blue-600/10 p-3">
               <Users className="h-6 w-6 text-blue-600" />
@@ -236,7 +325,10 @@ export default function Dashboard() {
           </div>
         </a>
 
-        <a href="/quality" className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors">
+        <a
+          href="/quality"
+          className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors"
+        >
           <div className="flex items-center gap-3 mb-4">
             <div className="rounded-lg bg-green-600/10 p-3">
               <CheckCircle className="h-6 w-6 text-green-600" />
@@ -248,14 +340,21 @@ export default function Dashboard() {
           </div>
         </a>
 
-        <a href="/equipment" className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors">
+        <a
+          href="/equipment"
+          className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors"
+        >
           <div className="flex items-center gap-3 mb-4">
             <div className="rounded-lg bg-orange-600/10 p-3">
               <Settings className="h-6 w-6 text-orange-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-card-foreground">Equipamentos</h3>
-              <p className="text-sm text-muted-foreground">Gestão de máquinas</p>
+              <h3 className="font-semibold text-card-foreground">
+                Equipamentos
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Gestão de máquinas
+              </p>
             </div>
           </div>
         </a>
@@ -266,16 +365,28 @@ export default function Dashboard() {
         <h3 className="text-lg font-semibold mb-4">Resumo de Produção</h3>
         <div className="grid gap-4 md:grid-cols-3">
           <div className="text-center">
-            <div className="text-2xl font-bold text-primary">{totalVolume.toFixed(2)} m³</div>
-            <div className="text-sm text-muted-foreground">Volume Total em Produção</div>
+            <div className="text-2xl font-bold text-primary">
+              {totalVolume.toFixed(2)} m³
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Volume Total em Produção
+            </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">{blocksInProduction}</div>
-            <div className="text-sm text-muted-foreground">Blocos sendo Processados</div>
+            <div className="text-2xl font-bold text-blue-600">
+              {blocksInProduction}
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Blocos sendo Processados
+            </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{Math.round(activeMachines / totalMachines * 100)}%</div>
-            <div className="text-sm text-muted-foreground">Taxa de Utilização</div>
+            <div className="text-2xl font-bold text-green-600">
+              {Math.round((activeMachines / totalMachines) * 100)}%
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Taxa de Utilização
+            </div>
           </div>
         </div>
       </div>
@@ -289,9 +400,13 @@ export default function Dashboard() {
               <Wrench className="h-5 w-5 text-orange-500" />
               Máquinas em Manutenção
             </h3>
-            <span className={`text-sm px-2 py-1 rounded-full ${
-              machinesInMaintenance > 0 ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
-            }`}>
+            <span
+              className={`text-sm px-2 py-1 rounded-full ${
+                machinesInMaintenance > 0
+                  ? "bg-orange-100 text-orange-800"
+                  : "bg-green-100 text-green-800"
+              }`}
+            >
               {machinesInMaintenance} máquinas
             </span>
           </div>
@@ -299,38 +414,60 @@ export default function Dashboard() {
           {activeMachineDowntime.length === 0 ? (
             <div className="text-center py-8">
               <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Todas as máquinas operacionais</p>
+              <p className="text-sm text-muted-foreground">
+                Todas as máquinas operacionais
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               {activeMachineDowntime.map((downtime) => {
                 const startTime = new Date(downtime.startTime);
                 const now = new Date();
-                const durationMinutes = Math.floor((now.getTime() - startTime.getTime()) / (1000 * 60));
+                const durationMinutes = Math.floor(
+                  (now.getTime() - startTime.getTime()) / (1000 * 60),
+                );
                 const hours = Math.floor(durationMinutes / 60);
                 const minutes = durationMinutes % 60;
 
                 return (
-                  <div key={downtime.id} className="border rounded-lg p-3 bg-orange-50">
+                  <div
+                    key={downtime.id}
+                    className="border rounded-lg p-3 bg-orange-50"
+                  >
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-sm">{downtime.machineName}</h4>
-                      <span className={`text-xs px-2 py-1 rounded-full ${
-                        downtime.impact === 'critical' ? 'bg-red-100 text-red-800' :
-                        downtime.impact === 'high' ? 'bg-orange-100 text-orange-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
-                        {downtime.impact === 'critical' ? 'Crítico' :
-                         downtime.impact === 'high' ? 'Alto' :
-                         downtime.impact === 'medium' ? 'Médio' : 'Baixo'}
+                      <h4 className="font-medium text-sm">
+                        {downtime.machineName}
+                      </h4>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${
+                          downtime.impact === "critical"
+                            ? "bg-red-100 text-red-800"
+                            : downtime.impact === "high"
+                              ? "bg-orange-100 text-orange-800"
+                              : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {downtime.impact === "critical"
+                          ? "Crítico"
+                          : downtime.impact === "high"
+                            ? "Alto"
+                            : downtime.impact === "medium"
+                              ? "Médio"
+                              : "Baixo"}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mb-2">{downtime.description}</p>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {downtime.description}
+                    </p>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-muted-foreground">
                         Parada: {hours}h {minutes}min
                       </span>
                       <span className="text-muted-foreground">
-                        {startTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                        {startTime.toLocaleTimeString("pt-BR", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
                       </span>
                     </div>
                   </div>
@@ -347,9 +484,13 @@ export default function Dashboard() {
               <AlertTriangle className="h-5 w-5 text-yellow-500" />
               Solicitações de Manutenç��o
             </h3>
-            <span className={`text-sm px-2 py-1 rounded-full ${
-              pendingMaintenanceRequests > 0 ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
-            }`}>
+            <span
+              className={`text-sm px-2 py-1 rounded-full ${
+                pendingMaintenanceRequests > 0
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-green-100 text-green-800"
+              }`}
+            >
               {pendingMaintenanceRequests} pendentes
             </span>
           </div>
@@ -360,7 +501,9 @@ export default function Dashboard() {
                 <AlertCircle className="h-4 w-4 text-red-500" />
                 <span className="text-sm font-medium">Críticas</span>
               </div>
-              <span className="text-lg font-bold text-red-600">{criticalMaintenanceRequests}</span>
+              <span className="text-lg font-bold text-red-600">
+                {criticalMaintenanceRequests}
+              </span>
             </div>
 
             <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
@@ -368,55 +511,83 @@ export default function Dashboard() {
                 <Timer className="h-4 w-4 text-yellow-500" />
                 <span className="text-sm font-medium">Pendentes</span>
               </div>
-              <span className="text-lg font-bold text-yellow-600">{pendingMaintenanceRequests}</span>
+              <span className="text-lg font-bold text-yellow-600">
+                {pendingMaintenanceRequests}
+              </span>
             </div>
           </div>
 
-          {maintenanceRequests.filter(r => r.status === 'pending').slice(0, 3).map((request) => {
-            const requestTime = new Date(request.requestedAt);
-            const now = new Date();
-            const ageMinutes = Math.floor((now.getTime() - requestTime.getTime()) / (1000 * 60));
-            const ageHours = Math.floor(ageMinutes / 60);
+          {maintenanceRequests
+            .filter((r) => r.status === "pending")
+            .slice(0, 3)
+            .map((request) => {
+              const requestTime = new Date(request.requestedAt);
+              const now = new Date();
+              const ageMinutes = Math.floor(
+                (now.getTime() - requestTime.getTime()) / (1000 * 60),
+              );
+              const ageHours = Math.floor(ageMinutes / 60);
 
-            return (
-              <div key={request.id} className="border rounded-lg p-3 mb-2 bg-muted/20">
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className="font-medium text-sm">{request.title}</h4>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    request.urgencyLevel === 'critical' ? 'bg-red-100 text-red-800' :
-                    request.urgencyLevel === 'high' ? 'bg-orange-100 text-orange-800' :
-                    request.urgencyLevel === 'medium' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
-                    {request.urgencyLevel === 'critical' ? 'Crítica' :
-                     request.urgencyLevel === 'high' ? 'Alta' :
-                     request.urgencyLevel === 'medium' ? 'Média' : 'Baixa'}
-                  </span>
+              return (
+                <div
+                  key={request.id}
+                  className="border rounded-lg p-3 mb-2 bg-muted/20"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-medium text-sm">{request.title}</h4>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${
+                        request.urgencyLevel === "critical"
+                          ? "bg-red-100 text-red-800"
+                          : request.urgencyLevel === "high"
+                            ? "bg-orange-100 text-orange-800"
+                            : request.urgencyLevel === "medium"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-green-100 text-green-800"
+                      }`}
+                    >
+                      {request.urgencyLevel === "critical"
+                        ? "Crítica"
+                        : request.urgencyLevel === "high"
+                          ? "Alta"
+                          : request.urgencyLevel === "medium"
+                            ? "Média"
+                            : "Baixa"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    {request.machineName}
+                  </p>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Por: {request.operatorName}</span>
+                    <span>
+                      Há {ageHours > 0 ? `${ageHours}h` : `${ageMinutes}min`}
+                    </span>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground mb-1">{request.machineName}</p>
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Por: {request.operatorName}</span>
-                  <span>Há {ageHours > 0 ? `${ageHours}h` : `${ageMinutes}min`}</span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
 
-          {maintenanceRequests.filter(r => r.status === 'pending').length === 0 && (
+          {maintenanceRequests.filter((r) => r.status === "pending").length ===
+            0 && (
             <div className="text-center py-4">
               <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">Nenhuma solicitação pendente</p>
+              <p className="text-sm text-muted-foreground">
+                Nenhuma solicitação pendente
+              </p>
             </div>
           )}
         </div>
       </div>
 
       {/* Maintenance Popup for Backend Team */}
-      <MaintenancePopupContainer onRequestUpdate={() => {
-        queryClient.invalidateQueries({ queryKey: ['maintenanceRequests'] });
-        queryClient.invalidateQueries({ queryKey: ['machineDowntime'] });
-        queryClient.invalidateQueries({ queryKey: ['machines'] });
-      }} />
+      <MaintenancePopupContainer
+        onRequestUpdate={() => {
+          queryClient.invalidateQueries({ queryKey: ["maintenanceRequests"] });
+          queryClient.invalidateQueries({ queryKey: ["machineDowntime"] });
+          queryClient.invalidateQueries({ queryKey: ["machines"] });
+        }}
+      />
     </div>
   );
 }

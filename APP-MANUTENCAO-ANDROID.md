@@ -10,18 +10,21 @@ Versão nativa Android (APK) para equipas de manutenção.
 ### ✅ **Implementadas:**
 
 1. **📊 Dashboard de Manutenção**
+
    - Máquinas paradas
    - Alertas urgentes
    - Manutenções agendadas
    - Estatísticas em tempo real
 
 2. **📷 Scanner QR Code**
+
    - Acesso rápido a informações da máquina
    - Câmara integrada
    - Detecção automática
    - Feedback visual e sonoro
 
 3. **🏭 Página Dedicada por Máquina**
+
    - Informações técnicas completas
    - Histórico de manutenção
    - Sensores em tempo real
@@ -30,24 +33,28 @@ Versão nativa Android (APK) para equipas de manutenção.
    - QR Code para imprimir
 
 4. **💬 Chat em Tempo Real**
+
    - Comunicação operador ↔ manutenção
    - Histórico por máquina
    - Notificações de novas mensagens
    - Anexos e fotos
 
 5. **🚨 Sistema de Alertas**
+
    - Alertas de sensores
    - Avarias reportadas
    - Pedidos de assistência
    - Manutenções agendadas
 
 6. **📋 Gestão de Manutenções**
+
    - Criar nova manutenção
    - Ver manutenções pendentes
    - Histórico completo
    - Relatórios
 
 7. **📱 Notificações Push**
+
    - Alertas críticos
    - Novas solicitações
    - Manutenções vencidas
@@ -65,6 +72,7 @@ Versão nativa Android (APK) para equipas de manutenção.
 ## 📦 Componentes Criados
 
 ### 1. **QRCodeGenerator**
+
 ```tsx
 <QRCodeGenerator
   equipmentId="CNC-01"
@@ -75,6 +83,7 @@ Versão nativa Android (APK) para equipas de manutenção.
 ```
 
 **Funcionalidades:**
+
 - ✅ Gera QR code automaticamente
 - ✅ Botão de download (PNG)
 - ✅ Botão de impressão (formatado)
@@ -82,6 +91,7 @@ Versão nativa Android (APK) para equipas de manutenção.
 - ✅ URL embuti do: `/machine/{id}`
 
 ### 2. **QRCodeScanner**
+
 ```tsx
 <QRCodeScanner
   onScan={(machineId) => navigate(`/machine/${machineId}`)}
@@ -90,6 +100,7 @@ Versão nativa Android (APK) para equipas de manutenção.
 ```
 
 **Funcionalidades:**
+
 - ✅ Usa câmara traseira do telemóvel
 - ✅ Detecção automática
 - ✅ Feedback visual (moldura, cores)
@@ -97,9 +108,11 @@ Versão nativa Android (APK) para equipas de manutenção.
 - ✅ Tratamento de erros
 
 ### 3. **MachinePage**
+
 Página dedicada: `/machine/{machineId}`
 
 **Tabs:**
+
 - 📋 Informações (detalhes técnicos, dimensões)
 - 🔧 Manutenção (histórico, pedidos)
 - 📊 Sensores (leituras em tempo real)
@@ -112,6 +125,7 @@ Página dedicada: `/machine/{machineId}`
 ## 🛠️ Stack Tecnológico
 
 ### **Frontend:**
+
 - React + TypeScript
 - Vite
 - TailwindCSS
@@ -119,6 +133,7 @@ Página dedicada: `/machine/{machineId}`
 - React Router
 
 ### **Mobile (Capacitor):**
+
 - @capacitor/core
 - @capacitor/camera
 - @capacitor/haptics
@@ -126,10 +141,12 @@ Página dedicada: `/machine/{machineId}`
 - @capacitor/push-notifications
 
 ### **QR Code:**
+
 - qrcode.react (geração)
 - html5-qrcode (scanner)
 
 ### **Backend:**
+
 - Node.js + Express
 - PostgreSQL (Neon)
 - WebSocket (chat tempo real)
@@ -139,12 +156,14 @@ Página dedicada: `/machine/{machineId}`
 ## 📲 Instalação - Gerar APK
 
 ### **Pré-requisitos:**
+
 1. ✅ Node.js 18+ instalado
 2. ✅ Android Studio instalado
 3. ✅ Java JDK 11 ou 17
 4. ✅ Variável ANDROID_HOME configurada
 
 ### **Passo 1: Preparar Projeto**
+
 ```bash
 # Instalar dependências
 npm install
@@ -154,6 +173,7 @@ npm run build
 ```
 
 ### **Passo 2: Configurar Capacitor**
+
 ```bash
 # Sincronizar com Android
 npx cap sync android
@@ -171,6 +191,7 @@ npx cap open android
 5. APK gerado em: `android/app/build/outputs/apk/release/`
 
 ### **Passo 4: Instalar no Telemóvel**
+
 ```bash
 # Via ADB
 adb install app-release.apk
@@ -183,6 +204,7 @@ adb install app-release.apk
 ## 🎨 Design - Industrial & Profissional
 
 ### **Paleta de Cores:**
+
 ```css
 Primary: #2563eb (Azul Industrial)
 Success: #10b981 (Verde)
@@ -192,11 +214,13 @@ Dark: #1e293b (Cinza Escuro)
 ```
 
 ### **Tipografia:**
+
 - Headings: **Inter Bold**
 - Body: **Inter Regular**
 - Monospace: **Courier New** (IDs, códigos)
 
 ### **Componentes:**
+
 - ✅ Gradientes sutis
 - ✅ Glassmorphism
 - ✅ Sombras modernas
@@ -209,6 +233,7 @@ Dark: #1e293b (Cinza Escuro)
 ## 📋 Estrutura de Páginas (Menu Simplificado)
 
 ### **Menu Principal:**
+
 ```
 📊 Dashboard Manutenção
 🏭 Máquinas
@@ -221,6 +246,7 @@ Dark: #1e293b (Cinza Escuro)
 ```
 
 ### **Páginas Removidas (não relevantes para manutenção):**
+
 - ❌ Produção / OPs
 - ❌ Portal do Operador
 - ❌ Stock
@@ -234,6 +260,7 @@ Dark: #1e293b (Cinza Escuro)
 ### **Tipos de Notificações:**
 
 1. **🚨 Alertas Críticos**
+
    ```
    Título: ⚠️ Alerta Crítico - CNC-01
    Mensagem: Temperatura acima do limite (85°C)
@@ -241,6 +268,7 @@ Dark: #1e293b (Cinza Escuro)
    ```
 
 2. **🔧 Pedidos de Manutenção**
+
    ```
    Título: 🔧 Nova Solicitação
    Mensagem: Operador reportou ruído anormal em BZM-01
@@ -248,6 +276,7 @@ Dark: #1e293b (Cinza Escuro)
    ```
 
 3. **📅 Manutenções Agendadas**
+
    ```
    Título: 📅 Manutenção Programada
    Mensagem: Carrossel-01 - Manutenção preventiva hoje às 14h
@@ -262,6 +291,7 @@ Dark: #1e293b (Cinza Escuro)
    ```
 
 ### **Configuração (AndroidManifest.xml):**
+
 ```xml
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 <uses-permission android:name="android.permission.VIBRATE" />
@@ -273,6 +303,7 @@ Dark: #1e293b (Cinza Escuro)
 ## 📷 Fluxo de Uso - Scanner QR
 
 ### **Cenário 1: Técnico chega à máquina**
+
 1. Abre app FactoryControl Manutenção
 2. Clica no botão **"Scanner QR"** (floating button)
 3. Aponta câmara para QR code na máquina
@@ -286,6 +317,7 @@ Dark: #1e293b (Cinza Escuro)
    - Criar nova manutenção
 
 ### **Cenário 2: Imprimir QR Codes**
+
 1. Menu → Máquinas → Escolher máquina
 2. Tab "QR Code"
 3. Clica **"Imprimir"**
@@ -320,6 +352,7 @@ Dark: #1e293b (Cinza Escuro)
 ## 🚀 Próximos Passos
 
 ### **Fase 1: ✅ Completado**
+
 - [x] QR Code Generator
 - [x] QR Code Scanner
 - [x] Página dedicada de máquina
@@ -327,6 +360,7 @@ Dark: #1e293b (Cinza Escuro)
 - [x] Integração chat existente
 
 ### **Fase 2: Em Desenvolvimento**
+
 - [ ] Notificações Push configuradas
 - [ ] Haptic feedback no scanner
 - [ ] Offline mode (dados em cache)
@@ -334,6 +368,7 @@ Dark: #1e293b (Cinza Escuro)
 - [ ] Assinatura digital (keystore)
 
 ### **Fase 3: Futuro**
+
 - [ ] Widget Android (próximas manutenções)
 - [ ] Shortcuts (scanner direto)
 - [ ] Wear OS support
@@ -346,15 +381,18 @@ Dark: #1e293b (Cinza Escuro)
 **Problemas Comuns:**
 
 ### **Scanner não funciona:**
+
 - Verificar permissões de câmara
 - Reiniciar app
 - Boa iluminaç��o é essencial
 
 ### **APK não instala:**
+
 - Permitir "Fontes Desconhecidas"
 - Verificar versão Android (min: 7.0)
 
 ### **Notificações não chegam:**
+
 - Verificar permissões
 - Desativar otimização de bateria para app
 - Verificar internet

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { QrCode, X } from 'lucide-react';
-import { QRCodeScanner } from './equipment/QRCodeScanner';
+import { useState } from "react";
+import { QrCode, X } from "lucide-react";
+import { QRCodeScanner } from "./equipment/QRCodeScanner";
 
 export function FloatingQRScanner() {
   const [showScanner, setShowScanner] = useState(false);
@@ -14,10 +14,10 @@ export function FloatingQRScanner() {
         title="Escanear QR Code"
       >
         <QrCode className="h-7 w-7 group-hover:scale-110 transition-transform" />
-        
+
         {/* Pulse animation */}
         <span className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20"></span>
-        
+
         {/* Tooltip */}
         <div className="absolute right-full mr-4 px-3 py-2 bg-gray-900 text-white text-sm font-semibold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
           Escanear QR
@@ -26,11 +26,7 @@ export function FloatingQRScanner() {
       </button>
 
       {/* Scanner Modal */}
-      {showScanner && (
-        <QRCodeScanner
-          onClose={() => setShowScanner(false)}
-        />
-      )}
+      {showScanner && <QRCodeScanner onClose={() => setShowScanner(false)} />}
     </>
   );
 }

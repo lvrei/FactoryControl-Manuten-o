@@ -436,7 +436,9 @@ function ProductionNew() {
               <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Urgentes
               </p>
-              <p className="text-3xl font-extrabold text-red-600 mt-1">{urgentOrders}</p>
+              <p className="text-3xl font-extrabold text-red-600 mt-1">
+                {urgentOrders}
+              </p>
             </div>
             <div className="rounded-xl bg-gradient-to-br from-red-600/10 to-red-500/10 p-2.5 group-hover:scale-110 transition-transform duration-300">
               <AlertTriangle className="h-6 w-6 text-red-600" />

@@ -1,6 +1,6 @@
-import { useRef } from 'react';
-import { QRCodeCanvas } from 'qrcode.react';
-import { Download, Printer, QrCode } from 'lucide-react';
+import { useRef } from "react";
+import { QRCodeCanvas } from "qrcode.react";
+import { Download, Printer, QrCode } from "lucide-react";
 
 interface QRCodeGeneratorProps {
   equipmentId: string;
@@ -9,11 +9,11 @@ interface QRCodeGeneratorProps {
   showControls?: boolean;
 }
 
-export function QRCodeGenerator({ 
-  equipmentId, 
-  equipmentName, 
+export function QRCodeGenerator({
+  equipmentId,
+  equipmentName,
   size = 200,
-  showControls = true 
+  showControls = true,
 }: QRCodeGeneratorProps) {
   const qrRef = useRef<HTMLDivElement>(null);
 
@@ -21,25 +21,25 @@ export function QRCodeGenerator({
   const qrValue = `${window.location.origin}/machine/${equipmentId}`;
 
   const downloadQRCode = () => {
-    const canvas = qrRef.current?.querySelector('canvas');
+    const canvas = qrRef.current?.querySelector("canvas");
     if (!canvas) return;
 
-    const url = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
+    const url = canvas.toDataURL("image/png");
+    const link = document.createElement("a");
     link.href = url;
     link.download = `qrcode-${equipmentId}.png`;
     link.click();
   };
 
   const printQRCode = () => {
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open("", "_blank");
     if (!printWindow) return;
 
-    const canvas = qrRef.current?.querySelector('canvas');
+    const canvas = qrRef.current?.querySelector("canvas");
     if (!canvas) return;
 
-    const dataUrl = canvas.toDataURL('image/png');
-    
+    const dataUrl = canvas.toDataURL("image/png");
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -126,7 +126,7 @@ export function QRCodeGenerator({
     `);
 
     printWindow.document.close();
-    
+
     // Wait for image to load before printing
     setTimeout(() => {
       printWindow.print();
@@ -135,16 +135,11 @@ export function QRCodeGenerator({
 
   return (
     <div className="flex flex-col items-center gap-4">
-      <div 
+      <div
         ref={qrRef}
         className="rounded-xl border-4 border-primary/20 p-4 bg-white"
       >
-        <QRCodeCanvas
-          value={qrValue}
-          size={size}
-          level="H"
-          includeMargin
-        />
+        <QRCodeCanvas value={qrValue} size={size} level="H" includeMargin />
       </div>
 
       {showControls && (

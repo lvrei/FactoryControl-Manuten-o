@@ -2,7 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { camerasService, CameraRecord, ROI } from "@/services/camerasService";
 import { productionService } from "@/services/productionService";
 import { visionService } from "@/services/visionService";
-import { Plus, X, Trash2, Edit, Video, Link as LinkIcon, Camera, BarChart3 } from "lucide-react";
+import {
+  Plus,
+  X,
+  Trash2,
+  Edit,
+  Video,
+  Link as LinkIcon,
+  Camera,
+  BarChart3,
+} from "lucide-react";
 import { ROIEditor } from "@/components/cameras/ROIEditor";
 
 interface MachineOption {
@@ -37,7 +46,10 @@ export default function CamerasPage() {
   });
   const [thresholdsText, setThresholdsText] = useState("{}");
   const [scheduleText, setScheduleText] = useState("{}");
-  const [jsonErrors, setJsonErrors] = useState<{ thresholds?: string; schedule?: string }>({});
+  const [jsonErrors, setJsonErrors] = useState<{
+    thresholds?: string;
+    schedule?: string;
+  }>({});
   const [snapshotUrl, setSnapshotUrl] = useState<string | undefined>();
 
   useEffect(() => {
@@ -120,7 +132,10 @@ export default function CamerasPage() {
         const t = JSON.parse(thresholdsText || "{}");
         thresholdsParsed = t && typeof t === "object" ? t : {};
       } catch {
-        setJsonErrors((p) => ({ ...p, thresholds: "Limiares inválidos (JSON)" }));
+        setJsonErrors((p) => ({
+          ...p,
+          thresholds: "Limiares inválidos (JSON)",
+        }));
         alert("Limiares inválidos (JSON)");
         return;
       }
@@ -214,7 +229,8 @@ export default function CamerasPage() {
             Câmaras
           </h1>
           <p className="text-muted-foreground/90 mt-1 font-medium">
-            Associe câmaras aos equipamentos e configure zonas de interesse para análise.
+            Associe câmaras aos equipamentos e configure zonas de interesse para
+            análise.
           </p>
         </div>
         <div className="flex gap-3">
@@ -250,7 +266,10 @@ export default function CamerasPage() {
           const machineName =
             machines.find((m) => m.id === (c.machineId || ""))?.name || "—";
           return (
-            <div key={c.id} className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
+            <div
+              key={c.id}
+              className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
+            >
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -260,7 +279,7 @@ export default function CamerasPage() {
                     <h3 className="font-bold">{c.name}</h3>
                     {c.rois && c.rois.length > 0 && (
                       <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-sm">
-                        {c.rois.length} {c.rois.length === 1 ? 'ROI' : 'ROIs'}
+                        {c.rois.length} {c.rois.length === 1 ? "ROI" : "ROIs"}
                       </span>
                     )}
                   </div>
@@ -375,7 +394,9 @@ export default function CamerasPage() {
                     <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                       {editing ? "Editar Câmara" : "Nova Câmara"}
                     </h3>
-                    <p className="text-sm text-muted-foreground">Configure a câmara e defina zonas de interesse</p>
+                    <p className="text-sm text-muted-foreground">
+                      Configure a câmara e defina zonas de interesse
+                    </p>
                   </div>
                 </div>
                 <button
@@ -482,7 +503,11 @@ export default function CamerasPage() {
                       type="button"
                       onClick={() => {
                         if (editing?.id) {
-                          setSnapshotUrl(camerasService.getSnapshotUrl(editing.id) + '&t=' + Date.now());
+                          setSnapshotUrl(
+                            camerasService.getSnapshotUrl(editing.id) +
+                              "&t=" +
+                              Date.now(),
+                          );
                         }
                       }}
                       className="mb-4 px-3 py-1.5 text-sm border-2 border-input rounded-lg hover:bg-muted transition-all font-medium"
@@ -502,8 +527,12 @@ export default function CamerasPage() {
                   <div className="border-2 border-dashed border-border/40 rounded-2xl p-8 bg-muted/20">
                     <div className="text-center text-muted-foreground">
                       <Camera className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p className="font-semibold">Configure a URL da câmara primeiro</p>
-                      <p className="text-sm mt-1">Depois poderá definir as zonas de interesse</p>
+                      <p className="font-semibold">
+                        Configure a URL da câmara primeiro
+                      </p>
+                      <p className="text-sm mt-1">
+                        Depois poderá definir as zonas de interesse
+                      </p>
                     </div>
                   </div>
                 )}
@@ -512,7 +541,9 @@ export default function CamerasPage() {
                 <details className="group">
                   <summary className="cursor-pointer font-semibold text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
                     ⚙️ Configurações Avançadas (Limiares e Agenda)
-                    <span className="text-xs opacity-50">Clique para expandir</span>
+                    <span className="text-xs opacity-50">
+                      Clique para expandir
+                    </span>
                   </summary>
                   <div className="grid gap-4 md:grid-cols-2 mt-4">
                     <div>
@@ -526,7 +557,9 @@ export default function CamerasPage() {
                         rows={4}
                       />
                       {jsonErrors.thresholds && (
-                        <div className="text-xs text-red-600 mt-1">{jsonErrors.thresholds}</div>
+                        <div className="text-xs text-red-600 mt-1">
+                          {jsonErrors.thresholds}
+                        </div>
                       )}
                     </div>
                     <div>
@@ -540,7 +573,9 @@ export default function CamerasPage() {
                         rows={4}
                       />
                       {jsonErrors.schedule && (
-                        <div className="text-xs text-red-600 mt-1">{jsonErrors.schedule}</div>
+                        <div className="text-xs text-red-600 mt-1">
+                          {jsonErrors.schedule}
+                        </div>
                       )}
                     </div>
                   </div>

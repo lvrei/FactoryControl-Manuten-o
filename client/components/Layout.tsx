@@ -240,7 +240,6 @@ export function Layout({ children }: LayoutProps) {
           ))}
         </div>
       </nav>
-
     </div>
   );
 }

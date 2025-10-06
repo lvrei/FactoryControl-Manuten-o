@@ -14,7 +14,8 @@ const badgeVariants = cva(
           "border-transparent bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground hover:shadow-md hover:scale-105",
         destructive:
           "border-transparent bg-gradient-to-r from-destructive to-red-600 text-destructive-foreground hover:shadow-md hover:scale-105",
-        outline: "text-foreground border-2 border-border hover:bg-accent/50 hover:scale-105",
+        outline:
+          "text-foreground border-2 border-border hover:bg-accent/50 hover:scale-105",
       },
     },
     defaultVariants: {

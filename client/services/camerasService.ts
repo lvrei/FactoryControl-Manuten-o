@@ -2,11 +2,15 @@ export interface ROI {
   id: string;
   name: string;
   description: string;
-  analysisType: 'people_count' | 'motion_detection' | 'zone_occupancy' | 'custom';
+  analysisType:
+    | "people_count"
+    | "motion_detection"
+    | "zone_occupancy"
+    | "custom";
   coordinates: {
-    x: number;      // percentage 0-100
-    y: number;      // percentage 0-100
-    width: number;  // percentage 0-100
+    x: number; // percentage 0-100
+    y: number; // percentage 0-100
+    width: number; // percentage 0-100
     height: number; // percentage 0-100
   };
   enabled: boolean;
@@ -74,9 +78,7 @@ class CamerasService {
     if (!resp.ok) throw new Error(`Falha ao remover câmara (${resp.status})`);
   }
 
-  async checkStatus(
-    id: string,
-  ): Promise<{
+  async checkStatus(id: string): Promise<{
     reachable: boolean;
     protocol: string;
     latencyMs?: number;

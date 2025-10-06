@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
-import { Camera, X, AlertCircle, CheckCircle } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useRef, useState } from "react";
+import { Html5Qrcode } from "html5-qrcode";
+import { Camera, X, AlertCircle, CheckCircle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface QRCodeScannerProps {
   onClose?: () => void;
@@ -17,7 +17,7 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
 
   useEffect(() => {
     startScanner();
-    
+
     return () => {
       stopScanner();
     };
@@ -26,11 +26,11 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
   const startScanner = async () => {
     try {
       setError(null);
-      const scanner = new Html5Qrcode('qr-reader');
+      const scanner = new Html5Qrcode("qr-reader");
       scannerRef.current = scanner;
 
       await scanner.start(
-        { facingMode: 'environment' }, // Use back camera
+        { facingMode: "environment" }, // Use back camera
         {
           fps: 10,
           qrbox: { width: 250, height: 250 },
@@ -40,14 +40,14 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
         },
         (errorMessage) => {
           // Ignore scan errors while searching
-          console.log('Scan error:', errorMessage);
-        }
+          console.log("Scan error:", errorMessage);
+        },
       );
 
       setScanning(true);
     } catch (err: any) {
-      console.error('Error starting scanner:', err);
-      setError('Erro ao aceder à câmara. Verifique as permissões.');
+      console.error("Error starting scanner:", err);
+      setError("Erro ao aceder à câmara. Verifique as permissões.");
       setScanning(false);
     }
   };
@@ -58,22 +58,22 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
         await scannerRef.current.stop();
         scannerRef.current.clear();
       } catch (err) {
-        console.error('Error stopping scanner:', err);
+        console.error("Error stopping scanner:", err);
       }
     }
   };
 
   const handleScanSuccess = async (decodedText: string) => {
-    console.log('Scanned:', decodedText);
+    console.log("Scanned:", decodedText);
 
     // Extract machine ID from URL
     // Expected format: http://localhost:5000/machine/CNC-01
     const match = decodedText.match(/\/machine\/([^/?]+)/);
-    
+
     if (match && match[1]) {
       const machineId = match[1];
       setScannedMachineId(machineId);
-      
+
       // Stop scanner
       await stopScanner();
       setScanning(false);
@@ -88,7 +88,9 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
         }, 1500);
       }
     } else {
-      setError('QR Code inválido. Use um QR code de equipamento FactoryControl.');
+      setError(
+        "QR Code inválido. Use um QR code de equipamento FactoryControl.",
+      );
     }
   };
 
@@ -127,8 +129,8 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
         <div className="p-6">
           {!scannedMachineId && !error && (
             <div className="relative">
-              <div 
-                id="qr-reader" 
+              <div
+                id="qr-reader"
                 className="rounded-xl overflow-hidden border-4 border-primary/20"
               />
               <div className="mt-4 text-center">
@@ -137,7 +139,9 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
                 </p>
                 <div className="flex items-center justify-center gap-2 mt-2">
                   <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                  <span className="text-xs font-semibold text-green-600">A escanear...</span>
+                  <span className="text-xs font-semibold text-green-600">
+                    A escanear...
+                  </span>
                 </div>
               </div>
             </div>
@@ -150,9 +154,7 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
               <h3 className="font-bold text-red-900 dark:text-red-100 mb-2">
                 Erro ao Escanear
               </h3>
-              <p className="text-sm text-red-700 dark:text-red-300">
-                {error}
-              </p>
+              <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
               <button
                 onClick={() => {
                   setError(null);
@@ -180,7 +182,9 @@ export function QRCodeScanner({ onClose, onScan }: QRCodeScannerProps) {
               </p>
               <div className="mt-4 flex items-center justify-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-xs font-semibold text-green-600">A redirecionar...</span>
+                <span className="text-xs font-semibold text-green-600">
+                  A redirecionar...
+                </span>
               </div>
             </div>
           )}

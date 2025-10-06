@@ -7,11 +7,13 @@ Guia passo a passo para gerar o APK da app Android focada em Manutenção.
 ## 📋 Pré-requisitos
 
 ### **1. Instalar Node.js**
+
 - Download: https://nodejs.org
 - Versão mínima: 18.0.0
 - Verificar: `node --version`
 
 ### **2. Instalar Android Studio**
+
 - Download: https://developer.android.com/studio
 - Durante instalação, incluir:
   - ✅ Android SDK
@@ -19,18 +21,21 @@ Guia passo a passo para gerar o APK da app Android focada em Manutenção.
   - ✅ Android Virtual Device
 
 ### **3. Instalar Java JDK**
+
 - Download: https://adoptium.net (OpenJDK 17)
 - Ou usar bundled com Android Studio
 
 ### **4. Configurar Variáveis de Ambiente**
 
 **Windows:**
+
 ```
 ANDROID_HOME=C:\Users\SeuNome\AppData\Local\Android\Sdk
 JAVA_HOME=C:\Program Files\Java\jdk-17
 ```
 
 Adicionar ao PATH:
+
 ```
 %ANDROID_HOME%\platform-tools
 %ANDROID_HOME%\tools
@@ -38,6 +43,7 @@ Adicionar ao PATH:
 ```
 
 **Linux/Mac:**
+
 ```bash
 export ANDROID_HOME=$HOME/Android/Sdk
 export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
@@ -76,6 +82,7 @@ npx cap sync android
 ### **Passo 3: Configurar App ID e Nome**
 
 Editar `capacitor.config.json`:
+
 ```json
 {
   "appId": "com.factorycontrol.maintenance",
@@ -102,6 +109,7 @@ npx cap open android
 ```
 
 Ou manualmente:
+
 1. Abrir Android Studio
 2. **Open** → Escolher pasta `android/`
 3. Aguardar indexação e sync do Gradle
@@ -109,6 +117,7 @@ Ou manualmente:
 ### **Passo 7: Criar Keystore (primeira vez)**
 
 **Via Linha de Comando:**
+
 ```bash
 keytool -genkey -v -keystore my-release-key.keystore \
   -alias factorycontrol-key \
@@ -118,11 +127,13 @@ keytool -genkey -v -keystore my-release-key.keystore \
 ```
 
 **Preencher:**
+
 - Nome: Factory Control
 - Empresa: Sua Empresa
-- Senha: *(guardar num lugar seguro!)*
+- Senha: _(guardar num lugar seguro!)_
 
 **Via Android Studio:**
+
 1. **Build → Generate Signed Bundle / APK**
 2. Escolher **APK**
 3. Click **Create new...**
@@ -153,6 +164,7 @@ BUILD SUCCESSFUL in 2m 34s
 ### **Passo 9: Localizar APK**
 
 APK gerado em:
+
 ```
 android/app/build/outputs/apk/release/app-release.apk
 ```
@@ -222,7 +234,7 @@ Já configuradas automaticamente:
 ```gradle
 android {
     compileSdkVersion 34
-    
+
     defaultConfig {
         applicationId "com.factorycontrol.maintenance"
         minSdkVersion 24  // Android 7.0
@@ -236,6 +248,7 @@ android {
 ### **Ícone da App**
 
 Substituir ícones em:
+
 ```
 android/app/src/main/res/
   ├── mipmap-hdpi/ic_launcher.png
@@ -246,6 +259,7 @@ android/app/src/main/res/
 ```
 
 **Gerar ícones:**
+
 - Use https://icon.kitchen
 - Upload logo 1024x1024
 - Download pack Android
@@ -255,6 +269,7 @@ android/app/src/main/res/
 ## 🐛 Resolução de Problemas
 
 ### **Erro: "ANDROID_HOME not set"**
+
 ```bash
 # Windows
 set ANDROID_HOME=C:\Users\SeuNome\AppData\Local\Android\Sdk
@@ -264,27 +279,32 @@ export ANDROID_HOME=$HOME/Android/Sdk
 ```
 
 ### **Erro: "Gradle sync failed"**
+
 1. Android Studio → **File → Invalidate Caches**
 2. Restart
 3. **File → Sync Project with Gradle Files**
 
 ### **Erro: "SDK not found"**
+
 1. Android Studio → **Tools → SDK Manager**
 2. Instalar **Android SDK Platform 34**
 3. Instalar **Build Tools 34.0.0**
 
 ### **Erro: "Keystore not found"**
+
 - Verificar caminho da keystore
 - Garantir senhas corretas
 - Recriar se perdida (⚠️ perderá assinatura anterior)
 
 ### **APK não instala no telemóvel**
+
 - Ativar **"Fontes Desconhecidas"**
 - Verificar se é Android 7.0+
 - Desinstalar versão antiga primeiro
 - Verificar espaço disponível
 
 ### **App crasha ao abrir**
+
 1. Verificar logs:
    ```bash
    adb logcat | grep FactoryControl
@@ -326,10 +346,12 @@ Write-Host "APK: android\app\build\outputs\apk\release\app-release.apk"
 ## 🚀 Distribuição
 
 ### **Opção 1: Manual**
+
 - Enviar APK por email/WhatsApp
 - Instalar manualmente
 
 ### **Opção 2: Google Play Store**
+
 1. Criar conta Google Play Developer ($25 único)
 2. Build → **Generate Signed Bundle**
 3. Upload `.aab` file
@@ -337,6 +359,7 @@ Write-Host "APK: android\app\build\outputs\apk\release\app-release.apk"
 5. Publicar
 
 ### **Opção 3: Internal Distribution**
+
 - Firebase App Distribution
 - AppCenter
 - TestFlight (iOS)
@@ -363,11 +386,13 @@ Antes de distribuir APK:
 ## 📞 Suporte
 
 **Problemas durante build:**
+
 1. Verificar logs do Android Studio
 2. Limpar cache: `./gradlew clean`
 3. Recriar projeto: `npx cap sync android`
 
 **App não funciona:**
+
 1. Verificar conexão internet
 2. Verificar URL da API
 3. Ver logs: `adb logcat`

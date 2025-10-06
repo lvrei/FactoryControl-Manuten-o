@@ -1,14 +1,23 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Camera, BarChart3, Activity, Clock, Users, TrendingUp, Download, Calendar } from 'lucide-react';
-import { camerasService, CameraRecord, ROI } from '@/services/camerasService';
-import { productionService } from '@/services/productionService';
+import { useState, useEffect, useMemo } from "react";
+import {
+  Camera,
+  BarChart3,
+  Activity,
+  Clock,
+  Users,
+  TrendingUp,
+  Download,
+  Calendar,
+} from "lucide-react";
+import { camerasService, CameraRecord, ROI } from "@/services/camerasService";
+import { productionService } from "@/services/productionService";
 
-type DateRange = 'today' | 'yesterday' | 'week' | 'month' | 'custom';
+type DateRange = "today" | "yesterday" | "week" | "month" | "custom";
 
 interface ROIMetric {
   roiId: string;
   roiName: string;
-  analysisType: ROI['analysisType'];
+  analysisType: ROI["analysisType"];
   events: number;
   totalActiveTime: number; // minutes
   averageValue: number;
@@ -28,12 +37,12 @@ export default function CameraReports() {
   const [cameras, setCameras] = useState<CameraRecord[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  const [dateRange, setDateRange] = useState<DateRange>('today');
-  const [customStartDate, setCustomStartDate] = useState('');
-  const [customEndDate, setCustomEndDate] = useState('');
-  const [selectedCamera, setSelectedCamera] = useState<string>('all');
-  const [selectedROI, setSelectedROI] = useState<string>('all');
+
+  const [dateRange, setDateRange] = useState<DateRange>("today");
+  const [customStartDate, setCustomStartDate] = useState("");
+  const [customEndDate, setCustomEndDate] = useState("");
+  const [selectedCamera, setSelectedCamera] = useState<string>("all");
+  const [selectedROI, setSelectedROI] = useState<string>("all");
 
   // Mock metrics - replace with real API call
   const [metrics, setMetrics] = useState<CameraMetric[]>([]);
@@ -57,7 +66,7 @@ export default function CameraReports() {
       setCameras(cams);
       setMachines(ms);
     } catch (error) {
-      console.error('Error loading data:', error);
+      console.error("Error loading data:", error);
     } finally {
       setLoading(false);
     }
@@ -67,14 +76,14 @@ export default function CameraReports() {
     // Mock data - replace with real API call
     // In production, this would call something like:
     // const data = await camerasService.getROIMetrics(dateRange, customStartDate, customEndDate, selectedCamera, selectedROI);
-    
+
     const mockMetrics: CameraMetric[] = cameras
-      .filter(c => selectedCamera === 'all' || c.id === selectedCamera)
-      .map(camera => {
-        const machine = machines.find(m => m.id === camera.machineId);
+      .filter((c) => selectedCamera === "all" || c.id === selectedCamera)
+      .map((camera) => {
+        const machine = machines.find((m) => m.id === camera.machineId);
         const rois = (camera.rois || [])
-          .filter(roi => selectedROI === 'all' || roi.id === selectedROI)
-          .map(roi => ({
+          .filter((roi) => selectedROI === "all" || roi.id === selectedROI)
+          .map((roi) => ({
             roiId: roi.id,
             roiName: roi.name,
             analysisType: roi.analysisType,
@@ -87,7 +96,7 @@ export default function CameraReports() {
         return {
           cameraId: camera.id,
           cameraName: camera.name,
-          machineName: machine?.name || 'N/A',
+          machineName: machine?.name || "N/A",
           totalEvents: rois.reduce((sum, r) => sum + r.events, 0),
           activeTime: rois.reduce((sum, r) => sum + r.totalActiveTime, 0),
           rois,
@@ -98,13 +107,13 @@ export default function CameraReports() {
   };
 
   const filteredCameras = useMemo(() => {
-    return cameras.filter(c => c.rois && c.rois.length > 0);
+    return cameras.filter((c) => c.rois && c.rois.length > 0);
   }, [cameras]);
 
   const allROIs = useMemo(() => {
     const rois: { cameraId: string; cameraName: string; roi: ROI }[] = [];
-    cameras.forEach(camera => {
-      (camera.rois || []).forEach(roi => {
+    cameras.forEach((camera) => {
+      (camera.rois || []).forEach((roi) => {
         rois.push({ cameraId: camera.id, cameraName: camera.name, roi });
       });
     });
@@ -119,25 +128,33 @@ export default function CameraReports() {
         cameras: acc.cameras + 1,
         rois: acc.rois + metric.rois.length,
       }),
-      { events: 0, activeTime: 0, cameras: 0, rois: 0 }
+      { events: 0, activeTime: 0, cameras: 0, rois: 0 },
     );
   }, [metrics]);
 
-  const getAnalysisTypeIcon = (type: ROI['analysisType']) => {
+  const getAnalysisTypeIcon = (type: ROI["analysisType"]) => {
     switch (type) {
-      case 'people_count': return '👥';
-      case 'motion_detection': return '🔄';
-      case 'zone_occupancy': return '📍';
-      default: return '⚙️';
+      case "people_count":
+        return "👥";
+      case "motion_detection":
+        return "🔄";
+      case "zone_occupancy":
+        return "📍";
+      default:
+        return "⚙️";
     }
   };
 
-  const getAnalysisTypeLabel = (type: ROI['analysisType']) => {
+  const getAnalysisTypeLabel = (type: ROI["analysisType"]) => {
     switch (type) {
-      case 'people_count': return 'Contagem de Pessoas';
-      case 'motion_detection': return 'Detecção de Movimento';
-      case 'zone_occupancy': return 'Ocupação de Zona';
-      default: return 'Personalizado';
+      case "people_count":
+        return "Contagem de Pessoas";
+      case "motion_detection":
+        return "Detecção de Movimento";
+      case "zone_occupancy":
+        return "Ocupação de Zona";
+      default:
+        return "Personalizado";
     }
   };
 
@@ -148,26 +165,30 @@ export default function CameraReports() {
   };
 
   const exportToCSV = () => {
-    const csvRows = ['Câmara,Equipamento,ROI,Tipo,Eventos,Tempo Ativo,Valor Médio,Valor Máximo'];
-    
-    metrics.forEach(camera => {
-      camera.rois.forEach(roi => {
-        csvRows.push([
-          camera.cameraName,
-          camera.machineName,
-          roi.roiName,
-          getAnalysisTypeLabel(roi.analysisType),
-          roi.events,
-          formatMinutes(roi.totalActiveTime),
-          roi.averageValue.toFixed(2),
-          roi.maxValue,
-        ].join(','));
+    const csvRows = [
+      "Câmara,Equipamento,ROI,Tipo,Eventos,Tempo Ativo,Valor Médio,Valor Máximo",
+    ];
+
+    metrics.forEach((camera) => {
+      camera.rois.forEach((roi) => {
+        csvRows.push(
+          [
+            camera.cameraName,
+            camera.machineName,
+            roi.roiName,
+            getAnalysisTypeLabel(roi.analysisType),
+            roi.events,
+            formatMinutes(roi.totalActiveTime),
+            roi.averageValue.toFixed(2),
+            roi.maxValue,
+          ].join(","),
+        );
       });
     });
 
-    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+    const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `relatorio-camaras-${dateRange}-${Date.now()}.csv`;
     a.click();
@@ -177,7 +198,9 @@ export default function CameraReports() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-muted-foreground">Carregando relatórios...</div>
+        <div className="text-lg text-muted-foreground">
+          Carregando relatórios...
+        </div>
       </div>
     );
   }
@@ -197,7 +220,7 @@ export default function CameraReports() {
       {/* Filters */}
       <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg">
         <h3 className="text-lg font-bold mb-4">Filtros</h3>
-        
+
         <div className="grid gap-4 md:grid-cols-4">
           {/* Date Range */}
           <div>
@@ -224,7 +247,7 @@ export default function CameraReports() {
               className="w-full px-4 py-2.5 border-2 border-input rounded-xl bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium"
             >
               <option value="all">Todas as Câmaras</option>
-              {filteredCameras.map(camera => (
+              {filteredCameras.map((camera) => (
                 <option key={camera.id} value={camera.id}>
                   {camera.name} ({camera.rois?.length || 0} ROIs)
                 </option>
@@ -234,7 +257,9 @@ export default function CameraReports() {
 
           {/* ROI Filter */}
           <div>
-            <label className="block text-sm font-semibold mb-2">Zona (ROI)</label>
+            <label className="block text-sm font-semibold mb-2">
+              Zona (ROI)
+            </label>
             <select
               value={selectedROI}
               onChange={(e) => setSelectedROI(e.target.value)}
@@ -262,10 +287,12 @@ export default function CameraReports() {
         </div>
 
         {/* Custom Date Range */}
-        {dateRange === 'custom' && (
+        {dateRange === "custom" && (
           <div className="grid gap-4 md:grid-cols-2 mt-4">
             <div>
-              <label className="block text-sm font-semibold mb-2">Data Início</label>
+              <label className="block text-sm font-semibold mb-2">
+                Data Início
+              </label>
               <input
                 type="date"
                 value={customStartDate}
@@ -274,7 +301,9 @@ export default function CameraReports() {
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold mb-2">Data Fim</label>
+              <label className="block text-sm font-semibold mb-2">
+                Data Fim
+              </label>
               <input
                 type="date"
                 value={customEndDate}
@@ -292,7 +321,9 @@ export default function CameraReports() {
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Total Eventos</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+                Total Eventos
+              </p>
               <BarChart3 className="h-5 w-5 text-blue-600" />
             </div>
             <p className="text-3xl font-extrabold">{totalMetrics.events}</p>
@@ -304,11 +335,17 @@ export default function CameraReports() {
           <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Tempo Ativo</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+                Tempo Ativo
+              </p>
               <Clock className="h-5 w-5 text-green-600" />
             </div>
-            <p className="text-3xl font-extrabold">{formatMinutes(totalMetrics.activeTime)}</p>
-            <p className="text-xs text-muted-foreground mt-1">Período selecionado</p>
+            <p className="text-3xl font-extrabold">
+              {formatMinutes(totalMetrics.activeTime)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Período selecionado
+            </p>
           </div>
         </div>
 
@@ -316,11 +353,15 @@ export default function CameraReports() {
           <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Câmaras Ativas</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+                Câmaras Ativas
+              </p>
               <Camera className="h-5 w-5 text-purple-600" />
             </div>
             <p className="text-3xl font-extrabold">{totalMetrics.cameras}</p>
-            <p className="text-xs text-muted-foreground mt-1">Com ROIs configuradas</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Com ROIs configuradas
+            </p>
           </div>
         </div>
 
@@ -328,11 +369,15 @@ export default function CameraReports() {
           <div className="absolute inset-0 bg-gradient-to-br from-orange-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Total ROIs</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+                Total ROIs
+              </p>
               <Activity className="h-5 w-5 text-orange-600" />
             </div>
             <p className="text-3xl font-extrabold">{totalMetrics.rois}</p>
-            <p className="text-xs text-muted-foreground mt-1">Zonas monitorizadas</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Zonas monitorizadas
+            </p>
           </div>
         </div>
       </div>
@@ -343,7 +388,8 @@ export default function CameraReports() {
           <Camera className="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" />
           <h3 className="text-xl font-bold mb-2">Sem Dados Disponíveis</h3>
           <p className="text-muted-foreground max-w-md mx-auto">
-            Configure câmaras com ROIs e aguarde alguns minutos para ver os primeiros resultados.
+            Configure câmaras com ROIs e aguarde alguns minutos para ver os
+            primeiros resultados.
           </p>
           <a
             href="/cameras"
@@ -354,7 +400,7 @@ export default function CameraReports() {
         </div>
       ) : (
         <div className="space-y-6">
-          {metrics.map(camera => (
+          {metrics.map((camera) => (
             <div
               key={camera.cameraId}
               className="rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg"
@@ -366,57 +412,81 @@ export default function CameraReports() {
                   </div>
                   <div>
                     <h3 className="text-xl font-bold">{camera.cameraName}</h3>
-                    <p className="text-sm text-muted-foreground">Equipamento: {camera.machineName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Equipamento: {camera.machineName}
+                    </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-bold text-primary">{camera.totalEvents}</div>
-                  <div className="text-xs text-muted-foreground">eventos totais</div>
+                  <div className="text-2xl font-bold text-primary">
+                    {camera.totalEvents}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    eventos totais
+                  </div>
                 </div>
               </div>
 
               {/* ROI Metrics */}
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {camera.rois.map(roi => (
+                {camera.rois.map((roi) => (
                   <div
                     key={roi.roiId}
                     className="border border-border/40 rounded-xl p-4 bg-gradient-to-br from-muted/20 to-transparent hover:shadow-md transition-all"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-2xl">{getAnalysisTypeIcon(roi.analysisType)}</span>
+                      <span className="text-2xl">
+                        {getAnalysisTypeIcon(roi.analysisType)}
+                      </span>
                       <span className="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary font-semibold">
                         {getAnalysisTypeLabel(roi.analysisType)}
                       </span>
                     </div>
                     <h4 className="font-bold mb-2">{roi.roiName}</h4>
-                    
+
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Eventos:</span>
                         <span className="font-semibold">{roi.events}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">Tempo Ativo:</span>
-                        <span className="font-semibold">{formatMinutes(roi.totalActiveTime)}</span>
+                        <span className="text-muted-foreground">
+                          Tempo Ativo:
+                        </span>
+                        <span className="font-semibold">
+                          {formatMinutes(roi.totalActiveTime)}
+                        </span>
                       </div>
-                      
-                      {roi.analysisType === 'people_count' && (
+
+                      {roi.analysisType === "people_count" && (
                         <>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Média Pessoas:</span>
-                            <span className="font-semibold">{roi.averageValue.toFixed(1)}</span>
+                            <span className="text-muted-foreground">
+                              Média Pessoas:
+                            </span>
+                            <span className="font-semibold">
+                              {roi.averageValue.toFixed(1)}
+                            </span>
                           </div>
                           <div className="flex justify-between">
-                            <span className="text-muted-foreground">Máximo:</span>
-                            <span className="font-semibold">{roi.maxValue}</span>
+                            <span className="text-muted-foreground">
+                              Máximo:
+                            </span>
+                            <span className="font-semibold">
+                              {roi.maxValue}
+                            </span>
                           </div>
                         </>
                       )}
 
-                      {roi.analysisType === 'zone_occupancy' && (
+                      {roi.analysisType === "zone_occupancy" && (
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Taxa Ocupação:</span>
-                          <span className="font-semibold">{(roi.averageValue * 10).toFixed(0)}%</span>
+                          <span className="text-muted-foreground">
+                            Taxa Ocupação:
+                          </span>
+                          <span className="font-semibold">
+                            {(roi.averageValue * 10).toFixed(0)}%
+                          </span>
                         </div>
                       )}
                     </div>

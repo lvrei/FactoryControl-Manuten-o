@@ -3,48 +3,58 @@
 ## 🚀 Passo a Passo: Criar Nova Câmara
 
 ### 1. **Aceder à Página de Câmaras**
+
 - No menu lateral, clique em **"Câmaras"**
 
 ### 2. **Criar Nova Câmara**
+
 - Clique no botão **"Nova Câmara"** (canto superior direito)
 
 ### 3. **Configuração Básica**
 
-#### **Nome da Câmara** *
+#### **Nome da Câmara** \*
+
 ```
 Exemplo: CNC-01 Zona Trabalho
 ```
 
-#### **Equipamento** *
+#### **Equipamento** \*
+
 ```
 Selecione: CNC-01 (ou outro equipamento existente)
 ```
 
-#### **URL da Câmara** *
+#### **URL da Câmara** \*
+
 Dependendo do protocolo:
 
 **RTSP (mais comum):**
+
 ```
 rtsp://username:password@192.168.1.140:554/stream1
 ```
 
 **HTTP/MJPEG:**
+
 ```
 http://192.168.1.140:8080/video
 ```
 
 **Ficheiro Local (teste):**
+
 ```
 file:///path/to/video.mp4
 ```
 
 #### **Protocolo**
+
 ```
 Selecione: rtsp (padrão)
 Ou: http, webrtc, file
 ```
 
 #### **Ativa**
+
 ```
 Sim (a câmara fica ativa imediatamente)
 ```
@@ -54,33 +64,41 @@ Sim (a câmara fica ativa imediatamente)
 ## 🎯 Configurar Zonas de Interesse (ROI)
 
 ### 1. **Após Configurar URL**
+
 - A preview da câmara aparece automaticamente
 - Clique em **"🔄 Atualizar Preview"** se necessário
 
 ### 2. **Desenhar Zona**
+
 - **Clique e arraste** na imagem para criar um retângulo
 - Solte o botão do rato para finalizar
 
 ### 3. **Configurar ROI**
+
 Preencha o formulário que aparece:
 
-#### **Nome da Zona** *
+#### **Nome da Zona** \*
+
 ```
 Exemplo: Zona de Corte Principal
 ```
 
-#### **Tipo de Análise** *
+#### **Tipo de Análise** \*
+
 Escolha um:
 
 - **👥 Contagem de Pessoas**
+
   - Para contar quantas pessoas estão na zona
   - Útil para: segurança, ocupação, produtividade
 
 - **🔄 Detecção de Movimento**
+
   - Para detectar se há movimento/atividade
   - Útil para: máquinas em funcionamento, áreas ativas
 
 - **📍 Ocupação de Zona**
+
   - Para verificar se zona está ocupada/livre
   - Útil para: áreas de trabalho, zonas de espera
 
@@ -88,14 +106,16 @@ Escolha um:
   - Para análises customizadas
 
 #### **Descrição do Objetivo**
+
 ```
-Exemplo: "Detectar se a máquina CNC está em produção através do 
+Exemplo: "Detectar se a máquina CNC está em produção através do
 movimento na zona de corte e calcular tempo total ativo por dia."
 ```
 
 Esta descrição aparece nos **relatórios de performance**!
 
 ### 4. **Guardar ROI**
+
 - Clique em **"💾 Guardar Zona"**
 - Pode criar múltiplas ROIs na mesma câmara
 
@@ -110,6 +130,7 @@ Expanda **"⚙️ Configurações Avançadas"** para ver:
 Define parâmetros de sensibilidade e limites para análise.
 
 #### **Exemplo Prático - Detecção de Movimento:**
+
 ```json
 {
   "motion_sensitivity": 0.3,
@@ -120,12 +141,14 @@ Define parâmetros de sensibilidade e limites para análise.
 ```
 
 **Explicação:**
+
 - `motion_sensitivity`: 0.0 a 1.0 (quanto menor, mais sensível)
 - `min_motion_area`: área mínima em pixels para considerar movimento
 - `motion_threshold`: threshold de diferença entre frames (0-255)
 - `cooldown_seconds`: tempo mínimo entre detecções
 
 #### **Exemplo Prático - Contagem de Pessoas:**
+
 ```json
 {
   "confidence_threshold": 0.7,
@@ -136,12 +159,14 @@ Define parâmetros de sensibilidade e limites para análise.
 ```
 
 **Explicação:**
+
 - `confidence_threshold`: confiança mínima (0.0 a 1.0)
 - `min_person_size`: tamanho mínimo da pessoa em pixels
 - `max_people`: limite máximo esperado
 - `track_duration_seconds`: tempo para manter tracking
 
 #### **Exemplo Prático - Ocupação de Zona:**
+
 ```json
 {
   "occupancy_threshold": 0.15,
@@ -151,6 +176,7 @@ Define parâmetros de sensibilidade e limites para análise.
 ```
 
 **Explicação:**
+
 - `occupancy_threshold`: % área ocupada para considerar "ocupada"
 - `debounce_seconds`: tempo para evitar mudanças rápidas
 - `report_interval_seconds`: frequência de relatórios
@@ -162,6 +188,7 @@ Define parâmetros de sensibilidade e limites para análise.
 Define quando a câmara deve estar ativa.
 
 #### **Exemplo Prático - Horário Comercial:**
+
 ```json
 {
   "enabled": true,
@@ -179,6 +206,7 @@ Define quando a câmara deve estar ativa.
 ```
 
 #### **Exemplo Prático - Turnos 24/7:**
+
 ```json
 {
   "enabled": true,
@@ -200,13 +228,22 @@ Define quando a câmara deve estar ativa.
       "name": "Turno 3",
       "start": "22:00",
       "end": "06:00",
-      "days": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+      "days": [
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+        "sunday"
+      ]
     }
   ]
 }
 ```
 
 #### **Exemplo Prático - Apenas Período Específico:**
+
 ```json
 {
   "enabled": true,
@@ -229,12 +266,14 @@ Define quando a câmara deve estar ativa.
 ### **Caso 1: Monitorizar Produção da CNC**
 
 **Configuração:**
+
 - **Câmara**: CNC-01 Vista Principal
 - **ROI**: Zona de Corte
 - **Tipo**: Detecção de Movimento
 - **Descrição**: "Detectar quando CNC está a cortar através do movimento da ferramenta"
 
 **Limiares:**
+
 ```json
 {
   "motion_sensitivity": 0.2,
@@ -244,6 +283,7 @@ Define quando a câmara deve estar ativa.
 ```
 
 **Agenda:**
+
 ```json
 {
   "enabled": true,
@@ -258,6 +298,7 @@ Define quando a câmara deve estar ativa.
 ```
 
 **Resultado no Relatório:**
+
 - Tempo total em produção por dia
 - % de utilização da máquina
 - Períodos de inatividade
@@ -267,12 +308,14 @@ Define quando a câmara deve estar ativa.
 ### **Caso 2: Contagem de Operadores na Zona de Trabalho**
 
 **Configuração:**
+
 - **Câmara**: Área Produção Geral
 - **ROI**: Zona de Montagem
 - **Tipo**: Contagem de Pessoas
 - **Descrição**: "Contar operadores presentes na zona de montagem e calcular ocupação média"
 
 **Limiares:**
+
 ```json
 {
   "confidence_threshold": 0.75,
@@ -282,6 +325,7 @@ Define quando a câmara deve estar ativa.
 ```
 
 **Resultado no Relatório:**
+
 - Número médio de pessoas por hora
 - Picos de ocupação
 - Períodos de menor atividade
@@ -291,12 +335,14 @@ Define quando a câmara deve estar ativa.
 ### **Caso 3: Verificar Ocupação de Área Crítica**
 
 **Configuração:**
+
 - **Câmara**: Zona Segurança
 - **ROI**: Área Restrita
 - **Tipo**: Ocupação de Zona
 - **Descrição**: "Verificar se área crítica está livre ou ocupada"
 
 **Limiares:**
+
 ```json
 {
   "occupancy_threshold": 0.1,
@@ -306,6 +352,7 @@ Define quando a câmara deve estar ativa.
 ```
 
 **Resultado no Relatório:**
+
 - % tempo ocupada vs livre
 - Alertas quando ocupada
 - Duração média de ocupação
@@ -315,6 +362,7 @@ Define quando a câmara deve estar ativa.
 ## 🔍 Ver Relatórios de Performance
 
 ### **Aceder aos Relatórios:**
+
 1. Menu lateral → **"Relatórios"** (ou "Analytics")
 2. Selecione **"Análise de Câmaras"**
 3. Escolha:
@@ -323,6 +371,7 @@ Define quando a câmara deve estar ativa.
    - ROI específica ou todas
 
 ### **Métricas Disponíveis:**
+
 - ⏱️ Tempo total ativo/inativo
 - 📊 % de utilização
 - 👥 Contagem média (se tipo = pessoas)
@@ -351,18 +400,21 @@ Define quando a câmara deve estar ativa.
 ## 🆘 Problemas Comuns
 
 ### **Snapshot não aparece:**
+
 - Verifique URL da câmara
 - Confirme credenciais (username:password)
 - Teste protocolo diferente (rtsp → http)
 - Verifique firewall/rede
 
 ### **ROI não aparece no relatório:**
+
 - Certifique que câmara está ativa
 - Verifique se ROI tem `enabled: true`
 - Confirme que está dentro do horário da agenda
 - Aguarde alguns minutos para primeiros dados
 
 ### **Limiares não funcionam:**
+
 - Valide JSON (sem erros de sintaxe)
 - Use valores razoáveis (0.0 a 1.0 para percentagens)
 - Teste com valores menos restritivos primeiro
