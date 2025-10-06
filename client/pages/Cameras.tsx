@@ -347,23 +347,31 @@ export default function CamerasPage() {
 
       {showForm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-background rounded-lg max-w-2xl w-full">
+          <div className="bg-background rounded-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-border/40">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">
-                  {editing ? "Editar Câmara" : "Nova Câmara"}
-                </h3>
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-3">
+                    <Camera className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+                      {editing ? "Editar Câmara" : "Nova Câmara"}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">Configure a câmara e defina zonas de interesse</p>
+                  </div>
+                </div>
                 <button
                   onClick={() => {
                     setShowForm(false);
                     resetForm();
                   }}
-                  className="text-muted-foreground hover:text-foreground"
+                  className="text-muted-foreground hover:text-foreground transition-colors p-2 hover:bg-muted rounded-lg"
                 >
-                  <X />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
-              <form onSubmit={onSubmit} className="space-y-4">
+              <form onSubmit={onSubmit} className="space-y-6">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium mb-2">
@@ -374,7 +382,7 @@ export default function CamerasPage() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, name: e.target.value }))
                       }
-                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      className="w-full px-4 py-2.5 border-2 border-input rounded-xl bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium"
                       placeholder="Ex: Câmara BZM 01"
                     />
                   </div>
@@ -387,7 +395,7 @@ export default function CamerasPage() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, machineId: e.target.value }))
                       }
-                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      className="w-full px-4 py-2.5 border-2 border-input rounded-xl bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium"
                     >
                       <option value="">— Sem associação —</option>
                       {machines.map((m) => (
@@ -406,7 +414,7 @@ export default function CamerasPage() {
                       onChange={(e) =>
                         setForm((p) => ({ ...p, url: e.target.value }))
                       }
-                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      className="w-full px-4 py-2.5 border-2 border-input rounded-xl bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium"
                       placeholder="rtsp://..."
                     />
                   </div>
@@ -422,7 +430,7 @@ export default function CamerasPage() {
                           protocol: e.target.value as Protocol,
                         }))
                       }
-                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      className="w-full px-4 py-2.5 border-2 border-input rounded-xl bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium"
                     >
                       <option value="rtsp">RTSP</option>
                       <option value="http">HTTP</option>
@@ -442,7 +450,7 @@ export default function CamerasPage() {
                           enabled: e.target.value === "1",
                         }))
                       }
-                      className="w-full px-3 py-2 border rounded-lg bg-background"
+                      className="w-full px-4 py-2.5 border-2 border-input rounded-xl bg-background/50 focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium"
                     >
                       <option value="1">Sim</option>
                       <option value="0">Não</option>
@@ -450,68 +458,93 @@ export default function CamerasPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    ROI (JSON opcional)
-                  </label>
-                  <textarea
-                    value={roisText}
-                    onChange={(e) => setRoisText(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
-                    rows={4}
-                  />
-                  {jsonErrors.rois && (
-                    <div className="text-xs text-red-600 mt-1">{jsonErrors.rois}</div>
-                  )}
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Limiares (JSON)
-                    </label>
-                    <textarea
-                      value={thresholdsText}
-                      onChange={(e) => setThresholdsText(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
-                      rows={4}
+                {/* ROI Visual Editor */}
+                {form.url && (
+                  <div className="border-2 border-border/40 rounded-2xl p-6 bg-gradient-to-br from-muted/30 to-transparent">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (editing?.id) {
+                          setSnapshotUrl(camerasService.getSnapshotUrl(editing.id) + '&t=' + Date.now());
+                        }
+                      }}
+                      className="mb-4 px-3 py-1.5 text-sm border-2 border-input rounded-lg hover:bg-muted transition-all font-medium"
+                    >
+                      🔄 Atualizar Preview
+                    </button>
+                    <ROIEditor
+                      cameraId={editing?.id}
+                      snapshotUrl={snapshotUrl}
+                      rois={form.rois}
+                      onChange={(rois) => setForm({ ...form, rois })}
                     />
-                    {jsonErrors.thresholds && (
-                      <div className="text-xs text-red-600 mt-1">{jsonErrors.thresholds}</div>
-                    )}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Agenda (JSON)
-                    </label>
-                    <textarea
-                      value={scheduleText}
-                      onChange={(e) => setScheduleText(e.target.value)}
-                      className="w-full px-3 py-2 border rounded-lg bg-background font-mono text-xs"
-                      rows={4}
-                    />
-                    {jsonErrors.schedule && (
-                      <div className="text-xs text-red-600 mt-1">{jsonErrors.schedule}</div>
-                    )}
-                  </div>
-                </div>
+                )}
 
-                <div className="flex justify-end gap-2">
+                {!form.url && (
+                  <div className="border-2 border-dashed border-border/40 rounded-2xl p-8 bg-muted/20">
+                    <div className="text-center text-muted-foreground">
+                      <Camera className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                      <p className="font-semibold">Configure a URL da câmara primeiro</p>
+                      <p className="text-sm mt-1">Depois poderá definir as zonas de interesse</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Advanced Settings - Collapsed by default */}
+                <details className="group">
+                  <summary className="cursor-pointer font-semibold text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-2">
+                    ⚙️ Configurações Avançadas (Limiares e Agenda)
+                    <span className="text-xs opacity-50">Clique para expandir</span>
+                  </summary>
+                  <div className="grid gap-4 md:grid-cols-2 mt-4">
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">
+                        Limiares (JSON)
+                      </label>
+                      <textarea
+                        value={thresholdsText}
+                        onChange={(e) => setThresholdsText(e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-input rounded-xl bg-background/50 font-mono text-xs focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all"
+                        rows={4}
+                      />
+                      {jsonErrors.thresholds && (
+                        <div className="text-xs text-red-600 mt-1">{jsonErrors.thresholds}</div>
+                      )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold mb-2">
+                        Agenda (JSON)
+                      </label>
+                      <textarea
+                        value={scheduleText}
+                        onChange={(e) => setScheduleText(e.target.value)}
+                        className="w-full px-4 py-3 border-2 border-input rounded-xl bg-background/50 font-mono text-xs focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all"
+                        rows={4}
+                      />
+                      {jsonErrors.schedule && (
+                        <div className="text-xs text-red-600 mt-1">{jsonErrors.schedule}</div>
+                      )}
+                    </div>
+                  </div>
+                </details>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-border/40">
                   <button
                     type="button"
                     onClick={() => {
                       setShowForm(false);
                       resetForm();
                     }}
-                    className="px-4 py-2 border rounded-lg hover:bg-muted"
+                    className="px-5 py-2.5 border-2 border-input rounded-xl hover:bg-muted transition-all font-semibold"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
+                    className="px-6 py-2.5 bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] transition-all font-semibold"
                   >
-                    {editing ? "Guardar" : "Criar"}
+                    {editing ? "💾 Guardar Câmara" : "✨ Criar Câmara"}
                   </button>
                 </div>
               </form>
