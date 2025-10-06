@@ -245,11 +245,16 @@ export default function CamerasPage() {
             <div key={c.id} className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <div className="rounded-lg bg-gradient-to-br from-primary/10 to-blue-600/10 p-2">
                       <Video className="h-4 w-4 text-primary" />
                     </div>
                     <h3 className="font-bold">{c.name}</h3>
+                    {c.rois && c.rois.length > 0 && (
+                      <span className="px-2 py-0.5 text-xs font-bold rounded-full bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-sm">
+                        {c.rois.length} {c.rois.length === 1 ? 'ROI' : 'ROIs'}
+                      </span>
+                    )}
                   </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1 truncate">
                     <LinkIcon className="h-3 w-3" /> {c.url}
