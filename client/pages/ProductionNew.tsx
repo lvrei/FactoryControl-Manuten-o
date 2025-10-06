@@ -328,10 +328,10 @@ function ProductionNew() {
             <BackToOperatorButton variant="header" useRouter={true} />
           )}
           <div>
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="text-4xl font-extrabold bg-gradient-to-r from-foreground via-primary to-blue-600 bg-clip-text text-transparent">
               Sistema de Produção
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground/90 mt-1 font-medium">
               Gestão completa de ordens de produção para corte de espuma
             </p>
           </div>
@@ -340,7 +340,7 @@ function ProductionNew() {
         <div className="flex gap-2">
           <button
             onClick={() => setShowChat(true)}
-            className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2 relative"
+            className="px-4 py-2.5 border-2 border-input rounded-xl hover:bg-gradient-to-r hover:from-accent hover:to-accent/80 hover:border-primary/30 hover:shadow-md flex items-center gap-2 relative transition-all duration-300 font-semibold hover:scale-[1.02] active:scale-95"
           >
             <MessageCircle className="h-4 w-4" />
             Chat
@@ -353,7 +353,7 @@ function ProductionNew() {
 
           <button
             onClick={() => setShowSheetsManager(true)}
-            className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2"
+            className="px-4 py-2.5 border-2 border-input rounded-xl hover:bg-gradient-to-r hover:from-accent hover:to-accent/80 hover:border-primary/30 hover:shadow-md flex items-center gap-2 transition-all duration-300 font-semibold hover:scale-[1.02] active:scale-95"
           >
             <Settings className="h-4 w-4" />
             Fichas Técnicas
@@ -361,14 +361,14 @@ function ProductionNew() {
 
           <button
             onClick={() => setShowOrderForm(true)}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+            className="px-4 py-2.5 bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] active:scale-95 flex items-center gap-2 transition-all duration-300 font-semibold"
           >
             <Plus className="h-4 w-4" />
             Nova Ordem
           </button>
           <button
             onClick={() => setShowNesting(true)}
-            className="px-4 py-2 border rounded-lg hover:bg-muted flex items-center gap-2"
+            className="px-4 py-2.5 border-2 border-input rounded-xl hover:bg-gradient-to-r hover:from-accent hover:to-accent/80 hover:border-primary/30 hover:shadow-md flex items-center gap-2 transition-all duration-300 font-semibold hover:scale-[1.02] active:scale-95"
           >
             <Layers className="h-4 w-4" />
             Nova OP (nesting)
@@ -378,84 +378,99 @@ function ProductionNew() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-5">
-        <div className="bg-card border rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 hover:border-primary/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Total de Ordens
               </p>
-              <p className="text-2xl font-bold text-card-foreground">
+              <p className="text-3xl font-extrabold text-card-foreground mt-1">
                 {totalOrders}
               </p>
             </div>
-            <Package className="h-6 w-6 text-muted-foreground" />
+            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-2.5 group-hover:scale-110 transition-transform duration-300">
+              <Package className="h-6 w-6 text-primary" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 hover:border-purple-600/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Em Andamento
               </p>
-              <p className="text-2xl font-bold text-purple-600">
+              <p className="text-3xl font-extrabold text-purple-600 mt-1">
                 {inProgressOrders}
               </p>
             </div>
-            <Play className="h-6 w-6 text-purple-600" />
+            <div className="rounded-xl bg-gradient-to-br from-purple-600/10 to-purple-500/10 p-2.5 group-hover:scale-110 transition-transform duration-300">
+              <Play className="h-6 w-6 text-purple-600" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Concluídas
               </p>
-              <p className="text-2xl font-bold text-green-600">
+              <p className="text-3xl font-extrabold text-green-600 mt-1">
                 {completedOrders}
               </p>
             </div>
-            <TrendingUp className="h-6 w-6 text-green-600" />
+            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-emerald-500/10 p-2.5 group-hover:scale-110 transition-transform duration-300">
+              <TrendingUp className="h-6 w-6 text-green-600" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 hover:border-red-600/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-red-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Urgentes
               </p>
-              <p className="text-2xl font-bold text-red-600">{urgentOrders}</p>
+              <p className="text-3xl font-extrabold text-red-600 mt-1">{urgentOrders}</p>
             </div>
-            <AlertTriangle className="h-6 w-6 text-red-600" />
+            <div className="rounded-xl bg-gradient-to-br from-red-600/10 to-red-500/10 p-2.5 group-hover:scale-110 transition-transform duration-300">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+            </div>
           </div>
         </div>
 
-        <div className="bg-card border rounded-lg p-4">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300 hover:border-primary/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Máquinas Ativas
               </p>
-              <p className="text-2xl font-bold text-card-foreground">
+              <p className="text-3xl font-extrabold text-card-foreground mt-1">
                 {activeMachines}/{machines.length}
               </p>
             </div>
-            <Factory className="h-6 w-6 text-muted-foreground" />
+            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-2.5 group-hover:scale-110 transition-transform duration-300">
+              <Factory className="h-6 w-6 text-primary" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex rounded-lg bg-muted p-1 w-fit">
+      <div className="flex rounded-xl bg-gradient-to-r from-muted/80 to-muted/40 backdrop-blur-sm p-1.5 w-fit shadow-md border border-border/40">
         <button
           onClick={() => setActiveTab("orders")}
           className={cn(
-            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            "px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300",
             activeTab === "orders"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground shadow-lg scale-[1.02]"
+              : "text-muted-foreground hover:text-foreground hover:bg-background/50 hover:scale-[1.01]",
           )}
         >
           Ordens de Produção ({productionOrders.length})
@@ -463,10 +478,10 @@ function ProductionNew() {
         <button
           onClick={() => setActiveTab("machines")}
           className={cn(
-            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
+            "px-5 py-2.5 text-sm font-semibold rounded-lg transition-all duration-300",
             activeTab === "machines"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground shadow-lg scale-[1.02]"
+              : "text-muted-foreground hover:text-foreground hover:bg-background/50 hover:scale-[1.01]",
           )}
         >
           Máquinas ({machines.length})
@@ -483,7 +498,7 @@ function ProductionNew() {
               placeholder="Buscar por número da OP ou cliente..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg bg-background"
+              className="w-full pl-10 pr-4 py-2.5 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-300 hover:border-primary/30 shadow-sm font-medium"
             />
           </div>
 
@@ -495,7 +510,7 @@ function ProductionNew() {
                 status: e.target.value === "all" ? [] : [e.target.value],
               }))
             }
-            className="px-3 py-2 border rounded-lg bg-background min-w-[150px]"
+            className="px-3 py-2.5 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-300 hover:border-primary/30 shadow-sm min-w-[150px] font-medium"
           >
             <option value="all">Todos os status</option>
             <option value="created">Criada</option>
@@ -512,7 +527,7 @@ function ProductionNew() {
                 priority: e.target.value === "all" ? [] : [e.target.value],
               }))
             }
-            className="px-3 py-2 border rounded-lg bg-background min-w-[150px]"
+            className="px-3 py-2.5 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all duration-300 hover:border-primary/30 shadow-sm min-w-[150px] font-medium"
           >
             <option value="all">Todas as prioridades</option>
             <option value="urgent">Urgente</option>
@@ -525,7 +540,7 @@ function ProductionNew() {
 
       {/* Content */}
       {activeTab === "orders" ? (
-        <div className="bg-card border rounded-lg overflow-hidden">
+        <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 overflow-hidden shadow-lg">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="border-b bg-muted/50">
