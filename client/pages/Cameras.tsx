@@ -208,11 +208,13 @@ export default function CamerasPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-3xl font-bold">Câmaras</h1>
-          <p className="text-muted-foreground">
-            Associe câmaras aos equipamentos e configure rapidamente.
+          <h1 className="text-4xl font-extrabold bg-gradient-to-r from-foreground via-primary to-blue-600 bg-clip-text text-transparent">
+            Câmaras
+          </h1>
+          <p className="text-muted-foreground/90 mt-1 font-medium">
+            Associe câmaras aos equipamentos e configure zonas de interesse para análise.
           </p>
         </div>
         <button
@@ -244,8 +246,10 @@ export default function CamerasPage() {
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="flex items-center gap-2">
-                    <Video className="h-4 w-4 text-muted-foreground" />
-                    <h3 className="font-semibold">{c.name}</h3>
+                    <div className="rounded-lg bg-gradient-to-br from-primary/10 to-blue-600/10 p-2">
+                      <Video className="h-4 w-4 text-primary" />
+                    </div>
+                    <h3 className="font-bold">{c.name}</h3>
                   </div>
                   <div className="text-xs text-muted-foreground flex items-center gap-1 truncate">
                     <LinkIcon className="h-3 w-3" /> {c.url}
@@ -254,24 +258,24 @@ export default function CamerasPage() {
                 <div className="flex gap-1">
                   <button
                     onClick={() => onEdit(c)}
-                    className="p-1 text-muted-foreground hover:text-foreground"
+                    className="p-2 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-primary/10"
                     title="Editar"
                   >
                     <Edit className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => onDelete(c.id)}
-                    className="p-1 text-muted-foreground hover:text-destructive"
+                    className="p-2 text-muted-foreground hover:text-destructive transition-colors rounded-lg hover:bg-destructive/10"
                     title="Remover"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
-              <div className="text-sm space-y-1">
+              <div className="text-sm space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Equipamento</span>
-                  <span className="font-medium">{machineName}</span>
+                  <span className="font-semibold">{machineName}</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground">Protocolo</span>
@@ -313,7 +317,7 @@ export default function CamerasPage() {
                           [c.machineId!]: st.status,
                         }));
                       }}
-                      className="px-2 py-1 text-xs border rounded hover:bg-muted"
+                      className="px-3 py-1.5 text-xs border-2 border-input rounded-lg hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 hover:text-white hover:border-green-600 transition-all font-semibold"
                     >
                       Set ON
                     </button>
@@ -333,7 +337,7 @@ export default function CamerasPage() {
                           [c.machineId!]: st.status,
                         }));
                       }}
-                      className="px-2 py-1 text-xs border rounded hover:bg-muted"
+                      className="px-3 py-1.5 text-xs border-2 border-input rounded-lg hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 hover:text-white hover:border-green-600 transition-all font-semibold"
                     >
                       Set OFF
                     </button>
