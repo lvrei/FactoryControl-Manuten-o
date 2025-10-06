@@ -4,6 +4,7 @@ import {
   MachineDowntime,
 } from "@/types/production";
 import { productionService } from "./productionService";
+import { apiFetch } from "@/config/api";
 
 class MaintenanceService {
   // DB-backed Scheduled Maintenances (plans)
