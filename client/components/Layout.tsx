@@ -44,6 +44,7 @@ const navigation = [
   { name: "Planejamento", href: "/planning", icon: Calendar },
   { name: "Sensores", href: "/sensors", icon: Settings },
   { name: "Câmaras", href: "/cameras", icon: Video },
+  { name: "📊 Relatórios Câmaras", href: "/camera-reports", icon: BarChart3 },
   { name: "Assistente", href: "/assistant", icon: MessageSquare },
   { name: "Alertas", href: "/alerts", icon: AlertTriangle },
 ];
