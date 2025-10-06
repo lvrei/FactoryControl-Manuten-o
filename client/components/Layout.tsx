@@ -241,6 +241,9 @@ export function Layout({ children }: LayoutProps) {
           ))}
         </div>
       </nav>
+
+      {/* Floating QR Scanner Button */}
+      <FloatingQRScanner />
     </div>
   );
 }
