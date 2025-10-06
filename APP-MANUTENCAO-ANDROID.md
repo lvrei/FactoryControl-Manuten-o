@@ -252,7 +252,7 @@ npx cap open android
 4. Build **Release**
 5. APK gerado em: `android/app/build/outputs/apk/release/`
 
-### **Passo 4: Instalar no Telemóvel**
+### **Passo 5: Instalar no Telemóvel**
 
 ```bash
 # Via ADB
@@ -341,7 +341,7 @@ Dark: #1e293b (Cinza Escuro)
 
    ```
    Título: 📅 Manutenção Programada
-   Mensagem: Carrossel-01 - Manutenção preventiva hoje às 14h
+   Mensagem: Carrossel-01 - Manutenç��o preventiva hoje às 14h
    Ação: Abrir manutenção
    ```
 
@@ -394,7 +394,7 @@ Dark: #1e293b (Cinza Escuro)
 <!-- Câmara (scanner QR) -->
 <uses-permission android:name="android.permission.CAMERA" />
 
-<!-- Notificações -->
+<!-- Notificaç��es -->
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 <uses-permission android:name="android.permission.VIBRATE" />
 
