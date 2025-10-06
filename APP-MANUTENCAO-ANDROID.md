@@ -210,13 +210,27 @@ Página dedicada: `/machine/{machineId}`
 3. ✅ Java JDK 11 ou 17
 4. ✅ Variável ANDROID_HOME configurada
 
-### **Passo 1: Preparar Projeto**
+### **Passo 1: Configurar URL da API**
+
+**CRÍTICO**: Antes de gerar o APK, configure o URL do servidor:
+
+```bash
+# Criar ficheiro .env.local
+echo "VITE_API_URL=http://SEU_IP:5000" > .env.local
+
+# Exemplo: Se o IP do servidor é 192.168.1.100
+echo "VITE_API_URL=http://192.168.1.100:5000" > .env.local
+```
+
+⚠️ **Sem esta configuração, a app não conseguirá conectar ao servidor!**
+
+### **Passo 2: Preparar Projeto**
 
 ```bash
 # Instalar dependências
 npm install
 
-# Build do frontend
+# Build do frontend (com configuração da API)
 npm run build
 ```
 
