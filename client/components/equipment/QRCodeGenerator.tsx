@@ -139,12 +139,11 @@ export function QRCodeGenerator({
         ref={qrRef}
         className="rounded-xl border-4 border-primary/20 p-4 bg-white"
       >
-        <QRCode
+        <QRCodeCanvas
           value={qrValue}
           size={size}
           level="H"
           includeMargin
-          renderAs="canvas"
         />
       </div>
 
