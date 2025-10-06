@@ -1,19 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Save, X } from 'lucide-react';
-
-export interface ROI {
-  id: string;
-  name: string;
-  description: string;
-  analysisType: 'people_count' | 'motion_detection' | 'zone_occupancy' | 'custom';
-  coordinates: {
-    x: number;      // percentage 0-100
-    y: number;      // percentage 0-100
-    width: number;  // percentage 0-100
-    height: number; // percentage 0-100
-  };
-  enabled: boolean;
-}
+import { ROI } from '@/services/camerasService';
 
 interface ROIEditorProps {
   cameraId?: string;

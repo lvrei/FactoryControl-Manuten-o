@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { camerasService, CameraRecord } from "@/services/camerasService";
+import { camerasService, CameraRecord, ROI } from "@/services/camerasService";
 import { productionService } from "@/services/productionService";
 import { visionService } from "@/services/visionService";
 import { Plus, X, Trash2, Edit, Video, Link as LinkIcon, Camera } from "lucide-react";
-import { ROIEditor, ROI } from "@/components/cameras/ROIEditor";
+import { ROIEditor } from "@/components/cameras/ROIEditor";
 
 interface MachineOption {
   id: string;
