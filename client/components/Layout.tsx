@@ -60,8 +60,8 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top Navigation Bar */}
-      <header className="border-b border-border bg-card shadow-sm safe-area-top">
+      {/* Top Navigation Bar - Modern Glass Effect */}
+      <header className="sticky top-0 z-40 border-b border-border/40 bg-gradient-to-r from-card/95 via-card/90 to-card/95 backdrop-blur-xl shadow-lg safe-area-top">
         <div className="flex h-16 items-center justify-between px-4 md:px-6">
           <div className="flex items-center gap-4">
             {/* Mobile menu button */}
@@ -73,14 +73,14 @@ export function Layout({ children }: LayoutProps) {
             </button>
 
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Factory className="h-5 w-5 text-primary-foreground" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-blue-600 to-blue-700 shadow-lg shadow-primary/25 ring-2 ring-primary/20">
+                <Factory className="h-6 w-6 text-primary-foreground" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-lg font-semibold text-foreground">
+                <h1 className="text-lg font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
                   FactoryControl
                 </h1>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs font-medium text-muted-foreground/80">
                   Sistema de Gestão Industrial
                 </p>
               </div>
@@ -88,13 +88,13 @@ export function Layout({ children }: LayoutProps) {
           </div>
 
           <div className="flex items-center gap-2 md:gap-4">
-            <button className="relative rounded-lg p-2 text-muted-foreground hover:bg-muted hover:text-foreground btn-mobile">
-              <Bell className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-destructive"></span>
+            <button className="relative rounded-xl p-2 text-muted-foreground hover:bg-gradient-to-br hover:from-muted hover:to-muted/50 hover:text-foreground transition-all duration-300 btn-mobile group">
+              <Bell className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
+              <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/50 animate-pulse"></span>
             </button>
 
-            <div className="hidden sm:flex items-center gap-3 rounded-lg bg-muted p-2">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
+            <div className="hidden sm:flex items-center gap-3 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-2 border border-border/50 shadow-md">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-primary-foreground text-sm font-medium shadow-lg">
                 {userSession?.username?.charAt(0).toUpperCase() || "U"}
               </div>
               <div className="text-sm">
@@ -166,8 +166,8 @@ export function Layout({ children }: LayoutProps) {
       )}
 
       <div className="flex">
-        {/* Desktop Sidebar Navigation */}
-        <nav className="hidden md:block w-64 border-r border-border bg-card">
+        {/* Desktop Sidebar Navigation - Modern Glass */}
+        <nav className="hidden md:block w-64 border-r border-border/40 bg-gradient-to-b from-card/80 to-card/95 backdrop-blur-sm">
           <div className="space-y-1 p-4">
             {navigation.map((item) => (
               <NavLink
@@ -175,14 +175,14 @@ export function Layout({ children }: LayoutProps) {
                 to={item.href}
                 className={({ isActive }) =>
                   cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-300 group",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                      ? "bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground shadow-lg shadow-primary/25 scale-[1.02]"
+                      : "text-muted-foreground hover:bg-gradient-to-r hover:from-muted hover:to-muted/50 hover:text-foreground hover:shadow-md hover:scale-[1.01]",
                   )
                 }
               >
-                <item.icon className="h-4 w-4" />
+                <item.icon className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
                 {item.name}
               </NavLink>
             ))}
@@ -200,8 +200,8 @@ export function Layout({ children }: LayoutProps) {
         </main>
       </div>
 
-      {/* Footer with discrete branding */}
-      <footer className="border-t border-border bg-card text-muted-foreground">
+      {/* Footer with discrete branding - Modern */}
+      <footer className="border-t border-border/40 bg-gradient-to-r from-card/95 via-card/90 to-card/95 backdrop-blur-sm text-muted-foreground">
         <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-center gap-2">
           <img
             src="/logo.png"
@@ -219,8 +219,8 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </footer>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="mobile-nav md:hidden">
+      {/* Mobile Bottom Navigation - Modern Glass */}
+      <nav className="mobile-nav md:hidden backdrop-blur-xl bg-background/95 border-t border-border/40 shadow-2xl">
         <div className="flex justify-around items-center py-2">
           {navigation.slice(0, 5).map((item) => (
             <NavLink

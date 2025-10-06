@@ -36,6 +36,33 @@
 }
 
 @layer components {
+  /* Modern gradient backgrounds */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-primary via-blue-600 to-blue-700;
+  }
+
+  .gradient-card {
+    @apply bg-gradient-to-br from-card via-card to-card/95;
+  }
+
+  .gradient-glass {
+    @apply bg-gradient-to-br from-card/80 to-card/40 backdrop-blur-xl;
+  }
+
+  /* Modern card styles */
+  .modern-card {
+    @apply rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 relative overflow-hidden;
+  }
+
+  .modern-card::before {
+    content: '';
+    @apply absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity duration-300;
+  }
+
+  .modern-card:hover::before {
+    @apply opacity-100;
+  }
+
   /* Mobile-first button styles */
   .btn-mobile {
     @apply min-h-[44px] min-w-[44px] touch-manipulation;

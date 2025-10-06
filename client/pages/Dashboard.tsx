@@ -90,66 +90,80 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground">FactoryControl - Corte de Espuma</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-2">
+        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-foreground via-primary to-blue-600 bg-clip-text text-transparent">
+          FactoryControl - Corte de Espuma
+        </h1>
+        <p className="text-muted-foreground/90 mt-1 font-medium">
           Dashboard em tempo real da produção e operações
         </p>
       </div>
 
       {/* Metrics Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-primary/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Ordens Ativas</p>
-              <p className="text-3xl font-bold text-card-foreground">{activeOrders}</p>
-              <p className="text-xs text-muted-foreground">de {totalOrders} total</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Ordens Ativas</p>
+              <p className="text-4xl font-extrabold text-card-foreground mt-2">{activeOrders}</p>
+              <p className="text-xs text-muted-foreground mt-1">de {totalOrders} total</p>
             </div>
-            <Factory className="h-8 w-8 text-primary" />
+            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-3 group-hover:scale-110 transition-transform duration-300">
+              <Factory className="h-8 w-8 text-primary" />
+            </div>
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-blue-600/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Blocos em Produção</p>
-              <p className="text-3xl font-bold text-card-foreground">{blocksInProduction}</p>
-              <p className="text-xs text-muted-foreground">blocos de espuma</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Blocos em Produção</p>
+              <p className="text-4xl font-extrabold text-card-foreground mt-2">{blocksInProduction}</p>
+              <p className="text-xs text-muted-foreground mt-1">blocos de espuma</p>
             </div>
-            <Package className="h-8 w-8 text-blue-600" />
+            <div className="rounded-xl bg-gradient-to-br from-blue-600/10 to-blue-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
+              <Package className="h-8 w-8 text-blue-600" />
+            </div>
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Máquinas Ativas</p>
-              <p className="text-3xl font-bold text-card-foreground">{activeMachines}</p>
-              <p className="text-xs text-muted-foreground">de {totalMachines} máquinas</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Máquinas Ativas</p>
+              <p className="text-4xl font-extrabold text-card-foreground mt-2">{activeMachines}</p>
+              <p className="text-xs text-muted-foreground mt-1">de {totalMachines} máquinas</p>
             </div>
-            <Activity className="h-8 w-8 text-green-600" />
+            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-green-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
+              <Activity className="h-8 w-8 text-green-600" />
+            </div>
           </div>
         </div>
 
-        <div className="rounded-lg border bg-card p-6">
-          <div className="flex items-center justify-between">
+        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Concluídas Hoje</p>
-              <p className="text-3xl font-bold text-card-foreground">{completedToday}</p>
-              <p className="text-xs text-muted-foreground">ordens finalizadas</p>
+              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">Concluídas Hoje</p>
+              <p className="text-4xl font-extrabold text-card-foreground mt-2">{completedToday}</p>
+              <p className="text-xs text-muted-foreground mt-1">ordens finalizadas</p>
             </div>
-            <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-emerald-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
           </div>
         </div>
       </div>
 
       {/* Status das Máquinas */}
-      <div className="rounded-lg border bg-card p-6">
-        <h3 className="text-lg font-semibold mb-4">Status das Máquinas</h3>
+      <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card/95 to-card/90 p-6 shadow-lg">
+        <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">Status das Máquinas</h3>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {machines.map(machine => (
-            <div key={machine.id} className="border rounded-lg p-4">
+            <div key={machine.id} className="group border border-border/40 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-card/50 to-transparent">
               <div className="flex items-center justify-between mb-2">
                 <h4 className="font-medium">{machine.name}</h4>
                 <div className={`w-3 h-3 rounded-full ${
@@ -197,9 +211,10 @@ export default function Dashboard() {
 
       {/* Quick Actions */}
       <div className="grid gap-6 md:grid-cols-4">
-        <a href="/production" className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="rounded-lg bg-primary/10 p-3">
+        <a href="/production" className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card to-card/95 p-6 hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 hover:border-primary/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <div className="flex items-center gap-3 mb-4 relative z-10">
+            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
               <Factory className="h-6 w-6 text-primary" />
             </div>
             <div>
