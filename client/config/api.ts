@@ -27,6 +27,15 @@ const getApiUrl = (): string => {
 
 export const API_URL = getApiUrl();
 
+// Log configuration on startup (only in development)
+if (import.meta.env.DEV) {
+  console.log('🔧 API Configuration:', {
+    API_URL: API_URL || '(using relative URLs)',
+    isCapacitor: !!(window as any).Capacitor,
+    envApiUrl: import.meta.env.VITE_API_URL || '(not set)'
+  });
+}
+
 /**
  * Create full API endpoint URL
  */
