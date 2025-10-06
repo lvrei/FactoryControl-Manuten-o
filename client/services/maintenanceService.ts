@@ -44,7 +44,7 @@ class MaintenanceService {
     >,
   ): Promise<MaintenanceRequest> {
     const priority = this.calculatePriority(requestData.urgencyLevel);
-    const resp = await fetch("/api/maintenance/requests", {
+    const resp = await apiFetch("api/maintenance/requests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -68,7 +68,7 @@ class MaintenanceService {
         requestData.urgencyLevel === "high",
     };
     try {
-      await fetch("/api/maintenance/alerts", {
+      await apiFetch("api/maintenance/alerts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -84,7 +84,7 @@ class MaintenanceService {
     } catch {}
     if (requestData.urgencyLevel === "critical") {
       try {
-        await fetch("/api/maintenance/downtime", {
+        await apiFetch("api/maintenance/downtime", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -107,7 +107,7 @@ class MaintenanceService {
   }
 
   async getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
-    const r = await fetch("/api/maintenance/requests");
+    const r = await apiFetch("api/maintenance/requests");
     if (!r.ok) throw new Error("Falha ao listar solicitações de manutenção");
     return r.json();
   }
