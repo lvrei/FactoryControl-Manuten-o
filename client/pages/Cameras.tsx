@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { camerasService, CameraRecord } from "@/services/camerasService";
 import { productionService } from "@/services/productionService";
 import { visionService } from "@/services/visionService";
-import { Plus, X, Trash2, Edit, Video, Link as LinkIcon } from "lucide-react";
+import { Plus, X, Trash2, Edit, Video, Link as LinkIcon, Camera } from "lucide-react";
+import { ROIEditor, ROI } from "@/components/cameras/ROIEditor";
 
 interface MachineOption {
   id: string;
@@ -30,14 +31,14 @@ export default function CamerasPage() {
     protocol: "rtsp" as Protocol,
     machineId: "" as string | "",
     enabled: true,
-    rois: [] as any[],
+    rois: [] as ROI[],
     thresholds: {} as Record<string, any>,
     schedule: {} as Record<string, any>,
   });
-  const [roisText, setRoisText] = useState("[]");
   const [thresholdsText, setThresholdsText] = useState("{}");
   const [scheduleText, setScheduleText] = useState("{}");
-  const [jsonErrors, setJsonErrors] = useState<{ rois?: string; thresholds?: string; schedule?: string }>({});
+  const [jsonErrors, setJsonErrors] = useState<{ thresholds?: string; schedule?: string }>({});
+  const [snapshotUrl, setSnapshotUrl] = useState<string | undefined>();
 
   useEffect(() => {
     load();
@@ -85,10 +86,10 @@ export default function CamerasPage() {
       schedule: {},
     });
     setEditing(null);
-    setRoisText("[]");
     setThresholdsText("{}");
     setScheduleText("{}");
     setJsonErrors({});
+    setSnapshotUrl(undefined);
   };
 
   const filtered = useMemo(() => {
@@ -113,17 +114,8 @@ export default function CamerasPage() {
     }
     try {
       // Parse JSON fields from textareas
-      let roisParsed: any[] = [];
       let thresholdsParsed: Record<string, any> = {};
       let scheduleParsed: Record<string, any> = {};
-      try {
-        roisParsed = JSON.parse(roisText || "[]");
-        if (!Array.isArray(roisParsed)) throw new Error("ROI deve ser array");
-      } catch {
-        setJsonErrors((p) => ({ ...p, rois: "ROI inválido (JSON)" }));
-        alert("ROI inválido (JSON)");
-        return;
-      }
       try {
         const t = JSON.parse(thresholdsText || "{}");
         thresholdsParsed = t && typeof t === "object" ? t : {};
@@ -148,7 +140,7 @@ export default function CamerasPage() {
           protocol: form.protocol,
           machineId: form.machineId || null,
           enabled: form.enabled,
-          rois: roisParsed,
+          rois: form.rois,
           thresholds: thresholdsParsed,
           schedule: scheduleParsed,
         });
@@ -160,7 +152,7 @@ export default function CamerasPage() {
           protocol: form.protocol,
           machineId: form.machineId || null,
           enabled: form.enabled,
-          rois: roisParsed,
+          rois: form.rois,
           thresholds: thresholdsParsed,
           schedule: scheduleParsed,
         });
@@ -184,14 +176,19 @@ export default function CamerasPage() {
       protocol: (c.protocol as Protocol) || "rtsp",
       machineId: c.machineId || "",
       enabled: c.enabled !== false,
-      rois: c.rois || [],
+      rois: (c.rois || []) as ROI[],
       thresholds: c.thresholds || {},
       schedule: c.schedule || {},
     });
-    setRoisText(JSON.stringify(c.rois || [], null, 2));
     setThresholdsText(JSON.stringify(c.thresholds || {}, null, 2));
     setScheduleText(JSON.stringify(c.schedule || {}, null, 2));
     setJsonErrors({});
+
+    // Load snapshot for ROI editor
+    if (c.id) {
+      setSnapshotUrl(camerasService.getSnapshotUrl(c.id));
+    }
+
     setShowForm(true);
   };
 
@@ -223,7 +220,7 @@ export default function CamerasPage() {
             resetForm();
             setShowForm(true);
           }}
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 flex items-center gap-2"
+          className="px-4 py-2.5 bg-gradient-to-r from-primary via-blue-600 to-primary text-primary-foreground rounded-xl shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:scale-[1.02] transition-all font-semibold flex items-center gap-2"
         >
           <Plus className="h-4 w-4" /> Nova Câmara
         </button>
@@ -234,7 +231,7 @@ export default function CamerasPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Pesquisar por nome, URL ou equipamento"
-          className="flex-1 px-3 py-2 border rounded-lg bg-background"
+          className="flex-1 px-4 py-2.5 border-2 border-input rounded-xl bg-background/50 backdrop-blur-sm focus:border-primary focus:ring-2 focus:ring-primary/50 transition-all font-medium shadow-sm"
         />
       </div>
 
@@ -243,7 +240,7 @@ export default function CamerasPage() {
           const machineName =
             machines.find((m) => m.id === (c.machineId || ""))?.name || "—";
           return (
-            <div key={c.id} className="border rounded-lg p-4 bg-card">
+            <div key={c.id} className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300">
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <div className="flex items-center gap-2">
