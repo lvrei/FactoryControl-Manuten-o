@@ -1,4 +1,5 @@
 import { Machine } from "@/types/production";
+import { apiFetch } from "@/config/api";
 
 type Sensor = {
   id: string;
