@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────┐
-│  📱 App Android │  
+│  📱 App Android │
 │     (APK)       │  ← Instalada no telemóvel
 └────────┬────────┘
          │ HTTP Request
@@ -29,6 +29,7 @@
 ### **1️⃣ Servidor Backend (já têm configurado)**
 
 Ficheiro: `.env` (na raiz do projeto)
+
 ```env
 PORT=3001
 DATABASE_URL=postgresql://neondb_owner:npg_Qmyv86drNVFa@ep-crimson-water-ae2o1se4-pooler.c-2.us-east-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require
@@ -62,6 +63,7 @@ ifconfig
 ### **4️⃣ Configurar App para Conectar ao Servidor**
 
 Ficheiro: `.env.local` (na raiz do projeto)
+
 ```env
 VITE_API_URL=http://192.168.1.100:3001
 ```
@@ -86,24 +88,28 @@ npx cap open android
 ## 🔐 Segurança - Por que NÃO Direto?
 
 ### ��� **ERRADO** (Inseguro):
+
 ```
 App Android → Neon Database
               (usando DATABASE_URL direto)
 ```
 
 **Problemas:**
+
 - 🚨 Credenciais da DB expostas no APK
 - 🚨 Qualquer pessoa pode extrair e usar
 - 🚨 Sem validação, sem autenticação
 - 🚨 Neon não aceita conexões diretas de mobile
 
 ### ✅ **CORRETO** (Seguro):
+
 ```
 App Android → Servidor Backend → Neon Database
               (com autenticação)
 ```
 
 **Vantagens:**
+
 - ✅ Credenciais protegidas no servidor
 - ✅ Autenticação JWT na app
 - ✅ Validação de dados
@@ -117,6 +123,7 @@ App Android → Servidor Backend → Neon Database
 ### No Servidor (PC onde corre o backend):
 
 1. **`.env`** - Configuração do servidor
+
    ```env
    PORT=3001
    DATABASE_URL=postgresql://...neon.tech/neondb
@@ -131,6 +138,7 @@ App Android → Servidor Backend → Neon Database
 ### Para Build da App:
 
 1. **`.env.local`** - URL do servidor
+
    ```env
    VITE_API_URL=http://192.168.1.100:3001
    ```
@@ -146,6 +154,7 @@ App Android → Servidor Backend → Neon Database
 ## 🧪 Testar Ligação
 
 ### 1. Servidor está ativo?
+
 ```bash
 curl http://localhost:3001/api/machines
 # Deve retornar JSON com máquinas
@@ -154,6 +163,7 @@ curl http://localhost:3001/api/machines
 ### 2. Acessível do telemóvel?
 
 No browser do telemóvel:
+
 ```
 http://192.168.1.100:3001/api/machines
 ```
@@ -164,6 +174,7 @@ http://192.168.1.100:3001/api/machines
 ### 3. App consegue conectar?
 
 Instalar APK e verificar:
+
 - Dashboard mostra dados → ✅ Funcionou
 - "Sem ligação" → ❌ Ver CONFIGURAR-API-ANDROID.md
 
@@ -188,11 +199,13 @@ Antes de gerar APK:
 Se colocar o backend num servidor online (Heroku, DigitalOcean, AWS, etc.):
 
 **`.env.local`:**
+
 ```env
 VITE_API_URL=https://seu-servidor.com
 ```
 
 Neste caso:
+
 - ✅ Não precisa estar na mesma WiFi
 - ✅ App funciona com internet (4G/5G)
 - ✅ Mais seguro e profissional
@@ -201,13 +214,14 @@ Neste caso:
 
 ## 📚 Resumo
 
-| Ficheiro | Onde Fica | Contém | Para Quê |
-|----------|-----------|--------|----------|
-| `.env` | Servidor | `DATABASE_URL`, `JWT_SECRET` | Servidor aceder ao Neon |
-| `.env.local` | Build App | `VITE_API_URL` | App saber onde está servidor |
-| APK | Telemóvel | Código da app | Interface do utilizador |
+| Ficheiro     | Onde Fica | Contém                       | Para Quê                     |
+| ------------ | --------- | ---------------------------- | ---------------------------- |
+| `.env`       | Servidor  | `DATABASE_URL`, `JWT_SECRET` | Servidor aceder ao Neon      |
+| `.env.local` | Build App | `VITE_API_URL`               | App saber onde está servidor |
+| APK          | Telemóvel | Código da app                | Interface do utilizador      |
 
 **Fluxo:**
+
 1. Utilizador abre app no telemóvel
 2. App faz pedido HTTP ao servidor (usando `VITE_API_URL`)
 3. Servidor valida, acede ao Neon (usando `DATABASE_URL`)
