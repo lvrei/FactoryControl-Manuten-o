@@ -3,6 +3,7 @@ export type VisionStatus = {
   scope: "machine" | "camera";
   id: string;
   status: "active" | "inactive";
+  confidence?: number;
   updatedAt?: string | null;
 };
 export type UptimeResult = {
