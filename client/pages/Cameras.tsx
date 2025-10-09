@@ -13,6 +13,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { ROIEditor } from "@/components/cameras/ROIEditor";
+import { LiveCameraView } from "@/components/cameras/LiveCameraView";
 
 interface MachineOption {
   id: string;
@@ -495,6 +496,17 @@ export default function CamerasPage() {
                     </select>
                   </div>
                 </div>
+
+                {/* Live Camera View - Real-time with ROIs and Detections */}
+                {form.url && editing?.id && (
+                  <div className="border-2 border-border/40 rounded-2xl p-6 bg-gradient-to-br from-muted/30 to-transparent">
+                    <LiveCameraView
+                      cameraId={editing.id}
+                      rois={form.rois}
+                      showDetections={true}
+                    />
+                  </div>
+                )}
 
                 {/* ROI Visual Editor */}
                 {form.url && (
