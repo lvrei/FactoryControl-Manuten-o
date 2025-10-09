@@ -129,113 +129,113 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
       {/* Header */}
       <div className="mb-2">
-        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-foreground via-primary to-blue-600 bg-clip-text text-transparent">
-          FactoryControl - Corte de Espuma
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-foreground via-primary to-blue-600 bg-clip-text text-transparent">
+          FactoryControl
         </h1>
-        <p className="text-muted-foreground/90 mt-1 font-medium">
-          Dashboard em tempo real da produção e operações
+        <p className="text-xs md:text-sm text-muted-foreground/90 mt-1 font-medium">
+          Dashboard em tempo real
         </p>
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-primary/30 relative overflow-hidden">
+      <div className="grid gap-3 md:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 md:p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-primary/30 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+              <p className="text-xs md:text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Ordens Ativas
               </p>
-              <p className="text-4xl font-extrabold text-card-foreground mt-2">
+              <p className="text-3xl md:text-4xl font-extrabold text-card-foreground mt-1 md:mt-2">
                 {activeOrders}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
                 de {totalOrders} total
               </p>
             </div>
-            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-3 group-hover:scale-110 transition-transform duration-300">
-              <Factory className="h-8 w-8 text-primary" />
+            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300">
+              <Factory className="h-6 w-6 md:h-8 md:w-8 text-primary" />
             </div>
           </div>
         </div>
 
-        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-blue-600/30 relative overflow-hidden">
+        <div className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 md:p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-blue-600/30 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+              <p className="text-xs md:text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Blocos em Produção
               </p>
-              <p className="text-4xl font-extrabold text-card-foreground mt-2">
+              <p className="text-3xl md:text-4xl font-extrabold text-card-foreground mt-1 md:mt-2">
                 {blocksInProduction}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
                 blocos de espuma
               </p>
             </div>
-            <div className="rounded-xl bg-gradient-to-br from-blue-600/10 to-blue-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
-              <Package className="h-8 w-8 text-blue-600" />
+            <div className="rounded-xl bg-gradient-to-br from-blue-600/10 to-blue-500/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300">
+              <Package className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
+        <div className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 md:p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+              <p className="text-xs md:text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Máquinas Ativas
               </p>
-              <p className="text-4xl font-extrabold text-card-foreground mt-2">
+              <p className="text-3xl md:text-4xl font-extrabold text-card-foreground mt-1 md:mt-2">
                 {activeMachines}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
                 de {totalMachines} máquinas
               </p>
             </div>
-            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-green-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
-              <Activity className="h-8 w-8 text-green-600" />
+            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-green-500/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300">
+              <Activity className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
             </div>
           </div>
         </div>
 
-        <div className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
+        <div className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 md:p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div className="flex items-center justify-between relative z-10">
             <div>
-              <p className="text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
+              <p className="text-xs md:text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
                 Concluídas Hoje
               </p>
-              <p className="text-4xl font-extrabold text-card-foreground mt-2">
+              <p className="text-3xl md:text-4xl font-extrabold text-card-foreground mt-1 md:mt-2">
                 {completedToday}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
                 ordens finalizadas
               </p>
             </div>
-            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-emerald-500/10 p-3 group-hover:scale-110 transition-transform duration-300">
-              <CheckCircle className="h-8 w-8 text-green-600" />
+            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-emerald-500/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300">
+              <CheckCircle className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Status das Máquinas */}
-      <div className="rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card/95 to-card/90 p-6 shadow-lg">
-        <h3 className="text-xl font-bold mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+      <div className="rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card/95 to-card/90 p-4 md:p-6 shadow-lg">
+        <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
           Status das Máquinas
         </h3>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {machines.map((machine) => (
             <div
               key={machine.id}
               className="group border border-border/40 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-card/50 to-transparent"
             >
               <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium">{machine.name}</h4>
+                <h4 className="font-medium text-sm md:text-base">{machine.name}</h4>
                 <div
                   className={`w-3 h-3 rounded-full ${
                     machine.status === "busy"
@@ -248,7 +248,7 @@ export default function Dashboard() {
                   }`}
                 />
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs md:text-sm text-muted-foreground">
                 <div>Tipo: {machine.type}</div>
                 <div>
                   Status:{" "}
@@ -271,12 +271,12 @@ export default function Dashboard() {
 
       {/* Ordens Urgentes */}
       {urgentOrders > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-6">
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 md:p-6">
           <div className="flex items-center gap-3 mb-4">
-            <AlertTriangle className="h-6 w-6 text-red-600" />
+            <AlertTriangle className="h-5 w-5 md:h-6 md:w-6 text-red-600" />
             <div>
-              <h3 className="font-semibold text-red-900">Ordens Urgentes</h3>
-              <p className="text-sm text-red-700">
+              <h3 className="text-sm md:text-base font-semibold text-red-900">Ordens Urgentes</h3>
+              <p className="text-xs md:text-sm text-red-700">
                 {urgentOrders}{" "}
                 {urgentOrders === 1 ? "ordem requer" : "ordens requerem"}{" "}
                 atenção imediata
@@ -285,7 +285,7 @@ export default function Dashboard() {
           </div>
           <a
             href="/production"
-            className="inline-flex items-center text-sm font-medium text-red-600 hover:text-red-700"
+            className="inline-flex items-center text-xs md:text-sm font-medium text-red-600 hover:text-red-700"
           >
             Ver ordens urgentes →
           </a>
@@ -293,66 +293,66 @@ export default function Dashboard() {
       )}
 
       {/* Quick Actions */}
-      <div className="grid gap-6 md:grid-cols-4">
+      <div className="grid gap-3 md:gap-4 lg:gap-6 grid-cols-2 md:grid-cols-4">
         <a
           href="/production"
-          className="group rounded-2xl border border-border/40 bg-gradient-to-br from-card to-card/95 p-6 hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 hover:border-primary/30 relative overflow-hidden"
+          className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card to-card/95 p-4 md:p-6 hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 hover:border-primary/30 relative overflow-hidden"
         >
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="flex items-center gap-3 mb-4 relative z-10">
-            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-              <Factory className="h-6 w-6 text-primary" />
+          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 relative z-10">
+            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+              <Factory className="h-5 w-5 md:h-6 md:w-6 text-primary" />
             </div>
             <div>
-              <h3 className="font-semibold text-card-foreground">Produção</h3>
-              <p className="text-sm text-muted-foreground">Gestão de OPs</p>
+              <h3 className="text-sm md:text-base font-semibold text-card-foreground">Produção</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">Gestão de OPs</p>
             </div>
           </div>
         </a>
 
         <a
           href="/operator"
-          className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors"
+          className="rounded-xl border bg-card p-4 md:p-6 hover:bg-muted/50 transition-colors"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="rounded-lg bg-blue-600/10 p-3">
-              <Users className="h-6 w-6 text-blue-600" />
+          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <div className="rounded-lg bg-blue-600/10 p-2 md:p-3">
+              <Users className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-card-foreground">Operadores</h3>
-              <p className="text-sm text-muted-foreground">Portal da fábrica</p>
+              <h3 className="text-sm md:text-base font-semibold text-card-foreground">Operadores</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">Portal da fábrica</p>
             </div>
           </div>
         </a>
 
         <a
           href="/quality"
-          className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors"
+          className="rounded-xl border bg-card p-4 md:p-6 hover:bg-muted/50 transition-colors"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="rounded-lg bg-green-600/10 p-3">
-              <CheckCircle className="h-6 w-6 text-green-600" />
+          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <div className="rounded-lg bg-green-600/10 p-2 md:p-3">
+              <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-card-foreground">Qualidade</h3>
-              <p className="text-sm text-muted-foreground">Inspeções</p>
+              <h3 className="text-sm md:text-base font-semibold text-card-foreground">Qualidade</h3>
+              <p className="text-xs md:text-sm text-muted-foreground">Inspeções</p>
             </div>
           </div>
         </a>
 
         <a
           href="/equipment"
-          className="rounded-lg border bg-card p-6 hover:bg-muted/50 transition-colors"
+          className="rounded-xl border bg-card p-4 md:p-6 hover:bg-muted/50 transition-colors"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className="rounded-lg bg-orange-600/10 p-3">
-              <Settings className="h-6 w-6 text-orange-600" />
+          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
+            <div className="rounded-lg bg-orange-600/10 p-2 md:p-3">
+              <Settings className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-card-foreground">
+              <h3 className="text-sm md:text-base font-semibold text-card-foreground">
                 Equipamentos
               </h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs md:text-sm text-muted-foreground">
                 Gestão de máquinas
               </p>
             </div>
@@ -361,30 +361,30 @@ export default function Dashboard() {
       </div>
 
       {/* Resumo de Volume */}
-      <div className="rounded-lg border bg-card p-6">
-        <h3 className="text-lg font-semibold mb-4">Resumo de Produção</h3>
-        <div className="grid gap-4 md:grid-cols-3">
+      <div className="rounded-xl border bg-card p-4 md:p-6">
+        <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Resumo de Produção</h3>
+        <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3">
           <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
+            <div className="text-xl md:text-2xl font-bold text-primary">
               {totalVolume.toFixed(2)} m³
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs md:text-sm text-muted-foreground">
               Volume Total em Produção
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-blue-600">
+            <div className="text-xl md:text-2xl font-bold text-blue-600">
               {blocksInProduction}
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs md:text-sm text-muted-foreground">
               Blocos sendo Processados
             </div>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">
+            <div className="text-xl md:text-2xl font-bold text-green-600">
               {Math.round((activeMachines / totalMachines) * 100)}%
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs md:text-sm text-muted-foreground">
               Taxa de Utilização
             </div>
           </div>
@@ -392,16 +392,16 @@ export default function Dashboard() {
       </div>
 
       {/* Machine Downtime and Maintenance Status */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-3 md:gap-4 lg:gap-6 grid-cols-1 md:grid-cols-2">
         {/* Machines in Maintenance */}
-        <div className="rounded-lg border bg-card p-6">
+        <div className="rounded-xl border bg-card p-4 md:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <Wrench className="h-5 w-5 text-orange-500" />
+            <h3 className="text-base md:text-lg font-semibold flex items-center gap-2">
+              <Wrench className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
               Máquinas em Manutenção
             </h3>
             <span
-              className={`text-sm px-2 py-1 rounded-full ${
+              className={`text-xs md:text-sm px-2 py-1 rounded-full ${
                 machinesInMaintenance > 0
                   ? "bg-orange-100 text-orange-800"
                   : "bg-green-100 text-green-800"
@@ -413,8 +413,8 @@ export default function Dashboard() {
 
           {activeMachineDowntime.length === 0 ? (
             <div className="text-center py-8">
-              <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
+              <CheckCircle className="h-10 w-10 md:h-12 md:w-12 text-green-500 mx-auto mb-2" />
+              <p className="text-xs md:text-sm text-muted-foreground">
                 Todas as máquinas operacionais
               </p>
             </div>
@@ -478,14 +478,14 @@ export default function Dashboard() {
         </div>
 
         {/* Maintenance Requests */}
-        <div className="rounded-lg border bg-card p-6">
+        <div className="rounded-xl border bg-card p-4 md:p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-yellow-500" />
-              Solicitações de Manutenç��o
+            <h3 className="text-base md:text-lg font-semibold flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
+              Solicitações de Manutenção
             </h3>
             <span
-              className={`text-sm px-2 py-1 rounded-full ${
+              className={`text-xs md:text-sm px-2 py-1 rounded-full ${
                 pendingMaintenanceRequests > 0
                   ? "bg-yellow-100 text-yellow-800"
                   : "bg-green-100 text-green-800"
@@ -571,8 +571,8 @@ export default function Dashboard() {
           {maintenanceRequests.filter((r) => r.status === "pending").length ===
             0 && (
             <div className="text-center py-4">
-              <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-              <p className="text-sm text-muted-foreground">
+              <CheckCircle className="h-6 w-6 md:h-8 md:w-8 text-green-500 mx-auto mb-2" />
+              <p className="text-xs md:text-sm text-muted-foreground">
                 Nenhuma solicitação pendente
               </p>
             </div>
