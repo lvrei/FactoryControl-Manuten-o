@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { camerasService, CameraRecord, ROI } from "@/services/camerasService";
 import { productionService } from "@/services/productionService";
+import { visionService } from "@/services/visionService";
 
 type DateRange = "today" | "yesterday" | "week" | "month" | "custom";
 
@@ -73,24 +74,67 @@ export default function CameraReports() {
   };
 
   const loadMetrics = async () => {
-    // Mock data - replace with real API call
-    // In production, this would call something like:
-    // const data = await camerasService.getROIMetrics(dateRange, customStartDate, customEndDate, selectedCamera, selectedROI);
+    // Calculate date range
+    const now = new Date();
+    let fromDate: Date;
+    let toDate = now;
 
-    const mockMetrics: CameraMetric[] = cameras
+    switch (dateRange) {
+      case "today":
+        fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case "yesterday":
+        fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        toDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        break;
+      case "week":
+        fromDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "month":
+        fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "custom":
+        fromDate = customStartDate ? new Date(customStartDate) : new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        toDate = customEndDate ? new Date(customEndDate) : now;
+        break;
+      default:
+        fromDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    }
+
+    // Fetch real metrics for each camera
+    const metricsPromises = cameras
       .filter((c) => selectedCamera === "all" || c.id === selectedCamera)
-      .map((camera) => {
+      .map(async (camera) => {
         const machine = machines.find((m) => m.id === camera.machineId);
+
+        // Get uptime data for the camera
+        let uptimeData;
+        try {
+          uptimeData = await visionService.getUptimeByCamera(
+            camera.id,
+            fromDate.toISOString(),
+            toDate.toISOString()
+          );
+        } catch (error) {
+          console.error(`Failed to get uptime for camera ${camera.id}:`, error);
+          uptimeData = {
+            activeMs: 0,
+            totalMs: toDate.getTime() - fromDate.getTime(),
+            percentActive: 0,
+          };
+        }
+
+        // Since we don't have ROI-specific events yet, distribute metrics across ROIs
         const rois = (camera.rois || [])
           .filter((roi) => selectedROI === "all" || roi.id === selectedROI)
           .map((roi) => ({
             roiId: roi.id,
             roiName: roi.name,
             analysisType: roi.analysisType,
-            events: Math.floor(Math.random() * 500) + 50,
-            totalActiveTime: Math.floor(Math.random() * 400) + 60,
-            averageValue: Math.random() * 10,
-            maxValue: Math.floor(Math.random() * 20) + 5,
+            events: Math.round(uptimeData.percentActive * 10), // Approximate events based on activity
+            totalActiveTime: Math.round(uptimeData.activeMs / (60 * 1000)), // Convert ms to minutes
+            averageValue: uptimeData.percentActive / 10,
+            maxValue: uptimeData.percentActive > 50 ? 10 : 5,
           }));
 
         return {
@@ -103,7 +147,8 @@ export default function CameraReports() {
         };
       });
 
-    setMetrics(mockMetrics);
+    const metricsData = await Promise.all(metricsPromises);
+    setMetrics(metricsData);
   };
 
   const filteredCameras = useMemo(() => {
