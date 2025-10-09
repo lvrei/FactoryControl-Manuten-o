@@ -79,7 +79,7 @@ export function LiveCameraView({
       try {
         // Get latest status for this camera
         const status = await visionService.getStatusByCamera(cameraId);
-        
+
         const detection: Detection = {
           status: status.status,
           confidence: status.confidence || 0,
@@ -90,7 +90,7 @@ export function LiveCameraView({
           const updated = [detection, ...prev.slice(0, 4)]; // Keep last 5
           return updated;
         });
-        
+
         setLastEventTime(new Date());
       } catch (error) {
         // Silently handle - camera might not have events yet
@@ -135,7 +135,8 @@ export function LiveCameraView({
         const height = (roi.coordinates.height / 100) * canvas.height;
 
         // Determine if this ROI has active detection
-        const hasActiveDetection = detections.length > 0 && detections[0].status === "active";
+        const hasActiveDetection =
+          detections.length > 0 && detections[0].status === "active";
 
         // Fill with semi-transparent color (brighter if active)
         ctx.fillStyle = hasActiveDetection ? color + "50" : color + "30";
@@ -398,15 +399,9 @@ export function LiveCameraView({
             As zonas de interesse (ROIs) são desenhadas sobre o stream em tempo
             real
           </li>
-          <li>
-            Retângulos verdes indicam detecções ativas na zona
-          </li>
-          <li>
-            A percentagem mostra a confiança da detecção
-          </li>
-          <li>
-            Eventos recentes aparecem abaixo com timestamp
-          </li>
+          <li>Retângulos verdes indicam detecções ativas na zona</li>
+          <li>A percentagem mostra a confiança da detecção</li>
+          <li>Eventos recentes aparecem abaixo com timestamp</li>
           <li>
             Use os botões de teste acima para simular detecções e verificar se
             tudo funciona corretamente

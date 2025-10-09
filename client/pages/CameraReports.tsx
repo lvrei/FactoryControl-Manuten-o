@@ -84,7 +84,11 @@ export default function CameraReports() {
         fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         break;
       case "yesterday":
-        fromDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+        fromDate = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate() - 1,
+        );
         toDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         break;
       case "week":
@@ -94,7 +98,9 @@ export default function CameraReports() {
         fromDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         break;
       case "custom":
-        fromDate = customStartDate ? new Date(customStartDate) : new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        fromDate = customStartDate
+          ? new Date(customStartDate)
+          : new Date(now.getTime() - 24 * 60 * 60 * 1000);
         toDate = customEndDate ? new Date(customEndDate) : now;
         break;
       default:
@@ -113,7 +119,7 @@ export default function CameraReports() {
           uptimeData = await visionService.getUptimeByCamera(
             camera.id,
             fromDate.toISOString(),
-            toDate.toISOString()
+            toDate.toISOString(),
           );
         } catch (error) {
           console.error(`Failed to get uptime for camera ${camera.id}:`, error);
