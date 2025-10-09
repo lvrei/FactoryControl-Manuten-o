@@ -26,7 +26,10 @@ export function createServer() {
               ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"] // Permitir scripts inline em dev
               : ["'self'"],
           imgSrc: ["'self'", "data:", "https:"],
-          connectSrc: ["'self'", "ws:", "wss:"], // Permitir WebSocket para hot reload
+          connectSrc:
+            process.env.NODE_ENV === "development"
+              ? ["'self'", "ws:", "wss:", "http:", "https:"] // Permitir conexões HTTP/HTTPS em dev
+              : ["'self'", "ws:", "wss:"],
           fontSrc: ["'self'"],
           objectSrc: ["'none'"],
           mediaSrc: ["'self'"],
