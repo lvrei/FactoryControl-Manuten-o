@@ -69,7 +69,7 @@ visionRouter.get("/vision/status", async (req, res) => {
     }
     if (machineId) {
       const { rows } = await query<any>(
-        `SELECT status, created_at FROM vision_camera_events WHERE machine_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        `SELECT status, confidence, created_at FROM vision_camera_events WHERE machine_id = $1 ORDER BY created_at DESC LIMIT 1`,
         [machineId],
       );
       const last = rows[0];
@@ -77,12 +77,13 @@ visionRouter.get("/vision/status", async (req, res) => {
         scope: "machine",
         id: machineId,
         status: last?.status || "inactive",
+        confidence: last?.confidence || 0,
         updatedAt: last?.created_at || null,
       });
     }
     if (cameraId) {
       const { rows } = await query<any>(
-        `SELECT status, created_at FROM vision_camera_events WHERE camera_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        `SELECT status, confidence, created_at FROM vision_camera_events WHERE camera_id = $1 ORDER BY created_at DESC LIMIT 1`,
         [cameraId],
       );
       const last = rows[0];
@@ -90,6 +91,7 @@ visionRouter.get("/vision/status", async (req, res) => {
         scope: "camera",
         id: cameraId,
         status: last?.status || "inactive",
+        confidence: last?.confidence || 0,
         updatedAt: last?.created_at || null,
       });
     }
