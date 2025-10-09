@@ -326,6 +326,68 @@ export function LiveCameraView({
         </div>
       )}
 
+      {/* Test Detection Buttons */}
+      <div className="flex gap-2 items-center justify-end">
+        <button
+          onClick={async () => {
+            try {
+              // Simulate active detection
+              await visionService.postMockEvent({
+                machineId: "test",
+                cameraId: cameraId,
+                status: "active",
+                confidence: 0.95,
+              });
+              // Refresh detections
+              const status = await visionService.getStatusByCamera(cameraId);
+              setDetections([
+                {
+                  status: status.status,
+                  confidence: status.confidence || 0,
+                  timestamp: new Date(),
+                },
+                ...detections.slice(0, 4),
+              ]);
+              setLastEventTime(new Date());
+            } catch (error) {
+              console.error("Failed to simulate detection:", error);
+            }
+          }}
+          className="px-3 py-1.5 text-xs border-2 border-input rounded-lg hover:bg-gradient-to-r hover:from-green-500 hover:to-emerald-600 hover:text-white hover:border-green-600 transition-all font-semibold"
+        >
+          🧪 Simular Detecção ATIVA
+        </button>
+        <button
+          onClick={async () => {
+            try {
+              // Simulate inactive detection
+              await visionService.postMockEvent({
+                machineId: "test",
+                cameraId: cameraId,
+                status: "inactive",
+                confidence: 0.85,
+              });
+              // Refresh detections
+              const status = await visionService.getStatusByCamera(cameraId);
+              setDetections([
+                {
+                  status: status.status,
+                  confidence: status.confidence || 0,
+                  timestamp: new Date(),
+                },
+                ...detections.slice(0, 4),
+              ]);
+              setLastEventTime(new Date());
+            } catch (error) {
+              console.error("Failed to simulate detection:", error);
+            }
+          }}
+          className="px-3 py-1.5 text-xs border-2 border-input rounded-lg hover:bg-gradient-to-r hover:from-gray-500 hover:to-gray-600 hover:text-white hover:border-gray-600 transition-all font-semibold"
+        >
+          🧪 Simular Detecção INATIVA
+        </button>
+      </div>
+
       {/* Instructions */}
       <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
         <h4 className="font-semibold mb-2 text-blue-700 dark:text-blue-400">
@@ -344,6 +406,10 @@ export function LiveCameraView({
           </li>
           <li>
             Eventos recentes aparecem abaixo com timestamp
+          </li>
+          <li>
+            Use os botões de teste acima para simular detecções e verificar se
+            tudo funciona corretamente
           </li>
         </ul>
       </div>
