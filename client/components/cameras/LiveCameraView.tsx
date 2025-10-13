@@ -380,6 +380,34 @@ export function LiveCameraView({
         </div>
       )}
 
+      {/* Test Snapshot Button */}
+      <div className="flex gap-2 items-center justify-end">
+        <button
+          onClick={async () => {
+            const snapshotUrl = camerasService.getSnapshotUrl(cameraId);
+            console.log('🧪 Testing snapshot URL:', snapshotUrl);
+            try {
+              const response = await fetch(snapshotUrl);
+              console.log('📊 Response status:', response.status, response.statusText);
+              if (!response.ok) {
+                const text = await response.text();
+                console.error('❌ Error response:', text);
+                alert(`Erro ${response.status}: ${text}`);
+              } else {
+                console.log('✅ Snapshot OK!');
+                alert('Snapshot está a funcionar! A imagem deve aparecer.');
+              }
+            } catch (error) {
+              console.error('❌ Fetch error:', error);
+              alert(`Erro ao carregar: ${error}`);
+            }
+          }}
+          className="px-3 py-1.5 text-xs border-2 border-input rounded-lg hover:bg-gradient-to-r hover:from-blue-500 hover:to-cyan-600 hover:text-white hover:border-blue-600 transition-all font-semibold"
+        >
+          🧪 Testar Snapshot URL
+        </button>
+      </div>
+
       {/* Test Detection Buttons */}
       <div className="flex gap-2 items-center justify-end">
         <button
