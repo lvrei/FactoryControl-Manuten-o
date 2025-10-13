@@ -36,32 +36,43 @@ export function LiveCameraView({
   const animationFrameRef = useRef<number>();
   const [streamError, setStreamError] = useState(false);
   const [streamLoaded, setStreamLoaded] = useState(false);
+  const [useFallback, setUseFallback] = useState(false);
   const [detections, setDetections] = useState<Detection[]>([]);
   const [lastEventTime, setLastEventTime] = useState<Date | null>(null);
 
-  // Load MJPEG stream
+  // Load MJPEG stream with fallback to snapshot polling
   useEffect(() => {
     if (!cameraId || !videoRef.current) return;
 
     const img = videoRef.current;
-    const mjpegUrl = camerasService.getMjpegUrl(cameraId);
 
     // Reset states
     setStreamError(false);
     setStreamLoaded(false);
+    setUseFallback(false);
 
+    // Try MJPEG first
+    const mjpegUrl = camerasService.getMjpegUrl(cameraId);
     img.src = mjpegUrl;
 
     // For MJPEG streams, onload doesn't fire reliably because it's a continuous multipart stream
-    // Instead, we'll assume it loads after a brief delay and only show error on actual error
+    // We'll check if the image has dimensions after a delay
     const loadTimer = setTimeout(() => {
-      // If no error after 2 seconds, consider it loaded
-      setStreamLoaded(true);
-    }, 2000);
+      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+        // Image has loaded successfully
+        setStreamLoaded(true);
+      } else {
+        // MJPEG didn't work, fallback to snapshot polling
+        console.log('MJPEG stream failed, using snapshot fallback');
+        setUseFallback(true);
+        setStreamLoaded(true);
+      }
+    }, 3000);
 
     img.onerror = () => {
-      setStreamError(true);
-      setStreamLoaded(false);
+      console.log('MJPEG error, switching to snapshot fallback');
+      setUseFallback(true);
+      setStreamLoaded(true);
       clearTimeout(loadTimer);
     };
 
@@ -71,6 +82,22 @@ export function LiveCameraView({
       img.onerror = null;
     };
   }, [cameraId]);
+
+  // Fallback: Poll snapshots if MJPEG fails
+  useEffect(() => {
+    if (!useFallback || !cameraId || !videoRef.current) return;
+
+    const img = videoRef.current;
+    const updateSnapshot = () => {
+      const snapshotUrl = camerasService.getSnapshotUrl(cameraId) + `&t=${Date.now()}`;
+      img.src = snapshotUrl;
+    };
+
+    updateSnapshot();
+    const interval = setInterval(updateSnapshot, 1000); // Update every second
+
+    return () => clearInterval(interval);
+  }, [useFallback, cameraId]);
 
   // Poll for detection events
   useEffect(() => {
