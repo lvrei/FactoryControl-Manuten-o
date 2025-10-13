@@ -89,23 +89,37 @@ export function LiveCameraView({
 
     const img = videoRef.current;
     let loadCount = 0;
+    let currentBlobUrl: string | null = null;
 
-    const updateSnapshot = () => {
+    const updateSnapshot = async () => {
       const snapshotUrl = camerasService.getSnapshotUrl(cameraId);
-      console.log('[LiveCameraView] Loading snapshot:', snapshotUrl);
-      img.src = snapshotUrl;
-    };
 
-    img.onload = () => {
-      loadCount++;
-      if (loadCount === 1) {
-        console.log('[LiveCameraView] ✅ Snapshot loaded successfully!');
+      try {
+        // Use fetch to get the image (works with Vite proxy)
+        const response = await fetch(snapshotUrl);
+        if (!response.ok) {
+          console.error('[LiveCameraView] ❌ Snapshot HTTP error:', response.status);
+          return;
+        }
+
+        // Convert to blob and create object URL
+        const blob = await response.blob();
+
+        // Revoke previous blob URL to prevent memory leak
+        if (currentBlobUrl) {
+          URL.revokeObjectURL(currentBlobUrl);
+        }
+
+        currentBlobUrl = URL.createObjectURL(blob);
+        img.src = currentBlobUrl;
+
+        loadCount++;
+        if (loadCount === 1) {
+          console.log('[LiveCameraView] ✅ Snapshot loaded successfully!');
+        }
+      } catch (error) {
+        console.error('[LiveCameraView] ❌ Snapshot fetch error:', error);
       }
-    };
-
-    img.onerror = (e) => {
-      console.error('[LiveCameraView] ❌ Snapshot load error:', e);
-      console.error('[LiveCameraView] Image URL was:', img.src);
     };
 
     updateSnapshot();
@@ -113,8 +127,9 @@ export function LiveCameraView({
 
     return () => {
       clearInterval(interval);
-      img.onerror = null;
-      img.onload = null;
+      if (currentBlobUrl) {
+        URL.revokeObjectURL(currentBlobUrl);
+      }
     };
   }, [useFallback, cameraId]);
 
