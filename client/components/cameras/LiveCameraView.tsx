@@ -46,28 +46,29 @@ export function LiveCameraView({
     const img = videoRef.current;
     const mjpegUrl = camerasService.getMjpegUrl(cameraId);
 
+    // Reset states
+    setStreamError(false);
+    setStreamLoaded(false);
+
     img.src = mjpegUrl;
 
-    const loadTimeout = setTimeout(() => {
-      if (!streamLoaded) {
-        setStreamError(true);
-      }
-    }, 5000);
-
-    img.onload = () => {
+    // For MJPEG streams, onload doesn't fire reliably because it's a continuous multipart stream
+    // Instead, we'll assume it loads after a brief delay and only show error on actual error
+    const loadTimer = setTimeout(() => {
+      // If no error after 2 seconds, consider it loaded
       setStreamLoaded(true);
-      setStreamError(false);
-      clearTimeout(loadTimeout);
-    };
+    }, 2000);
 
     img.onerror = () => {
       setStreamError(true);
-      clearTimeout(loadTimeout);
+      setStreamLoaded(false);
+      clearTimeout(loadTimer);
     };
 
     return () => {
-      clearTimeout(loadTimeout);
+      clearTimeout(loadTimer);
       img.src = "";
+      img.onerror = null;
     };
   }, [cameraId]);
 
