@@ -88,18 +88,37 @@ export function LiveCameraView({
     if (!useFallback || !cameraId || !videoRef.current) return;
 
     const img = videoRef.current;
-    const updateSnapshot = () => {
+    let attemptCount = 0;
+
+    const updateSnapshot = async () => {
       const snapshotUrl = camerasService.getSnapshotUrl(cameraId);
-      console.log('Loading snapshot:', snapshotUrl);
-      img.src = snapshotUrl;
-    };
+      attemptCount++;
 
-    img.onerror = (e) => {
-      console.error('Snapshot load error:', e);
-    };
+      // Use fetch to get better error information
+      try {
+        const response = await fetch(snapshotUrl);
+        if (!response.ok) {
+          console.error(`Snapshot HTTP error: ${response.status} ${response.statusText}`, snapshotUrl);
+          const text = await response.text();
+          console.error('Response body:', text);
+          return;
+        }
 
-    img.onload = () => {
-      console.log('Snapshot loaded successfully');
+        // Convert to blob and create object URL
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        img.src = objectUrl;
+
+        // Clean up old object URL after image loads
+        img.onload = () => {
+          if (attemptCount === 1) {
+            console.log('Snapshot loaded successfully on first attempt');
+          }
+          URL.revokeObjectURL(objectUrl);
+        };
+      } catch (error) {
+        console.error('Snapshot fetch error:', error, snapshotUrl);
+      }
     };
 
     updateSnapshot();
