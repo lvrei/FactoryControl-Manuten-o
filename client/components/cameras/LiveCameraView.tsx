@@ -305,13 +305,20 @@ export function LiveCameraView({
           style={{ imageRendering: "crisp-edges" }}
         />
 
-        {/* ROI Count Badge */}
-        {rois.length > 0 && (
-          <div className="absolute top-3 left-3 px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-white text-sm font-semibold">
-            {rois.length} {rois.length === 1 ? "ROI" : "ROIs"} configurada
-            {rois.length > 1 ? "s" : ""}
-          </div>
-        )}
+        {/* Stream Type & ROI Count Badge */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {streamLoaded && (
+            <div className="px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-white text-xs font-semibold">
+              {useFallback ? "📸 Snapshot (1fps)" : "🎥 MJPEG Stream"}
+            </div>
+          )}
+          {rois.length > 0 && (
+            <div className="px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-white text-sm font-semibold">
+              {rois.length} {rois.length === 1 ? "ROI" : "ROIs"} configurada
+              {rois.length > 1 ? "s" : ""}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Detection Events Log */}
