@@ -121,7 +121,12 @@ cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
   try {
     const id = req.params.id;
     const cam = await getCameraById(id);
-    if (!cam) return res.status(404).end();
+    if (!cam) {
+      console.error(`[Snapshot] Camera not found: ${id}`);
+      return res.status(404).json({ error: "Câmara não encontrada" });
+    }
+
+    console.log(`[Snapshot] Camera ${id}: url=${cam.url}, protocol=${cam.protocol}, snapshotUrl=${cam.thresholds?.snapshotUrl}`);
 
     const httpSnapshotUrl =
       cam.thresholds?.snapshotUrl ||
@@ -178,18 +183,22 @@ cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
       ff.stderr.on("data", () => {});
       ff.on("close", (code) => {
         clearTimeout(killTimer);
-        if (code !== 0 && !res.headersSent)
+        if (code !== 0 && !res.headersSent) {
+          console.error(`[Snapshot] ffmpeg failed with code ${code} for camera ${id}`);
           res.status(500).json({ error: "ffmpeg falhou ao gerar snapshot" });
+        }
       });
-      ff.on("error", () => {
+      ff.on("error", (err) => {
         clearTimeout(killTimer);
+        console.error(`[Snapshot] ffmpeg error for camera ${id}:`, err);
         if (!res.headersSent)
           res.status(500).json({ error: "ffmpeg não encontrado" });
       });
       return;
     }
 
-    return res.status(400).json({ error: "Snapshot não configurado" });
+    console.error(`[Snapshot] Camera ${id}: Snapshot não configurado (URL: ${cam.url})`);
+    return res.status(400).json({ error: "Snapshot não configurado - URL da câmara deve ser HTTP ou RTSP" });
   } catch (e: any) {
     res.status(500).json({ error: e.message });
   }
