@@ -290,17 +290,7 @@ export function LiveCameraView({
         className="relative rounded-xl border-2 border-border/40 overflow-hidden bg-black"
         style={{ aspectRatio: "16/9" }}
       >
-        {streamError ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/90">
-            <div className="text-center text-white p-6">
-              <AlertCircle className="h-12 w-12 mx-auto mb-3 text-red-500" />
-              <h4 className="font-bold mb-2">Erro ao carregar stream</h4>
-              <p className="text-sm text-gray-400">
-                Verifique se a câmara está acessível e configurada corretamente
-              </p>
-            </div>
-          </div>
-        ) : !streamLoaded ? (
+        {!streamLoaded && !streamError ? (
           <div className="absolute inset-0 flex items-center justify-center bg-black/90">
             <div className="text-center text-white">
               <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mx-auto mb-3"></div>
