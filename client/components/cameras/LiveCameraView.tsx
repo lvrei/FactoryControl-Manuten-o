@@ -69,8 +69,8 @@ export function LiveCameraView({
       }
     }, 3000);
 
-    img.onerror = () => {
-      console.log('MJPEG error, switching to snapshot fallback');
+    img.onerror = (e) => {
+      console.error('MJPEG error:', e, 'URL:', mjpegUrl);
       setUseFallback(true);
       setStreamLoaded(true);
       clearTimeout(loadTimer);
@@ -89,14 +89,27 @@ export function LiveCameraView({
 
     const img = videoRef.current;
     const updateSnapshot = () => {
-      const snapshotUrl = camerasService.getSnapshotUrl(cameraId) + `&t=${Date.now()}`;
+      const snapshotUrl = camerasService.getSnapshotUrl(cameraId);
+      console.log('Loading snapshot:', snapshotUrl);
       img.src = snapshotUrl;
+    };
+
+    img.onerror = (e) => {
+      console.error('Snapshot load error:', e);
+    };
+
+    img.onload = () => {
+      console.log('Snapshot loaded successfully');
     };
 
     updateSnapshot();
     const interval = setInterval(updateSnapshot, 1000); // Update every second
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      img.onerror = null;
+      img.onload = null;
+    };
   }, [useFallback, cameraId]);
 
   // Poll for detection events
@@ -295,7 +308,6 @@ export function LiveCameraView({
           ref={videoRef}
           alt="Live camera feed"
           className="absolute inset-0 w-full h-full object-contain"
-          crossOrigin="anonymous"
         />
 
         {/* Canvas Overlay for ROIs and Detections */}
