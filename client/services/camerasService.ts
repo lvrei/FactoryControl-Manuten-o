@@ -1,4 +1,4 @@
-import { apiFetch } from "@/config/api";
+import { apiFetch, getApiEndpoint } from "@/config/api";
 export interface ROI {
   id: string;
   name: string;
@@ -92,12 +92,12 @@ class CamerasService {
 
   getSnapshotUrl(id: string): string {
     const ts = Date.now();
-    return `/api/cameras/${encodeURIComponent(id)}/snapshot?ts=${ts}`;
+    return getApiEndpoint(`api/cameras/${encodeURIComponent(id)}/snapshot?ts=${ts}`);
   }
 
   getMjpegUrl(id: string): string {
     const ts = Date.now();
-    return `/api/cameras/${encodeURIComponent(id)}/mjpeg?ts=${ts}`;
+    return getApiEndpoint(`api/cameras/${encodeURIComponent(id)}/mjpeg?ts=${ts}`);
   }
 }
 
