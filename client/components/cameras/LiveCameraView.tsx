@@ -39,8 +39,10 @@ export function LiveCameraView({
   const [useFallback, setUseFallback] = useState(false);
   const [detections, setDetections] = useState<Detection[]>([]);
   const [lastEventTime, setLastEventTime] = useState<Date | null>(null);
+  const [fps, setFps] = useState(0);
+  const lastFrameTimeRef = useRef<number>(Date.now());
 
-  // Load MJPEG stream with fallback to snapshot polling
+  // Load MJPEG stream with fallback to optimized snapshot polling
   useEffect(() => {
     if (!cameraId || !videoRef.current) return;
 
@@ -51,58 +53,59 @@ export function LiveCameraView({
     setStreamLoaded(false);
     setUseFallback(false);
 
-    // Try MJPEG first
+    // Try MJPEG via fetch first (works better with proxy)
     const mjpegUrl = camerasService.getMjpegUrl(cameraId);
-    img.src = mjpegUrl;
 
-    // For MJPEG streams, onload doesn't fire reliably because it's a continuous multipart stream
-    // We'll check if the image has dimensions after a delay
-    const loadTimer = setTimeout(() => {
-      if (img.naturalWidth > 0 && img.naturalHeight > 0) {
-        // Image has loaded successfully
-        setStreamLoaded(true);
-      } else {
-        // MJPEG didn't work, fallback to snapshot polling
-        console.log('MJPEG stream failed, using snapshot fallback');
+    fetch(mjpegUrl)
+      .then(response => {
+        if (response.ok && response.headers.get('content-type')?.includes('multipart')) {
+          // MJPEG stream is working, use it directly
+          img.src = mjpegUrl;
+          setStreamLoaded(true);
+          console.log('[LiveCameraView] ✅ MJPEG stream loaded');
+        } else {
+          // Not a valid MJPEG stream, use snapshot fallback
+          console.log('[LiveCameraView] 📸 Using snapshot fallback (MJPEG not available)');
+          setUseFallback(true);
+          setStreamLoaded(true);
+        }
+      })
+      .catch(() => {
+        // Fetch failed, use snapshot fallback
+        console.log('[LiveCameraView] 📸 Using snapshot fallback (MJPEG fetch failed)');
         setUseFallback(true);
         setStreamLoaded(true);
-      }
-    }, 3000);
-
-    img.onerror = (e) => {
-      console.error('MJPEG error:', e, 'URL:', mjpegUrl);
-      setUseFallback(true);
-      setStreamLoaded(true);
-      clearTimeout(loadTimer);
-    };
+      });
 
     return () => {
-      clearTimeout(loadTimer);
       img.src = "";
-      img.onerror = null;
     };
   }, [cameraId]);
 
-  // Fallback: Poll snapshots if MJPEG fails
+  // Optimized snapshot polling with smooth transitions
   useEffect(() => {
     if (!useFallback || !cameraId || !videoRef.current) return;
 
     const img = videoRef.current;
     let loadCount = 0;
     let currentBlobUrl: string | null = null;
+    let isLoading = false;
 
     const updateSnapshot = async () => {
+      if (isLoading) return; // Skip if previous request still pending
+      isLoading = true;
+
+      const startTime = Date.now();
       const snapshotUrl = camerasService.getSnapshotUrl(cameraId);
 
       try {
-        // Use fetch to get the image (works with Vite proxy)
         const response = await fetch(snapshotUrl);
         if (!response.ok) {
           console.error('[LiveCameraView] ❌ Snapshot HTTP error:', response.status);
+          isLoading = false;
           return;
         }
 
-        // Convert to blob and create object URL
         const blob = await response.blob();
 
         // Revoke previous blob URL to prevent memory leak
@@ -111,22 +114,45 @@ export function LiveCameraView({
         }
 
         currentBlobUrl = URL.createObjectURL(blob);
+
+        // Smooth transition: fade effect
+        img.style.opacity = '0.7';
         img.src = currentBlobUrl;
+
+        // Wait for image to load, then fade in
+        img.onload = () => {
+          img.style.opacity = '1';
+
+          // Calculate FPS
+          const now = Date.now();
+          const frameTime = now - lastFrameTimeRef.current;
+          lastFrameTimeRef.current = now;
+          const currentFps = Math.round(1000 / frameTime);
+          setFps(currentFps);
+        };
 
         loadCount++;
         if (loadCount === 1) {
-          console.log('[LiveCameraView] ✅ Snapshot loaded successfully!');
+          console.log('[LiveCameraView] ✅ Snapshot streaming started (optimized)');
         }
       } catch (error) {
         console.error('[LiveCameraView] ❌ Snapshot fetch error:', error);
+      } finally {
+        isLoading = false;
       }
     };
 
+    // Add smooth transition CSS
+    img.style.transition = 'opacity 0.15s ease-in-out';
+
     updateSnapshot();
-    const interval = setInterval(updateSnapshot, 1000); // Update every second
+    // Faster polling: 500ms for smoother experience (2 fps)
+    const interval = setInterval(updateSnapshot, 500);
 
     return () => {
       clearInterval(interval);
+      img.style.transition = '';
+      img.onload = null;
       if (currentBlobUrl) {
         URL.revokeObjectURL(currentBlobUrl);
       }
@@ -331,8 +357,17 @@ export function LiveCameraView({
         {/* Stream Type & ROI Count Badge */}
         <div className="absolute top-3 left-3 flex flex-col gap-2">
           {streamLoaded && (
-            <div className="px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-white text-xs font-semibold">
-              {useFallback ? "📸 Snapshot (1fps)" : "🎥 MJPEG Stream"}
+            <div className="px-3 py-1.5 bg-black/70 backdrop-blur-sm rounded-lg text-white text-xs font-semibold flex items-center gap-2">
+              {useFallback ? (
+                <>
+                  📸 Snapshot{" "}
+                  <span className="px-1.5 py-0.5 bg-green-600 rounded text-[10px]">
+                    {fps > 0 ? `${fps} fps` : "~2 fps"}
+                  </span>
+                </>
+              ) : (
+                "🎥 MJPEG Stream"
+              )}
             </div>
           )}
           {rois.length > 0 && (
@@ -471,7 +506,7 @@ export function LiveCameraView({
           }}
           className="px-3 py-1.5 text-xs border-2 border-input rounded-lg hover:bg-gradient-to-r hover:from-gray-500 hover:to-gray-600 hover:text-white hover:border-gray-600 transition-all font-semibold"
         >
-          🧪 Simular Detecção INATIVA
+          ���� Simular Detecção INATIVA
         </button>
       </div>
 
