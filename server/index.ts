@@ -25,7 +25,7 @@ export function createServer() {
             process.env.NODE_ENV === "development"
               ? ["'self'", "'unsafe-inline'", "'unsafe-eval'"] // Permitir scripts inline em dev
               : ["'self'"],
-          imgSrc: ["'self'", "data:", "https:"],
+          imgSrc: ["'self'", "data:", "blob:", "https:"],
           connectSrc:
             process.env.NODE_ENV === "development"
               ? ["'self'", "ws:", "wss:", "http:", "https:"] // Permitir conexões HTTP/HTTPS em dev
