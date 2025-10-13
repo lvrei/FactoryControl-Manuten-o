@@ -57,22 +57,29 @@ export function LiveCameraView({
     const mjpegUrl = camerasService.getMjpegUrl(cameraId);
 
     fetch(mjpegUrl)
-      .then(response => {
-        if (response.ok && response.headers.get('content-type')?.includes('multipart')) {
+      .then((response) => {
+        if (
+          response.ok &&
+          response.headers.get("content-type")?.includes("multipart")
+        ) {
           // MJPEG stream is working, use it directly
           img.src = mjpegUrl;
           setStreamLoaded(true);
-          console.log('[LiveCameraView] ✅ MJPEG stream loaded');
+          console.log("[LiveCameraView] ✅ MJPEG stream loaded");
         } else {
           // Not a valid MJPEG stream, use snapshot fallback
-          console.log('[LiveCameraView] 📸 Using snapshot fallback (MJPEG not available)');
+          console.log(
+            "[LiveCameraView] 📸 Using snapshot fallback (MJPEG not available)",
+          );
           setUseFallback(true);
           setStreamLoaded(true);
         }
       })
       .catch(() => {
         // Fetch failed, use snapshot fallback
-        console.log('[LiveCameraView] 📸 Using snapshot fallback (MJPEG fetch failed)');
+        console.log(
+          "[LiveCameraView] 📸 Using snapshot fallback (MJPEG fetch failed)",
+        );
         setUseFallback(true);
         setStreamLoaded(true);
       });
@@ -101,7 +108,10 @@ export function LiveCameraView({
       try {
         const response = await fetch(snapshotUrl);
         if (!response.ok) {
-          console.error('[LiveCameraView] ❌ Snapshot HTTP error:', response.status);
+          console.error(
+            "[LiveCameraView] ❌ Snapshot HTTP error:",
+            response.status,
+          );
           isLoading = false;
           return;
         }
@@ -116,12 +126,12 @@ export function LiveCameraView({
         currentBlobUrl = URL.createObjectURL(blob);
 
         // Smooth transition: fade effect
-        img.style.opacity = '0.7';
+        img.style.opacity = "0.7";
         img.src = currentBlobUrl;
 
         // Wait for image to load, then fade in
         img.onload = () => {
-          img.style.opacity = '1';
+          img.style.opacity = "1";
 
           // Calculate FPS
           const now = Date.now();
@@ -133,17 +143,19 @@ export function LiveCameraView({
 
         loadCount++;
         if (loadCount === 1) {
-          console.log('[LiveCameraView] ✅ Snapshot streaming started (optimized)');
+          console.log(
+            "[LiveCameraView] ✅ Snapshot streaming started (optimized)",
+          );
         }
       } catch (error) {
-        console.error('[LiveCameraView] ❌ Snapshot fetch error:', error);
+        console.error("[LiveCameraView] ❌ Snapshot fetch error:", error);
       } finally {
         isLoading = false;
       }
     };
 
     // Add smooth transition CSS
-    img.style.transition = 'opacity 0.15s ease-in-out';
+    img.style.transition = "opacity 0.15s ease-in-out";
 
     updateSnapshot();
     // Faster polling: 500ms for smoother experience (2 fps)
@@ -151,7 +163,7 @@ export function LiveCameraView({
 
     return () => {
       clearInterval(interval);
-      img.style.transition = '';
+      img.style.transition = "";
       img.onload = null;
       if (currentBlobUrl) {
         URL.revokeObjectURL(currentBlobUrl);
@@ -425,20 +437,24 @@ export function LiveCameraView({
         <button
           onClick={async () => {
             const snapshotUrl = camerasService.getSnapshotUrl(cameraId);
-            console.log('🧪 Testing snapshot URL:', snapshotUrl);
+            console.log("🧪 Testing snapshot URL:", snapshotUrl);
             try {
               const response = await fetch(snapshotUrl);
-              console.log('📊 Response status:', response.status, response.statusText);
+              console.log(
+                "📊 Response status:",
+                response.status,
+                response.statusText,
+              );
               if (!response.ok) {
                 const text = await response.text();
-                console.error('❌ Error response:', text);
+                console.error("❌ Error response:", text);
                 alert(`Erro ${response.status}: ${text}`);
               } else {
-                console.log('✅ Snapshot OK!');
-                alert('Snapshot está a funcionar! A imagem deve aparecer.');
+                console.log("✅ Snapshot OK!");
+                alert("Snapshot está a funcionar! A imagem deve aparecer.");
               }
             } catch (error) {
-              console.error('❌ Fetch error:', error);
+              console.error("❌ Fetch error:", error);
               alert(`Erro ao carregar: ${error}`);
             }
           }}
