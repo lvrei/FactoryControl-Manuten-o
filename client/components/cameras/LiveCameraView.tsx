@@ -19,7 +19,7 @@ const ROI_COLORS = [
 ];
 
 interface Detection {
-  roiId?: string;
+  roiId: string;
   status: "active" | "inactive";
   confidence: number;
   timestamp: Date;
@@ -171,29 +171,43 @@ export function LiveCameraView({
     };
   }, [useFallback, cameraId]);
 
-  // Poll for detection events
+  // Poll for detection events per ROI
   useEffect(() => {
-    if (!cameraId || !showDetections) return;
+    if (!cameraId || !showDetections || rois.length === 0) return;
 
     const pollEvents = async () => {
       try {
-        // Get latest status for this camera
-        const status = await visionService.getStatusByCamera(cameraId);
+        // Get status for each ROI individually
+        const roiStatuses = await Promise.all(
+          rois.map(async (roi) => {
+            try {
+              const status = await visionService.getStatusByROI(roi.id);
+              return {
+                roiId: roi.id,
+                status: status.status,
+                confidence: status.confidence || 0,
+                timestamp: new Date(),
+              };
+            } catch {
+              // If no events yet, return inactive
+              return {
+                roiId: roi.id,
+                status: "inactive" as const,
+                confidence: 0,
+                timestamp: new Date(),
+              };
+            }
+          })
+        );
 
-        const detection: Detection = {
-          status: status.status,
-          confidence: status.confidence || 0,
-          timestamp: new Date(),
-        };
+        setDetections(roiStatuses);
 
-        setDetections((prev) => {
-          const updated = [detection, ...prev.slice(0, 4)]; // Keep last 5
-          return updated;
-        });
-
-        setLastEventTime(new Date());
+        // Update last event time if any ROI is active
+        if (roiStatuses.some(d => d.status === "active")) {
+          setLastEventTime(new Date());
+        }
       } catch (error) {
-        // Silently handle - camera might not have events yet
+        console.error('[LiveCameraView] Error polling ROI events:', error);
       }
     };
 
@@ -201,7 +215,7 @@ export function LiveCameraView({
     const interval = setInterval(pollEvents, 2000); // Poll every 2 seconds
 
     return () => clearInterval(interval);
-  }, [cameraId, showDetections]);
+  }, [cameraId, showDetections, rois]);
 
   // Draw ROIs and detections on canvas
   useEffect(() => {
@@ -234,9 +248,9 @@ export function LiveCameraView({
         const width = (roi.coordinates.width / 100) * canvas.width;
         const height = (roi.coordinates.height / 100) * canvas.height;
 
-        // Determine if this ROI has active detection
-        const hasActiveDetection =
-          detections.length > 0 && detections[0].status === "active";
+        // Find detection for THIS specific ROI
+        const roiDetection = detections.find(d => d.roiId === roi.id);
+        const hasActiveDetection = roiDetection?.status === "active";
 
         // Fill with semi-transparent color (brighter if active)
         ctx.fillStyle = hasActiveDetection ? color + "50" : color + "30";
@@ -258,8 +272,8 @@ export function LiveCameraView({
         ctx.fillText(roi.name, x + 8, y - 8);
 
         // Draw detection status icon if active
-        if (hasActiveDetection && detections[0].confidence) {
-          const confidence = Math.round(detections[0].confidence * 100);
+        if (hasActiveDetection && roiDetection?.confidence) {
+          const confidence = Math.round(roiDetection.confidence * 100);
           ctx.fillStyle = "#FFFFFF";
           ctx.font = "bold 11px sans-serif";
           ctx.fillText(`✓ ${confidence}%`, x + width - 55, y - 8);
@@ -271,9 +285,10 @@ export function LiveCameraView({
         ctx.fillText(icon, x + width - 25, y - 6);
       });
 
-      // Draw detection pulse effect
-      if (detections.length > 0 && detections[0].status === "active") {
-        const elapsed = Date.now() - detections[0].timestamp.getTime();
+      // Draw detection pulse effect for active ROIs
+      const activeDetection = detections.find(d => d.status === "active");
+      if (activeDetection) {
+        const elapsed = Date.now() - activeDetection.timestamp.getTime();
         if (elapsed < 1000) {
           const alpha = 1 - elapsed / 1000;
           ctx.strokeStyle = `rgba(0, 255, 0, ${alpha})`;
