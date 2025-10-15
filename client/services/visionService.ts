@@ -1,7 +1,8 @@
 import { apiFetch } from "@/config/api";
 export type VisionStatus = {
-  scope: "machine" | "camera";
+  scope: "machine" | "camera" | "roi";
   id: string;
+  roiId?: string | null;
   status: "active" | "inactive";
   confidence?: number;
   updatedAt?: string | null;
@@ -27,6 +28,13 @@ class VisionService {
   async getStatusByCamera(cameraId: string): Promise<VisionStatus> {
     const resp = await fetch(
       `/api/vision/status?cameraId=${encodeURIComponent(cameraId)}`,
+    );
+    if (!resp.ok) throw new Error("Falha ao obter status");
+    return resp.json();
+  }
+  async getStatusByROI(roiId: string): Promise<VisionStatus> {
+    const resp = await fetch(
+      `/api/vision/status?roiId=${encodeURIComponent(roiId)}`,
     );
     if (!resp.ok) throw new Error("Falha ao obter status");
     return resp.json();
@@ -58,6 +66,7 @@ class VisionService {
   async postMockEvent(data: {
     machineId: string;
     cameraId?: string;
+    roiId?: string;
     status: "active" | "inactive";
     confidence?: number;
     createdAt?: string;
