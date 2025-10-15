@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { camerasService, ROI } from "@/services/camerasService";
 import { visionService } from "@/services/visionService";
 import { Activity, AlertCircle, CheckCircle, Video } from "lucide-react";
+import { ROIDetectionTest } from "./ROIDetectionTest";
 
 interface LiveCameraViewProps {
   cameraId: string;
@@ -540,6 +541,29 @@ export function LiveCameraView({
           ���� Simular Detecção INATIVA
         </button>
       </div>
+
+      {/* ROI Detection Testing */}
+      <ROIDetectionTest
+        rois={rois}
+        cameraId={cameraId}
+        onDetectionUpdate={(roiId, status, confidence) => {
+          setDetections(prev => {
+            const filtered = prev.filter(d => d.roiId !== roiId);
+            return [
+              {
+                roiId,
+                status,
+                confidence,
+                timestamp: new Date(),
+              },
+              ...filtered
+            ];
+          });
+          if (status === "active") {
+            setLastEventTime(new Date());
+          }
+        }}
+      />
 
       {/* Instructions */}
       <div className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
