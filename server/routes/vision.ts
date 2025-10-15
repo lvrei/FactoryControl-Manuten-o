@@ -199,7 +199,7 @@ visionRouter.get("/vision/uptime", async (req, res) => {
   }
 });
 
-// POST /vision/mock-event { machineId, cameraId?, status, confidence?, createdAt? }
+// POST /vision/mock-event { machineId, cameraId?, roiId?, status, confidence?, createdAt? }
 visionRouter.post("/vision/mock-event", async (req, res) => {
   try {
     await ensureVisionTables();
@@ -207,6 +207,7 @@ visionRouter.post("/vision/mock-event", async (req, res) => {
     const id: string = d.id || `vis-${Date.now()}`;
     const machineId: string = (d.machineId || "").trim();
     const cameraId: string | null = (d.cameraId || "").trim() || null;
+    const roiId: string | null = (d.roiId || "").trim() || null;
     const status: "active" | "inactive" =
       d.status === "active" ? "active" : "inactive";
     const confidence: number | null =
@@ -217,12 +218,13 @@ visionRouter.post("/vision/mock-event", async (req, res) => {
       return res.status(400).json({ error: "machineId é obrigatório" });
 
     await query(
-      `INSERT INTO vision_camera_events (id, camera_id, machine_id, status, confidence, frame_time, created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+      `INSERT INTO vision_camera_events (id, camera_id, machine_id, roi_id, status, confidence, frame_time, created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
       [
         id,
         cameraId,
         machineId,
+        roiId,
         status,
         confidence,
         when.toISOString(),
@@ -234,6 +236,7 @@ visionRouter.post("/vision/mock-event", async (req, res) => {
       id,
       machineId,
       cameraId,
+      roiId,
       status,
       confidence,
       createdAt: when.toISOString(),
