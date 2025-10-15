@@ -415,35 +415,40 @@ export function LiveCameraView({
             Eventos de Detecção Recentes
           </h4>
           <div className="space-y-2">
-            {detections.map((detection, index) => (
-              <div
-                key={index}
-                className={`flex items-center justify-between px-3 py-2 rounded-lg ${getStatusColor(detection.status)}`}
-              >
-                <div className="flex items-center gap-2">
-                  {detection.status === "active" ? (
-                    <CheckCircle className="h-4 w-4" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4" />
-                  )}
-                  <span className="font-semibold capitalize">
-                    {detection.status === "active" ? "Ativo" : "Inativo"}
+            {detections.map((detection, index) => {
+              const roi = rois.find(r => r.id === detection.roiId);
+              return (
+                <div
+                  key={index}
+                  className={`flex items-center justify-between px-3 py-2 rounded-lg ${getStatusColor(detection.status)}`}
+                >
+                  <div className="flex items-center gap-2">
+                    {detection.status === "active" ? (
+                      <CheckCircle className="h-4 w-4" />
+                    ) : (
+                      <AlertCircle className="h-4 w-4" />
+                    )}
+                    <div className="flex flex-col">
+                      <span className="font-semibold capitalize text-xs">
+                        {roi?.name || "ROI desconhecida"}: {detection.status === "active" ? "Ativo" : "Inativo"}
+                      </span>
+                      {detection.confidence > 0 && (
+                        <span className="text-[10px] opacity-70">
+                          {Math.round(detection.confidence * 100)}% confiança
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-xs">
+                    {detection.timestamp.toLocaleTimeString("pt-PT", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      second: "2-digit",
+                    })}
                   </span>
-                  {detection.confidence > 0 && (
-                    <span className="text-xs">
-                      ({Math.round(detection.confidence * 100)}% confiança)
-                    </span>
-                  )}
                 </div>
-                <span className="text-xs">
-                  {detection.timestamp.toLocaleTimeString("pt-PT", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                  })}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
