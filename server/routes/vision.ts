@@ -11,17 +11,32 @@ async function ensureVisionTables() {
     id TEXT PRIMARY KEY,
     camera_id TEXT REFERENCES cameras(id) ON DELETE CASCADE,
     machine_id TEXT REFERENCES machines(id) ON DELETE SET NULL,
+    roi_id TEXT,
     status TEXT NOT NULL CHECK (status IN ('active','inactive')),
     confidence REAL,
     frame_time TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT now()
   )`);
 
+  // Add roi_id column to existing table if not present
+  await query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM information_schema.columns
+                     WHERE table_name='vision_camera_events' AND column_name='roi_id') THEN
+        ALTER TABLE vision_camera_events ADD COLUMN roi_id TEXT;
+      END IF;
+    END $$;
+  `);
+
   await query(
     `CREATE INDEX IF NOT EXISTS idx_vision_events_machine_time ON vision_camera_events(machine_id, created_at)`,
   );
   await query(
     `CREATE INDEX IF NOT EXISTS idx_vision_events_camera_time ON vision_camera_events(camera_id, created_at)`,
+  );
+  await query(
+    `CREATE INDEX IF NOT EXISTS idx_vision_events_roi_time ON vision_camera_events(roi_id, created_at)`,
   );
 }
 
@@ -54,28 +69,47 @@ function computeUptime(
   return { activeMs, totalMs, percentActive: pct };
 }
 
-// GET /vision/status?machineId=...&cameraId=...
+// GET /vision/status?machineId=...&cameraId=...&roiId=...
 visionRouter.get("/vision/status", async (req, res) => {
   try {
     await ensureVisionTables();
-    const { machineId, cameraId } = req.query as {
+    const { machineId, cameraId, roiId } = req.query as {
       machineId?: string;
       cameraId?: string;
+      roiId?: string;
     };
-    if (!machineId && !cameraId) {
+    if (!machineId && !cameraId && !roiId) {
       return res
         .status(400)
-        .json({ error: "machineId ou cameraId são obrigatórios" });
+        .json({ error: "machineId, cameraId ou roiId são obrigatórios" });
     }
+
+    // Priority: roiId > machineId > cameraId
+    if (roiId) {
+      const { rows } = await query<any>(
+        `SELECT status, confidence, roi_id, created_at FROM vision_camera_events WHERE roi_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        [roiId],
+      );
+      const last = rows[0];
+      return res.json({
+        scope: "roi",
+        id: roiId,
+        status: last?.status || "inactive",
+        confidence: last?.confidence || 0,
+        updatedAt: last?.created_at || null,
+      });
+    }
+
     if (machineId) {
       const { rows } = await query<any>(
-        `SELECT status, confidence, created_at FROM vision_camera_events WHERE machine_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        `SELECT status, confidence, roi_id, created_at FROM vision_camera_events WHERE machine_id = $1 ORDER BY created_at DESC LIMIT 1`,
         [machineId],
       );
       const last = rows[0];
       return res.json({
         scope: "machine",
         id: machineId,
+        roiId: last?.roi_id || null,
         status: last?.status || "inactive",
         confidence: last?.confidence || 0,
         updatedAt: last?.created_at || null,
@@ -83,13 +117,14 @@ visionRouter.get("/vision/status", async (req, res) => {
     }
     if (cameraId) {
       const { rows } = await query<any>(
-        `SELECT status, confidence, created_at FROM vision_camera_events WHERE camera_id = $1 ORDER BY created_at DESC LIMIT 1`,
+        `SELECT status, confidence, roi_id, created_at FROM vision_camera_events WHERE camera_id = $1 ORDER BY created_at DESC LIMIT 1`,
         [cameraId],
       );
       const last = rows[0];
       return res.json({
         scope: "camera",
         id: cameraId,
+        roiId: last?.roi_id || null,
         status: last?.status || "inactive",
         confidence: last?.confidence || 0,
         updatedAt: last?.created_at || null,
