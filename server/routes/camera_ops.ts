@@ -3,9 +3,18 @@ import net from "node:net";
 import { spawn } from "node:child_process";
 import ffmpegStatic from "ffmpeg-static";
 import { query } from "../db";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 export const cameraOpsRouter = express.Router();
-const ffmpegBin = (ffmpegStatic as unknown as string) || "ffmpeg";
+
+// Get absolute path to ffmpeg binary
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const ffmpegBin = ffmpegStatic
+  ? path.resolve(__dirname, "../../", ffmpegStatic as string)
+  : "ffmpeg";
+
+console.log("[Camera Ops] ffmpeg binary path:", ffmpegBin);
 
 async function getCameraById(id: string) {
   const { rows } = await query<any>(
