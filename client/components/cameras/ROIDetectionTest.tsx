@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { ROI } from "@/services/camerasService";
 import { visionService } from "@/services/visionService";
+import { productionService } from "@/services/productionService_consolidated";
 
 const ROI_COLORS = [
   "#3B82F6", // blue
@@ -17,14 +19,45 @@ interface ROIDetectionTestProps {
 }
 
 export function ROIDetectionTest({ rois, cameraId, onDetectionUpdate }: ROIDetectionTestProps) {
+  const [machineId, setMachineId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMachine = async () => {
+      try {
+        const machines = await productionService.getMachines();
+        if (machines && machines.length > 0) {
+          setMachineId(machines[0].id);
+        } else {
+          console.warn("No machines found for vision testing");
+        }
+      } catch (error) {
+        console.error("Failed to fetch machines:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMachine();
+  }, []);
+
   if (rois.length === 0) return null;
+  if (loading) return <p className="text-xs text-muted-foreground">A carregar...</p>;
+  if (!machineId) {
+    return (
+      <p className="text-xs text-destructive">
+        ⚠️ Nenhuma máquina encontrada. Crie uma máquina primeiro.
+      </p>
+    );
+  }
 
   const handleTest = async (roi: ROI, status: "active" | "inactive") => {
+    if (!machineId) return;
+
     try {
       const confidence = status === "active" ? 0.95 : 0;
-      
+
       await visionService.postMockEvent({
-        machineId: "test",
+        machineId,
         cameraId: cameraId,
         roiId: roi.id,
         status,
