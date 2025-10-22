@@ -515,18 +515,160 @@ maintenanceRouter.get("/maintenance/records", async (_req, res) => {
   }
 });
 
-// Planned Maintenance (from new schema)
+// Planned Maintenance CRUD
 maintenanceRouter.get("/maintenance/planned", async (_req, res) => {
   try {
     const { rows } = await query(
-      `SELECT pm.*, e.name as equipment_name
+      `SELECT pm.*,
+              e.name as equipment_name,
+              u.full_name as assigned_name
        FROM planned_maintenance pm
        LEFT JOIN equipments e ON pm.equipment_id = e.id
+       LEFT JOIN users u ON pm.assigned_to = u.id
        ORDER BY pm.scheduled_date ASC`
     );
     return res.json(rows);
   } catch (e: any) {
     console.error("GET /maintenance/planned error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+maintenanceRouter.get("/maintenance/planned/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await query(
+      `SELECT pm.*,
+              e.name as equipment_name,
+              u.full_name as assigned_name
+       FROM planned_maintenance pm
+       LEFT JOIN equipments e ON pm.equipment_id = e.id
+       LEFT JOIN users u ON pm.assigned_to = u.id
+       WHERE pm.id = $1`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Planned maintenance not found" });
+    }
+
+    return res.json(rows[0]);
+  } catch (e: any) {
+    console.error("GET /maintenance/planned/:id error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+maintenanceRouter.post("/maintenance/planned", async (req, res) => {
+  try {
+    const {
+      equipment_id,
+      maintenance_type,
+      description,
+      scheduled_date,
+      assigned_to,
+      status = "scheduled",
+      priority = "medium",
+      estimated_duration,
+      notes
+    } = req.body;
+
+    const { rows } = await query(
+      `INSERT INTO planned_maintenance (
+        equipment_id, maintenance_type, description, scheduled_date,
+        assigned_to, status, priority, estimated_duration, notes
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING *`,
+      [
+        equipment_id,
+        maintenance_type,
+        description,
+        scheduled_date,
+        assigned_to,
+        status,
+        priority,
+        estimated_duration,
+        notes
+      ]
+    );
+
+    return res.status(201).json(rows[0]);
+  } catch (e: any) {
+    console.error("POST /maintenance/planned error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+maintenanceRouter.put("/maintenance/planned/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      equipment_id,
+      maintenance_type,
+      description,
+      scheduled_date,
+      assigned_to,
+      status,
+      priority,
+      estimated_duration,
+      notes
+    } = req.body;
+
+    const { rows } = await query(
+      `UPDATE planned_maintenance
+       SET equipment_id = $1,
+           maintenance_type = $2,
+           description = $3,
+           scheduled_date = $4,
+           assigned_to = $5,
+           status = $6,
+           priority = $7,
+           estimated_duration = $8,
+           notes = $9,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $10
+       RETURNING *`,
+      [
+        equipment_id,
+        maintenance_type,
+        description,
+        scheduled_date,
+        assigned_to,
+        status,
+        priority,
+        estimated_duration,
+        notes,
+        id
+      ]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Planned maintenance not found" });
+    }
+
+    return res.json(rows[0]);
+  } catch (e: any) {
+    console.error("PUT /maintenance/planned/:id error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+maintenanceRouter.delete("/maintenance/planned/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await query(
+      "DELETE FROM planned_maintenance WHERE id = $1 RETURNING *",
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Planned maintenance not found" });
+    }
+
+    return res.json({ message: "Planned maintenance deleted successfully" });
+  } catch (e: any) {
+    console.error("DELETE /maintenance/planned/:id error", e);
     return res.status(500).json({ error: e.message });
   }
 });
