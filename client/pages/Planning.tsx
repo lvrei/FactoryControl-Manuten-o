@@ -92,7 +92,7 @@ export default function Planning() {
     maintenance_type: "",
     description: "",
     scheduled_date: "",
-    assigned_to: "",
+    assigned_to: "unassigned",
     priority: "medium" as "low" | "medium" | "high",
     estimated_duration: 0,
     notes: "",
@@ -156,7 +156,7 @@ export default function Planning() {
         body: JSON.stringify({
           ...formData,
           equipment_id: parseInt(formData.equipment_id),
-          assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : null,
+          assigned_to: formData.assigned_to && formData.assigned_to !== "unassigned" ? parseInt(formData.assigned_to) : null,
           status: editingPlan?.status || "scheduled",
         }),
       });
@@ -192,7 +192,7 @@ export default function Planning() {
       maintenance_type: plan.maintenance_type,
       description: plan.description,
       scheduled_date: plan.scheduled_date.split("T")[0],
-      assigned_to: plan.assigned_to?.toString() || "",
+      assigned_to: plan.assigned_to?.toString() || "unassigned",
       priority: plan.priority,
       estimated_duration: plan.estimated_duration || 0,
       notes: plan.notes || "",
@@ -230,7 +230,7 @@ export default function Planning() {
       maintenance_type: "",
       description: "",
       scheduled_date: "",
-      assigned_to: "",
+      assigned_to: "unassigned",
       priority: "medium",
       estimated_duration: 0,
       notes: "",
@@ -454,7 +454,7 @@ export default function Planning() {
                     <SelectValue placeholder="Não atribuído" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Não atribuído</SelectItem>
+                    <SelectItem value="unassigned">Não atribuído</SelectItem>
                     {users.map((user) => (
                       <SelectItem key={user.id} value={user.id.toString()}>
                         {user.full_name} (@{user.username})
