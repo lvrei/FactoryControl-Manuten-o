@@ -499,6 +499,38 @@ maintenanceRouter.delete("/maintenance/plans/:id", async (req, res) => {
   }
 });
 
+// Maintenance Records (from new schema)
+maintenanceRouter.get("/maintenance/records", async (_req, res) => {
+  try {
+    const { rows } = await query(
+      `SELECT mr.*, e.name as equipment_name
+       FROM maintenance_records mr
+       LEFT JOIN equipments e ON mr.equipment_id = e.id
+       ORDER BY mr.performed_at DESC`
+    );
+    return res.json(rows);
+  } catch (e: any) {
+    console.error("GET /maintenance/records error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// Planned Maintenance (from new schema)
+maintenanceRouter.get("/maintenance/planned", async (_req, res) => {
+  try {
+    const { rows } = await query(
+      `SELECT pm.*, e.name as equipment_name
+       FROM planned_maintenance pm
+       LEFT JOIN equipments e ON pm.equipment_id = e.id
+       ORDER BY pm.scheduled_date ASC`
+    );
+    return res.json(rows);
+  } catch (e: any) {
+    console.error("GET /maintenance/planned error", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
 // Downtime
 maintenanceRouter.get("/maintenance/downtime", async (_req, res) => {
   try {
