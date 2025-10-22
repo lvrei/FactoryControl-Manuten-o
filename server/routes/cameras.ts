@@ -60,6 +60,9 @@ async function ensureCamerasTable() {
 
 camerasRouter.get("/cameras", async (_req, res) => {
   try {
+    if (!isDbConfigured()) {
+      return res.json([]);
+    }
     await ensureCamerasTable();
     const { rows } = await query<any>(
       `SELECT id, machine_id, name, url, protocol, rois, thresholds, schedule, enabled, created_at
