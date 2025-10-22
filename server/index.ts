@@ -173,6 +173,14 @@ export function createServer() {
         .catch((e) =>
           console.warn("Camera Ops API not loaded:", (e as any)?.message),
         );
+
+      import("./routes/materials")
+        .then((module) => {
+          app.use("/api/materials", module.default);
+        })
+        .catch((e) =>
+          console.warn("Materials API not loaded:", (e as any)?.message),
+        );
     } catch (e) {
       console.warn("APIs not loaded:", (e as any)?.message);
     }

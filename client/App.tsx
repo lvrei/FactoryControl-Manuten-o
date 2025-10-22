@@ -8,23 +8,14 @@ import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Dashboard from "./pages/Dashboard";
-import Production from "./pages/Production";
-import ProductionNew from "./pages/ProductionNew";
-import OperatorPortal from "./pages/OperatorPortal";
-import TestProduction from "./pages/TestProduction";
-import Stock from "./pages/Stock";
 import Equipment from "./pages/Equipment";
-import Quality from "./pages/Quality";
 import MaintenanceComplete from "./pages/MaintenanceComplete";
 import Team from "./pages/Team";
 import Planning from "./pages/Planning";
-import FactoryOrders from "./pages/FactoryOrders";
 import AlertsSimple from "./pages/AlertsSimple";
 import SensorsPage from "./pages/Sensors";
 import CamerasPage from "./pages/Cameras";
-import CameraReports from "./pages/CameraReports";
-import MachinePage from "./pages/MachinePage";
-import Assistant from "./pages/Assistant";
+import MaterialStock from "./pages/MaterialStock";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 
@@ -57,40 +48,15 @@ const App = () => {
               }
             >
               <Route index element={<Dashboard />} />
-              <Route path="production-old" element={<Production />} />
-              <Route path="production" element={<ProductionNew />} />
-              <Route path="stock" element={<Stock />} />
               <Route path="equipment" element={<Equipment />} />
-              <Route path="quality" element={<Quality />} />
               <Route path="maintenance" element={<MaintenanceComplete />} />
               <Route path="team" element={<Team />} />
               <Route path="planning" element={<Planning />} />
-              <Route path="alerts" element={<AlertsSimple />} />
               <Route path="sensors" element={<SensorsPage />} />
               <Route path="cameras" element={<CamerasPage />} />
-              <Route path="camera-reports" element={<CameraReports />} />
-              <Route path="machine/:machineId" element={<MachinePage />} />
-              <Route path="assistant" element={<Assistant />} />
-              <Route path="test-production" element={<TestProduction />} />
-              <Route
-                path="factory-orders"
-                element={
-                  <ProtectedRoute requiredRole="operator">
-                    <FactoryOrders />
-                  </ProtectedRoute>
-                }
-              />
+              <Route path="material-stock" element={<MaterialStock />} />
+              <Route path="alerts" element={<AlertsSimple />} />
             </Route>
-
-            {/* Operator Portal - Standalone Route */}
-            <Route
-              path="/operator"
-              element={
-                <ProtectedRoute requiredRole="operator">
-                  <OperatorPortal />
-                </ProtectedRoute>
-              }
-            />
 
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
