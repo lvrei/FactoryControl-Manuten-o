@@ -426,7 +426,7 @@ export default function MaterialStock() {
                   <SelectContent>
                     <SelectItem value="general">Stock Geral</SelectItem>
                     {equipments.map((eq) => (
-                      <SelectItem key={eq.id} value={eq.id.toString()}>
+                      <SelectItem key={eq.id} value={String(eq.id)}>
                         {eq.name}
                       </SelectItem>
                     ))}

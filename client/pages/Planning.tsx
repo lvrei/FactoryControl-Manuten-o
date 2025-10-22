@@ -398,15 +398,22 @@ export default function Planning() {
               <div className="space-y-2">
                 <Label htmlFor="equipment_id">Equipamento *</Label>
                 <Select
-                  value={formData.equipment_id}
-                  onValueChange={(value) => setFormData({ ...formData, equipment_id: value })}
+                  value={formData.equipment_id || "placeholder"}
+                  onValueChange={(value) => {
+                    if (value !== "placeholder") {
+                      setFormData({ ...formData, equipment_id: value });
+                    }
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecionar equipamento" />
                   </SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="placeholder" disabled>
+                      Selecionar equipamento
+                    </SelectItem>
                     {equipments.map((eq) => (
-                      <SelectItem key={eq.id} value={eq.id.toString()}>
+                      <SelectItem key={eq.id} value={String(eq.id)}>
                         {eq.name} - {eq.equipment_type}
                       </SelectItem>
                     ))}
@@ -456,7 +463,7 @@ export default function Planning() {
                   <SelectContent>
                     <SelectItem value="unassigned">Não atribuído</SelectItem>
                     {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id.toString()}>
+                      <SelectItem key={user.id} value={String(user.id)}>
                         {user.full_name} (@{user.username})
                       </SelectItem>
                     ))}
