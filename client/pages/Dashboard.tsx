@@ -1,593 +1,348 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import {
-  Factory,
+  Activity,
   AlertTriangle,
   CheckCircle,
-  Users,
-  Package,
   Settings,
-  Activity,
   Wrench,
-  Timer,
-  AlertCircle,
+  Package,
+  Calendar,
+  TrendingUp,
 } from "lucide-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { productionService } from "@/services/productionService";
-import { maintenanceService } from "@/services/maintenanceService";
-import {
-  ProductionOrder,
-  Machine,
-  MachineDowntime,
-  MaintenanceRequest,
-} from "@/types/production";
-import { MaintenancePopupContainer } from "@/components/MaintenancePopup";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+
+interface DashboardStats {
+  equipments: {
+    total: number;
+    active: number;
+    maintenance: number;
+    inactive: number;
+  };
+  maintenance: {
+    scheduled: number;
+    completed_month: number;
+    pending: number;
+    overdue: number;
+  };
+  materials: {
+    total: number;
+    low_stock: number;
+    out_of_stock: number;
+  };
+  alerts: {
+    critical: number;
+    warning: number;
+    total_active: number;
+  };
+}
 
 export default function Dashboard() {
-  const queryClient = useQueryClient();
-
-  const ordersQuery = useQuery<ProductionOrder[]>({
-    queryKey: ["productionOrders"],
-    queryFn: () => productionService.getProductionOrders(),
-    staleTime: 10_000,
-    refetchInterval: 30_000,
+  const [stats, setStats] = useState<DashboardStats>({
+    equipments: { total: 0, active: 0, maintenance: 0, inactive: 0 },
+    maintenance: { scheduled: 0, completed_month: 0, pending: 0, overdue: 0 },
+    materials: { total: 0, low_stock: 0, out_of_stock: 0 },
+    alerts: { critical: 0, warning: 0, total_active: 0 },
   });
 
-  const machinesQuery = useQuery<Machine[]>({
-    queryKey: ["machines"],
-    queryFn: () => productionService.getMachines(),
-    staleTime: 10_000,
-    refetchInterval: 30_000,
-  });
+  const [recentMaintenance, setRecentMaintenance] = useState<any[]>([]);
+  const [upcomingMaintenance, setUpcomingMaintenance] = useState<any[]>([]);
 
-  const downtimeQuery = useQuery<MachineDowntime[]>({
-    queryKey: ["machineDowntime"],
-    queryFn: () => maintenanceService.getMachineDowntime(),
-    staleTime: 10_000,
-    refetchInterval: 30_000,
-  });
+  useEffect(() => {
+    loadDashboardData();
+    const interval = setInterval(loadDashboardData, 30000); // Refresh every 30s
+    return () => clearInterval(interval);
+  }, []);
 
-  const requestsQuery = useQuery<MaintenanceRequest[]>({
-    queryKey: ["maintenanceRequests"],
-    queryFn: () => maintenanceService.getMaintenanceRequests(),
-    staleTime: 10_000,
-    refetchInterval: 30_000,
-  });
+  const loadDashboardData = async () => {
+    try {
+      // Load equipment stats
+      const equipmentRes = await fetch("/api/equipment");
+      if (equipmentRes.ok) {
+        const equipments = await equipmentRes.json();
+        const equipmentStats = {
+          total: equipments.length,
+          active: equipments.filter((e: any) => e.status === "active").length,
+          maintenance: equipments.filter((e: any) => e.status === "maintenance").length,
+          inactive: equipments.filter((e: any) => e.status === "inactive").length,
+        };
+        
+        setStats(prev => ({ ...prev, equipments: equipmentStats }));
+      }
 
-  const loading =
-    ordersQuery.isLoading ||
-    machinesQuery.isLoading ||
-    downtimeQuery.isLoading ||
-    requestsQuery.isLoading;
+      // Load maintenance stats
+      const maintenanceRes = await fetch("/api/maintenance/records");
+      if (maintenanceRes.ok) {
+        const records = await maintenanceRes.json();
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+        setStats(prev => ({
+          ...prev,
+          maintenance: {
+            scheduled: records.filter((r: any) => r.status === "scheduled").length,
+            completed_month: records.filter((r: any) => 
+              r.status === "completed" && new Date(r.performed_at) >= firstDayOfMonth
+            ).length,
+            pending: records.filter((r: any) => r.status === "pending").length,
+            overdue: records.filter((r: any) => 
+              r.status === "scheduled" && 
+              r.next_maintenance_date && 
+              new Date(r.next_maintenance_date) < now
+            ).length,
+          }
+        }));
 
-  const { productionOrders, machines, machineDowntime, maintenanceRequests } =
-    useMemo(
-      () => ({
-        productionOrders: ordersQuery.data || [],
-        machines: machinesQuery.data || [],
-        machineDowntime: downtimeQuery.data || [],
-        maintenanceRequests: requestsQuery.data || [],
-      }),
-      [
-        ordersQuery.data,
-        machinesQuery.data,
-        downtimeQuery.data,
-        requestsQuery.data,
-      ],
-    );
+        // Recent maintenance (last 5)
+        const recent = records
+          .filter((r: any) => r.status === "completed")
+          .sort((a: any, b: any) => new Date(b.performed_at).getTime() - new Date(a.performed_at).getTime())
+          .slice(0, 5);
+        setRecentMaintenance(recent);
+      }
 
-  const totalOrders = productionOrders.length;
-  const activeOrders = productionOrders.filter(
-    (o) => o.status === "in_progress",
-  ).length;
-  const completedToday = productionOrders.filter(
-    (o) =>
-      o.status === "completed" &&
-      new Date(o.updatedAt).toDateString() === new Date().toDateString(),
-  ).length;
-  const urgentOrders = productionOrders.filter(
-    (o) => o.priority === "urgent",
-  ).length;
+      // Load planned maintenance
+      const plannedRes = await fetch("/api/maintenance/planned");
+      if (plannedRes.ok) {
+        const planned = await plannedRes.json();
+        const upcoming = planned
+          .filter((p: any) => p.status === "scheduled")
+          .sort((a: any, b: any) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime())
+          .slice(0, 5);
+        setUpcomingMaintenance(upcoming);
+      }
 
-  const activeMachineDowntime = machineDowntime.filter(
-    (d) => d.status === "ongoing",
-  );
-  const machinesInMaintenance = machines.filter(
-    (m) => m.status === "maintenance",
-  ).length;
-  const pendingMaintenanceRequests = maintenanceRequests.filter(
-    (r) => r.status === "pending",
-  ).length;
-  const criticalMaintenanceRequests = maintenanceRequests.filter(
-    (r) => r.urgencyLevel === "critical" && r.status !== "completed",
-  ).length;
+      // Load material stats
+      const materialsRes = await fetch("/api/materials");
+      if (materialsRes.ok) {
+        const materials = await materialsRes.json();
+        setStats(prev => ({
+          ...prev,
+          materials: {
+            total: materials.length,
+            low_stock: materials.filter((m: any) => 
+              m.current_stock > 0 && m.current_stock <= m.min_stock
+            ).length,
+            out_of_stock: materials.filter((m: any) => m.current_stock === 0).length,
+          }
+        }));
+      }
 
-  const activeMachines = machines.filter((m) => m.status === "busy").length;
-  const totalMachines = machines.length || 1;
+      // Load alerts
+      const alertsRes = await fetch("/api/iot/alerts");
+      if (alertsRes.ok) {
+        const alerts = await alertsRes.json();
+        setStats(prev => ({
+          ...prev,
+          alerts: {
+            critical: alerts.filter((a: any) => a.severity === "critical" && a.status === "active").length,
+            warning: alerts.filter((a: any) => a.severity === "warning" && a.status === "active").length,
+            total_active: alerts.filter((a: any) => a.status === "active").length,
+          }
+        }));
+      }
+    } catch (error) {
+      console.error("Error loading dashboard data:", error);
+    }
+  };
 
-  const blocksInProduction = productionOrders
-    .filter((o) => o.status === "in_progress")
-    .reduce(
-      (total, order) =>
-        total +
-        order.lines.reduce((lineTotal, line) => lineTotal + line.quantity, 0),
-      0,
-    );
-
-  const totalVolume = productionOrders.reduce(
-    (total, order) => total + order.totalVolume,
-    0,
-  );
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-lg text-muted-foreground">
-          Carregando dashboard...
-        </div>
-      </div>
-    );
-  }
+  const equipmentHealthPercentage = stats.equipments.total > 0
+    ? Math.round((stats.equipments.active / stats.equipments.total) * 100)
+    : 0;
 
   return (
-    <div className="space-y-4 md:space-y-6 max-w-full overflow-x-hidden">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="mb-2">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-foreground via-primary to-blue-600 bg-clip-text text-transparent">
-          FactoryControl
-        </h1>
-        <p className="text-xs md:text-sm text-muted-foreground/90 mt-1 font-medium">
-          Dashboard em tempo real
-        </p>
+      <div>
+        <h1 className="text-3xl font-bold">MaintenanceControl</h1>
+        <p className="text-muted-foreground">Dashboard de Gestão de Manutenção</p>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid gap-3 md:gap-4 lg:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 md:p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-primary/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-xs md:text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
-                Ordens Ativas
-              </p>
-              <p className="text-3xl md:text-4xl font-extrabold text-card-foreground mt-1 md:mt-2">
-                {activeOrders}
-              </p>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
-                de {totalOrders} total
-              </p>
-            </div>
-            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300">
-              <Factory className="h-6 w-6 md:h-8 md:w-8 text-primary" />
-            </div>
-          </div>
-        </div>
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Equipamentos Ativos</CardTitle>
+            <Activity className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.equipments.active}</div>
+            <p className="text-xs text-muted-foreground">
+              de {stats.equipments.total} equipamentos
+            </p>
+            <Progress value={equipmentHealthPercentage} className="mt-2" />
+          </CardContent>
+        </Card>
 
-        <div className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 md:p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-blue-600/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-xs md:text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
-                Blocos em Produção
-              </p>
-              <p className="text-3xl md:text-4xl font-extrabold text-card-foreground mt-1 md:mt-2">
-                {blocksInProduction}
-              </p>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
-                blocos de espuma
-              </p>
-            </div>
-            <div className="rounded-xl bg-gradient-to-br from-blue-600/10 to-blue-500/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300">
-              <Package className="h-6 w-6 md:h-8 md:w-8 text-blue-600" />
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Manutenções Pendentes</CardTitle>
+            <Settings className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.maintenance.pending}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.maintenance.overdue > 0 && (
+                <span className="text-red-600 font-semibold">
+                  {stats.maintenance.overdue} atrasadas
+                </span>
+              )}
+              {stats.maintenance.overdue === 0 && "Nenhuma atrasada"}
+            </p>
+          </CardContent>
+        </Card>
 
-        <div className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 md:p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-xs md:text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
-                Máquinas Ativas
-              </p>
-              <p className="text-3xl md:text-4xl font-extrabold text-card-foreground mt-1 md:mt-2">
-                {activeMachines}
-              </p>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
-                de {totalMachines} máquinas
-              </p>
-            </div>
-            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-green-500/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300">
-              <Activity className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Stock Baixo</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.materials.low_stock}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.materials.out_of_stock} sem stock
+            </p>
+          </CardContent>
+        </Card>
 
-        <div className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card to-card/95 p-4 md:p-6 shadow-lg hover:shadow-2xl hover:scale-[1.02] transition-all duration-300 hover:border-green-600/30 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-600/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <p className="text-xs md:text-sm font-semibold text-muted-foreground/80 uppercase tracking-wide">
-                Concluídas Hoje
-              </p>
-              <p className="text-3xl md:text-4xl font-extrabold text-card-foreground mt-1 md:mt-2">
-                {completedToday}
-              </p>
-              <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5 md:mt-1">
-                ordens finalizadas
-              </p>
-            </div>
-            <div className="rounded-xl bg-gradient-to-br from-green-600/10 to-emerald-500/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300">
-              <CheckCircle className="h-6 w-6 md:h-8 md:w-8 text-green-600" />
-            </div>
-          </div>
-        </div>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Alertas Ativos</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.alerts.total_active}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.alerts.critical > 0 && (
+                <span className="text-red-600 font-semibold">
+                  {stats.alerts.critical} críticos
+                </span>
+              )}
+              {stats.alerts.critical === 0 && "Nenhum crítico"}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Status das Máquinas */}
-      <div className="rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card via-card/95 to-card/90 p-4 md:p-6 shadow-lg">
-        <h3 className="text-lg md:text-xl font-bold mb-4 md:mb-6 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-          Status das Máquinas
-        </h3>
-        <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          {machines.map((machine) => (
-            <div
-              key={machine.id}
-              className="group border border-border/40 rounded-xl p-4 hover:shadow-lg hover:scale-[1.02] transition-all duration-300 bg-gradient-to-br from-card/50 to-transparent"
-            >
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="font-medium text-sm md:text-base">{machine.name}</h4>
-                <div
-                  className={`w-3 h-3 rounded-full ${
-                    machine.status === "busy"
-                      ? "bg-yellow-500"
-                      : machine.status === "available"
-                        ? "bg-green-500"
-                        : machine.status === "maintenance"
-                          ? "bg-red-500"
-                          : "bg-gray-500"
-                  }`}
-                />
+      {/* Performance Cards */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+              Manutenções Este Mês
+            </CardTitle>
+            <CardDescription>
+              {stats.maintenance.completed_month} manutenções realizadas
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Concluídas</span>
+                <Badge variant="default">{stats.maintenance.completed_month}</Badge>
               </div>
-              <div className="text-xs md:text-sm text-muted-foreground">
-                <div>Tipo: {machine.type}</div>
-                <div>
-                  Status:{" "}
-                  {machine.status === "busy"
-                    ? "Em Uso"
-                    : machine.status === "available"
-                      ? "Disponível"
-                      : machine.status === "maintenance"
-                        ? "Manutenção"
-                        : "Offline"}
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Agendadas</span>
+                <Badge variant="secondary">{stats.maintenance.scheduled}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Pendentes</span>
+                <Badge variant="outline">{stats.maintenance.pending}</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-blue-600" />
+              Estado dos Equipamentos
+            </CardTitle>
+            <CardDescription>Distribuição atual</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Ativos</span>
+                <Badge className="bg-green-600">{stats.equipments.active}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Em Manutenção</span>
+                <Badge className="bg-orange-600">{stats.equipments.maintenance}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm">Inativos</span>
+                <Badge variant="destructive">{stats.equipments.inactive}</Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Recent and Upcoming Maintenance */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wrench className="h-5 w-5" />
+              Manutenções Recentes
+            </CardTitle>
+            <CardDescription>Últimas manutenções realizadas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentMaintenance.length === 0 && (
+                <p className="text-sm text-muted-foreground">Nenhuma manutenção recente</p>
+              )}
+              {recentMaintenance.map((maintenance) => (
+                <div key={maintenance.id} className="flex items-start justify-between border-b pb-3 last:border-0">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{maintenance.maintenance_type}</p>
+                    <p className="text-xs text-muted-foreground">{maintenance.description}</p>
+                  </div>
+                  <Badge variant="outline" className="ml-2">
+                    {new Date(maintenance.performed_at).toLocaleDateString()}
+                  </Badge>
                 </div>
-                {machine.currentOperator && (
-                  <div>Operador: {machine.currentOperator}</div>
-                )}
-              </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </CardContent>
+        </Card>
 
-      {/* Ordens Urgentes */}
-      {urgentOrders > 0 && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 md:p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <AlertTriangle className="h-5 w-5 md:h-6 md:w-6 text-red-600" />
-            <div>
-              <h3 className="text-sm md:text-base font-semibold text-red-900">Ordens Urgentes</h3>
-              <p className="text-xs md:text-sm text-red-700">
-                {urgentOrders}{" "}
-                {urgentOrders === 1 ? "ordem requer" : "ordens requerem"}{" "}
-                atenção imediata
-              </p>
-            </div>
-          </div>
-          <a
-            href="/production"
-            className="inline-flex items-center text-xs md:text-sm font-medium text-red-600 hover:text-red-700"
-          >
-            Ver ordens urgentes →
-          </a>
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className="grid gap-3 md:gap-4 lg:gap-6 grid-cols-2 md:grid-cols-4">
-        <a
-          href="/production"
-          className="group rounded-xl md:rounded-2xl border border-border/40 bg-gradient-to-br from-card to-card/95 p-4 md:p-6 hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 hover:border-primary/30 relative overflow-hidden"
-        >
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4 relative z-10">
-            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-blue-600/10 p-2 md:p-3 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-              <Factory className="h-5 w-5 md:h-6 md:w-6 text-primary" />
-            </div>
-            <div>
-              <h3 className="text-sm md:text-base font-semibold text-card-foreground">Produção</h3>
-              <p className="text-xs md:text-sm text-muted-foreground">Gestão de OPs</p>
-            </div>
-          </div>
-        </a>
-
-        <a
-          href="/operator"
-          className="rounded-xl border bg-card p-4 md:p-6 hover:bg-muted/50 transition-colors"
-        >
-          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-            <div className="rounded-lg bg-blue-600/10 p-2 md:p-3">
-              <Users className="h-5 w-5 md:h-6 md:w-6 text-blue-600" />
-            </div>
-            <div>
-              <h3 className="text-sm md:text-base font-semibold text-card-foreground">Operadores</h3>
-              <p className="text-xs md:text-sm text-muted-foreground">Portal da fábrica</p>
-            </div>
-          </div>
-        </a>
-
-        <a
-          href="/quality"
-          className="rounded-xl border bg-card p-4 md:p-6 hover:bg-muted/50 transition-colors"
-        >
-          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-            <div className="rounded-lg bg-green-600/10 p-2 md:p-3">
-              <CheckCircle className="h-5 w-5 md:h-6 md:w-6 text-green-600" />
-            </div>
-            <div>
-              <h3 className="text-sm md:text-base font-semibold text-card-foreground">Qualidade</h3>
-              <p className="text-xs md:text-sm text-muted-foreground">Inspeções</p>
-            </div>
-          </div>
-        </a>
-
-        <a
-          href="/equipment"
-          className="rounded-xl border bg-card p-4 md:p-6 hover:bg-muted/50 transition-colors"
-        >
-          <div className="flex items-center gap-2 md:gap-3 mb-3 md:mb-4">
-            <div className="rounded-lg bg-orange-600/10 p-2 md:p-3">
-              <Settings className="h-5 w-5 md:h-6 md:w-6 text-orange-600" />
-            </div>
-            <div>
-              <h3 className="text-sm md:text-base font-semibold text-card-foreground">
-                Equipamentos
-              </h3>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Gestão de máquinas
-              </p>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      {/* Resumo de Volume */}
-      <div className="rounded-xl border bg-card p-4 md:p-6">
-        <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4">Resumo de Produção</h3>
-        <div className="grid gap-3 md:gap-4 grid-cols-1 sm:grid-cols-3">
-          <div className="text-center">
-            <div className="text-xl md:text-2xl font-bold text-primary">
-              {totalVolume.toFixed(2)} m³
-            </div>
-            <div className="text-xs md:text-sm text-muted-foreground">
-              Volume Total em Produção
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl md:text-2xl font-bold text-blue-600">
-              {blocksInProduction}
-            </div>
-            <div className="text-xs md:text-sm text-muted-foreground">
-              Blocos sendo Processados
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-xl md:text-2xl font-bold text-green-600">
-              {Math.round((activeMachines / totalMachines) * 100)}%
-            </div>
-            <div className="text-xs md:text-sm text-muted-foreground">
-              Taxa de Utilização
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Machine Downtime and Maintenance Status */}
-      <div className="grid gap-3 md:gap-4 lg:gap-6 grid-cols-1 md:grid-cols-2">
-        {/* Machines in Maintenance */}
-        <div className="rounded-xl border bg-card p-4 md:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base md:text-lg font-semibold flex items-center gap-2">
-              <Wrench className="h-4 w-4 md:h-5 md:w-5 text-orange-500" />
-              Máquinas em Manutenção
-            </h3>
-            <span
-              className={`text-xs md:text-sm px-2 py-1 rounded-full ${
-                machinesInMaintenance > 0
-                  ? "bg-orange-100 text-orange-800"
-                  : "bg-green-100 text-green-800"
-              }`}
-            >
-              {machinesInMaintenance} máquinas
-            </span>
-          </div>
-
-          {activeMachineDowntime.length === 0 ? (
-            <div className="text-center py-8">
-              <CheckCircle className="h-10 w-10 md:h-12 md:w-12 text-green-500 mx-auto mb-2" />
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Todas as máquinas operacionais
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {activeMachineDowntime.map((downtime) => {
-                const startTime = new Date(downtime.startTime);
-                const now = new Date();
-                const durationMinutes = Math.floor(
-                  (now.getTime() - startTime.getTime()) / (1000 * 60),
-                );
-                const hours = Math.floor(durationMinutes / 60);
-                const minutes = durationMinutes % 60;
-
-                return (
-                  <div
-                    key={downtime.id}
-                    className="border rounded-lg p-3 bg-orange-50"
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Próximas Manutenções
+            </CardTitle>
+            <CardDescription>Manutenções agendadas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {upcomingMaintenance.length === 0 && (
+                <p className="text-sm text-muted-foreground">Nenhuma manutenção agendada</p>
+              )}
+              {upcomingMaintenance.map((maintenance) => (
+                <div key={maintenance.id} className="flex items-start justify-between border-b pb-3 last:border-0">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">{maintenance.maintenance_type}</p>
+                    <p className="text-xs text-muted-foreground">{maintenance.description}</p>
+                  </div>
+                  <Badge 
+                    variant={maintenance.priority === "high" ? "destructive" : "secondary"}
+                    className="ml-2"
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-medium text-sm">
-                        {downtime.machineName}
-                      </h4>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          downtime.impact === "critical"
-                            ? "bg-red-100 text-red-800"
-                            : downtime.impact === "high"
-                              ? "bg-orange-100 text-orange-800"
-                              : "bg-yellow-100 text-yellow-800"
-                        }`}
-                      >
-                        {downtime.impact === "critical"
-                          ? "Crítico"
-                          : downtime.impact === "high"
-                            ? "Alto"
-                            : downtime.impact === "medium"
-                              ? "Médio"
-                              : "Baixo"}
-                      </span>
-                    </div>
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {downtime.description}
-                    </p>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">
-                        Parada: {hours}h {minutes}min
-                      </span>
-                      <span className="text-muted-foreground">
-                        {startTime.toLocaleTimeString("pt-BR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Maintenance Requests */}
-        <div className="rounded-xl border bg-card p-4 md:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-base md:text-lg font-semibold flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
-              Solicitações de Manutenção
-            </h3>
-            <span
-              className={`text-xs md:text-sm px-2 py-1 rounded-full ${
-                pendingMaintenanceRequests > 0
-                  ? "bg-yellow-100 text-yellow-800"
-                  : "bg-green-100 text-green-800"
-              }`}
-            >
-              {pendingMaintenanceRequests} pendentes
-            </span>
-          </div>
-
-          <div className="grid gap-3 mb-4">
-            <div className="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-red-500" />
-                <span className="text-sm font-medium">Críticas</span>
-              </div>
-              <span className="text-lg font-bold text-red-600">
-                {criticalMaintenanceRequests}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <Timer className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm font-medium">Pendentes</span>
-              </div>
-              <span className="text-lg font-bold text-yellow-600">
-                {pendingMaintenanceRequests}
-              </span>
-            </div>
-          </div>
-
-          {maintenanceRequests
-            .filter((r) => r.status === "pending")
-            .slice(0, 3)
-            .map((request) => {
-              const requestTime = new Date(request.requestedAt);
-              const now = new Date();
-              const ageMinutes = Math.floor(
-                (now.getTime() - requestTime.getTime()) / (1000 * 60),
-              );
-              const ageHours = Math.floor(ageMinutes / 60);
-
-              return (
-                <div
-                  key={request.id}
-                  className="border rounded-lg p-3 mb-2 bg-muted/20"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <h4 className="font-medium text-sm">{request.title}</h4>
-                    <span
-                      className={`text-xs px-2 py-1 rounded-full ${
-                        request.urgencyLevel === "critical"
-                          ? "bg-red-100 text-red-800"
-                          : request.urgencyLevel === "high"
-                            ? "bg-orange-100 text-orange-800"
-                            : request.urgencyLevel === "medium"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-green-100 text-green-800"
-                      }`}
-                    >
-                      {request.urgencyLevel === "critical"
-                        ? "Crítica"
-                        : request.urgencyLevel === "high"
-                          ? "Alta"
-                          : request.urgencyLevel === "medium"
-                            ? "Média"
-                            : "Baixa"}
-                    </span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {request.machineName}
-                  </p>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>Por: {request.operatorName}</span>
-                    <span>
-                      Há {ageHours > 0 ? `${ageHours}h` : `${ageMinutes}min`}
-                    </span>
-                  </div>
+                    {new Date(maintenance.scheduled_date).toLocaleDateString()}
+                  </Badge>
                 </div>
-              );
-            })}
-
-          {maintenanceRequests.filter((r) => r.status === "pending").length ===
-            0 && (
-            <div className="text-center py-4">
-              <CheckCircle className="h-6 w-6 md:h-8 md:w-8 text-green-500 mx-auto mb-2" />
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Nenhuma solicitação pendente
-              </p>
+              ))}
             </div>
-          )}
-        </div>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Maintenance Popup for Backend Team */}
-      <MaintenancePopupContainer
-        onRequestUpdate={() => {
-          queryClient.invalidateQueries({ queryKey: ["maintenanceRequests"] });
-          queryClient.invalidateQueries({ queryKey: ["machineDowntime"] });
-          queryClient.invalidateQueries({ queryKey: ["machines"] });
-        }}
-      />
     </div>
   );
 }
