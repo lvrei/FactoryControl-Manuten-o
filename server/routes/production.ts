@@ -1,5 +1,5 @@
 import express from "express";
-import { query } from "../db";
+import { query, isDbConfigured } from "../db";
 
 export const productionRouter = express.Router();
 
