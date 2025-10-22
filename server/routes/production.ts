@@ -983,6 +983,9 @@ productionRouter.delete("/machines/:id", async (req, res) => {
 // Alias: /equipment -> /machines (for backward compatibility)
 productionRouter.get("/equipment", async (req, res) => {
   try {
+    if (!isDbConfigured()) {
+      return res.json([]);
+    }
     const { rows } = await query(`SELECT
       id, name, type as equipment_type, '' as manufacturer, '' as model,
       '' as serial_number, created_at as installation_date, '' as location,
@@ -1010,6 +1013,9 @@ productionRouter.get("/equipment", async (req, res) => {
 // Users endpoint (placeholder)
 productionRouter.get("/users", async (_req, res) => {
   try {
+    if (!isDbConfigured()) {
+      return res.json([]);
+    }
     const { rows } = await query(`SELECT id, full_name, email, role, created_at FROM users ORDER BY full_name`);
     res.json(rows);
   } catch (e: any) {
