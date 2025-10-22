@@ -9,7 +9,7 @@ interface QRCodeGeneratorProps {
   showControls?: boolean;
 }
 
-export function QRCodeGenerator({
+export default function QRCodeGenerator({
   equipmentId,
   equipmentName,
   size = 200,
@@ -108,7 +108,7 @@ export function QRCodeGenerator({
         </head>
         <body>
           <div class="qr-container">
-            <div class="logo">🏭 FactoryControl</div>
+            <div class="logo">🔧 MaintenanceControl</div>
             <div class="title">Equipamento</div>
             <div class="equipment-id">${equipmentId}</div>
             <img src="${dataUrl}" alt="QR Code" class="qr-image" />
