@@ -61,6 +61,9 @@ function genId() {
 
 employeesRouter.get("/employees", async (_req, res) => {
   try {
+    if (!isDbConfigured()) {
+      return res.json([]);
+    }
     await ensureEmployeesTables();
     const { rows } = await query(
       `SELECT * FROM employees ORDER BY created_at DESC`,
