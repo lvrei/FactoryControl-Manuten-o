@@ -506,7 +506,7 @@ maintenanceRouter.get("/maintenance/records", async (_req, res) => {
       `SELECT mr.*, e.name as equipment_name
        FROM maintenance_records mr
        LEFT JOIN equipments e ON mr.equipment_id = e.id
-       ORDER BY mr.performed_at DESC`
+       ORDER BY mr.performed_at DESC`,
     );
     return res.json(rows);
   } catch (e: any) {
@@ -528,7 +528,7 @@ maintenanceRouter.get("/maintenance/planned", async (_req, res) => {
        FROM planned_maintenance pm
        LEFT JOIN equipments e ON pm.equipment_id = e.id
        LEFT JOIN users u ON pm.assigned_to = u.id
-       ORDER BY pm.scheduled_date ASC`
+       ORDER BY pm.scheduled_date ASC`,
     );
     return res.json(rows);
   } catch (e: any) {
@@ -548,7 +548,7 @@ maintenanceRouter.get("/maintenance/planned/:id", async (req, res) => {
        LEFT JOIN equipments e ON pm.equipment_id = e.id
        LEFT JOIN users u ON pm.assigned_to = u.id
        WHERE pm.id = $1`,
-      [id]
+      [id],
     );
 
     if (rows.length === 0) {
@@ -573,7 +573,7 @@ maintenanceRouter.post("/maintenance/planned", async (req, res) => {
       status = "scheduled",
       priority = "medium",
       estimated_duration,
-      notes
+      notes,
     } = req.body;
 
     const { rows } = await query(
@@ -592,8 +592,8 @@ maintenanceRouter.post("/maintenance/planned", async (req, res) => {
         status,
         priority,
         estimated_duration,
-        notes
-      ]
+        notes,
+      ],
     );
 
     return res.status(201).json(rows[0]);
@@ -615,7 +615,7 @@ maintenanceRouter.put("/maintenance/planned/:id", async (req, res) => {
       status,
       priority,
       estimated_duration,
-      notes
+      notes,
     } = req.body;
 
     const { rows } = await query(
@@ -642,8 +642,8 @@ maintenanceRouter.put("/maintenance/planned/:id", async (req, res) => {
         priority,
         estimated_duration,
         notes,
-        id
-      ]
+        id,
+      ],
     );
 
     if (rows.length === 0) {
@@ -662,7 +662,7 @@ maintenanceRouter.delete("/maintenance/planned/:id", async (req, res) => {
     const { id } = req.params;
     const { rows } = await query(
       "DELETE FROM planned_maintenance WHERE id = $1 RETURNING *",
-      [id]
+      [id],
     );
 
     if (rows.length === 0) {
