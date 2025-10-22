@@ -54,7 +54,9 @@ interface Equipment {
 
 const statusConfig = {
   active: { label: "Ativo", color: "bg-green-600", icon: CheckCircle },
+  available: { label: "Disponível", color: "bg-green-600", icon: CheckCircle },
   maintenance: { label: "Manutenção", color: "bg-orange-600", icon: Settings },
+  busy: { label: "Em Uso", color: "bg-blue-600", icon: Settings },
   inactive: { label: "Inativo", color: "bg-gray-600", icon: AlertTriangle },
 };
 

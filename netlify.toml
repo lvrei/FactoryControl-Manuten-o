@@ -9,6 +9,18 @@
   node_bundler = "esbuild"
 
 [[redirects]]
+  force = false
+  from = "/api/equipment"
+  status = 200
+  to = "/api/machines"
+
+[[redirects]]
+  force = false
+  from = "/api/equipment/*"
+  status = 200
+  to = "/api/machines/:splat"
+
+[[redirects]]
   force = true
   from = "/api/*"
   status = 200
