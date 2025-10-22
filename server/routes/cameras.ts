@@ -5,7 +5,7 @@ export const camerasRouter = express.Router();
 
 // Ensure cameras table exists (idempotent)
 async function ensureCamerasTable() {
-  if (!isDbConfigured()) return;
+  if (!isDbConfigured()) return false;
 
   // Check if public.machines exists to decide FK creation
   const machinesExists = await query<{ exists: boolean }>(
