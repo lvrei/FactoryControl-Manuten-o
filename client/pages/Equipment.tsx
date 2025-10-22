@@ -270,7 +270,7 @@ export default function Equipment() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredEquipment.map((eq) => {
-            const statusInfo = statusConfig[eq.status];
+            const statusInfo = statusConfig[eq.status] || statusConfig.inactive;
             const StatusIcon = statusInfo.icon;
             return (
               <Card key={eq.id}>
