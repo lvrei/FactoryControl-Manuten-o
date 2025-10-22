@@ -1012,18 +1012,177 @@ productionRouter.get("/equipment", async (req, res) => {
   }
 });
 
-// Users endpoint (placeholder)
+// POST /equipment - create equipment
+productionRouter.post("/equipment", async (req, res) => {
+  try {
+    if (!isDbConfigured()) {
+      return res.status(503).json({ error: "Database not configured" });
+    }
+    const data = req.body;
+    const id = `equip-${Date.now()}`;
+
+    await query(
+      `INSERT INTO machines (id, name, type, status, created_at) VALUES ($1, $2, $3, $4, NOW())`,
+      [id, data.name, data.equipment_type || 'generic', data.status || 'active']
+    );
+
+    res.status(201).json({ id, ...data });
+  } catch (e: any) {
+    console.error("POST /equipment error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT /equipment/:id - update equipment
+productionRouter.put("/equipment/:id", async (req, res) => {
+  try {
+    if (!isDbConfigured()) {
+      return res.status(503).json({ error: "Database not configured" });
+    }
+    const { id } = req.params;
+    const data = req.body;
+
+    await query(
+      `UPDATE machines SET name = $1, type = $2, status = $3 WHERE id = $4`,
+      [data.name, data.equipment_type || 'generic', data.status || 'active', id]
+    );
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("PUT /equipment/:id error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE /equipment/:id - delete equipment
+productionRouter.delete("/equipment/:id", async (req, res) => {
+  try {
+    if (!isDbConfigured()) {
+      return res.status(503).json({ error: "Database not configured" });
+    }
+    const { id } = req.params;
+
+    await query(`DELETE FROM machines WHERE id = $1`, [id]);
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("DELETE /equipment/:id error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Users CRUD
 productionRouter.get("/users", async (_req, res) => {
   try {
     if (!isDbConfigured()) {
       return res.json([]);
     }
+
+    // Check if users table exists, if not return empty
+    const tableCheck = await query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables
+        WHERE table_schema = 'public'
+        AND table_name = 'users'
+      ) AS exists
+    `);
+
+    if (!tableCheck.rows[0]?.exists) {
+      return res.json([]);
+    }
+
     const { rows } = await query(
-      `SELECT id, full_name, email, role, created_at FROM users ORDER BY full_name`,
+      `SELECT id, username, full_name, email, role, created_at FROM users ORDER BY full_name`,
     );
     res.json(rows);
   } catch (e: any) {
     console.error("GET /users error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// POST /users - create user
+productionRouter.post("/users", async (req, res) => {
+  try {
+    if (!isDbConfigured()) {
+      return res.status(503).json({ error: "Database not configured" });
+    }
+
+    const { username, full_name, email, role, password } = req.body;
+    const id = `user-${Date.now()}`;
+
+    // Ensure users table exists
+    await query(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        full_name TEXT NOT NULL,
+        email TEXT,
+        role TEXT NOT NULL,
+        password_hash TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    // Hash password (simple placeholder - in production use bcrypt)
+    const passwordHash = password ? `hash_${password}` : null;
+
+    await query(
+      `INSERT INTO users (id, username, full_name, email, role, password_hash)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [id, username, full_name, email || null, role, passwordHash]
+    );
+
+    res.status(201).json({ id, username, full_name, email, role });
+  } catch (e: any) {
+    console.error("POST /users error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// PUT /users/:id - update user
+productionRouter.put("/users/:id", async (req, res) => {
+  try {
+    if (!isDbConfigured()) {
+      return res.status(503).json({ error: "Database not configured" });
+    }
+
+    const { id } = req.params;
+    const { username, full_name, email, role, password } = req.body;
+
+    if (password) {
+      const passwordHash = `hash_${password}`;
+      await query(
+        `UPDATE users SET username = $1, full_name = $2, email = $3, role = $4, password_hash = $5 WHERE id = $6`,
+        [username, full_name, email, role, passwordHash, id]
+      );
+    } else {
+      await query(
+        `UPDATE users SET username = $1, full_name = $2, email = $3, role = $4 WHERE id = $5`,
+        [username, full_name, email, role, id]
+      );
+    }
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("PUT /users/:id error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE /users/:id - delete user
+productionRouter.delete("/users/:id", async (req, res) => {
+  try {
+    if (!isDbConfigured()) {
+      return res.status(503).json({ error: "Database not configured" });
+    }
+
+    const { id } = req.params;
+    await query(`DELETE FROM users WHERE id = $1`, [id]);
+
+    res.json({ success: true });
+  } catch (e: any) {
+    console.error("DELETE /users/:id error", e);
     res.status(500).json({ error: e.message });
   }
 });
