@@ -1023,7 +1023,12 @@ productionRouter.post("/equipment", async (req, res) => {
 
     await query(
       `INSERT INTO machines (id, name, type, status, created_at) VALUES ($1, $2, $3, $4, NOW())`,
-      [id, data.name, data.equipment_type || 'generic', data.status || 'active']
+      [
+        id,
+        data.name,
+        data.equipment_type || "generic",
+        data.status || "active",
+      ],
     );
 
     res.status(201).json({ id, ...data });
@@ -1044,7 +1049,12 @@ productionRouter.put("/equipment/:id", async (req, res) => {
 
     await query(
       `UPDATE machines SET name = $1, type = $2, status = $3 WHERE id = $4`,
-      [data.name, data.equipment_type || 'generic', data.status || 'active', id]
+      [
+        data.name,
+        data.equipment_type || "generic",
+        data.status || "active",
+        id,
+      ],
     );
 
     res.json({ success: true });
@@ -1130,7 +1140,7 @@ productionRouter.post("/users", async (req, res) => {
     await query(
       `INSERT INTO users (id, username, full_name, email, role, password_hash)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [id, username, full_name, email || null, role, passwordHash]
+      [id, username, full_name, email || null, role, passwordHash],
     );
 
     res.status(201).json({ id, username, full_name, email, role });
@@ -1154,12 +1164,12 @@ productionRouter.put("/users/:id", async (req, res) => {
       const passwordHash = `hash_${password}`;
       await query(
         `UPDATE users SET username = $1, full_name = $2, email = $3, role = $4, password_hash = $5 WHERE id = $6`,
-        [username, full_name, email, role, passwordHash, id]
+        [username, full_name, email, role, passwordHash, id],
       );
     } else {
       await query(
         `UPDATE users SET username = $1, full_name = $2, email = $3, role = $4 WHERE id = $5`,
-        [username, full_name, email, role, id]
+        [username, full_name, email, role, id],
       );
     }
 
