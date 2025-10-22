@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Factory, User, Lock, Eye, EyeOff, LogIn } from "lucide-react";
+import { Settings, User, Lock, Eye, EyeOff, LogIn } from "lucide-react";
 import { authService } from "@/services/authService";
 import { cn } from "@/lib/utils";
 
@@ -20,14 +20,8 @@ export default function Login() {
     try {
       const session = await authService.login(username, password);
 
-      // Redirect based on role and factory association
-      if (session.factoryName || session.factoryId) {
-        navigate("/factory-orders");
-      } else if (session.role === "operator") {
-        navigate("/operator");
-      } else {
-        navigate("/");
-      }
+      // Redirect to dashboard
+      navigate("/");
     } catch (error) {
       setError(error instanceof Error ? error.message : "Erro no login");
     } finally {
@@ -54,16 +48,13 @@ export default function Login() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-              <Factory className="h-7 w-7 text-primary-foreground" />
+              <Settings className="h-7 w-7 text-primary-foreground" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">
-              FactoryControl
+              MaintenanceControl
             </h1>
           </div>
-          <p className="text-muted-foreground">Sistema de Gestão Industrial</p>
-          <p className="text-sm text-muted-foreground">
-            Indústria de Corte de Espuma
-          </p>
+          <p className="text-muted-foreground">Sistema de Gestão de Manutenção</p>
         </div>
 
         {/* Login Form */}
@@ -196,7 +187,7 @@ export default function Login() {
         {/* Footer */}
         <div className="text-center mt-6">
           <p className="text-xs text-muted-foreground">
-            FactoryControl v4.0 - Sistema Seguro com JWT
+            MaintenanceControl v1.0 - Sistema de Gestão de Manutenção
           </p>
         </div>
       </div>
