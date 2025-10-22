@@ -979,3 +979,41 @@ productionRouter.delete("/machines/:id", async (req, res) => {
     res.status(500).json({ error: e.message });
   }
 });
+
+// Alias: /equipment -> /machines (for backward compatibility)
+productionRouter.get("/equipment", async (req, res) => {
+  try {
+    const { rows } = await query(`SELECT
+      id, name, type as equipment_type, '' as manufacturer, '' as model,
+      '' as serial_number, created_at as installation_date, '' as location,
+      status, '' as notes, created_at
+      FROM machines ORDER BY name`);
+    res.json(rows.map(r => ({
+      id: r.id,
+      name: r.name,
+      equipment_type: r.equipment_type || '',
+      manufacturer: r.manufacturer || '',
+      model: r.model || '',
+      serial_number: r.serial_number || '',
+      installation_date: r.installation_date,
+      location: r.location || '',
+      status: r.status,
+      notes: r.notes || '',
+      created_at: r.created_at
+    })));
+  } catch (e: any) {
+    console.error("GET /equipment error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// Users endpoint (placeholder)
+productionRouter.get("/users", async (_req, res) => {
+  try {
+    const { rows } = await query(`SELECT id, full_name, email, role, created_at FROM users ORDER BY full_name`);
+    res.json(rows);
+  } catch (e: any) {
+    console.error("GET /users error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
