@@ -90,7 +90,7 @@ export default function Equipment() {
   const loadEquipment = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/equipment");
+      const response = await fetch("/api/machines");
       if (response.ok) {
         const data = await response.json();
         setEquipment(data);
@@ -116,8 +116,8 @@ export default function Equipment() {
 
     try {
       const url = editingEquipment
-        ? `/api/equipment/${editingEquipment.id}`
-        : "/api/equipment";
+        ? `/api/machines/${editingEquipment.id}`
+        : "/api/machines";
       const method = editingEquipment ? "PUT" : "POST";
 
       const response = await fetch(url, {
