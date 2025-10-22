@@ -28,24 +28,13 @@ interface LayoutProps {
 
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
-  { name: "🆕 Produção", href: "/production", icon: Factory, isNew: true },
-  { name: "OP (Fábrica)", href: "/factory-orders", icon: Package },
-  {
-    name: "🔄 Portal Operador",
-    href: "/operator",
-    icon: Users,
-    isOperator: true,
-  },
-  { name: "Stock", href: "/stock", icon: Warehouse },
   { name: "Equipamentos", href: "/equipment", icon: Activity },
-  { name: "Qualidade", href: "/quality", icon: Package },
   { name: "Manutenção", href: "/maintenance", icon: Settings },
   { name: "Equipa", href: "/team", icon: Users },
-  { name: "Planejamento", href: "/planning", icon: Calendar },
+  { name: "Planeamento", href: "/planning", icon: Calendar },
   { name: "Sensores", href: "/sensors", icon: Settings },
   { name: "Câmaras", href: "/cameras", icon: Video },
-  { name: "📊 Relatórios Câmaras", href: "/camera-reports", icon: BarChart3 },
-  { name: "Assistente", href: "/assistant", icon: MessageSquare },
+  { name: "Stock Material", href: "/material-stock", icon: Package },
   { name: "Alertas", href: "/alerts", icon: AlertTriangle },
 ];
 
@@ -79,10 +68,10 @@ export function Layout({ children }: LayoutProps) {
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-base md:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent whitespace-nowrap">
-                  FactoryControl
+                  MaintenanceControl
                 </h1>
                 <p className="text-[10px] md:text-xs font-medium text-muted-foreground/80">
-                  Gestão Industrial
+                  Gestão de Manutenção
                 </p>
               </div>
             </div>
