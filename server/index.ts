@@ -108,14 +108,18 @@ export async function createServer() {
       if (!isDbConfigured()) {
         return res.json([]);
       }
-      const { rows } = await query(`SELECT id, name, type as equipment_type, status, created_at FROM machines ORDER BY name`);
-      res.json(rows.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        equipment_type: r.equipment_type || "",
-        status: r.status,
-        created_at: r.created_at,
-      })));
+      const { rows } = await query(
+        `SELECT id, name, type as equipment_type, status, created_at FROM machines ORDER BY name`,
+      );
+      res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          equipment_type: r.equipment_type || "",
+          status: r.status,
+          created_at: r.created_at,
+        })),
+      );
     } catch (e: any) {
       console.error("GET /equipment error", e);
       res.status(500).json({ error: e.message });
@@ -132,7 +136,12 @@ export async function createServer() {
       const id = `equip-${Date.now()}`;
       await query(
         `INSERT INTO machines (id, name, type, status, created_at) VALUES ($1, $2, $3, $4, NOW())`,
-        [id, data.name, data.equipment_type || "generic", data.status || "active"]
+        [
+          id,
+          data.name,
+          data.equipment_type || "generic",
+          data.status || "active",
+        ],
       );
       res.status(201).json({ id, ...data });
     } catch (e: any) {
@@ -147,11 +156,15 @@ export async function createServer() {
       if (!isDbConfigured()) {
         return res.json([]);
       }
-      const tableCheck = await query(`SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') AS exists`);
+      const tableCheck = await query(
+        `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') AS exists`,
+      );
       if (!tableCheck.rows[0]?.exists) {
         return res.json([]);
       }
-      const { rows } = await query(`SELECT id, username, full_name, email, role, created_at FROM users ORDER BY full_name`);
+      const { rows } = await query(
+        `SELECT id, username, full_name, email, role, created_at FROM users ORDER BY full_name`,
+      );
       res.json(rows);
     } catch (e: any) {
       console.error("GET /users error", e);
@@ -167,9 +180,14 @@ export async function createServer() {
       }
       const { username, full_name, email, role, password } = req.body;
       const id = `user-${Date.now()}`;
-      await query(`CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, email TEXT, role TEXT NOT NULL, password_hash TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`);
+      await query(
+        `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, email TEXT, role TEXT NOT NULL, password_hash TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`,
+      );
       const passwordHash = password ? `hash_${password}` : null;
-      await query(`INSERT INTO users (id, username, full_name, email, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6)`, [id, username, full_name, email || null, role, passwordHash]);
+      await query(
+        `INSERT INTO users (id, username, full_name, email, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6)`,
+        [id, username, full_name, email || null, role, passwordHash],
+      );
       res.status(201).json({ id, username, full_name, email, role });
     } catch (e: any) {
       console.error("POST /users error", e);
@@ -184,14 +202,18 @@ export async function createServer() {
       if (!isDbConfigured()) {
         return res.json([]);
       }
-      const { rows } = await query(`SELECT id, name, type as equipment_type, status, created_at FROM machines ORDER BY name`);
-      res.json(rows.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        equipment_type: r.equipment_type || "",
-        status: r.status,
-        created_at: r.created_at,
-      })));
+      const { rows } = await query(
+        `SELECT id, name, type as equipment_type, status, created_at FROM machines ORDER BY name`,
+      );
+      res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          equipment_type: r.equipment_type || "",
+          status: r.status,
+          created_at: r.created_at,
+        })),
+      );
     } catch (e: any) {
       console.error("GET /api/equipment error", e);
       res.status(500).json({ error: e.message });
@@ -208,7 +230,12 @@ export async function createServer() {
       const id = `equip-${Date.now()}`;
       await query(
         `INSERT INTO machines (id, name, type, status, created_at) VALUES ($1, $2, $3, $4, NOW())`,
-        [id, data.name, data.equipment_type || "generic", data.status || "active"]
+        [
+          id,
+          data.name,
+          data.equipment_type || "generic",
+          data.status || "active",
+        ],
       );
       res.status(201).json({ id, ...data });
     } catch (e: any) {
@@ -224,11 +251,15 @@ export async function createServer() {
       if (!isDbConfigured()) {
         return res.json([]);
       }
-      const tableCheck = await query(`SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') AS exists`);
+      const tableCheck = await query(
+        `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') AS exists`,
+      );
       if (!tableCheck.rows[0]?.exists) {
         return res.json([]);
       }
-      const { rows } = await query(`SELECT id, username, full_name, email, role, created_at FROM users ORDER BY full_name`);
+      const { rows } = await query(
+        `SELECT id, username, full_name, email, role, created_at FROM users ORDER BY full_name`,
+      );
       res.json(rows);
     } catch (e: any) {
       console.error("GET /api/users error", e);
@@ -244,9 +275,14 @@ export async function createServer() {
       }
       const { username, full_name, email, role, password } = req.body;
       const id = `user-${Date.now()}`;
-      await query(`CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, email TEXT, role TEXT NOT NULL, password_hash TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`);
+      await query(
+        `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, email TEXT, role TEXT NOT NULL, password_hash TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`,
+      );
       const passwordHash = password ? `hash_${password}` : null;
-      await query(`INSERT INTO users (id, username, full_name, email, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6)`, [id, username, full_name, email || null, role, passwordHash]);
+      await query(
+        `INSERT INTO users (id, username, full_name, email, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6)`,
+        [id, username, full_name, email || null, role, passwordHash],
+      );
       res.status(201).json({ id, username, full_name, email, role });
     } catch (e: any) {
       console.error("POST /api/users error", e);

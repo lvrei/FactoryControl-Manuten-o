@@ -1,12 +1,14 @@
 # Problema: Rotas /api/equipment e /api/users não funcionam no Netlify
 
 ## Contexto
+
 - **Site Netlify ID**: 9975113b-154f-4b83-a271-b2f273964965
 - **URL**: https://maintenancecontrol.netlify.app
 - **Neon Project ID**: dawn-glitter-94042096
 - **DATABASE_URL**: Configurado corretamente no Netlify
 
 ## Sintomas
+
 1. `/api/machines` **FUNCIONA** ✓ - Retorna JSON com dados das máquinas
 2. `/api/equipment` **NÃO FUNCIONA** ✗ - Retorna HTML: "Cannot GET /api/equipment"
 3. `/api/users` **NÃO FUNCIONA** ✗ - Retorna HTML: "Cannot GET /api/users"
@@ -16,13 +18,16 @@
 ## O que já foi tentado
 
 ### 1. Criadas tabelas na BD Neon ✓
+
 ```sql
 CREATE TABLE machines (id TEXT PRIMARY KEY, name TEXT NOT NULL, type TEXT, status TEXT, ...);
 CREATE TABLE users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, ...);
 ```
 
 ### 2. Corrigido redirect do Netlify ✓
+
 `netlify.toml`:
+
 ```toml
 [[redirects]]
   from = "/api/*"
@@ -30,7 +35,9 @@ CREATE TABLE users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_nam
 ```
 
 ### 3. Tornado createServer() assíncrono ✓
+
 `server/index.ts`:
+
 ```typescript
 export async function createServer() {
   const app = express();
@@ -39,6 +46,7 @@ export async function createServer() {
 ```
 
 ### 4. Adicionadas rotas diretas em server/index.ts ✗
+
 Mesmo adicionando rotas diretas ANTES de todos os routers, `/api/equipment` e `/api/users` continuam a não funcionar.
 
 ## Observações Críticas
@@ -51,6 +59,7 @@ Mesmo adicionando rotas diretas ANTES de todos os routers, `/api/equipment` e `/
 ## Código Atual
 
 ### netlify/functions/api.ts
+
 ```typescript
 import serverless from "serverless-http";
 import { createServer } from "../../server";
@@ -59,14 +68,14 @@ let cachedHandler: any = null;
 
 export const handler = async (event: any, context: any) => {
   console.log("Handler invoked:", event.path, event.httpMethod);
-  
+
   if (!cachedHandler) {
     console.log("Creating new server instance...");
     const app = await createServer();
     console.log("Server created, routes should be registered");
     cachedHandler = serverless(app);
   }
-  
+
   const result = await cachedHandler(event, context);
   console.log("Handler result status:", result.statusCode);
   return result;
@@ -74,6 +83,7 @@ export const handler = async (event: any, context: any) => {
 ```
 
 ### server/index.ts (linhas 104-165)
+
 ```typescript
 // Direct equipment endpoint (for testing)
 app.get("/api/equipment", async (_req, res) => {
@@ -82,14 +92,18 @@ app.get("/api/equipment", async (_req, res) => {
     if (!isDbConfigured()) {
       return res.json([]);
     }
-    const { rows } = await query(`SELECT id, name, type as equipment_type, status, created_at FROM machines ORDER BY name`);
-    res.json(rows.map((r: any) => ({
-      id: r.id,
-      name: r.name,
-      equipment_type: r.equipment_type || "",
-      status: r.status,
-      created_at: r.created_at,
-    })));
+    const { rows } = await query(
+      `SELECT id, name, type as equipment_type, status, created_at FROM machines ORDER BY name`,
+    );
+    res.json(
+      rows.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        equipment_type: r.equipment_type || "",
+        status: r.status,
+        created_at: r.created_at,
+      })),
+    );
   } catch (e: any) {
     console.error("GET /api/equipment error", e);
     res.status(500).json({ error: e.message });
@@ -124,6 +138,7 @@ curl https://maintenancecontrol.netlify.app/api/db-status     # ✓ {"configured
 ```
 
 ## Deploy Atual
+
 - Deploy ID: 68f911626f75ed01a995d352
 - Estado: Ready
 - URL: https://maintenancecontrol.netlify.app
