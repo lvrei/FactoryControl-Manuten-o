@@ -61,7 +61,7 @@ export default function MaterialStock() {
     current_stock: 0,
     cost_per_unit: 0,
     supplier: "",
-    equipment_id: "",
+    equipment_id: "general",
     is_general_stock: true,
     notes: "",
   });
@@ -110,7 +110,7 @@ export default function MaterialStock() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          equipment_id: formData.equipment_id ? parseInt(formData.equipment_id) : null,
+          equipment_id: formData.equipment_id && formData.equipment_id !== "general" ? parseInt(formData.equipment_id) : null,
         }),
       });
 
@@ -142,7 +142,7 @@ export default function MaterialStock() {
       current_stock: material.current_stock,
       cost_per_unit: material.cost_per_unit,
       supplier: material.supplier || "",
-      equipment_id: material.equipment_id?.toString() || "",
+      equipment_id: material.equipment_id?.toString() || "general",
       is_general_stock: material.is_general_stock,
       notes: material.notes || "",
     });
@@ -183,7 +183,7 @@ export default function MaterialStock() {
       current_stock: 0,
       cost_per_unit: 0,
       supplier: "",
-      equipment_id: "",
+      equipment_id: "general",
       is_general_stock: true,
       notes: "",
     });
@@ -412,19 +412,19 @@ export default function MaterialStock() {
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="equipment_id">Equipamento Associado</Label>
-                <Select 
-                  value={formData.equipment_id} 
-                  onValueChange={(value) => setFormData({ 
-                    ...formData, 
+                <Select
+                  value={formData.equipment_id}
+                  onValueChange={(value) => setFormData({
+                    ...formData,
                     equipment_id: value,
-                    is_general_stock: value === ""
+                    is_general_stock: value === "general"
                   })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Stock Geral (todos os equipamentos)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Stock Geral</SelectItem>
+                    <SelectItem value="general">Stock Geral</SelectItem>
                     {equipments.map((eq) => (
                       <SelectItem key={eq.id} value={eq.id.toString()}>
                         {eq.name}
