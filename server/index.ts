@@ -8,7 +8,7 @@ import cookieParser from "cookie-parser";
 import { isDbConfigured, query } from "./db";
 import { Sentry, initSentryNode } from "./sentry";
 
-export function createServer() {
+export async function createServer() {
   const app = express();
 
   // Initialize Sentry (Node)
@@ -101,159 +101,75 @@ export function createServer() {
     }
   });
 
-  // Production API (Neon) - dynamic and optional
-  if (isDbConfigured()) {
-    try {
-      import("./routes/production")
-        .then(({ productionRouter }) => {
-          app.use("/api", productionRouter);
-        })
-        .catch((e) =>
-          console.warn("Production API not loaded:", (e as any)?.message),
-        );
+  // Production API (Neon) - load synchronously for serverless
+  try {
+    const { productionRouter } = await import("./routes/production");
+    app.use("/api", productionRouter);
+  } catch (e) {
+    console.warn("Production API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/iot")
-        .then(({ iotRouter }) => {
-          app.use("/api", iotRouter);
-        })
-        .catch((e) => console.warn("IoT API not loaded:", (e as any)?.message));
+  try {
+    const { iotRouter } = await import("./routes/iot");
+    app.use("/api", iotRouter);
+  } catch (e) {
+    console.warn("IoT API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/maintenance")
-        .then(({ maintenanceRouter }) => {
-          app.use("/api", maintenanceRouter);
-        })
-        .catch((e) =>
-          console.warn("Maintenance API not loaded:", (e as any)?.message),
-        );
+  try {
+    const { maintenanceRouter } = await import("./routes/maintenance");
+    app.use("/api", maintenanceRouter);
+  } catch (e) {
+    console.warn("Maintenance API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/employees")
-        .then(({ employeesRouter }) => {
-          app.use("/api", employeesRouter);
-        })
-        .catch((e) =>
-          console.warn("Employees API not loaded:", (e as any)?.message),
-        );
+  try {
+    const { employeesRouter } = await import("./routes/employees");
+    app.use("/api", employeesRouter);
+  } catch (e) {
+    console.warn("Employees API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/factories")
-        .then(({ factoriesRouter }) => {
-          app.use("/api", factoriesRouter);
-        })
-        .catch((e) =>
-          console.warn("Factories API not loaded:", (e as any)?.message),
-        );
+  try {
+    const { factoriesRouter } = await import("./routes/factories");
+    app.use("/api", factoriesRouter);
+  } catch (e) {
+    console.warn("Factories API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/cameras")
-        .then(({ camerasRouter }) => {
-          app.use("/api", camerasRouter);
-        })
-        .catch((e) =>
-          console.warn("Cameras API not loaded:", (e as any)?.message),
-        );
+  try {
+    const { camerasRouter } = await import("./routes/cameras");
+    app.use("/api", camerasRouter);
+  } catch (e) {
+    console.warn("Cameras API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/vision")
-        .then(({ visionRouter }) => {
-          app.use("/api", visionRouter);
-        })
-        .catch((e) =>
-          console.warn("Vision API not loaded:", (e as any)?.message),
-        );
+  try {
+    const { visionRouter } = await import("./routes/vision");
+    app.use("/api", visionRouter);
+  } catch (e) {
+    console.warn("Vision API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/agents")
-        .then(({ agentsRouter }) => {
-          app.use("/api", agentsRouter);
-        })
-        .catch((e) =>
-          console.warn("Agents API not loaded:", (e as any)?.message),
-        );
+  try {
+    const { agentsRouter } = await import("./routes/agents");
+    app.use("/api", agentsRouter);
+  } catch (e) {
+    console.warn("Agents API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/camera_ops")
-        .then(({ cameraOpsRouter }) => {
-          app.use("/api", cameraOpsRouter);
-        })
-        .catch((e) =>
-          console.warn("Camera Ops API not loaded:", (e as any)?.message),
-        );
+  try {
+    const { cameraOpsRouter } = await import("./routes/camera_ops");
+    app.use("/api", cameraOpsRouter);
+  } catch (e) {
+    console.warn("Camera Ops API not loaded:", (e as any)?.message);
+  }
 
-      import("./routes/materials")
-        .then((module) => {
-          app.use("/api/materials", module.default);
-        })
-        .catch((e) =>
-          console.warn("Materials API not loaded:", (e as any)?.message),
-        );
-    } catch (e) {
-      console.warn("APIs not loaded:", (e as any)?.message);
-    }
-  } else {
-    console.warn("DATABASE_URL não definido. API de produção desativada.");
-    import("./routes/iot")
-      .then(({ iotRouter }) => {
-        app.use("/api", iotRouter);
-      })
-      .catch((e) => console.warn("IoT API not loaded:", (e as any)?.message));
-    import("./routes/maintenance")
-      .then(({ maintenanceRouter }) => {
-        app.use("/api", maintenanceRouter);
-      })
-      .catch((e) =>
-        console.warn("Maintenance API not loaded:", (e as any)?.message),
-      );
-    import("./routes/employees")
-      .then(({ employeesRouter }) => {
-        app.use("/api", employeesRouter);
-      })
-      .catch((e) =>
-        console.warn("Employees API not loaded:", (e as any)?.message),
-      );
-    import("./routes/factories")
-      .then(({ factoriesRouter }) => {
-        app.use("/api", factoriesRouter);
-      })
-      .catch((e) =>
-        console.warn("Factories API not loaded:", (e as any)?.message),
-      );
-    import("./routes/cameras")
-      .then(({ camerasRouter }) => {
-        app.use("/api", camerasRouter);
-      })
-      .catch((e) =>
-        console.warn("Cameras API not loaded:", (e as any)?.message),
-      );
-    import("./routes/vision")
-      .then(({ visionRouter }) => {
-        app.use("/api", visionRouter);
-      })
-      .catch((e) =>
-        console.warn("Vision API not loaded:", (e as any)?.message),
-      );
-    import("./routes/agents")
-      .then(({ agentsRouter }) => {
-        app.use("/api", agentsRouter);
-      })
-      .catch((e) =>
-        console.warn("Agents API not loaded:", (e as any)?.message),
-      );
-    import("./routes/camera_ops")
-      .then(({ cameraOpsRouter }) => {
-        app.use("/api", cameraOpsRouter);
-      })
-      .catch((e) =>
-        console.warn("Camera Ops API not loaded:", (e as any)?.message),
-      );
-    import("./routes/materials")
-      .then((module) => {
-        app.use("/api/materials", module.default);
-      })
-      .catch((e) =>
-        console.warn("Materials API not loaded:", (e as any)?.message),
-      );
-    import("./routes/production")
-      .then(({ productionRouter }) => {
-        app.use("/api", productionRouter);
-      })
-      .catch((e) =>
-        console.warn("Production API not loaded:", (e as any)?.message),
-      );
+  try {
+    const module = await import("./routes/materials");
+    app.use("/api/materials", module.default);
+  } catch (e) {
+    console.warn("Materials API not loaded:", (e as any)?.message);
   }
 
   // Catch-all for undefined API routes - return JSON 404 instead of HTML
