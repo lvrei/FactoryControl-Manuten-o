@@ -103,10 +103,12 @@ export async function createServer() {
 
   // Production API (Neon) - load synchronously for serverless
   try {
+    console.log("Loading production routes...");
     const { productionRouter } = await import("./routes/production");
     app.use("/api", productionRouter);
+    console.log("Production routes loaded successfully");
   } catch (e) {
-    console.warn("Production API not loaded:", (e as any)?.message);
+    console.error("Production API not loaded:", e);
   }
 
   try {
