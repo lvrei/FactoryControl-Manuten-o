@@ -1,13 +1,16 @@
 import { Router } from "express";
-import { query } from "../db";
+import { query, isDbConfigured } from "../db";
 
 const router = Router();
 
 // Get all materials
 router.get("/", async (req, res) => {
   try {
+    if (!isDbConfigured()) {
+      return res.json([]);
+    }
     const result = await query(`
-      SELECT m.*, e.name as equipment_name 
+      SELECT m.*, e.name as equipment_name
       FROM materials m
       LEFT JOIN equipments e ON m.equipment_id = e.id
       ORDER BY m.name
