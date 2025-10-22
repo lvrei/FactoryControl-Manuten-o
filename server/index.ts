@@ -240,7 +240,26 @@ export function createServer() {
       .catch((e) =>
         console.warn("Camera Ops API not loaded:", (e as any)?.message),
       );
+    import("./routes/materials")
+      .then((module) => {
+        app.use("/api/materials", module.default);
+      })
+      .catch((e) =>
+        console.warn("Materials API not loaded:", (e as any)?.message),
+      );
+    import("./routes/production")
+      .then(({ productionRouter }) => {
+        app.use("/api", productionRouter);
+      })
+      .catch((e) =>
+        console.warn("Production API not loaded:", (e as any)?.message),
+      );
   }
+
+  // Catch-all for undefined API routes - return JSON 404 instead of HTML
+  app.use("/api/*", (_req, res) => {
+    res.status(404).json({ error: "API endpoint not found" });
+  });
 
   // Health check
   app.get("/api/health", (_req, res) => {
