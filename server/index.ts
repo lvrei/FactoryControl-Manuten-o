@@ -290,12 +290,31 @@ export async function createServer() {
     }
   });
 
-  // Production API (Neon) - load synchronously for serverless
+  // Production API (Neon) - load synchronously for serverless - MUST BE FIRST
   try {
     console.log("Loading production routes...");
     const { productionRouter } = await import("./routes/production");
+
+    // Log all routes in productionRouter
+    console.log("ProductionRouter stack:");
+    (productionRouter as any).stack?.forEach((layer: any) => {
+      if (layer.route) {
+        console.log(`  ${Object.keys(layer.route.methods).join(', ').toUpperCase()} ${layer.route.path}`);
+      }
+    });
+
     app.use("/api", productionRouter);
-    console.log("Production routes loaded successfully");
+    console.log("Production routes loaded successfully and mounted at /api");
+
+    // Log all app routes after mounting
+    console.log("All app routes:");
+    (app as any)._router?.stack?.forEach((layer: any) => {
+      if (layer.route) {
+        console.log(`  ${Object.keys(layer.route.methods).join(', ').toUpperCase()} ${layer.route.path}`);
+      } else if (layer.name === 'router') {
+        console.log(`  Router mounted at: ${layer.regexp}`);
+      }
+    });
   } catch (e) {
     console.error("Production API not loaded:", e);
   }
