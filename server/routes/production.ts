@@ -783,24 +783,28 @@ productionRouter.delete("/orders/:id", async (req, res) => {
 });
 
 // Machines CRUD
+async function ensureMachinesTable() {
+  await query(`CREATE TABLE IF NOT EXISTS machines (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    type TEXT,
+    status TEXT,
+    max_length_mm INTEGER,
+    max_width_mm INTEGER,
+    max_height_mm INTEGER,
+    cutting_precision NUMERIC,
+    current_operator TEXT,
+    last_maintenance TIMESTAMPTZ,
+    operating_hours INTEGER,
+    specifications TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  )`);
+}
+
 productionRouter.get("/machines", async (_req, res) => {
   try {
     // Ensure machines table exists
-    await query(`CREATE TABLE IF NOT EXISTS machines (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      type TEXT,
-      status TEXT,
-      max_length_mm INTEGER,
-      max_width_mm INTEGER,
-      max_height_mm INTEGER,
-      cutting_precision NUMERIC,
-      current_operator TEXT,
-      last_maintenance TIMESTAMPTZ,
-      operating_hours INTEGER,
-      specifications TEXT,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
+    await ensureMachinesTable();
 
     await query(
       `UPDATE machines SET current_operator = NULL WHERE id = 'carousel-001' AND current_operator = 'João Silva'`,
@@ -1003,6 +1007,9 @@ productionRouter.get("/equipment", async (req, res) => {
     if (!isDbConfigured()) {
       return res.json([]);
     }
+    // Ensure table exists to avoid 500 on fresh databases
+    await ensureMachinesTable();
+
     const { rows } = await query(`SELECT
       id, name, type as equipment_type, '' as manufacturer, '' as model,
       '' as serial_number, created_at as installation_date, '' as location,
