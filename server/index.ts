@@ -411,7 +411,9 @@ export async function createServer() {
 
     app.use("/api", productionRouter);
     app.use("/.netlify/functions/api", productionRouter);
-    console.log("Production routes loaded successfully and mounted at /api and /.netlify/functions/api");
+    console.log(
+      "Production routes loaded successfully and mounted at /api and /.netlify/functions/api",
+    );
 
     // Log all app routes after mounting
     console.log("All app routes:");
