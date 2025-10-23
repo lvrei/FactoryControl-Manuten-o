@@ -188,17 +188,48 @@ export async function createServer() {
         return res.status(503).json({ error: "Database not configured" });
       }
       const { username, full_name, email, role, password } = req.body;
-      const id = `user-${Date.now()}`;
+
+      // Ensure users table exists with a robust schema
       await query(
-        `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, email TEXT, role TEXT NOT NULL, password_hash TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`,
+        `CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          username TEXT UNIQUE NOT NULL,
+          full_name TEXT NOT NULL,
+          email TEXT,
+          role TEXT NOT NULL,
+          password_hash TEXT,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        )`,
       );
+
+      // Detect id column type to adapt insert
+      const col = await query<{ data_type: string }>(
+        `SELECT data_type FROM information_schema.columns
+         WHERE table_schema='public' AND table_name='users' AND column_name='id'`,
+      );
+      const idType = col.rows[0]?.data_type || "integer";
+
       const passwordHash = password ? `hash_${password}` : null;
-      await query(
-        `INSERT INTO users (id, username, full_name, email, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6)`,
-        [id, username, full_name, email || null, role, passwordHash],
-      );
-      console.log(`[DIRECT] Created user: ${id}`);
-      res.status(201).json({ id, username, full_name, email, role });
+
+      if (idType.includes("integer")) {
+        const inserted = await query<{ id: number }>(
+          `INSERT INTO users (username, full_name, email, role, password_hash)
+           VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+          [username, full_name, email || null, role, passwordHash],
+        );
+        const id = inserted.rows[0]?.id;
+        console.log(`[DIRECT] Created user (int id): ${id}`);
+        return res.status(201).json({ id, username, full_name, email, role });
+      } else {
+        const id = `user-${Date.now()}`;
+        await query(
+          `INSERT INTO users (id, username, full_name, email, role, password_hash)
+           VALUES ($1,$2,$3,$4,$5,$6)`,
+          [id, username, full_name, email || null, role, passwordHash],
+        );
+        console.log(`[DIRECT] Created user (text id): ${id}`);
+        return res.status(201).json({ id, username, full_name, email, role });
+      }
     } catch (e: any) {
       console.error("[DIRECT] POST /api/users error:", e);
       res.status(500).json({ error: e.message });
@@ -283,16 +314,44 @@ export async function createServer() {
         return res.status(503).json({ error: "Database not configured" });
       }
       const { username, full_name, email, role, password } = req.body;
-      const id = `user-${Date.now()}`;
+
       await query(
-        `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, email TEXT, role TEXT NOT NULL, password_hash TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`,
+        `CREATE TABLE IF NOT EXISTS users (
+          id SERIAL PRIMARY KEY,
+          username TEXT UNIQUE NOT NULL,
+          full_name TEXT NOT NULL,
+          email TEXT,
+          role TEXT NOT NULL,
+          password_hash TEXT,
+          created_at TIMESTAMPTZ DEFAULT NOW()
+        )`,
       );
+
+      const col = await query<{ data_type: string }>(
+        `SELECT data_type FROM information_schema.columns
+         WHERE table_schema='public' AND table_name='users' AND column_name='id'`,
+      );
+      const idType = col.rows[0]?.data_type || "integer";
+
       const passwordHash = password ? `hash_${password}` : null;
-      await query(
-        `INSERT INTO users (id, username, full_name, email, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6)`,
-        [id, username, full_name, email || null, role, passwordHash],
-      );
-      res.status(201).json({ id, username, full_name, email, role });
+
+      if (idType.includes("integer")) {
+        const inserted = await query<{ id: number }>(
+          `INSERT INTO users (username, full_name, email, role, password_hash)
+           VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+          [username, full_name, email || null, role, passwordHash],
+        );
+        const id = inserted.rows[0]?.id;
+        return res.status(201).json({ id, username, full_name, email, role });
+      } else {
+        const id = `user-${Date.now()}`;
+        await query(
+          `INSERT INTO users (id, username, full_name, email, role, password_hash)
+           VALUES ($1,$2,$3,$4,$5,$6)`,
+          [id, username, full_name, email || null, role, passwordHash],
+        );
+        return res.status(201).json({ id, username, full_name, email, role });
+      }
     } catch (e: any) {
       console.error("POST /users error", e);
       res.status(500).json({ error: e.message });
