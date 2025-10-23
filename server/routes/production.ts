@@ -785,6 +785,23 @@ productionRouter.delete("/orders/:id", async (req, res) => {
 // Machines CRUD
 productionRouter.get("/machines", async (_req, res) => {
   try {
+    // Ensure machines table exists
+    await query(`CREATE TABLE IF NOT EXISTS machines (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      type TEXT,
+      status TEXT,
+      max_length_mm INTEGER,
+      max_width_mm INTEGER,
+      max_height_mm INTEGER,
+      cutting_precision NUMERIC,
+      current_operator TEXT,
+      last_maintenance TIMESTAMPTZ,
+      operating_hours INTEGER,
+      specifications TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
+
     await query(
       `UPDATE machines SET current_operator = NULL WHERE id = 'carousel-001' AND current_operator = 'João Silva'`,
     );
@@ -1119,12 +1136,11 @@ productionRouter.post("/users", async (req, res) => {
     }
 
     const { username, full_name, email, role, password } = req.body;
-    const id = `user-${Date.now()}`;
 
-    // Ensure users table exists
+    // Ensure users table exists (prefer integer IDs for compatibility)
     await query(`
       CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
+        id SERIAL PRIMARY KEY,
         username TEXT UNIQUE NOT NULL,
         full_name TEXT NOT NULL,
         email TEXT,
@@ -1134,16 +1150,32 @@ productionRouter.post("/users", async (req, res) => {
       )
     `);
 
-    // Hash password (simple placeholder - in production use bcrypt)
+    // Detect id column type to adapt insert
+    const col = await query<{ data_type: string }>(
+      `SELECT data_type FROM information_schema.columns
+       WHERE table_schema='public' AND table_name='users' AND column_name='id'`
+    );
+    const idType = col.rows[0]?.data_type || "integer";
+
     const passwordHash = password ? `hash_${password}` : null;
 
-    await query(
-      `INSERT INTO users (id, username, full_name, email, role, password_hash)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [id, username, full_name, email || null, role, passwordHash],
-    );
-
-    res.status(201).json({ id, username, full_name, email, role });
+    if (idType.includes("integer")) {
+      const inserted = await query<{ id: number }>(
+        `INSERT INTO users (username, full_name, email, role, password_hash)
+         VALUES ($1,$2,$3,$4,$5) RETURNING id`,
+        [username, full_name, email || null, role, passwordHash]
+      );
+      const id = inserted.rows[0].id;
+      return res.status(201).json({ id, username, full_name, email, role });
+    } else {
+      const id = `user-${Date.now()}`;
+      await query(
+        `INSERT INTO users (id, username, full_name, email, role, password_hash)
+         VALUES ($1,$2,$3,$4,$5,$6)`,
+        [id, username, full_name, email || null, role, passwordHash]
+      );
+      return res.status(201).json({ id, username, full_name, email, role });
+    }
   } catch (e: any) {
     console.error("POST /users error", e);
     res.status(500).json({ error: e.message });
@@ -1157,19 +1189,26 @@ productionRouter.put("/users/:id", async (req, res) => {
       return res.status(503).json({ error: "Database not configured" });
     }
 
-    const { id } = req.params;
+    const paramId = req.params.id;
     const { username, full_name, email, role, password } = req.body;
+
+    const col = await query<{ data_type: string }>(
+      `SELECT data_type FROM information_schema.columns
+       WHERE table_schema='public' AND table_name='users' AND column_name='id'`
+    );
+    const idType = col.rows[0]?.data_type || "integer";
+    const idValue = idType.includes("integer") ? Number(paramId) : paramId;
 
     if (password) {
       const passwordHash = `hash_${password}`;
       await query(
         `UPDATE users SET username = $1, full_name = $2, email = $3, role = $4, password_hash = $5 WHERE id = $6`,
-        [username, full_name, email, role, passwordHash, id],
+        [username, full_name, email, role, passwordHash, idValue],
       );
     } else {
       await query(
         `UPDATE users SET username = $1, full_name = $2, email = $3, role = $4 WHERE id = $5`,
-        [username, full_name, email, role, id],
+        [username, full_name, email, role, idValue],
       );
     }
 
@@ -1187,8 +1226,15 @@ productionRouter.delete("/users/:id", async (req, res) => {
       return res.status(503).json({ error: "Database not configured" });
     }
 
-    const { id } = req.params;
-    await query(`DELETE FROM users WHERE id = $1`, [id]);
+    const paramId = req.params.id;
+    const col = await query<{ data_type: string }>(
+      `SELECT data_type FROM information_schema.columns
+       WHERE table_schema='public' AND table_name='users' AND column_name='id'`
+    );
+    const idType = col.rows[0]?.data_type || "integer";
+    const idValue = idType.includes("integer") ? Number(paramId) : paramId;
+
+    await query(`DELETE FROM users WHERE id = $1`, [idValue]);
 
     res.json({ success: true });
   } catch (e: any) {
