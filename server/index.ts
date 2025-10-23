@@ -109,15 +109,19 @@ export async function createServer() {
         console.log("[DIRECT] DB not configured, returning empty array");
         return res.json([]);
       }
-      const { rows } = await query(`SELECT id, name, type as equipment_type, status, created_at FROM machines ORDER BY name`);
+      const { rows } = await query(
+        `SELECT id, name, type as equipment_type, status, created_at FROM machines ORDER BY name`,
+      );
       console.log(`[DIRECT] Found ${rows.length} equipment items`);
-      res.json(rows.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        equipment_type: r.equipment_type || "",
-        status: r.status,
-        created_at: r.created_at,
-      })));
+      res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          equipment_type: r.equipment_type || "",
+          status: r.status,
+          created_at: r.created_at,
+        })),
+      );
     } catch (e: any) {
       console.error("[DIRECT] GET /api/equipment error:", e);
       res.status(500).json({ error: e.message });
@@ -134,7 +138,12 @@ export async function createServer() {
       const id = `equip-${Date.now()}`;
       await query(
         `INSERT INTO machines (id, name, type, status, created_at) VALUES ($1, $2, $3, $4, NOW())`,
-        [id, data.name, data.equipment_type || "generic", data.status || "active"]
+        [
+          id,
+          data.name,
+          data.equipment_type || "generic",
+          data.status || "active",
+        ],
       );
       console.log(`[DIRECT] Created equipment: ${id}`);
       res.status(201).json({ id, ...data });
@@ -152,12 +161,18 @@ export async function createServer() {
         console.log("[DIRECT] DB not configured, returning empty array");
         return res.json([]);
       }
-      const tableCheck = await query(`SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') AS exists`);
+      const tableCheck = await query(
+        `SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'users') AS exists`,
+      );
       if (!tableCheck.rows[0]?.exists) {
-        console.log("[DIRECT] Users table does not exist, returning empty array");
+        console.log(
+          "[DIRECT] Users table does not exist, returning empty array",
+        );
         return res.json([]);
       }
-      const { rows } = await query(`SELECT id, username, full_name, email, role, created_at FROM users ORDER BY full_name`);
+      const { rows } = await query(
+        `SELECT id, username, full_name, email, role, created_at FROM users ORDER BY full_name`,
+      );
       console.log(`[DIRECT] Found ${rows.length} users`);
       res.json(rows);
     } catch (e: any) {
@@ -174,9 +189,14 @@ export async function createServer() {
       }
       const { username, full_name, email, role, password } = req.body;
       const id = `user-${Date.now()}`;
-      await query(`CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, email TEXT, role TEXT NOT NULL, password_hash TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`);
+      await query(
+        `CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT UNIQUE NOT NULL, full_name TEXT NOT NULL, email TEXT, role TEXT NOT NULL, password_hash TEXT, created_at TIMESTAMPTZ DEFAULT NOW())`,
+      );
       const passwordHash = password ? `hash_${password}` : null;
-      await query(`INSERT INTO users (id, username, full_name, email, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6)`, [id, username, full_name, email || null, role, passwordHash]);
+      await query(
+        `INSERT INTO users (id, username, full_name, email, role, password_hash) VALUES ($1, $2, $3, $4, $5, $6)`,
+        [id, username, full_name, email || null, role, passwordHash],
+      );
       console.log(`[DIRECT] Created user: ${id}`);
       res.status(201).json({ id, username, full_name, email, role });
     } catch (e: any) {
@@ -383,7 +403,9 @@ export async function createServer() {
     console.log("ProductionRouter stack:");
     (productionRouter as any).stack?.forEach((layer: any) => {
       if (layer.route) {
-        console.log(`  ${Object.keys(layer.route.methods).join(', ').toUpperCase()} ${layer.route.path}`);
+        console.log(
+          `  ${Object.keys(layer.route.methods).join(", ").toUpperCase()} ${layer.route.path}`,
+        );
       }
     });
 
@@ -394,8 +416,10 @@ export async function createServer() {
     console.log("All app routes:");
     (app as any)._router?.stack?.forEach((layer: any) => {
       if (layer.route) {
-        console.log(`  ${Object.keys(layer.route.methods).join(', ').toUpperCase()} ${layer.route.path}`);
-      } else if (layer.name === 'router') {
+        console.log(
+          `  ${Object.keys(layer.route.methods).join(", ").toUpperCase()} ${layer.route.path}`,
+        );
+      } else if (layer.name === "router") {
         console.log(`  Router mounted at: ${layer.regexp}`);
       }
     });
