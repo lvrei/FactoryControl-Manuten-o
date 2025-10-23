@@ -170,7 +170,7 @@ export default function MaterialStock() {
     if (!confirm("Tem a certeza que deseja eliminar este material?")) return;
 
     try {
-      const response = await fetch(`/api/materials/${id}`, {
+      const response = await apiFetch(`materials/${id}`, {
         method: "DELETE",
       });
 
