@@ -12,7 +12,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -44,9 +50,21 @@ interface Employee {
 }
 
 const roleConfig = {
-  admin: { label: "Administrador", color: "bg-red-600", description: "Acesso total ao sistema" },
-  technician: { label: "Técnico", color: "bg-blue-600", description: "Criar e gerir manutenções" },
-  operator: { label: "Operador", color: "bg-green-600", description: "Ver informação e reportar" },
+  admin: {
+    label: "Administrador",
+    color: "bg-red-600",
+    description: "Acesso total ao sistema",
+  },
+  technician: {
+    label: "Técnico",
+    color: "bg-blue-600",
+    description: "Criar e gerir manutenções",
+  },
+  operator: {
+    label: "Operador",
+    color: "bg-green-600",
+    description: "Ver informação e reportar",
+  },
 };
 
 export default function Team() {
@@ -89,7 +107,8 @@ export default function Team() {
       toast({
         variant: "destructive",
         title: "Erro",
-        description: "Por favor, ative o acesso ao sistema e preencha username e password",
+        description:
+          "Por favor, ative o acesso ao sistema e preencha username e password",
       });
       return;
     }
@@ -127,7 +146,9 @@ export default function Team() {
 
       if (response.ok) {
         toast({
-          title: editingEmployee ? "Funcionário atualizado" : "Funcionário criado",
+          title: editingEmployee
+            ? "Funcionário atualizado"
+            : "Funcionário criado",
           description: "Funcionário guardado com sucesso",
         });
         loadEmployees();
@@ -200,9 +221,10 @@ export default function Team() {
     setShowPassword(false);
   };
 
-  const filteredEmployees = employees.filter((emp) =>
-    emp.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.username?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEmployees = employees.filter(
+    (emp) =>
+      emp.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.username?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -248,7 +270,9 @@ export default function Team() {
                       <User className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <CardTitle className="text-lg">{employee.full_name}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {employee.full_name}
+                      </CardTitle>
                       <CardDescription>@{employee.username}</CardDescription>
                     </div>
                   </div>
@@ -257,20 +281,24 @@ export default function Team() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Função:</span>
-                    <Badge className={roleInfo.color}>
-                      {roleInfo.label}
-                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      Função:
+                    </span>
+                    <Badge className={roleInfo.color}>{roleInfo.label}</Badge>
                   </div>
                   {employee.email && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Email:</span>
+                      <span className="text-sm text-muted-foreground">
+                        Email:
+                      </span>
                       <span className="text-sm">{employee.email}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>Criado em:</span>
-                    <span>{new Date(employee.created_at).toLocaleDateString()}</span>
+                    <span>
+                      {new Date(employee.created_at).toLocaleDateString()}
+                    </span>
                   </div>
                   <div className="flex gap-2 pt-2">
                     <Button
@@ -315,7 +343,9 @@ export default function Team() {
                 id="full_name"
                 required
                 value={formData.full_name}
-                onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, full_name: e.target.value })
+                }
               />
             </div>
 
@@ -325,13 +355,20 @@ export default function Team() {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="role">Função *</Label>
-              <Select value={formData.role} onValueChange={(value: any) => setFormData({ ...formData, role: value })}>
+              <Select
+                value={formData.role}
+                onValueChange={(value: any) =>
+                  setFormData({ ...formData, role: value })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -352,7 +389,10 @@ export default function Team() {
                   id="hasSystemAccess"
                   checked={formData.hasSystemAccess}
                   onCheckedChange={(checked) =>
-                    setFormData({ ...formData, hasSystemAccess: checked as boolean })
+                    setFormData({
+                      ...formData,
+                      hasSystemAccess: checked as boolean,
+                    })
                   }
                 />
                 <Label htmlFor="hasSystemAccess" className="font-semibold">
@@ -368,12 +408,16 @@ export default function Team() {
                       id="username"
                       required={formData.hasSystemAccess}
                       value={formData.username}
-                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, username: e.target.value })
+                      }
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="password">
-                      {editingEmployee ? "Nova Password (deixar vazio para manter)" : "Password *"}
+                      {editingEmployee
+                        ? "Nova Password (deixar vazio para manter)"
+                        : "Password *"}
                     </Label>
                     <div className="relative">
                       <Input
@@ -381,7 +425,9 @@ export default function Team() {
                         type={showPassword ? "text" : "password"}
                         required={!editingEmployee && formData.hasSystemAccess}
                         value={formData.password}
-                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({ ...formData, password: e.target.value })
+                        }
                       />
                       <Button
                         type="button"
@@ -390,7 +436,11 @@ export default function Team() {
                         className="absolute right-0 top-0 h-full px-3"
                         onClick={() => setShowPassword(!showPassword)}
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>

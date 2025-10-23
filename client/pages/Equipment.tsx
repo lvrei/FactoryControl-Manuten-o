@@ -15,7 +15,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -67,9 +73,12 @@ export default function Equipment() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [showForm, setShowForm] = useState(false);
-  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(null);
+  const [editingEquipment, setEditingEquipment] = useState<Equipment | null>(
+    null,
+  );
   const [showQRCode, setShowQRCode] = useState(false);
-  const [selectedEquipmentForQR, setSelectedEquipmentForQR] = useState<Equipment | null>(null);
+  const [selectedEquipmentForQR, setSelectedEquipmentForQR] =
+    useState<Equipment | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -116,7 +125,9 @@ export default function Equipment() {
     }
 
     try {
-      const path = editingEquipment ? `machines/${editingEquipment.id}` : "machines";
+      const path = editingEquipment
+        ? `machines/${editingEquipment.id}`
+        : "machines";
       const method = editingEquipment ? "PUT" : "POST";
 
       const response = await apiFetch(path, {
@@ -127,7 +138,9 @@ export default function Equipment() {
 
       if (response.ok) {
         toast({
-          title: editingEquipment ? "Equipamento atualizado" : "Equipamento criado",
+          title: editingEquipment
+            ? "Equipamento atualizado"
+            : "Equipamento criado",
           description: "Equipamento guardado com sucesso",
         });
         loadEquipment();
@@ -266,7 +279,9 @@ export default function Equipment() {
       {loading ? (
         <div className="text-center py-12">
           <Clock className="h-12 w-12 animate-spin mx-auto text-muted-foreground" />
-          <p className="mt-4 text-muted-foreground">A carregar equipamentos...</p>
+          <p className="mt-4 text-muted-foreground">
+            A carregar equipamentos...
+          </p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -287,7 +302,9 @@ export default function Equipment() {
                 <CardContent>
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Estado:</span>
+                      <span className="text-sm text-muted-foreground">
+                        Estado:
+                      </span>
                       <Badge className={statusInfo.color}>
                         <StatusIcon className="h-3 w-3 mr-1" />
                         {statusInfo.label}
@@ -295,19 +312,27 @@ export default function Equipment() {
                     </div>
                     {eq.equipment_type && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Tipo:</span>
-                        <span className="text-sm font-medium">{eq.equipment_type}</span>
+                        <span className="text-sm text-muted-foreground">
+                          Tipo:
+                        </span>
+                        <span className="text-sm font-medium">
+                          {eq.equipment_type}
+                        </span>
                       </div>
                     )}
                     {eq.serial_number && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Série:</span>
+                        <span className="text-sm text-muted-foreground">
+                          Série:
+                        </span>
                         <span className="text-sm">{eq.serial_number}</span>
                       </div>
                     )}
                     {eq.location && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Localização:</span>
+                        <span className="text-sm text-muted-foreground">
+                          Localização:
+                        </span>
                         <span className="text-sm">{eq.location}</span>
                       </div>
                     )}
@@ -363,7 +388,9 @@ export default function Equipment() {
                   id="name"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   placeholder="Ex: Compressor Principal"
                 />
               </div>
@@ -372,7 +399,9 @@ export default function Equipment() {
                 <Input
                   id="equipment_type"
                   value={formData.equipment_type}
-                  onChange={(e) => setFormData({ ...formData, equipment_type: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, equipment_type: e.target.value })
+                  }
                   placeholder="Ex: Compressor, Bomba, Motor, etc."
                 />
               </div>
@@ -381,7 +410,9 @@ export default function Equipment() {
                 <Input
                   id="manufacturer"
                   value={formData.manufacturer}
-                  onChange={(e) => setFormData({ ...formData, manufacturer: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, manufacturer: e.target.value })
+                  }
                   placeholder="Ex: Atlas Copco"
                 />
               </div>
@@ -390,7 +421,9 @@ export default function Equipment() {
                 <Input
                   id="model"
                   value={formData.model}
-                  onChange={(e) => setFormData({ ...formData, model: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, model: e.target.value })
+                  }
                   placeholder="Ex: GA55"
                 />
               </div>
@@ -399,7 +432,9 @@ export default function Equipment() {
                 <Input
                   id="serial_number"
                   value={formData.serial_number}
-                  onChange={(e) => setFormData({ ...formData, serial_number: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, serial_number: e.target.value })
+                  }
                   placeholder="Ex: SN123456789"
                 />
               </div>
@@ -409,7 +444,12 @@ export default function Equipment() {
                   id="installation_date"
                   type="date"
                   value={formData.installation_date}
-                  onChange={(e) => setFormData({ ...formData, installation_date: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      installation_date: e.target.value,
+                    })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -417,7 +457,9 @@ export default function Equipment() {
                 <Input
                   id="location"
                   value={formData.location}
-                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
+                  }
                   placeholder="Ex: Setor A - Linha 1"
                 />
               </div>
@@ -425,7 +467,9 @@ export default function Equipment() {
                 <Label htmlFor="status">Estado</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: any) => setFormData({ ...formData, status: value })}
+                  onValueChange={(value: any) =>
+                    setFormData({ ...formData, status: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -442,7 +486,9 @@ export default function Equipment() {
                 <Textarea
                   id="notes"
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
                   placeholder="Informações adicionais sobre o equipamento..."
                   rows={3}
                 />

@@ -14,7 +14,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -84,7 +90,9 @@ export default function Planning() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<"week" | "month">("week");
   const [showForm, setShowForm] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<PlannedMaintenance | null>(null);
+  const [editingPlan, setEditingPlan] = useState<PlannedMaintenance | null>(
+    null,
+  );
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
@@ -136,7 +144,11 @@ export default function Planning() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.equipment_id || !formData.maintenance_type || !formData.scheduled_date) {
+    if (
+      !formData.equipment_id ||
+      !formData.maintenance_type ||
+      !formData.scheduled_date
+    ) {
       toast({
         variant: "destructive",
         title: "Erro",
@@ -157,7 +169,10 @@ export default function Planning() {
         body: JSON.stringify({
           ...formData,
           equipment_id: parseInt(formData.equipment_id),
-          assigned_to: formData.assigned_to && formData.assigned_to !== "unassigned" ? parseInt(formData.assigned_to) : null,
+          assigned_to:
+            formData.assigned_to && formData.assigned_to !== "unassigned"
+              ? parseInt(formData.assigned_to)
+              : null,
           status: editingPlan?.status || "scheduled",
         }),
       });
@@ -202,7 +217,8 @@ export default function Planning() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Tem a certeza que deseja eliminar esta manutenção planeada?")) return;
+    if (!confirm("Tem a certeza que deseja eliminar esta manutenção planeada?"))
+      return;
 
     try {
       const response = await fetch(`/api/maintenance/planned/${id}`, {
@@ -240,17 +256,24 @@ export default function Planning() {
     setShowForm(false);
   };
 
-  const filteredPlans = plans.filter((plan) =>
-    plan.equipment_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    plan.maintenance_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    plan.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPlans = plans.filter(
+    (plan) =>
+      plan.equipment_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plan.maintenance_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      plan.description.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const upcomingPlans = filteredPlans
     .filter((p) => p.status === "scheduled")
-    .sort((a, b) => new Date(a.scheduled_date).getTime() - new Date(b.scheduled_date).getTime());
+    .sort(
+      (a, b) =>
+        new Date(a.scheduled_date).getTime() -
+        new Date(b.scheduled_date).getTime(),
+    );
 
-  const inProgressPlans = filteredPlans.filter((p) => p.status === "in_progress");
+  const inProgressPlans = filteredPlans.filter(
+    (p) => p.status === "in_progress",
+  );
   const completedPlans = filteredPlans.filter((p) => p.status === "completed");
 
   return (
@@ -328,24 +351,32 @@ export default function Planning() {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">{plan.maintenance_type}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {plan.maintenance_type}
+                      </CardTitle>
                       <CardDescription>{plan.equipment_name}</CardDescription>
                     </div>
-                    {isOverdue && <AlertTriangle className="h-5 w-5 text-red-500" />}
+                    {isOverdue && (
+                      <AlertTriangle className="h-5 w-5 text-red-500" />
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
                     <p className="text-sm">{plan.description}</p>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">Data:</span>
+                      <span className="text-sm text-muted-foreground">
+                        Data:
+                      </span>
                       <span className="text-sm font-medium">
                         {new Date(plan.scheduled_date).toLocaleDateString()}
                       </span>
                     </div>
                     {plan.assigned_name && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">Técnico:</span>
+                        <span className="text-sm text-muted-foreground">
+                          Técnico:
+                        </span>
                         <span className="text-sm">{plan.assigned_name}</span>
                       </div>
                     )}
@@ -427,7 +458,12 @@ export default function Planning() {
                   id="maintenance_type"
                   required
                   value={formData.maintenance_type}
-                  onChange={(e) => setFormData({ ...formData, maintenance_type: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      maintenance_type: e.target.value,
+                    })
+                  }
                   placeholder="Ex: Preventiva, Inspeção, Calibração"
                 />
               </div>
@@ -437,7 +473,9 @@ export default function Planning() {
                   id="description"
                   required
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   placeholder="Descreva a manutenção a ser realizada..."
                   rows={3}
                 />
@@ -449,14 +487,18 @@ export default function Planning() {
                   type="date"
                   required
                   value={formData.scheduled_date}
-                  onChange={(e) => setFormData({ ...formData, scheduled_date: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, scheduled_date: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="assigned_to">Técnico Responsável</Label>
                 <Select
                   value={formData.assigned_to}
-                  onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, assigned_to: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Não atribuído" />
@@ -475,7 +517,9 @@ export default function Planning() {
                 <Label htmlFor="priority">Prioridade</Label>
                 <Select
                   value={formData.priority}
-                  onValueChange={(value: any) => setFormData({ ...formData, priority: value })}
+                  onValueChange={(value: any) =>
+                    setFormData({ ...formData, priority: value })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -488,7 +532,9 @@ export default function Planning() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="estimated_duration">Duração Estimada (horas)</Label>
+                <Label htmlFor="estimated_duration">
+                  Duração Estimada (horas)
+                </Label>
                 <Input
                   id="estimated_duration"
                   type="number"
@@ -496,7 +542,10 @@ export default function Planning() {
                   step="0.5"
                   value={formData.estimated_duration}
                   onChange={(e) =>
-                    setFormData({ ...formData, estimated_duration: parseFloat(e.target.value) || 0 })
+                    setFormData({
+                      ...formData,
+                      estimated_duration: parseFloat(e.target.value) || 0,
+                    })
                   }
                 />
               </div>
@@ -505,7 +554,9 @@ export default function Planning() {
                 <Textarea
                   id="notes"
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
                   placeholder="Observações adicionais..."
                   rows={2}
                 />
