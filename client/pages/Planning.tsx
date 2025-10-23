@@ -34,6 +34,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { apiFetch } from "@/config/api";
 
 interface PlannedMaintenance {
   id: number;
@@ -106,9 +107,9 @@ export default function Planning() {
     try {
       setLoading(true);
       const [plansRes, equipRes, usersRes] = await Promise.all([
-        fetch("/api/maintenance/planned"),
-        fetch("/api/equipment"),
-        fetch("/api/users"),
+        apiFetch("maintenance/planned"),
+        apiFetch("equipment"),
+        apiFetch("users"),
       ]);
 
       if (plansRes.ok) {
@@ -145,12 +146,12 @@ export default function Planning() {
     }
 
     try {
-      const url = editingPlan
-        ? `/api/maintenance/planned/${editingPlan.id}`
-        : "/api/maintenance/planned";
+      const path = editingPlan
+        ? `maintenance/planned/${editingPlan.id}`
+        : "maintenance/planned";
       const method = editingPlan ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await apiFetch(path, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
