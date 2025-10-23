@@ -405,7 +405,9 @@ export async function createServer() {
 
   try {
     const { iotRouter } = await import("./routes/iot");
+    // Mount IoT routes at both /api and /api/iot to support existing clients
     app.use("/api", iotRouter);
+    app.use("/api/iot", iotRouter);
   } catch (e) {
     console.warn("IoT API not loaded:", (e as any)?.message);
   }
