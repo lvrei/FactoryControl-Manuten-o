@@ -40,16 +40,17 @@ if (import.meta.env.DEV) {
  * Create full API endpoint URL
  */
 export const getApiEndpoint = (path: string): string => {
-  // Remove leading slash if present
-  const cleanPath = path.startsWith('/') ? path.substring(1) : path;
-  
-  // If API_URL is empty (browser), use relative URL
-  if (!API_URL) {
-    return `/${cleanPath}`;
+  const clean = path.replace(/^\//, "");
+
+  if (API_URL) {
+    // Production (Netlify Functions): ensure we don't duplicate "/api"
+    const noApi = clean.replace(/^api\//, "");
+    return `${API_URL}/${noApi}`;
   }
-  
-  // Return full URL
-  return `${API_URL}/${cleanPath}`;
+
+  // Dev (Vite + Express): ensure requests go through "/api" prefix
+  const devPath = clean.startsWith("api/") ? clean : `api/${clean}`;
+  return `/${devPath}`;
 };
 
 /**
