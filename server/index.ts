@@ -410,10 +410,7 @@ export async function createServer() {
     });
 
     app.use("/api", productionRouter);
-    app.use("/", productionRouter);
-    console.log(
-      "Production routes loaded successfully and mounted at /api and /",
-    );
+    console.log("Production routes loaded successfully and mounted at /api");
 
     // Log all app routes after mounting
     console.log("All app routes:");
