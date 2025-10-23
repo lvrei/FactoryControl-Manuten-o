@@ -1153,7 +1153,7 @@ productionRouter.post("/users", async (req, res) => {
     // Detect id column type to adapt insert
     const col = await query<{ data_type: string }>(
       `SELECT data_type FROM information_schema.columns
-       WHERE table_schema='public' AND table_name='users' AND column_name='id'`
+       WHERE table_schema='public' AND table_name='users' AND column_name='id'`,
     );
     const idType = col.rows[0]?.data_type || "integer";
 
@@ -1163,7 +1163,7 @@ productionRouter.post("/users", async (req, res) => {
       const inserted = await query<{ id: number }>(
         `INSERT INTO users (username, full_name, email, role, password_hash)
          VALUES ($1,$2,$3,$4,$5) RETURNING id`,
-        [username, full_name, email || null, role, passwordHash]
+        [username, full_name, email || null, role, passwordHash],
       );
       const id = inserted.rows[0].id;
       return res.status(201).json({ id, username, full_name, email, role });
@@ -1172,7 +1172,7 @@ productionRouter.post("/users", async (req, res) => {
       await query(
         `INSERT INTO users (id, username, full_name, email, role, password_hash)
          VALUES ($1,$2,$3,$4,$5,$6)`,
-        [id, username, full_name, email || null, role, passwordHash]
+        [id, username, full_name, email || null, role, passwordHash],
       );
       return res.status(201).json({ id, username, full_name, email, role });
     }
@@ -1194,7 +1194,7 @@ productionRouter.put("/users/:id", async (req, res) => {
 
     const col = await query<{ data_type: string }>(
       `SELECT data_type FROM information_schema.columns
-       WHERE table_schema='public' AND table_name='users' AND column_name='id'`
+       WHERE table_schema='public' AND table_name='users' AND column_name='id'`,
     );
     const idType = col.rows[0]?.data_type || "integer";
     const idValue = idType.includes("integer") ? Number(paramId) : paramId;
@@ -1229,7 +1229,7 @@ productionRouter.delete("/users/:id", async (req, res) => {
     const paramId = req.params.id;
     const col = await query<{ data_type: string }>(
       `SELECT data_type FROM information_schema.columns
-       WHERE table_schema='public' AND table_name='users' AND column_name='id'`
+       WHERE table_schema='public' AND table_name='users' AND column_name='id'`,
     );
     const idType = col.rows[0]?.data_type || "integer";
     const idValue = idType.includes("integer") ? Number(paramId) : paramId;
