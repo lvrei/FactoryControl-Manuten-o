@@ -99,10 +99,12 @@ export default function MaterialStock() {
 
   const loadEquipments = async () => {
     try {
-      const response = await apiFetch("equipment");
+      const response = await apiFetch("machines");
       if (response.ok) {
         const data = await response.json();
-        setEquipments(data);
+        // Map machines to simplified equipment { id, name }
+        const items = (data || []).map((m: any) => ({ id: m.id, name: m.name }));
+        setEquipments(items);
       }
     } catch (error) {
       console.error("Erro ao carregar equipamentos:", error);
