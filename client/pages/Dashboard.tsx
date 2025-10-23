@@ -12,6 +12,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { apiFetch } from "@/config/api";
 
 interface DashboardStats {
   equipments: {
@@ -58,7 +59,7 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     try {
       // Load equipment stats
-      const equipmentRes = await fetch("/api/equipment");
+      const equipmentRes = await apiFetch("equipment");
       if (equipmentRes.ok) {
         const equipments = await equipmentRes.json();
         const equipmentStats = {
@@ -72,7 +73,7 @@ export default function Dashboard() {
       }
 
       // Load maintenance stats
-      const maintenanceRes = await fetch("/api/maintenance/records");
+      const maintenanceRes = await apiFetch("maintenance/records");
       if (maintenanceRes.ok) {
         const records = await maintenanceRes.json();
         const now = new Date();
@@ -103,7 +104,7 @@ export default function Dashboard() {
       }
 
       // Load planned maintenance
-      const plannedRes = await fetch("/api/maintenance/planned");
+      const plannedRes = await apiFetch("maintenance/planned");
       if (plannedRes.ok) {
         const planned = await plannedRes.json();
         const upcoming = planned
@@ -114,7 +115,7 @@ export default function Dashboard() {
       }
 
       // Load material stats
-      const materialsRes = await fetch("/api/materials");
+      const materialsRes = await apiFetch("materials");
       if (materialsRes.ok) {
         const materials = await materialsRes.json();
         setStats(prev => ({
@@ -130,7 +131,7 @@ export default function Dashboard() {
       }
 
       // Load alerts
-      const alertsRes = await fetch("/api/iot/alerts");
+      const alertsRes = await apiFetch("iot/alerts");
       if (alertsRes.ok) {
         const alerts = await alertsRes.json();
         setStats(prev => ({
