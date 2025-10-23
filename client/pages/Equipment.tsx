@@ -35,6 +35,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { apiFetch } from "@/config/api";
 import QRCodeGenerator from "@/components/equipment/QRCodeGenerator";
 
 interface Equipment {
@@ -90,7 +91,7 @@ export default function Equipment() {
   const loadEquipment = async () => {
     try {
       setLoading(true);
-      const response = await fetch("/api/machines");
+      const response = await apiFetch("machines");
       if (response.ok) {
         const data = await response.json();
         setEquipment(data);
@@ -115,12 +116,10 @@ export default function Equipment() {
     }
 
     try {
-      const url = editingEquipment
-        ? `/api/machines/${editingEquipment.id}`
-        : "/api/machines";
+      const path = editingEquipment ? `machines/${editingEquipment.id}` : "machines";
       const method = editingEquipment ? "PUT" : "POST";
 
-      const response = await fetch(url, {
+      const response = await apiFetch(path, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -170,7 +169,7 @@ export default function Equipment() {
     if (!confirm("Tem a certeza que deseja eliminar este equipamento?")) return;
 
     try {
-      const response = await fetch(`/api/equipment/${id}`, {
+      const response = await apiFetch(`machines/${id}`, {
         method: "DELETE",
       });
 
