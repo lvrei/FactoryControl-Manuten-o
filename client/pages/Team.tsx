@@ -32,6 +32,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { apiFetch } from "@/config/api";
 
 interface Employee {
   id: number;
@@ -71,7 +72,7 @@ export default function Team() {
 
   const loadEmployees = async () => {
     try {
-      const response = await fetch("/api/users");
+      const response = await apiFetch("users");
       if (response.ok) {
         const data = await response.json();
         setEmployees(data);
@@ -103,9 +104,7 @@ export default function Team() {
     }
 
     try {
-      const url = editingEmployee
-        ? `/api/users/${editingEmployee.id}`
-        : "/api/users";
+      const path = editingEmployee ? `users/${editingEmployee.id}` : "users";
       const method = editingEmployee ? "PUT" : "POST";
 
       const payload: any = {
@@ -120,7 +119,7 @@ export default function Team() {
         payload.password = formData.password;
       }
 
-      const response = await fetch(url, {
+      const response = await apiFetch(path, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -167,7 +166,7 @@ export default function Team() {
     if (!confirm("Tem a certeza que deseja eliminar este funcionário?")) return;
 
     try {
-      const response = await fetch(`/api/users/${id}`, {
+      const response = await apiFetch(`users/${id}`, {
         method: "DELETE",
       });
 
