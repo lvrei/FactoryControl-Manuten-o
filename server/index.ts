@@ -471,7 +471,9 @@ export async function createServer() {
     app.use("/api", productionRouter);
     // Also mount at root to accept paths without "/api" (Netlify basePath stripping safety)
     app.use("/", productionRouter);
-    console.log("Production routes loaded successfully and mounted at /api and /");
+    console.log(
+      "Production routes loaded successfully and mounted at /api and /",
+    );
 
     // Log all app routes after mounting
     console.log("All app routes:");
