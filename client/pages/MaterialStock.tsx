@@ -103,7 +103,10 @@ export default function MaterialStock() {
       if (response.ok) {
         const data = await response.json();
         // Map machines to simplified equipment { id, name }
-        const items = (data || []).map((m: any) => ({ id: m.id, name: m.name }));
+        const items = (data || []).map((m: any) => ({
+          id: m.id,
+          name: m.name,
+        }));
         setEquipments(items);
       }
     } catch (error) {
