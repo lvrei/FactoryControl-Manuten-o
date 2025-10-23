@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { apiFetch } from "@/config/api";
 
 interface Material {
   id: number;
@@ -73,7 +74,7 @@ export default function MaterialStock() {
 
   const loadMaterials = async () => {
     try {
-      const response = await fetch("/api/materials");
+      const response = await apiFetch("materials");
       if (response.ok) {
         const data = await response.json();
         setMaterials(data);
@@ -85,7 +86,7 @@ export default function MaterialStock() {
 
   const loadEquipments = async () => {
     try {
-      const response = await fetch("/api/equipment");
+      const response = await apiFetch("equipment");
       if (response.ok) {
         const data = await response.json();
         setEquipments(data);
@@ -105,7 +106,7 @@ export default function MaterialStock() {
       
       const method = editingMaterial ? "PUT" : "POST";
       
-      const response = await fetch(url, {
+      const response = await apiFetch(url.replace(/^\/?api\//, ""), {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
