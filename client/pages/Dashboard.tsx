@@ -64,8 +64,8 @@ export default function Dashboard() {
 
   const loadDashboardData = async () => {
     try {
-      // Load equipment stats
-      const equipmentRes = await apiFetch("equipment");
+      // Load equipment stats (use machines API)
+      const equipmentRes = await apiFetch("machines");
       if (equipmentRes.ok) {
         const equipments = await equipmentRes.json();
         const equipmentStats = {
@@ -375,7 +375,7 @@ export default function Dashboard() {
               <Calendar className="h-5 w-5" />
               Próximas Manutenções
             </CardTitle>
-            <CardDescription>Manutenções agendadas</CardDescription>
+            <CardDescription>Manuten��ões agendadas</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
