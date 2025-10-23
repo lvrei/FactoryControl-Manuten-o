@@ -411,7 +411,9 @@ export async function createServer() {
 
     app.use("/api", productionRouter);
     app.use("/", productionRouter);
-    console.log("Production routes loaded successfully and mounted at /api and /");
+    console.log(
+      "Production routes loaded successfully and mounted at /api and /",
+    );
 
     // Log all app routes after mounting
     console.log("All app routes:");
@@ -504,7 +506,7 @@ export async function createServer() {
   }
 
   // Catch-all for undefined API routes - return JSON 404 instead of HTML
-  app.use(["/api/*","/*"], (_req, res) => {
+  app.use(["/api/*", "/*"], (_req, res) => {
     res.status(404).json({ error: "API endpoint not found" });
   });
 
