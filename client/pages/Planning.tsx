@@ -221,7 +221,7 @@ export default function Planning() {
       return;
 
     try {
-      const response = await fetch(`/api/maintenance/planned/${id}`, {
+      const response = await apiFetch(`maintenance/planned/${id}`, {
         method: "DELETE",
       });
 
@@ -453,7 +453,7 @@ export default function Planning() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="maintenance_type">Tipo de Manutenção *</Label>
+                <Label htmlFor="maintenance_type">Tipo de Manuten��ão *</Label>
                 <Input
                   id="maintenance_type"
                   required
