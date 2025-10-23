@@ -101,10 +101,6 @@ export async function createServer() {
     }
   });
 
-
-
-
-
   // Production API (Neon) - load synchronously for serverless - MUST BE FIRST
   try {
     console.log("Loading production routes...");
