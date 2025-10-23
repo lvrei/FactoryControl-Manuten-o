@@ -10,7 +10,9 @@ export const handler = async (event: any, context: any) => {
     console.log("Creating new server instance...");
     const app = await createServer();
     console.log("Server created, routes should be registered");
-    cachedHandler = serverless(app);
+    // Important for Netlify: incoming path includes "/.netlify/functions/api" prefix
+    // serverless-http will strip this basePath from the request URL so Express sees "/api/..."
+    cachedHandler = serverless(app, { basePath: "/.netlify/functions/api" });
   }
 
   const result = await cachedHandler(event, context);
