@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { iotService, Sensor, SensorRule, Alert } from "@/services/iotService";
 import { ProductionFilters } from "@/types/production";
 
+import { apiFetch } from "@/config/api";
+
 export default function SensorsPage() {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [machines, setMachines] = useState<any[]>([]);
@@ -45,7 +47,7 @@ export default function SensorsPage() {
       setRules(rls);
       setAlerts(alr);
       // Load machines from API
-      const resp = await fetch("/api/machines");
+      const resp = await apiFetch("machines");
       const m = await resp.json();
       setMachines(m);
     } finally {
