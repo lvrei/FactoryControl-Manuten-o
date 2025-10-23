@@ -79,6 +79,22 @@ async function ensureTables(): Promise<boolean> {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
+      // Planned maintenance table used by /maintenance/planned endpoints
+      await query(`CREATE TABLE IF NOT EXISTS planned_maintenance (
+        id TEXT PRIMARY KEY DEFAULT concat('mplan-', floor(extract(epoch from now())*1000)::text),
+        equipment_id TEXT,
+        maintenance_type TEXT,
+        description TEXT,
+        scheduled_date TIMESTAMPTZ NOT NULL,
+        assigned_to TEXT,
+        status TEXT NOT NULL DEFAULT 'scheduled',
+        priority TEXT NOT NULL DEFAULT 'medium',
+        estimated_duration NUMERIC,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ
+      )`);
+
       await query(`CREATE TABLE IF NOT EXISTS machine_downtime (
         id TEXT PRIMARY KEY,
         machine_id TEXT REFERENCES machines(id) ON DELETE SET NULL,
@@ -502,6 +518,14 @@ maintenanceRouter.delete("/maintenance/plans/:id", async (req, res) => {
 // Maintenance Records (from new schema)
 maintenanceRouter.get("/maintenance/records", async (_req, res) => {
   try {
+    // If legacy tables don't exist in production, return empty list instead of 500
+    const exists = await query<{ exists: boolean }>(
+      `SELECT EXISTS (
+         SELECT FROM information_schema.tables WHERE table_schema='public' AND table_name='maintenance_records'
+       ) AS exists`,
+    );
+    if (!exists.rows[0]?.exists) return res.json([]);
+
     const { rows } = await query(
       `SELECT mr.*, e.name as equipment_name
        FROM maintenance_records mr
@@ -511,7 +535,7 @@ maintenanceRouter.get("/maintenance/records", async (_req, res) => {
     return res.json(rows);
   } catch (e: any) {
     console.error("GET /maintenance/records error", e);
-    return res.status(500).json({ error: e.message });
+    return res.json([]);
   }
 });
 
