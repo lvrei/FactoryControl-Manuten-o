@@ -70,39 +70,5 @@ export const apiFetch = async (
   return fetch(url, options);
 };
 
-// Global fetch interceptor to normalize API paths and avoid double /api
-if (
-  typeof window !== "undefined" &&
-  typeof (window as any).fetch === "function"
-) {
-  const originalFetch = (window as any).fetch.bind(window);
-  (window as any).fetch = (input: any, init?: RequestInit) => {
-    try {
-      const toUrlString = (v: any) =>
-        typeof v === "string" ? v : v?.url || String(v);
-      let url = toUrlString(input);
-
-      if (import.meta.env.PROD && url.startsWith("/api/")) {
-        url = `${API_URL}/${url.replace(/^\/?api\//, "")}`.replace(
-          /\/{2,}/g,
-          "/",
-        );
-      }
-
-      const prefix = `${API_URL}/api/`;
-      if (url.startsWith(prefix)) {
-        url = `${API_URL}/${url.slice(prefix.length)}`.replace(/\/{2,}/g, "/");
-      }
-
-      if (typeof input === "string") {
-        return originalFetch(url, init);
-      } else {
-        const req = input as Request;
-        const newReq = new Request(url, req);
-        return originalFetch(newReq, init);
-      }
-    } catch (e) {
-      return originalFetch(input, init);
-    }
-  };
-}
+// Global fetch interceptor is disabled - getApiEndpoint() already handles path construction correctly
+// Using a global interceptor was causing double-/api issues and inconsistent behavior
