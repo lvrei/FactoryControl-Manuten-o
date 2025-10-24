@@ -28,12 +28,12 @@ export type EmployeeRecord = {
 
 class EmployeesService {
   async list(): Promise<EmployeeRecord[]> {
-    const r = await apiFetch("api/employees");
+    const r = await apiFetch("employees");
     if (!r.ok) throw new Error("Falha ao listar funcionários");
     return r.json();
   }
   async create(emp: Omit<EmployeeRecord, "id">): Promise<string> {
-    const r = await apiFetch("api/employees", {
+    const r = await apiFetch("employees", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(emp),
@@ -43,7 +43,7 @@ class EmployeesService {
     return j.id as string;
   }
   async update(id: string, patch: Partial<EmployeeRecord>): Promise<void> {
-    const r = await apiFetch(`api/employees/${id}`, {
+    const r = await apiFetch(`employees/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
@@ -51,7 +51,7 @@ class EmployeesService {
     if (!r.ok) throw new Error("Falha ao atualizar funcionário");
   }
   async remove(id: string): Promise<void> {
-    const r = await apiFetch(`api/employees/${id}`, { method: "DELETE" });
+    const r = await apiFetch(`employees/${id}`, { method: "DELETE" });
     if (!r.ok) throw new Error("Falha ao remover funcionário");
   }
 }
