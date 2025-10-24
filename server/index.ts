@@ -460,8 +460,9 @@ export async function createServer() {
     res.status(404).json({ error: "API endpoint not found" });
   });
 
-  // Health check
+  // Health check - explicitly log when hit
   app.get(["/api/health", "/health"], async (_req, res) => {
+    console.log("🏥 Health check endpoint hit");
     try {
       let db = { configured: isDbConfigured(), connected: false } as any;
       if (db.configured) {
