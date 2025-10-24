@@ -98,7 +98,7 @@ export async function createServer() {
   app.use(cookieParser());
 
   // API routes
-  app.get("/api/ping", (_req, res) => {
+  app.get(["/api/ping", "/ping"], (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
   });
@@ -113,7 +113,7 @@ export async function createServer() {
   });
 
   // DB status endpoint
-  app.get("/api/db-status", async (_req, res) => {
+  app.get(["/api/db-status", "/db-status"], async (_req, res) => {
     if (!isDbConfigured())
       return res.json({ configured: false, connected: false });
     try {
@@ -440,7 +440,7 @@ export async function createServer() {
   });
 
   // Health check
-  app.get("/api/health", async (_req, res) => {
+  app.get(["/api/health", "/health"], async (_req, res) => {
     try {
       let db = { configured: isDbConfigured(), connected: false } as any;
       if (db.configured) {
