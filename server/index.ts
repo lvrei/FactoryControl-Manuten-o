@@ -10,6 +10,18 @@ import { Sentry, initSentryNode } from "./sentry";
 
 export async function createServer() {
   const app = express();
+  const loaded = {
+    production: false,
+    iot: false,
+    maintenance: false,
+    employees: false,
+    factories: false,
+    cameras: false,
+    vision: false,
+    agents: false,
+    cameraOps: false,
+    materials: false,
+  };
 
   // Normalize Netlify Functions base path so Express sees clean routes
   app.use((req, _res, next) => {
@@ -132,6 +144,7 @@ export async function createServer() {
     app.use("/api", productionRouter);
     // Also mount at root to accept paths without "/api" (Netlify basePath stripping safety)
     app.use("/", productionRouter);
+    loaded.production = true;
     console.log(
       "Production routes loaded successfully and mounted at /api and /",
     );
@@ -158,6 +171,7 @@ export async function createServer() {
     app.use("/api/iot", iotRouter);
     app.use("/", iotRouter);
     app.use("/iot", iotRouter);
+    loaded.iot = true;
   } catch (e) {
     console.warn("IoT API not loaded:", (e as any)?.message);
   }
@@ -166,6 +180,7 @@ export async function createServer() {
     const { maintenanceRouter } = await import("./routes/maintenance");
     app.use("/api", maintenanceRouter);
     app.use("/", maintenanceRouter);
+    loaded.maintenance = true;
   } catch (e) {
     console.warn("Maintenance API not loaded:", (e as any)?.message);
   }
@@ -174,6 +189,7 @@ export async function createServer() {
     const { employeesRouter } = await import("./routes/employees");
     app.use("/api", employeesRouter);
     app.use("/", employeesRouter);
+    loaded.employees = true;
   } catch (e) {
     console.warn("Employees API not loaded:", (e as any)?.message);
   }
@@ -182,6 +198,7 @@ export async function createServer() {
     const { factoriesRouter } = await import("./routes/factories");
     app.use("/api", factoriesRouter);
     app.use("/", factoriesRouter);
+    loaded.factories = true;
   } catch (e) {
     console.warn("Factories API not loaded:", (e as any)?.message);
   }
@@ -190,6 +207,7 @@ export async function createServer() {
     const { camerasRouter } = await import("./routes/cameras");
     app.use("/api", camerasRouter);
     app.use("/", camerasRouter);
+    loaded.cameras = true;
   } catch (e) {
     console.warn("Cameras API not loaded:", (e as any)?.message);
   }
@@ -198,6 +216,7 @@ export async function createServer() {
     const { visionRouter } = await import("./routes/vision");
     app.use("/api", visionRouter);
     app.use("/", visionRouter);
+    loaded.vision = true;
   } catch (e) {
     console.warn("Vision API not loaded:", (e as any)?.message);
   }
@@ -206,6 +225,7 @@ export async function createServer() {
     const { agentsRouter } = await import("./routes/agents");
     app.use("/api", agentsRouter);
     app.use("/", agentsRouter);
+    loaded.agents = true;
   } catch (e) {
     console.warn("Agents API not loaded:", (e as any)?.message);
   }
@@ -214,6 +234,7 @@ export async function createServer() {
     const { cameraOpsRouter } = await import("./routes/camera_ops");
     app.use("/api", cameraOpsRouter);
     app.use("/", cameraOpsRouter);
+    loaded.cameraOps = true;
   } catch (e) {
     console.warn("Camera Ops API not loaded:", (e as any)?.message);
   }
@@ -223,6 +244,7 @@ export async function createServer() {
     app.use("/api/materials", module.default);
     app.use("/materials", module.default);
     app.use("/", module.default);
+    loaded.materials = true;
   } catch (e) {
     console.warn("Materials API not loaded:", (e as any)?.message);
   }
@@ -268,6 +290,53 @@ export async function createServer() {
       );
     } catch (e: any) {
       console.error("[DIRECT] GET /equipment error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Direct machines list (read-only) to avoid 404 if router mount fails
+  app.get(["/api/machines", "/machines"], async (_req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await query(`CREATE TABLE IF NOT EXISTS machines (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT,
+        status TEXT,
+        max_length_mm INTEGER,
+        max_width_mm INTEGER,
+        max_height_mm INTEGER,
+        cutting_precision NUMERIC,
+        current_operator TEXT,
+        last_maintenance TIMESTAMPTZ,
+        operating_hours INTEGER,
+        specifications TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+      const { rows } = await query(`SELECT id, name, type, status,
+        max_length_mm, max_width_mm, max_height_mm, cutting_precision,
+        current_operator, last_maintenance, operating_hours, specifications
+        FROM machines ORDER BY name`);
+      return res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          type: r.type,
+          status: r.status,
+          maxDimensions: {
+            length: r.max_length_mm,
+            width: r.max_width_mm,
+            height: r.max_height_mm,
+          },
+          cuttingPrecision: Number(r.cutting_precision) || 0,
+          currentOperator: r.current_operator,
+          lastMaintenance: r.last_maintenance,
+          operatingHours: r.operating_hours,
+          specifications: r.specifications || "",
+        }))
+      );
+    } catch (e: any) {
+      console.error("[DIRECT] GET /machines error:", e);
       return res.status(500).json({ error: e.message });
     }
   });
@@ -334,18 +403,61 @@ export async function createServer() {
     }
   });
 
+  // Debug: list registered routes
+  app.get(["/api/_routes", "/_routes"], (_req, res) => {
+    try {
+      const routes: Array<{ method: string; path: string }> = [];
+      (app as any)._router?.stack?.forEach((layer: any) => {
+        if (layer.route && layer.route.path) {
+          const methods = Object.keys(layer.route.methods)
+            .filter((m) => layer.route.methods[m])
+            .map((m) => m.toUpperCase());
+          methods.forEach((method) => routes.push({ method, path: layer.route.path }));
+        } else if (layer.name === "router" && layer.handle?.stack) {
+          layer.handle.stack.forEach((s: any) => {
+            if (s.route && s.route.path) {
+              const methods = Object.keys(s.route.methods)
+                .filter((m) => s.route.methods[m])
+                .map((m) => m.toUpperCase());
+              methods.forEach((method) => routes.push({ method, path: s.route.path }));
+            }
+          });
+        }
+      });
+      res.json({ routes });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
   // Catch-all for undefined API routes - return JSON 404 instead of HTML
   app.use("/api/*", (_req, res) => {
     res.status(404).json({ error: "API endpoint not found" });
   });
 
   // Health check
-  app.get("/api/health", (_req, res) => {
-    res.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      version: "4.0.0",
-    });
+  app.get("/api/health", async (_req, res) => {
+    try {
+      let db = { configured: isDbConfigured(), connected: false } as any;
+      if (db.configured) {
+        try {
+          await query("SELECT 1");
+          db.connected = true;
+        } catch (e: any) {
+          db.connected = false;
+          db.error = e.message;
+        }
+      }
+      res.json({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        version: "4.1.0",
+        routers: loaded,
+        db,
+      });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
   });
 
   // Sentry Express error/request handlers (must be after routes, before our error handler)
