@@ -13,8 +13,13 @@ export async function createServer() {
 
   // Normalize Netlify Functions base path so Express sees clean routes
   app.use((req, _res, next) => {
+    // Strip Netlify Functions base path
     if (req.url.startsWith("/.netlify/functions/api")) {
       req.url = req.url.replace("/.netlify/functions/api", "");
+    }
+    // Collapse duplicated '/api/api/*' into '/api/*'
+    if (req.url.startsWith("/api/api/")) {
+      req.url = req.url.replace("/api/api/", "/api/");
     }
     next();
   });
