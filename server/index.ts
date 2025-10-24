@@ -315,7 +315,7 @@ export async function createServer() {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
       const { rows } = await query(
-        `SELECT id, name, position, department, shift, status, created_at FROM employees ORDER BY created_at DESC`
+        `SELECT id, name, position, department, shift, status, created_at FROM employees ORDER BY created_at DESC`,
       );
       return res.json(
         rows.map((r: any) => ({
@@ -326,7 +326,7 @@ export async function createServer() {
           shift: r.shift || "",
           status: r.status || "",
           created_at: r.created_at,
-        }))
+        })),
       );
     } catch (e: any) {
       console.error("[DIRECT] GET /users error:", e);

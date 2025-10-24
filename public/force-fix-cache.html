@@ -1,297 +1,332 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>🔥 FORÇA LIMPEZA CACHE - Erro React</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            margin: 0; 
-            padding: 20px; 
-            background: linear-gradient(135deg, #ff6b6b, #ee5a52); 
-            color: white; 
-            min-height: 100vh;
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+        color: white;
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 40px;
+        border-radius: 20px;
+        backdrop-filter: blur(15px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 40px;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        padding-bottom: 20px;
+      }
+      h1 {
+        font-size: 3em;
+        margin: 0;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .status {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 25px;
+        border-radius: 15px;
+        margin: 25px 0;
+        border-left: 5px solid #fff;
+      }
+      .error {
+        background: rgba(220, 53, 69, 0.9);
+        border-left-color: #fff;
+        animation: pulse 2s infinite;
+      }
+      .success {
+        background: rgba(40, 167, 69, 0.9);
+        border-left-color: #90ee90;
+      }
+      .warning {
+        background: rgba(255, 193, 7, 0.9);
+        color: #000;
+        border-left-color: #ffd700;
+      }
+      .info {
+        background: rgba(23, 162, 184, 0.9);
+        border-left-color: #87ceeb;
+      }
+      button {
+        background: linear-gradient(45deg, #ff4757, #ff3838);
+        color: white;
+        border: none;
+        padding: 18px 30px;
+        margin: 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+      button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        background: linear-gradient(45deg, #ff3838, #ff2d2d);
+      }
+      .mega-btn {
+        font-size: 24px;
+        padding: 25px 50px;
+        background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
         }
-        .container { 
-            max-width: 900px; 
-            margin: 0 auto; 
-            background: rgba(0,0,0,0.2); 
-            padding: 40px; 
-            border-radius: 20px; 
-            backdrop-filter: blur(15px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        50% {
+          opacity: 0.7;
         }
-        .header { 
-            text-align: center; 
-            margin-bottom: 40px; 
-            border-bottom: 2px solid rgba(255,255,255,0.3);
-            padding-bottom: 20px;
-        }
-        h1 { 
-            font-size: 3em; 
-            margin: 0; 
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-        .status { 
-            background: rgba(255,255,255,0.15); 
-            padding: 25px; 
-            border-radius: 15px; 
-            margin: 25px 0; 
-            border-left: 5px solid #fff;
-        }
-        .error { 
-            background: rgba(220, 53, 69, 0.9); 
-            border-left-color: #fff;
-            animation: pulse 2s infinite;
-        }
-        .success { 
-            background: rgba(40, 167, 69, 0.9); 
-            border-left-color: #90EE90;
-        }
-        .warning { 
-            background: rgba(255, 193, 7, 0.9); 
-            color: #000; 
-            border-left-color: #FFD700;
-        }
-        .info { 
-            background: rgba(23, 162, 184, 0.9); 
-            border-left-color: #87CEEB;
-        }
-        button { 
-            background: linear-gradient(45deg, #ff4757, #ff3838); 
-            color: white; 
-            border: none; 
-            padding: 18px 30px; 
-            margin: 12px; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-size: 16px; 
-            font-weight: bold; 
-            transition: all 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        button:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
-            background: linear-gradient(45deg, #ff3838, #ff2d2d);
-        }
-        .mega-btn { 
-            font-size: 24px; 
-            padding: 25px 50px;
-            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        .code { 
-            background: rgba(0,0,0,0.3); 
-            padding: 15px; 
-            border-radius: 8px; 
-            font-family: 'Courier New', monospace; 
-            margin: 10px 0;
-        }
+      }
+      .code {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 15px;
+        border-radius: 8px;
+        font-family: "Courier New", monospace;
+        margin: 10px 0;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="header">
-            <h1>🔥 FORÇA CORREÇÃO</h1>
-            <h2>Erro React useState Persistente</h2>
-        </div>
+      <div class="header">
+        <h1>🔥 FORÇA CORREÇÃO</h1>
+        <h2>Erro React useState Persistente</h2>
+      </div>
 
-        <div class="status error">
-            <h3>🚨 PROBLEMA IDENTIFICADO</h3>
-            <div class="code">
-                TypeError: Cannot read properties of null (reading 'useState')<br>
-                at SimplePWAInstall.tsx:15:53
-            </div>
-            <p><strong>Causa:</strong> O cache do navegador/Service Worker está mantendo versões antigas dos componentes.</p>
+      <div class="status error">
+        <h3>🚨 PROBLEMA IDENTIFICADO</h3>
+        <div class="code">
+          TypeError: Cannot read properties of null (reading 'useState')<br />
+          at SimplePWAInstall.tsx:15:53
         </div>
+        <p>
+          <strong>Causa:</strong> O cache do navegador/Service Worker está
+          mantendo versões antigas dos componentes.
+        </p>
+      </div>
 
-        <div class="status warning">
-            <h3>⚡ AÇÃO EXTREMA NECESSÁRIA</h3>
-            <p>O cache está impedindo as correções de serem aplicadas. Vamos forçar uma limpeza completa:</p>
-            <button onclick="forceNuclearCleanup()" class="mega-btn">💥 LIMPEZA NUCLEAR TOTAL</button>
-        </div>
+      <div class="status warning">
+        <h3>⚡ AÇÃO EXTREMA NECESSÁRIA</h3>
+        <p>
+          O cache está impedindo as correções de serem aplicadas. Vamos forçar
+          uma limpeza completa:
+        </p>
+        <button onclick="forceNuclearCleanup()" class="mega-btn">
+          💥 LIMPEZA NUCLEAR TOTAL
+        </button>
+      </div>
 
-        <div class="status info">
-            <h3>🛠️ FERRAMENTAS DE FORÇA</h3>
-            <button onclick="clearBrowserCache()">🗑️ Limpar Cache Navegador</button>
-            <button onclick="clearViteCache()">⚡ Limpar Cache Vite</button>
-            <button onclick="forceHardReload()">🔄 Força Reload Completo</button>
-            <button onclick="disableCache()">🚫 Desativar Cache</button>
-        </div>
+      <div class="status info">
+        <h3>🛠️ FERRAMENTAS DE FORÇA</h3>
+        <button onclick="clearBrowserCache()">🗑️ Limpar Cache Navegador</button>
+        <button onclick="clearViteCache()">⚡ Limpar Cache Vite</button>
+        <button onclick="forceHardReload()">🔄 Força Reload Completo</button>
+        <button onclick="disableCache()">🚫 Desativar Cache</button>
+      </div>
 
-        <div class="status">
-            <h3>🚀 TESTE FINAL</h3>
-            <button onclick="openAppFresh()">📱 Abrir App (Nova Sessão)</button>
-            <button onclick="openAppIncognito()">🕵️ Modo Incógnito</button>
-        </div>
+      <div class="status">
+        <h3>🚀 TESTE FINAL</h3>
+        <button onclick="openAppFresh()">📱 Abrir App (Nova Sessão)</button>
+        <button onclick="openAppIncognito()">🕵️ Modo Incógnito</button>
+      </div>
 
-        <div id="output"></div>
+      <div id="output"></div>
     </div>
 
     <script>
-        const originUrl = window.location.origin;
+      const originUrl = window.location.origin;
 
-        function log(message, type = 'info') {
-            const output = document.getElementById('output');
-            const div = document.createElement('div');
-            div.className = `status ${type}`;
-            div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
-            output.appendChild(div);
-            console.log(message);
-        }
+      function log(message, type = "info") {
+        const output = document.getElementById("output");
+        const div = document.createElement("div");
+        div.className = `status ${type}`;
+        div.innerHTML = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+        output.appendChild(div);
+        console.log(message);
+      }
 
-        async function forceNuclearCleanup() {
-            log('💥 INICIANDO LIMPEZA NUCLEAR TOTAL...', 'error');
-            try {
-                const beforeLocalStorage = localStorage.length;
-                const beforeSessionStorage = sessionStorage.length;
-                localStorage.clear();
-                sessionStorage.clear();
-                log(`🗑️ LocalStorage: ${beforeLocalStorage} → 0 chaves`, 'warning');
-                log(`🗑️ SessionStorage: ${beforeSessionStorage} → 0 chaves`, 'warning');
+      async function forceNuclearCleanup() {
+        log("💥 INICIANDO LIMPEZA NUCLEAR TOTAL...", "error");
+        try {
+          const beforeLocalStorage = localStorage.length;
+          const beforeSessionStorage = sessionStorage.length;
+          localStorage.clear();
+          sessionStorage.clear();
+          log(`🗑️ LocalStorage: ${beforeLocalStorage} → 0 chaves`, "warning");
+          log(
+            `🗑️ SessionStorage: ${beforeSessionStorage} → 0 chaves`,
+            "warning",
+          );
 
-                if ('caches' in window) {
-                    const cacheNames = await caches.keys();
-                    log(`🗑️ Encontrados ${cacheNames.length} caches para limpar`, 'info');
-                    await Promise.all(cacheNames.map(cacheName => {
-                        log(`🗑️ Removendo cache: ${cacheName}`, 'warning');
-                        return caches.delete(cacheName);
-                    }));
-                    log('✅ Todos os caches removidos', 'success');
-                }
+          if ("caches" in window) {
+            const cacheNames = await caches.keys();
+            log(
+              `🗑️ Encontrados ${cacheNames.length} caches para limpar`,
+              "info",
+            );
+            await Promise.all(
+              cacheNames.map((cacheName) => {
+                log(`🗑️ Removendo cache: ${cacheName}`, "warning");
+                return caches.delete(cacheName);
+              }),
+            );
+            log("✅ Todos os caches removidos", "success");
+          }
 
-                if ('serviceWorker' in navigator) {
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    for (const r of regs) {
-                        await r.unregister();
-                        log('🗑️ Service Worker removido', 'warning');
-                    }
-                }
-
-                const cookies = document.cookie.split(';');
-                cookies.forEach(cookie => {
-                    const eqPos = cookie.indexOf('=');
-                    const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-                    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-                });
-
-                localStorage.setItem('force-no-cache', Date.now().toString());
-                localStorage.setItem('react-fix-applied', 'true');
-
-                log('✅ LIMPEZA NUCLEAR CONCLUÍDA', 'success');
-                log('🔄 Aguarde 3 segundos e será redirecionado...', 'info');
-                setTimeout(() => {
-                    const url = new URL(originUrl);
-                    url.searchParams.set('_t', Date.now().toString());
-                    url.searchParams.set('_clean', 'true');
-                    url.searchParams.set('_nocache', 'force');
-                    url.searchParams.set('_fix', 'react');
-                    window.location.href = url.toString();
-                }, 3000);
-            } catch (error) {
-                log(`❌ Erro na limpeza nuclear: ${error.message}`, 'error');
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const r of regs) {
+              await r.unregister();
+              log("🗑️ Service Worker removido", "warning");
             }
-        }
+          }
 
-        async function clearBrowserCache() {
-            log('🗑️ Limpando cache do navegador...', 'warning');
-            try {
-                if ('caches' in window) {
-                    const cacheNames = await caches.keys();
-                    await Promise.all(cacheNames.map(name => caches.delete(name)));
-                    log(`✅ ${cacheNames.length} caches removidos`, 'success');
-                } else {
-                    log('⚠️ Cache API não disponível', 'warning');
-                }
-                if ('serviceWorker' in navigator) {
-                    const regs = await navigator.serviceWorker.getRegistrations();
-                    for (const r of regs) {
-                        await r.unregister();
-                        log('🗑️ Service Worker removido', 'warning');
-                    }
-                }
-                log('✅ Cache do navegador limpo', 'success');
-            } catch (error) {
-                log(`❌ Erro ao limpar cache: ${error.message}`, 'error');
+          const cookies = document.cookie.split(";");
+          cookies.forEach((cookie) => {
+            const eqPos = cookie.indexOf("=");
+            const name =
+              eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+            document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          });
+
+          localStorage.setItem("force-no-cache", Date.now().toString());
+          localStorage.setItem("react-fix-applied", "true");
+
+          log("✅ LIMPEZA NUCLEAR CONCLUÍDA", "success");
+          log("🔄 Aguarde 3 segundos e será redirecionado...", "info");
+          setTimeout(() => {
+            const url = new URL(originUrl);
+            url.searchParams.set("_t", Date.now().toString());
+            url.searchParams.set("_clean", "true");
+            url.searchParams.set("_nocache", "force");
+            url.searchParams.set("_fix", "react");
+            window.location.href = url.toString();
+          }, 3000);
+        } catch (error) {
+          log(`❌ Erro na limpeza nuclear: ${error.message}`, "error");
+        }
+      }
+
+      async function clearBrowserCache() {
+        log("🗑️ Limpando cache do navegador...", "warning");
+        try {
+          if ("caches" in window) {
+            const cacheNames = await caches.keys();
+            await Promise.all(cacheNames.map((name) => caches.delete(name)));
+            log(`✅ ${cacheNames.length} caches removidos`, "success");
+          } else {
+            log("⚠️ Cache API não disponível", "warning");
+          }
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const r of regs) {
+              await r.unregister();
+              log("🗑️ Service Worker removido", "warning");
             }
+          }
+          log("✅ Cache do navegador limpo", "success");
+        } catch (error) {
+          log(`❌ Erro ao limpar cache: ${error.message}`, "error");
         }
+      }
 
-        function clearViteCache() {
-            log('⚡ Tentando limpar cache do Vite...', 'info');
-            const keys = Object.keys(localStorage);
-            let viteKeys = 0;
-            keys.forEach(key => {
-                if (key.includes('vite') || key.includes('hmr') || key.includes('hot')) {
-                    localStorage.removeItem(key);
-                    viteKeys++;
-                }
-            });
-            log(`🗑️ ${viteKeys} chaves do Vite removidas`, 'warning');
+      function clearViteCache() {
+        log("⚡ Tentando limpar cache do Vite...", "info");
+        const keys = Object.keys(localStorage);
+        let viteKeys = 0;
+        keys.forEach((key) => {
+          if (
+            key.includes("vite") ||
+            key.includes("hmr") ||
+            key.includes("hot")
+          ) {
+            localStorage.removeItem(key);
+            viteKeys++;
+          }
+        });
+        log(`🗑️ ${viteKeys} chaves do Vite removidas`, "warning");
+        const url = new URL(window.location.href);
+        url.searchParams.set("vite_force_rebuild", Date.now().toString());
+        history.replaceState(null, "", url.toString());
+        log("✅ Cache Vite limpo", "success");
+      }
+
+      function forceHardReload() {
+        log("🔄 Forçando reload completo...", "warning");
+        try {
+          window.location.reload(true);
+        } catch (e) {
+          try {
             const url = new URL(window.location.href);
-            url.searchParams.set('vite_force_rebuild', Date.now().toString());
-            history.replaceState(null, '', url.toString());
-            log('✅ Cache Vite limpo', 'success');
+            url.searchParams.set("_force_reload", Date.now().toString());
+            window.location.replace(url.toString());
+          } catch (e2) {
+            window.location.href = originUrl + `?_force=${Date.now()}`;
+          }
         }
+      }
 
-        function forceHardReload() {
-            log('🔄 Forçando reload completo...', 'warning');
-            try {
-                window.location.reload(true);
-            } catch (e) {
-                try {
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('_force_reload', Date.now().toString());
-                    window.location.replace(url.toString());
-                } catch (e2) {
-                    window.location.href = originUrl + `?_force=${Date.now()}`;
-                }
-            }
+      function disableCache() {
+        log("🚫 Desativando cache...", "warning");
+        const metaNoCache = document.createElement("meta");
+        metaNoCache.setAttribute("http-equiv", "Cache-Control");
+        metaNoCache.setAttribute(
+          "content",
+          "no-cache, no-store, must-revalidate",
+        );
+        document.head.appendChild(metaNoCache);
+        const metaPragma = document.createElement("meta");
+        metaPragma.setAttribute("http-equiv", "Pragma");
+        metaPragma.setAttribute("content", "no-cache");
+        document.head.appendChild(metaPragma);
+        const metaExpires = document.createElement("meta");
+        metaExpires.setAttribute("http-equiv", "Expires");
+        metaExpires.setAttribute("content", "0");
+        document.head.appendChild(metaExpires);
+        log("✅ Meta tags de no-cache adicionadas", "success");
+      }
+
+      function openAppFresh() {
+        log("📱 Abrindo app em nova sessão...", "info");
+        const url = `${originUrl}?_fresh=${Date.now()}&_nocache=true`;
+        window.open(url, "_blank");
+      }
+
+      function openAppIncognito() {
+        log("🕵️ Sugestão para modo incógnito...", "info");
+        alert(
+          `\n🕵️ MODO INCÓGNITO RECOMENDADO\n\n1. Abra uma nova janela incógnita/privada (Ctrl+Shift+N)\n2. Vá para: ${originUrl}\n3. Teste se o erro persiste\n\nNo modo incógnito não há cache nem dados antigos!\n            `,
+        );
+      }
+
+      window.addEventListener("load", () => {
+        log("🔥 Sistema de força correção carregado", "error");
+        log("Use LIMPEZA NUCLEAR TOTAL para resolver definitivamente", "info");
+      });
+
+      window.addEventListener("error", (event) => {
+        if (
+          event.message &&
+          (event.message.includes("useState") ||
+            event.message.includes("color"))
+        ) {
+          log(`🚨 ERRO DETECTADO: ${event.message}`, "error");
+          log("💡 Execute a LIMPEZA NUCLEAR agora!", "warning");
         }
-
-        function disableCache() {
-            log('🚫 Desativando cache...', 'warning');
-            const metaNoCache = document.createElement('meta');
-            metaNoCache.setAttribute('http-equiv', 'Cache-Control');
-            metaNoCache.setAttribute('content', 'no-cache, no-store, must-revalidate');
-            document.head.appendChild(metaNoCache);
-            const metaPragma = document.createElement('meta');
-            metaPragma.setAttribute('http-equiv', 'Pragma');
-            metaPragma.setAttribute('content', 'no-cache');
-            document.head.appendChild(metaPragma);
-            const metaExpires = document.createElement('meta');
-            metaExpires.setAttribute('http-equiv', 'Expires');
-            metaExpires.setAttribute('content', '0');
-            document.head.appendChild(metaExpires);
-            log('✅ Meta tags de no-cache adicionadas', 'success');
-        }
-
-        function openAppFresh() {
-            log('📱 Abrindo app em nova sessão...', 'info');
-            const url = `${originUrl}?_fresh=${Date.now()}&_nocache=true`;
-            window.open(url, '_blank');
-        }
-
-        function openAppIncognito() {
-            log('🕵️ Sugestão para modo incógnito...', 'info');
-            alert(`\n🕵️ MODO INCÓGNITO RECOMENDADO\n\n1. Abra uma nova janela incógnita/privada (Ctrl+Shift+N)\n2. Vá para: ${originUrl}\n3. Teste se o erro persiste\n\nNo modo incógnito não há cache nem dados antigos!\n            `);
-        }
-
-        window.addEventListener('load', () => {
-            log('🔥 Sistema de força correção carregado', 'error');
-            log('Use LIMPEZA NUCLEAR TOTAL para resolver definitivamente', 'info');
-        });
-
-        window.addEventListener('error', (event) => {
-            if (event.message && (event.message.includes('useState') || event.message.includes('color'))) {
-                log(`🚨 ERRO DETECTADO: ${event.message}`, 'error');
-                log('💡 Execute a LIMPEZA NUCLEAR agora!', 'warning');
-            }
-        });
+      });
     </script>
-</body>
+  </body>
 </html>
