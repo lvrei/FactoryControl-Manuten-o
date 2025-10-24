@@ -17,23 +17,17 @@ export const handler = async (event: any, context: any) => {
   });
 
   if (!cachedHandler) {
-    console.log("📦 Creating new server instance...");
+    console.log("📦 Creating Express server for Netlify Function...");
     const app = await createServer();
-    console.log("✅ Server created, routes registered");
+    console.log("✅ Express app initialized, routes registered");
 
-    // Create the serverless handler without basePath - we'll handle normalization in middleware
+    // Configure serverless-http without basePath
+    // Netlify already routes /.netlify/functions/api/* directly to this handler
+    // The handler receives req.path without the function prefix
     cachedHandler = serverless(app);
   }
 
-  try {
-    const result = await cachedHandler(event, context);
-    console.log("✅ Handler result status:", result.statusCode);
-    return result;
-  } catch (error) {
-    console.error("❌ Handler error:", error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Internal server error" }),
-    };
-  }
+  const result = await cachedHandler(event, context);
+  console.log(`✅ Handled ${method} ${path} → ${result.statusCode}`);
+  return result;
 };
