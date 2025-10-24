@@ -23,32 +23,19 @@ export async function createServer() {
     materials: false,
   };
 
-  // Normalize URLs - handle Netlify function base path stripping
+  // Normalize URLs - Netlify redirects /api/* to /.netlify/functions/api/:splat
+  // which means the handler receives just the :splat part (e.g., /equipment not /api/equipment)
+  // We need to ensure requests without /api prefix are prefixed for proper routing
   app.use((req, _res, next) => {
-    const originalUrl = req.url;
+    // If request doesn't start with /api, /health, /ping, /db-status, /demo, or /_routes
+    // and it's not the root /, add /api prefix for proper routing
+    const apiPrefixExceptions = ["/health", "/ping", "/db-status", "/demo", "/_routes", "/api"];
+    const shouldSkip = req.url === "/" || apiPrefixExceptions.some(exc => req.url.startsWith(exc));
 
-    // Strip Netlify function base path if present (highest priority)
-    if (req.url.startsWith("/.netlify/functions/api/")) {
-      req.url = req.url.replace("/.netlify/functions/api", "");
-    } else if (req.url.startsWith("/.netlify/functions/api")) {
-      req.url = req.url.replace("/.netlify/functions/api", "") || "/";
+    if (!shouldSkip && !req.url.startsWith("/api/")) {
+      req.url = `/api${req.url}`;
+      console.log(`📝 Path auto-prefixed with /api: ${req.path} → /api${req.path}`);
     }
-
-    // Collapse duplicated '/api/api/*' into '/api/*'
-    if (req.url.startsWith("/api/api/")) {
-      req.url = req.url.replace("/api/api/", "/api/");
-    }
-
-    // Clean up multiple slashes (except at start)
-    if (req.url !== "/" && req.url.includes("//")) {
-      req.url = req.url.replace(/\/+/g, "/");
-    }
-
-    // Log if URL was modified
-    if (originalUrl !== req.url) {
-      console.log(`📝 Path normalized: ${originalUrl} → ${req.url}`);
-    }
-
     next();
   });
 
