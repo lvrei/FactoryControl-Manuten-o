@@ -11,6 +11,14 @@ import { Sentry, initSentryNode } from "./sentry";
 export async function createServer() {
   const app = express();
 
+  // Normalize Netlify Functions base path so Express sees clean routes
+  app.use((req, _res, next) => {
+    if (req.url.startsWith("/.netlify/functions/api")) {
+      req.url = req.url.replace("/.netlify/functions/api", "");
+    }
+    next();
+  });
+
   // Initialize Sentry (Node)
   initSentryNode();
 
