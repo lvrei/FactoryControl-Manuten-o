@@ -4,30 +4,43 @@ import { createServer } from "../../server";
 let cachedHandler: any = null;
 
 export const handler = async (event: any, context: any) => {
-  // Log detailed information about incoming request
-  const path = event.path || event.rawPath || "/";
-  const method =
-    event.httpMethod || event.requestContext?.http?.method || "GET";
-
-  console.log("🔵 Handler invoked (v2):", {
-    path,
+  // Log incoming request details
+  const method = event.httpMethod || event.requestContext?.http?.method || "GET";
+  const path = event.path || event.rawPath || event.requestContext?.path || "/";
+  const queryString = event.rawQueryString || event.queryStringParameters || "";
+  
+  console.log("🔵 Netlify Function handler invoked:", {
     method,
+    path,
     rawPath: event.rawPath,
     requestPath: event.requestContext?.path,
+    queryString,
   });
 
   if (!cachedHandler) {
-    console.log("📦 Creating Express server for Netlify Function...");
-    const app = await createServer();
-    console.log("✅ Express app initialized, routes registered");
-
-    // Configure serverless-http without basePath
-    // Netlify already routes /.netlify/functions/api/* directly to this handler
-    // The handler receives req.path without the function prefix
-    cachedHandler = serverless(app);
+    try {
+      console.log("📦 Initializing Express server for Netlify Function...");
+      const app = await createServer();
+      console.log("✅ Express app initialized with all routes");
+      cachedHandler = serverless(app);
+    } catch (error) {
+      console.error("❌ Failed to initialize Express app:", error);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "Failed to initialize server" }),
+      };
+    }
   }
 
-  const result = await cachedHandler(event, context);
-  console.log(`✅ Handled ${method} ${path} → ${result.statusCode}`);
-  return result;
+  try {
+    const result = await cachedHandler(event, context);
+    console.log(`✅ Response: ${method} ${path} → ${result.statusCode}`);
+    return result;
+  } catch (error) {
+    console.error(`❌ Error handling ${method} ${path}:`, error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Internal server error" }),
+    };
+  }
 };
