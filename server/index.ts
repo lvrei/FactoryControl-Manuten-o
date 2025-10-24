@@ -246,19 +246,21 @@ export async function createServer() {
         '' as serial_number, created_at as installation_date, '' as location,
         status, '' as notes, created_at
         FROM machines ORDER BY name`);
-      return res.json(rows.map((r: any) => ({
-        id: r.id,
-        name: r.name,
-        equipment_type: r.equipment_type || "",
-        manufacturer: r.manufacturer || "",
-        model: r.model || "",
-        serial_number: r.serial_number || "",
-        installation_date: r.installation_date,
-        location: r.location || "",
-        status: r.status,
-        notes: r.notes || "",
-        created_at: r.created_at,
-      })));
+      return res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          equipment_type: r.equipment_type || "",
+          manufacturer: r.manufacturer || "",
+          model: r.model || "",
+          serial_number: r.serial_number || "",
+          installation_date: r.installation_date,
+          location: r.location || "",
+          status: r.status,
+          notes: r.notes || "",
+          created_at: r.created_at,
+        })),
+      );
     } catch (e: any) {
       console.error("[DIRECT] GET /equipment error:", e);
       return res.status(500).json({ error: e.message });
