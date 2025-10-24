@@ -5,10 +5,11 @@ let cachedHandler: any = null;
 
 export const handler = async (event: any, context: any) => {
   // Log incoming request details
-  const method = event.httpMethod || event.requestContext?.http?.method || "GET";
+  const method =
+    event.httpMethod || event.requestContext?.http?.method || "GET";
   const path = event.path || event.rawPath || event.requestContext?.path || "/";
   const queryString = event.rawQueryString || event.queryStringParameters || "";
-  
+
   console.log("🔵 Netlify Function handler invoked:", {
     method,
     path,
