@@ -92,7 +92,9 @@ class CamerasService {
 
   getSnapshotUrl(id: string): string {
     const ts = Date.now();
-    return getApiEndpoint(`cameras/${encodeURIComponent(id)}/snapshot?ts=${ts}`);
+    return getApiEndpoint(
+      `cameras/${encodeURIComponent(id)}/snapshot?ts=${ts}`,
+    );
   }
 
   getMjpegUrl(id: string): string {
