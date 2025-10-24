@@ -333,7 +333,7 @@ export async function createServer() {
           lastMaintenance: r.last_maintenance,
           operatingHours: r.operating_hours,
           specifications: r.specifications || "",
-        }))
+        })),
       );
     } catch (e: any) {
       console.error("[DIRECT] GET /machines error:", e);
@@ -412,14 +412,18 @@ export async function createServer() {
           const methods = Object.keys(layer.route.methods)
             .filter((m) => layer.route.methods[m])
             .map((m) => m.toUpperCase());
-          methods.forEach((method) => routes.push({ method, path: layer.route.path }));
+          methods.forEach((method) =>
+            routes.push({ method, path: layer.route.path }),
+          );
         } else if (layer.name === "router" && layer.handle?.stack) {
           layer.handle.stack.forEach((s: any) => {
             if (s.route && s.route.path) {
               const methods = Object.keys(s.route.methods)
                 .filter((m) => s.route.methods[m])
                 .map((m) => m.toUpperCase());
-              methods.forEach((method) => routes.push({ method, path: s.route.path }));
+              methods.forEach((method) =>
+                routes.push({ method, path: s.route.path }),
+              );
             }
           });
         }
