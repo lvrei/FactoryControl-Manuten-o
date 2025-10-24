@@ -182,10 +182,13 @@ export async function createServer() {
     console.log("Loading production routes...");
     const { productionRouter } = await import("./routes/production");
 
-    // Mount ONLY at /api - Netlify redirects /api/* to this function
+    // Mount at both /api and /
+    // Netlify redirects /api/* to function, which strips the function path
+    // So we need handlers for both /api/machines and /machines
     app.use("/api", productionRouter);
+    app.use("/", productionRouter);
     loaded.production = true;
-    console.log("✅ Production routes mounted at /api");
+    console.log("✅ Production routes mounted at /api and /");
   } catch (e) {
     console.error("Production API not loaded:", e);
   }
@@ -194,8 +197,10 @@ export async function createServer() {
     const { iotRouter } = await import("./routes/iot");
     app.use("/api", iotRouter);
     app.use("/api/iot", iotRouter);
+    app.use("/", iotRouter);
+    app.use("/iot", iotRouter);
     loaded.iot = true;
-    console.log("✅ IoT routes mounted at /api and /api/iot");
+    console.log("✅ IoT routes mounted at /api, /api/iot, /, and /iot");
   } catch (e) {
     console.warn("IoT API not loaded:", (e as any)?.message);
   }
@@ -203,8 +208,9 @@ export async function createServer() {
   try {
     const { maintenanceRouter } = await import("./routes/maintenance");
     app.use("/api", maintenanceRouter);
+    app.use("/", maintenanceRouter);
     loaded.maintenance = true;
-    console.log("✅ Maintenance routes mounted at /api");
+    console.log("✅ Maintenance routes mounted at /api and /");
   } catch (e) {
     console.warn("Maintenance API not loaded:", (e as any)?.message);
   }
@@ -212,8 +218,9 @@ export async function createServer() {
   try {
     const { employeesRouter } = await import("./routes/employees");
     app.use("/api", employeesRouter);
+    app.use("/", employeesRouter);
     loaded.employees = true;
-    console.log("✅ Employees routes mounted at /api");
+    console.log("✅ Employees routes mounted at /api and /");
   } catch (e) {
     console.warn("Employees API not loaded:", (e as any)?.message);
   }
@@ -221,8 +228,9 @@ export async function createServer() {
   try {
     const { factoriesRouter } = await import("./routes/factories");
     app.use("/api", factoriesRouter);
+    app.use("/", factoriesRouter);
     loaded.factories = true;
-    console.log("✅ Factories routes mounted at /api");
+    console.log("✅ Factories routes mounted at /api and /");
   } catch (e) {
     console.warn("Factories API not loaded:", (e as any)?.message);
   }
@@ -230,8 +238,9 @@ export async function createServer() {
   try {
     const { camerasRouter } = await import("./routes/cameras");
     app.use("/api", camerasRouter);
+    app.use("/", camerasRouter);
     loaded.cameras = true;
-    console.log("✅ Cameras routes mounted at /api");
+    console.log("✅ Cameras routes mounted at /api and /");
   } catch (e) {
     console.warn("Cameras API not loaded:", (e as any)?.message);
   }
@@ -239,8 +248,9 @@ export async function createServer() {
   try {
     const { visionRouter } = await import("./routes/vision");
     app.use("/api", visionRouter);
+    app.use("/", visionRouter);
     loaded.vision = true;
-    console.log("✅ Vision routes mounted at /api");
+    console.log("✅ Vision routes mounted at /api and /");
   } catch (e) {
     console.warn("Vision API not loaded:", (e as any)?.message);
   }
@@ -248,8 +258,9 @@ export async function createServer() {
   try {
     const { agentsRouter } = await import("./routes/agents");
     app.use("/api", agentsRouter);
+    app.use("/", agentsRouter);
     loaded.agents = true;
-    console.log("✅ Agents routes mounted at /api");
+    console.log("✅ Agents routes mounted at /api and /");
   } catch (e) {
     console.warn("Agents API not loaded:", (e as any)?.message);
   }
@@ -257,8 +268,9 @@ export async function createServer() {
   try {
     const { cameraOpsRouter } = await import("./routes/camera_ops");
     app.use("/api", cameraOpsRouter);
+    app.use("/", cameraOpsRouter);
     loaded.cameraOps = true;
-    console.log("✅ Camera Ops routes mounted at /api");
+    console.log("✅ Camera Ops routes mounted at /api and /");
   } catch (e) {
     console.warn("Camera Ops API not loaded:", (e as any)?.message);
   }
@@ -266,8 +278,10 @@ export async function createServer() {
   try {
     const module = await import("./routes/materials");
     app.use("/api/materials", module.default);
+    app.use("/materials", module.default);
+    app.use("/", module.default);
     loaded.materials = true;
-    console.log("✅ Materials routes mounted at /api/materials");
+    console.log("✅ Materials routes mounted at /api/materials, /materials, and /");
   } catch (e) {
     console.warn("Materials API not loaded:", (e as any)?.message);
   }
