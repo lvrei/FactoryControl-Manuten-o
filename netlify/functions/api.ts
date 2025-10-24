@@ -6,7 +6,8 @@ let cachedHandler: any = null;
 export const handler = async (event: any, context: any) => {
   // Log detailed information about incoming request
   const path = event.path || event.rawPath || "/";
-  const method = event.httpMethod || event.requestContext?.http?.method || "GET";
+  const method =
+    event.httpMethod || event.requestContext?.http?.method || "GET";
 
   console.log("🔵 Handler invoked:", {
     path,
