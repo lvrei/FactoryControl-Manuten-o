@@ -214,11 +214,9 @@ export async function createServer() {
 
   try {
     const { iotRouter } = await import("./routes/iot");
-    // Mount IoT routes at /api, /api/iot and root aliases
+    // Mount IoT routes at /api and /api/iot - don't mount at root
     app.use("/api", iotRouter);
     app.use("/api/iot", iotRouter);
-    app.use("/", iotRouter);
-    app.use("/iot", iotRouter);
     loaded.iot = true;
   } catch (e) {
     console.warn("IoT API not loaded:", (e as any)?.message);
@@ -227,7 +225,6 @@ export async function createServer() {
   try {
     const { maintenanceRouter } = await import("./routes/maintenance");
     app.use("/api", maintenanceRouter);
-    app.use("/", maintenanceRouter);
     loaded.maintenance = true;
   } catch (e) {
     console.warn("Maintenance API not loaded:", (e as any)?.message);
@@ -236,7 +233,6 @@ export async function createServer() {
   try {
     const { employeesRouter } = await import("./routes/employees");
     app.use("/api", employeesRouter);
-    app.use("/", employeesRouter);
     loaded.employees = true;
   } catch (e) {
     console.warn("Employees API not loaded:", (e as any)?.message);
@@ -245,7 +241,6 @@ export async function createServer() {
   try {
     const { factoriesRouter } = await import("./routes/factories");
     app.use("/api", factoriesRouter);
-    app.use("/", factoriesRouter);
     loaded.factories = true;
   } catch (e) {
     console.warn("Factories API not loaded:", (e as any)?.message);
@@ -254,7 +249,6 @@ export async function createServer() {
   try {
     const { camerasRouter } = await import("./routes/cameras");
     app.use("/api", camerasRouter);
-    app.use("/", camerasRouter);
     loaded.cameras = true;
   } catch (e) {
     console.warn("Cameras API not loaded:", (e as any)?.message);
@@ -263,7 +257,6 @@ export async function createServer() {
   try {
     const { visionRouter } = await import("./routes/vision");
     app.use("/api", visionRouter);
-    app.use("/", visionRouter);
     loaded.vision = true;
   } catch (e) {
     console.warn("Vision API not loaded:", (e as any)?.message);
@@ -272,7 +265,6 @@ export async function createServer() {
   try {
     const { agentsRouter } = await import("./routes/agents");
     app.use("/api", agentsRouter);
-    app.use("/", agentsRouter);
     loaded.agents = true;
   } catch (e) {
     console.warn("Agents API not loaded:", (e as any)?.message);
@@ -281,7 +273,6 @@ export async function createServer() {
   try {
     const { cameraOpsRouter } = await import("./routes/camera_ops");
     app.use("/api", cameraOpsRouter);
-    app.use("/", cameraOpsRouter);
     loaded.cameraOps = true;
   } catch (e) {
     console.warn("Camera Ops API not loaded:", (e as any)?.message);
@@ -290,8 +281,6 @@ export async function createServer() {
   try {
     const module = await import("./routes/materials");
     app.use("/api/materials", module.default);
-    app.use("/materials", module.default);
-    app.use("/", module.default);
     loaded.materials = true;
   } catch (e) {
     console.warn("Materials API not loaded:", (e as any)?.message);
