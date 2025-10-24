@@ -450,17 +450,7 @@ export async function createServer() {
     }
   });
 
-  // Function root responders to simplify testing
-  app.get(["/", "/api"], (_req, res) => {
-    res.json({ ok: true, service: "factory-control", ts: Date.now() });
-  });
-
-  // Catch-all for undefined API routes - return JSON 404 instead of HTML
-  app.use("/api/*", (_req, res) => {
-    res.status(404).json({ error: "API endpoint not found" });
-  });
-
-  // Health check - explicitly log when hit
+  // Health check - MUST BE BEFORE catch-all /api/* handler
   app.get(["/api/health", "/health"], async (_req, res) => {
     console.log("🏥 Health check endpoint hit");
     try {
@@ -484,6 +474,16 @@ export async function createServer() {
     } catch (e: any) {
       res.status(500).json({ error: e.message });
     }
+  });
+
+  // Function root responders to simplify testing
+  app.get(["/", "/api"], (_req, res) => {
+    res.json({ ok: true, service: "factory-control", ts: Date.now() });
+  });
+
+  // Catch-all for undefined API routes - return JSON 404 instead of HTML
+  app.use("/api/*", (_req, res) => {
+    res.status(404).json({ error: "API endpoint not found" });
   });
 
   // Sentry Express error/request handlers (must be after routes, before our error handler)
