@@ -222,9 +222,76 @@ export async function createServer() {
     console.warn("Materials API not loaded:", (e as any)?.message);
   }
 
-  // Backward-compat alias: /api/equipment -> /api/machines
-  app.get("/api/equipment", (_req, res) => {
-    res.redirect(307, "/api/machines");
+  // Robust Equipment endpoints (direct) to avoid any router/basePath issues
+  app.get(["/api/equipment", "/equipment"], async (_req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await query(`CREATE TABLE IF NOT EXISTS machines (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT,
+        status TEXT,
+        max_length_mm INTEGER,
+        max_width_mm INTEGER,
+        max_height_mm INTEGER,
+        cutting_precision NUMERIC,
+        current_operator TEXT,
+        last_maintenance TIMESTAMPTZ,
+        operating_hours INTEGER,
+        specifications TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+      const { rows } = await query(`SELECT
+        id, name, type as equipment_type, '' as manufacturer, '' as model,
+        '' as serial_number, created_at as installation_date, '' as location,
+        status, '' as notes, created_at
+        FROM machines ORDER BY name`);
+      return res.json(rows.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        equipment_type: r.equipment_type || "",
+        manufacturer: r.manufacturer || "",
+        model: r.model || "",
+        serial_number: r.serial_number || "",
+        installation_date: r.installation_date,
+        location: r.location || "",
+        status: r.status,
+        notes: r.notes || "",
+        created_at: r.created_at,
+      })));
+    } catch (e: any) {
+      console.error("[DIRECT] GET /equipment error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Direct IoT alerts (read-only) to avoid 404 if router mount fails
+  app.get(["/api/iot/alerts", "/iot/alerts"], async (req, res) => {
+    const status = req.query.status as string | undefined;
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await query(`CREATE SCHEMA IF NOT EXISTS iot`);
+      await query(`CREATE TABLE IF NOT EXISTS iot.alerts (
+        id TEXT PRIMARY KEY,
+        machine_id TEXT,
+        rule_id TEXT,
+        sensor_id TEXT,
+        metric TEXT,
+        value DOUBLE PRECISION,
+        status TEXT DEFAULT 'active',
+        priority TEXT DEFAULT 'medium',
+        message TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+      const { rows } = await query(
+        `SELECT * FROM iot.alerts ${status ? `WHERE status = $1` : ""} ORDER BY created_at DESC`,
+        status ? [status] : (undefined as any),
+      );
+      return res.json(rows);
+    } catch (e: any) {
+      console.error("[DIRECT] GET /iot/alerts error:", e);
+      return res.status(500).json({ error: e.message });
+    }
   });
 
   // Catch-all for undefined API routes - return JSON 404 instead of HTML
