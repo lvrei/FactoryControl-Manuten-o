@@ -45,7 +45,7 @@ export const getApiEndpoint = (path: string): string => {
   if (API_URL) {
     // Production (Netlify Functions): ensure we don't duplicate "/api"
     const noApi = clean.replace(/^(api\/)+/, "");
-    const joined = `${API_URL}/${noApi}`.replace(/\/+/, "/");
+    const joined = `${API_URL}/${noApi}`.replace(/\/{2,}/g, "/");
     return joined;
   }
 
