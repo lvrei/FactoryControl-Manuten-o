@@ -23,16 +23,17 @@ export async function createServer() {
     materials: false,
   };
 
-  // Normalize Netlify Functions base path so Express sees clean routes
+  // Normalize URLs (double-slash cleanup and double /api/ collapsing)
   app.use((req, _res, next) => {
-    // Strip Netlify Functions base path
-    if (req.url.startsWith("/.netlify/functions/api")) {
-      req.url = req.url.replace("/.netlify/functions/api", "");
-    }
     // Collapse duplicated '/api/api/*' into '/api/*'
     if (req.url.startsWith("/api/api/")) {
       req.url = req.url.replace("/api/api/", "/api/");
     }
+    // Clean up multiple slashes (except at start)
+    if (req.url !== "/" && req.url.includes("//")) {
+      req.url = req.url.replace(/\/+/g, "/");
+    }
+    console.log(`Normalized request: ${req.method} ${req.url}`);
     next();
   });
 
