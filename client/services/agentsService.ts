@@ -5,7 +5,7 @@ export type TriageResponse = { priority: string; actions: string[]; rationale: s
 
 class AgentsService {
   async ask(question: string, opts?: { machineId?: string; limit?: number }): Promise<AskResponse> {
-    const resp = await apiFetch('api/agents/ask', {
+    const resp = await apiFetch('agents/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question, ...(opts || {}) }),
@@ -15,7 +15,7 @@ class AgentsService {
   }
 
   async triage(event: TriageInput): Promise<TriageResponse> {
-    const resp = await apiFetch('api/agents/triage', {
+    const resp = await apiFetch('agents/triage', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(event),
