@@ -4,25 +4,35 @@ import { createServer } from "../../server";
 let cachedHandler: any = null;
 
 export const handler = async (event: any, context: any) => {
-  console.log("Handler invoked with:", {
-    path: event.path,
+  // Log detailed information about incoming request
+  const path = event.path || event.rawPath || "/";
+  const method = event.httpMethod || event.requestContext?.http?.method || "GET";
+
+  console.log("🔵 Handler invoked:", {
+    path,
+    method,
     rawPath: event.rawPath,
-    httpMethod: event.httpMethod,
-    requestContext: event.requestContext?.path,
+    requestPath: event.requestContext?.path,
   });
 
   if (!cachedHandler) {
-    console.log("Creating new server instance...");
+    console.log("📦 Creating new server instance...");
     const app = await createServer();
-    console.log("Server created, routes should be registered");
-    // Tell serverless-http that the function base path is /.netlify/functions/api
-    // This ensures that req.url is correctly set for Express routing
-    cachedHandler = serverless(app, {
-      basePath: "/.netlify/functions/api",
-    });
+    console.log("✅ Server created, routes registered");
+
+    // Create the serverless handler without basePath - we'll handle normalization in middleware
+    cachedHandler = serverless(app);
   }
 
-  const result = await cachedHandler(event, context);
-  console.log("Handler result status:", result.statusCode);
-  return result;
+  try {
+    const result = await cachedHandler(event, context);
+    console.log("✅ Handler result status:", result.statusCode);
+    return result;
+  } catch (error) {
+    console.error("❌ Handler error:", error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ error: "Internal server error" }),
+    };
+  }
 };
