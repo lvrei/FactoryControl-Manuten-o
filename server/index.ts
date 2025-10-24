@@ -198,7 +198,9 @@ export async function createServer() {
     app.use("/api", productionRouter);
     app.use("/", productionRouter);
     loaded.production = true;
-    console.log("Production routes loaded successfully and mounted at /api and /");
+    console.log(
+      "Production routes loaded successfully and mounted at /api and /",
+    );
 
     // Log all app routes after mounting
     console.log("All app routes:");
