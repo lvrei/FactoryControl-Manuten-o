@@ -113,7 +113,7 @@ export async function createServer() {
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
   app.use(cookieParser());
 
-  // API routes
+  // API routes - DEFINE EARLY so they match before routers
   app.get(["/api/ping", "/ping"], (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
@@ -142,7 +142,42 @@ export async function createServer() {
     }
   });
 
-  // Production API (Neon) - load synchronously for serverless - MUST BE FIRST
+  // Health check endpoint - EARLY in middleware chain
+  app.get(["/api/health", "/health"], async (_req, res) => {
+    console.log("🏥 Health check endpoint hit");
+    try {
+      let db = { configured: isDbConfigured(), connected: false } as any;
+      if (db.configured) {
+        try {
+          await query("SELECT 1");
+          db.connected = true;
+        } catch (e: any) {
+          db.connected = false;
+          db.error = e.message;
+        }
+      }
+      res.json({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        version: "4.1.0",
+        routers: loaded,
+        db,
+      });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Root responders
+  app.get("/", (_req, res) => {
+    res.json({ ok: true, service: "factory-control", ts: Date.now() });
+  });
+
+  app.get("/api", (_req, res) => {
+    res.json({ ok: true, service: "factory-control", ts: Date.now() });
+  });
+
+  // Production API (Neon) - mount routers ONLY at /api, not at root
   try {
     console.log("Loading production routes...");
     const { productionRouter } = await import("./routes/production");
@@ -157,13 +192,10 @@ export async function createServer() {
       }
     });
 
+    // Mount ONLY at /api prefix - do NOT mount at root "/" to avoid intercepting all requests
     app.use("/api", productionRouter);
-    // Also mount at root to accept paths without "/api" (Netlify basePath stripping safety)
-    app.use("/", productionRouter);
     loaded.production = true;
-    console.log(
-      "Production routes loaded successfully and mounted at /api and /",
-    );
+    console.log("Production routes loaded successfully and mounted at /api");
 
     // Log all app routes after mounting
     console.log("All app routes:");
