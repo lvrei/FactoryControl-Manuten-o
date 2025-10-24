@@ -241,8 +241,8 @@ class ProductionService {
       if (filters?.customer) params.set("customer", filters.customer);
       if ((filters as any)?.createdBy)
         params.set("createdBy", (filters as any).createdBy);
-      const resp = await fetch(
-        `/orders${params.toString() ? `?${params.toString()}` : ""}`,
+      const resp = await apiFetch(
+        `orders${params.toString() ? `?${params.toString()}` : ""}`,
       );
       if (!resp.ok) throw new Error("API orders falhou");
       let orders: ProductionOrder[] = await resp.json();
@@ -795,8 +795,8 @@ class ProductionService {
         params.set("startDate", filters.dateRange.start);
         params.set("endDate", filters.dateRange.end);
       }
-      const r = await fetch(
-        `/foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
+      const r = await apiFetch(
+        `foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
       );
       if (!r.ok) throw new Error("API foam-blocks falhou");
       return r.json();
@@ -1745,8 +1745,8 @@ if (typeof (productionService as any).getFoamBlocks !== "function") {
         params.set("startDate", filters.dateRange.start);
         params.set("endDate", filters.dateRange.end);
       }
-      const r = await fetch(
-        `/foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
+      const r = await apiFetch(
+        `foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
       );
       if (!r.ok) throw new Error("API foam-blocks falhou");
       return r.json();
