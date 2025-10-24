@@ -471,37 +471,6 @@ export async function createServer() {
     }
   });
 
-  // Health check - MUST BE BEFORE catch-all /api/* handler
-  app.get(["/api/health", "/health"], async (_req, res) => {
-    console.log("🏥 Health check endpoint hit");
-    try {
-      let db = { configured: isDbConfigured(), connected: false } as any;
-      if (db.configured) {
-        try {
-          await query("SELECT 1");
-          db.connected = true;
-        } catch (e: any) {
-          db.connected = false;
-          db.error = e.message;
-        }
-      }
-      res.json({
-        status: "ok",
-        timestamp: new Date().toISOString(),
-        version: "4.1.0",
-        routers: loaded,
-        db,
-      });
-    } catch (e: any) {
-      res.status(500).json({ error: e.message });
-    }
-  });
-
-  // Function root responders to simplify testing
-  app.get(["/", "/api"], (_req, res) => {
-    res.json({ ok: true, service: "factory-control", ts: Date.now() });
-  });
-
   // Catch-all for undefined API routes - return JSON 404 instead of HTML
   app.use("/api/*", (_req, res) => {
     res.status(404).json({ error: "API endpoint not found" });
