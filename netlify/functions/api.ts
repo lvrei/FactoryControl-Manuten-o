@@ -9,7 +9,7 @@ export const handler = async (event: any, context: any) => {
   const method =
     event.httpMethod || event.requestContext?.http?.method || "GET";
 
-  console.log("🔵 Handler invoked:", {
+  console.log("🔵 Handler invoked (v2):", {
     path,
     method,
     rawPath: event.rawPath,
