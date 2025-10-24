@@ -21,6 +21,11 @@ const getApiUrl = (): string => {
     return "http://localhost:5000";
   }
 
+  // In production (static hosting like Netlify), default to Netlify Functions path
+  if (import.meta.env.PROD) {
+    return "/.netlify/functions/api";
+  }
+
   // Browser development - use relative URLs
   return "";
 };
