@@ -434,6 +434,11 @@ export async function createServer() {
     }
   });
 
+  // Function root responders to simplify testing
+  app.get(["/", "/api"], (_req, res) => {
+    res.json({ ok: true, service: "factory-control", ts: Date.now() });
+  });
+
   // Catch-all for undefined API routes - return JSON 404 instead of HTML
   app.use("/api/*", (_req, res) => {
     res.status(404).json({ error: "API endpoint not found" });
