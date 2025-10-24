@@ -1,8 +1,8 @@
-// FACTORY CONTROL - SERVICE WORKER v4.0
+// FACTORY CONTROL - SERVICE WORKER v4.1
 // Versão estável e limpa do Service Worker
 
-const CACHE_NAME = 'factory-control-v4.0';
-const STATIC_CACHE_NAME = 'factory-control-static-v4.0';
+const CACHE_NAME = 'factory-control-v4.1';
+const STATIC_CACHE_NAME = 'factory-control-static-v4.1';
 
 // Recursos críticos para cache offline
 const STATIC_ASSETS = [
@@ -21,7 +21,7 @@ const NETWORK_FIRST = [
 
 // Log simplificado para debug
 const log = (message, data = '') => {
-  console.log(`[SW v4.0] ${message}`, data);
+  console.log(`[SW v4.1] ${message}`, data);
 };
 
 // Install Event - Cache recursos estáticos
@@ -36,8 +36,8 @@ self.addEventListener('install', (event) => {
       })
       .then(() => {
         log('Static assets cached successfully');
-        // Não ativar imediatamente; atualizar na próxima abertura
-        // self.skipWaiting();
+        // Ativar imediatamente nova versão
+        self.skipWaiting();
       })
       .catch((error) => {
         log('Error caching static assets:', error);
@@ -62,8 +62,8 @@ self.addEventListener('activate', (event) => {
           })
         );
       }),
-      // Não assumir controle imediato; deixa para próxima navegação
-      // self.clients.claim()
+      // Assumir controle imediato da página
+      self.clients.claim()
     ])
     .then(() => {
       log('Service Worker activated successfully');
