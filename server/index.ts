@@ -301,6 +301,39 @@ export async function createServer() {
     }
   });
 
+  // Alias for legacy clients requesting /api/users -> returns employees
+  app.get(["/api/users", "/users"], async (_req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await query(`CREATE TABLE IF NOT EXISTS employees (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        position TEXT,
+        department TEXT,
+        shift TEXT,
+        status TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+      const { rows } = await query(
+        `SELECT id, name, position, department, shift, status, created_at FROM employees ORDER BY created_at DESC`
+      );
+      return res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          full_name: r.name,
+          position: r.position || "",
+          department: r.department || "",
+          shift: r.shift || "",
+          status: r.status || "",
+          created_at: r.created_at,
+        }))
+      );
+    } catch (e: any) {
+      console.error("[DIRECT] GET /users error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Catch-all for undefined API routes - return JSON 404 instead of HTML
   app.use("/api/*", (_req, res) => {
     res.status(404).json({ error: "API endpoint not found" });
