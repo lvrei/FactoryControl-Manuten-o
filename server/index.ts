@@ -214,6 +214,11 @@ export async function createServer() {
     console.warn("Materials API not loaded:", (e as any)?.message);
   }
 
+  // Backward-compat alias: /api/equipment -> /api/machines
+  app.get("/api/equipment", (_req, res) => {
+    res.redirect(307, "/api/machines");
+  });
+
   // Catch-all for undefined API routes - return JSON 404 instead of HTML
   app.use("/api/*", (_req, res) => {
     res.status(404).json({ error: "API endpoint not found" });
