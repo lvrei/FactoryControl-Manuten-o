@@ -23,32 +23,8 @@ export async function createServer() {
     materials: false,
   };
 
-  // Normalize URLs - Netlify redirects /api/* to /.netlify/functions/api/:splat
-  // which means the handler receives just the :splat part (e.g., /equipment not /api/equipment)
-  // We need to ensure requests without /api prefix are prefixed for proper routing
-  app.use((req, _res, next) => {
-    // If request doesn't start with /api, /health, /ping, /db-status, /demo, or /_routes
-    // and it's not the root /, add /api prefix for proper routing
-    const apiPrefixExceptions = [
-      "/health",
-      "/ping",
-      "/db-status",
-      "/demo",
-      "/_routes",
-      "/api",
-    ];
-    const shouldSkip =
-      req.url === "/" ||
-      apiPrefixExceptions.some((exc) => req.url.startsWith(exc));
-
-    if (!shouldSkip && !req.url.startsWith("/api/")) {
-      req.url = `/api${req.url}`;
-      console.log(
-        `📝 Path auto-prefixed with /api: ${req.path} → /api${req.path}`,
-      );
-    }
-    next();
-  });
+  // serverless-http with basePath handles path stripping for Netlify Functions
+  // No additional normalization needed here
 
   // Initialize Sentry (Node)
   initSentryNode();
