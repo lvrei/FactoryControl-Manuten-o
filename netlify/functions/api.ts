@@ -4,9 +4,10 @@ import { createServer } from "../../server";
 let cachedHandler: any = null;
 
 export const handler = async (event: any, context: any) => {
-  const method = event.httpMethod || event.requestContext?.http?.method || "GET";
+  const method =
+    event.httpMethod || event.requestContext?.http?.method || "GET";
   const path = event.path || event.rawPath || "/";
-  
+
   console.log("🔵 Netlify Function handler invoked", {
     method,
     path,
@@ -17,7 +18,7 @@ export const handler = async (event: any, context: any) => {
     try {
       console.log("📦 Initializing Express server...");
       const app = await createServer();
-      
+
       // Use basePath to tell serverless-http where this function is mounted
       // Netlify routing: /api/* → /.netlify/functions/api/:splat
       // So we need to strip /.netlify/functions/api from the path
@@ -25,7 +26,7 @@ export const handler = async (event: any, context: any) => {
         basePath: "/.netlify/functions/api",
         provider: "aws",
       });
-      
+
       console.log("✅ Express app ready with serverless-http");
     } catch (error) {
       console.error("❌ Failed to initialize:", error);
