@@ -4,44 +4,49 @@ import { createServer } from "../../server";
 let cachedHandler: any = null;
 
 export const handler = async (event: any, context: any) => {
-  // Log incoming request details
-  const method =
-    event.httpMethod || event.requestContext?.http?.method || "GET";
-  const path = event.path || event.rawPath || event.requestContext?.path || "/";
-  const queryString = event.rawQueryString || event.queryStringParameters || "";
-
-  console.log("🔵 Netlify Function handler invoked:", {
+  const method = event.httpMethod || event.requestContext?.http?.method || "GET";
+  const path = event.path || event.rawPath || "/";
+  
+  console.log("🔵 Netlify Function handler invoked", {
     method,
     path,
     rawPath: event.rawPath,
-    requestPath: event.requestContext?.path,
-    queryString,
   });
 
   if (!cachedHandler) {
     try {
-      console.log("📦 Initializing Express server for Netlify Function...");
+      console.log("📦 Initializing Express server...");
       const app = await createServer();
-      console.log("✅ Express app initialized with all routes");
-      cachedHandler = serverless(app);
+      
+      // Use basePath to tell serverless-http where this function is mounted
+      // Netlify routing: /api/* → /.netlify/functions/api/:splat
+      // So we need to strip /.netlify/functions/api from the path
+      cachedHandler = serverless(app, {
+        basePath: "/.netlify/functions/api",
+        provider: "aws",
+      });
+      
+      console.log("✅ Express app ready with serverless-http");
     } catch (error) {
-      console.error("❌ Failed to initialize Express app:", error);
+      console.error("❌ Failed to initialize:", error);
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: "Failed to initialize server" }),
+        body: JSON.stringify({ error: "Server init failed" }),
+        headers: { "Content-Type": "application/json" },
       };
     }
   }
 
   try {
     const result = await cachedHandler(event, context);
-    console.log(`✅ Response: ${method} ${path} → ${result.statusCode}`);
+    console.log(`✅ ${method} ${path} → ${result.statusCode}`);
     return result;
   } catch (error) {
-    console.error(`❌ Error handling ${method} ${path}:`, error);
+    console.error(`❌ Error: ${method} ${path}`, error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Internal server error" }),
+      body: JSON.stringify({ error: "Handler failed" }),
+      headers: { "Content-Type": "application/json" },
     };
   }
 };
