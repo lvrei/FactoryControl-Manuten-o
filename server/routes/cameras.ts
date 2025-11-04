@@ -172,7 +172,7 @@ camerasRouter.post("/", async (req, res) => {
   }
 });
 
-camerasRouter.patch("/cameras/:id", async (req, res) => {
+camerasRouter.patch("/:id", async (req, res) => {
   try {
     await ensureCamerasTable();
     const id = req.params.id;
