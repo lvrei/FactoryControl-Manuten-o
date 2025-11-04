@@ -418,15 +418,11 @@ export async function createServer() {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`,
-      );
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`);
       await query(
         `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
       );
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`,
-      );
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`);
 
       const { rows } = await query(
         `SELECT id, name, position, department, shift, status, email, username, role, created_at FROM employees ORDER BY created_at DESC`,
@@ -454,10 +450,13 @@ export async function createServer() {
   // POST alias for creating users
   app.post(["/api/users", "/users"], async (req, res) => {
     try {
-      if (!isDbConfigured()) return res.status(400).json({ error: "Database not configured" });
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
 
       const d = req.body || {};
-      const id = d.id || `emp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      const id =
+        d.id ||
+        `emp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
       await query(`CREATE TABLE IF NOT EXISTS employees (
         id TEXT PRIMARY KEY,
@@ -472,15 +471,11 @@ export async function createServer() {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`,
-      );
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`);
       await query(
         `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
       );
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`,
-      );
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`);
 
       await query(
         `INSERT INTO employees (id, name, position, department, shift, status, email, username, role, created_at)
@@ -509,7 +504,8 @@ export async function createServer() {
   // PUT alias for updating users
   app.put(["/api/users/:id", "/users/:id"], async (req, res) => {
     try {
-      if (!isDbConfigured()) return res.status(400).json({ error: "Database not configured" });
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
 
       const id = req.params.id;
       const d = req.body || {};
@@ -527,15 +523,11 @@ export async function createServer() {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`,
-      );
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`);
       await query(
         `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
       );
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`,
-      );
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`);
 
       await query(
         `UPDATE employees SET
@@ -571,7 +563,8 @@ export async function createServer() {
   // DELETE alias for deleting users
   app.delete(["/api/users/:id", "/users/:id"], async (req, res) => {
     try {
-      if (!isDbConfigured()) return res.status(400).json({ error: "Database not configured" });
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
 
       const id = req.params.id;
 
@@ -588,15 +581,11 @@ export async function createServer() {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`,
-      );
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`);
       await query(
         `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
       );
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`,
-      );
+      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`);
 
       await query(`DELETE FROM employees WHERE id = $1`, [id]);
 
