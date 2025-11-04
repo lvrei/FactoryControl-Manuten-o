@@ -115,7 +115,7 @@ camerasRouter.get("/machines/:id/cameras", async (req, res) => {
   }
 });
 
-camerasRouter.post("/cameras", async (req, res) => {
+camerasRouter.post("/", async (req, res) => {
   try {
     await ensureCamerasTable();
     const d = req.body || {};
