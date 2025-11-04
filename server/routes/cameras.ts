@@ -54,7 +54,10 @@ async function ensureCamerasTable() {
               `ALTER TABLE cameras ADD CONSTRAINT cameras_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`,
             );
           } catch (e) {
-            console.warn("Could not add FK constraint to machines:", (e as any)?.message);
+            console.warn(
+              "Could not add FK constraint to machines:",
+              (e as any)?.message,
+            );
           }
         }
       }
