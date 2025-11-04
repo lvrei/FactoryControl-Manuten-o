@@ -554,7 +554,7 @@ iotRouter.post("/sensors/ingest", async (req, res) => {
   }
 });
 
-iotRouter.get("/iot/status", async (_req, res) => {
+iotRouter.get("/status", async (_req, res) => {
   try {
     const configured = isDbConfigured();
     let connected = false;
