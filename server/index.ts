@@ -412,15 +412,21 @@ export async function createServer() {
         department TEXT,
         shift TEXT,
         status TEXT,
+        email TEXT,
+        username TEXT,
+        role TEXT,
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
       const { rows } = await query(
-        `SELECT id, name, position, department, shift, status, created_at FROM employees ORDER BY created_at DESC`,
+        `SELECT id, name, position, department, shift, status, email, username, role, created_at FROM employees ORDER BY created_at DESC`,
       );
       return res.json(
         rows.map((r: any) => ({
           id: r.id,
           full_name: r.name,
+          username: r.username || "",
+          email: r.email || "",
+          role: r.role || "operator",
           position: r.position || "",
           department: r.department || "",
           shift: r.shift || "",
