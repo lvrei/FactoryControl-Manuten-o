@@ -627,7 +627,7 @@ maintenanceRouter.post("/planned", async (req, res) => {
   }
 });
 
-maintenanceRouter.put("/maintenance/planned/:id", async (req, res) => {
+maintenanceRouter.put("/planned/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const {
@@ -681,7 +681,7 @@ maintenanceRouter.put("/maintenance/planned/:id", async (req, res) => {
   }
 });
 
-maintenanceRouter.delete("/maintenance/planned/:id", async (req, res) => {
+maintenanceRouter.delete("/planned/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const { rows } = await query(
@@ -701,7 +701,7 @@ maintenanceRouter.delete("/maintenance/planned/:id", async (req, res) => {
 });
 
 // Downtime
-maintenanceRouter.get("/maintenance/downtime", async (_req, res) => {
+maintenanceRouter.get("/downtime", async (_req, res) => {
   try {
     await ensureTables();
     const { rows } = await query(
@@ -736,7 +736,7 @@ maintenanceRouter.get("/maintenance/downtime", async (_req, res) => {
   }
 });
 
-maintenanceRouter.post("/maintenance/downtime", async (req, res) => {
+maintenanceRouter.post("/downtime", async (req, res) => {
   const d = req.body || {};
   const id = d.id || genId("mdt");
   try {
@@ -773,7 +773,7 @@ maintenanceRouter.post("/maintenance/downtime", async (req, res) => {
   }
 });
 
-maintenanceRouter.post("/maintenance/downtime/:id/end", async (req, res) => {
+maintenanceRouter.post("/downtime/:id/end", async (req, res) => {
   const id = req.params.id;
   const { resolvedBy } = req.body || {};
   try {
