@@ -417,6 +417,17 @@ export async function createServer() {
         role TEXT,
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
+
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`,
+      );
+
       const { rows } = await query(
         `SELECT id, name, position, department, shift, status, email, username, role, created_at FROM employees ORDER BY created_at DESC`,
       );
