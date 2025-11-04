@@ -462,6 +462,16 @@ export async function createServer() {
       )`);
 
       await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`,
+      );
+
+      await query(
         `INSERT INTO employees (id, name, position, department, shift, status, email, username, role, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
          ON CONFLICT (id) DO NOTHING`,
