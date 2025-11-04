@@ -93,8 +93,8 @@ camerasRouter.get("/", async (_req, res) => {
     }));
     res.json(list);
   } catch (e: any) {
-    console.error("GET /cameras error", e);
-    res.status(500).json({ error: e.message });
+    console.error("GET /cameras error", e.message || e);
+    res.status(500).json({ error: e.message || "Failed to list cameras" });
   }
 });
 
