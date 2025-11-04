@@ -588,6 +588,16 @@ export async function createServer() {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`,
+      );
+
       await query(`DELETE FROM employees WHERE id = $1`, [id]);
 
       return res.json({ ok: true });
