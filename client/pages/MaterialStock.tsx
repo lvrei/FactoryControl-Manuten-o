@@ -1,8 +1,21 @@
 import { useState, useEffect } from "react";
-import { Plus, Search, Package, AlertTriangle, Edit, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Package,
+  AlertTriangle,
+  Edit,
+  Trash2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { apiFetch } from "@/config/api";
 
 interface Material {
   id: number;
@@ -73,7 +87,7 @@ export default function MaterialStock() {
 
   const loadMaterials = async () => {
     try {
-      const response = await fetch("/api/materials");
+      const response = await apiFetch("materials");
       if (response.ok) {
         const data = await response.json();
         setMaterials(data);
@@ -85,10 +99,15 @@ export default function MaterialStock() {
 
   const loadEquipments = async () => {
     try {
-      const response = await fetch("/api/equipment");
+      const response = await apiFetch("machines");
       if (response.ok) {
         const data = await response.json();
-        setEquipments(data);
+        // Map machines to simplified equipment { id, name }
+        const items = (data || []).map((m: any) => ({
+          id: m.id,
+          name: m.name,
+        }));
+        setEquipments(items);
       }
     } catch (error) {
       console.error("Erro ao carregar equipamentos:", error);
@@ -97,20 +116,23 @@ export default function MaterialStock() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
-      const url = editingMaterial 
+      const url = editingMaterial
         ? `/api/materials/${editingMaterial.id}`
         : "/api/materials";
-      
+
       const method = editingMaterial ? "PUT" : "POST";
-      
-      const response = await fetch(url, {
+
+      const response = await apiFetch(url.replace(/^\/?api\//, ""), {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          equipment_id: formData.equipment_id && formData.equipment_id !== "general" ? parseInt(formData.equipment_id) : null,
+          equipment_id:
+            formData.equipment_id && formData.equipment_id !== "general"
+              ? parseInt(formData.equipment_id)
+              : null,
         }),
       });
 
@@ -153,7 +175,7 @@ export default function MaterialStock() {
     if (!confirm("Tem a certeza que deseja eliminar este material?")) return;
 
     try {
-      const response = await fetch(`/api/materials/${id}`, {
+      const response = await apiFetch(`materials/${id}`, {
         method: "DELETE",
       });
 
@@ -192,15 +214,21 @@ export default function MaterialStock() {
   };
 
   const filteredMaterials = materials.filter((material) => {
-    const matchesSearch = material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch =
+      material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       material.code.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = filterCategory === "all" || material.category === filterCategory;
+    const matchesCategory =
+      filterCategory === "all" || material.category === filterCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const categories = Array.from(new Set(materials.map(m => m.category).filter(Boolean)));
+  const categories = Array.from(
+    new Set(materials.map((m) => m.category).filter(Boolean)),
+  );
 
-  const lowStockMaterials = materials.filter(m => m.current_stock <= m.min_stock);
+  const lowStockMaterials = materials.filter(
+    (m) => m.current_stock <= m.min_stock,
+  );
 
   return (
     <div className="space-y-6">
@@ -228,10 +256,14 @@ export default function MaterialStock() {
           <CardContent>
             <div className="space-y-2">
               {lowStockMaterials.map((material) => (
-                <div key={material.id} className="flex items-center justify-between text-sm">
+                <div
+                  key={material.id}
+                  className="flex items-center justify-between text-sm"
+                >
                   <span className="font-medium">{material.name}</span>
                   <Badge variant="destructive">
-                    {material.current_stock} / {material.min_stock} {material.unit}
+                    {material.current_stock} / {material.min_stock}{" "}
+                    {material.unit}
                   </Badge>
                 </div>
               ))}
@@ -281,13 +313,21 @@ export default function MaterialStock() {
               <div className="space-y-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Stock:</span>
-                  <span className={material.current_stock <= material.min_stock ? "text-red-600 font-semibold" : "font-semibold"}>
+                  <span
+                    className={
+                      material.current_stock <= material.min_stock
+                        ? "text-red-600 font-semibold"
+                        : "font-semibold"
+                    }
+                  >
                     {material.current_stock} {material.unit}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Mínimo:</span>
-                  <span>{material.min_stock} {material.unit}</span>
+                  <span>
+                    {material.min_stock} {material.unit}
+                  </span>
                 </div>
                 {material.category && (
                   <div className="flex justify-between text-sm">
@@ -307,11 +347,20 @@ export default function MaterialStock() {
                   </Badge>
                 )}
                 <div className="flex gap-2 pt-2">
-                  <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(material)}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => handleEdit(material)}
+                  >
                     <Edit className="h-3 w-3 mr-1" />
                     Editar
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => handleDelete(material.id)}>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(material.id)}
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -339,7 +388,9 @@ export default function MaterialStock() {
                   id="name"
                   required
                   value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -348,7 +399,9 @@ export default function MaterialStock() {
                   id="code"
                   required
                   value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, code: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -356,12 +409,19 @@ export default function MaterialStock() {
                 <Input
                   id="category"
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="unit">Unidade</Label>
-                <Select value={formData.unit} onValueChange={(value) => setFormData({ ...formData, unit: value })}>
+                <Select
+                  value={formData.unit}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, unit: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -380,7 +440,12 @@ export default function MaterialStock() {
                   id="current_stock"
                   type="number"
                   value={formData.current_stock}
-                  onChange={(e) => setFormData({ ...formData, current_stock: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      current_stock: parseInt(e.target.value) || 0,
+                    })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -389,7 +454,12 @@ export default function MaterialStock() {
                   id="min_stock"
                   type="number"
                   value={formData.min_stock}
-                  onChange={(e) => setFormData({ ...formData, min_stock: parseInt(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      min_stock: parseInt(e.target.value) || 0,
+                    })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -399,7 +469,12 @@ export default function MaterialStock() {
                   type="number"
                   step="0.01"
                   value={formData.cost_per_unit}
-                  onChange={(e) => setFormData({ ...formData, cost_per_unit: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      cost_per_unit: parseFloat(e.target.value) || 0,
+                    })
+                  }
                 />
               </div>
               <div className="space-y-2">
@@ -407,18 +482,22 @@ export default function MaterialStock() {
                 <Input
                   id="supplier"
                   value={formData.supplier}
-                  onChange={(e) => setFormData({ ...formData, supplier: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, supplier: e.target.value })
+                  }
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="equipment_id">Equipamento Associado</Label>
                 <Select
                   value={formData.equipment_id}
-                  onValueChange={(value) => setFormData({
-                    ...formData,
-                    equipment_id: value,
-                    is_general_stock: value === "general"
-                  })}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      equipment_id: value,
+                      is_general_stock: value === "general",
+                    })
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Stock Geral (todos os equipamentos)" />
@@ -438,7 +517,9 @@ export default function MaterialStock() {
                 <Input
                   id="notes"
                   value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, notes: e.target.value })
+                  }
                 />
               </div>
             </div>

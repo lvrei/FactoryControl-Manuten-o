@@ -2,11 +2,17 @@
 <html lang="pt-PT">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no"
+    />
     <title>FactoryControl - Gestão de Manutenção</title>
 
     <!-- PWA Meta Tags -->
-    <meta name="description" content="Sistema completo de gestão de manutenção industrial com checklists DL50" />
+    <meta
+      name="description"
+      content="Sistema completo de gestão de manutenção industrial com checklists DL50"
+    />
     <meta name="theme-color" content="#2563eb" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -17,19 +23,29 @@
     <link rel="manifest" href="/manifest.json" />
 
     <!-- iOS Icons -->
-    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192x192.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="152x152"
+      href="/icons/icon-152x152.png"
+    />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="/icons/icon-192x192.png"
+    />
 
-    <!-- Standard Icons -->
-    <link rel="icon" type="image/png" sizes="32x32" href="/icons/icon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/icons/icon-16x16.png" />
+    <!-- Favicon -->
+    <link rel="icon" href="/favicon.ico" />
 
     <!-- Microsoft Tiles -->
     <meta name="msapplication-TileColor" content="#2563eb" />
     <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
 
     <!-- Disable zoom on mobile -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+    />
   </head>
 
   <body>
@@ -40,45 +56,53 @@
     <!-- PWA Service Worker Registration -->
     <script>
       // Test Service Worker support first
-      console.log('🔍 Testing Service Worker support...');
-      console.log('ServiceWorker in navigator:', 'serviceWorker' in navigator);
-      console.log('Navigator:', navigator);
-      console.log('Location:', location);
+      console.log("🔍 Testing Service Worker support...");
+      console.log("ServiceWorker in navigator:", "serviceWorker" in navigator);
+      console.log("Navigator:", navigator);
+      console.log("Location:", location);
 
       // Enhanced PWA registration with better mobile support
-      if ('serviceWorker' in navigator) {
-        const isLocalDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      if ("serviceWorker" in navigator) {
+        const isLocalDev =
+          location.hostname === "localhost" ||
+          location.hostname === "127.0.0.1";
         if (isLocalDev) {
-          console.log('⚠️ SW desativado em desenvolvimento local');
+          console.log("⚠️ SW desativado em desenvolvimento local");
         } else {
-          window.addEventListener('load', function() {
-            navigator.serviceWorker.register('/sw.js', { scope: '/' })
-              .then(function(registration) {
-                console.log('✅ ServiceWorker registered:', registration.scope);
-                registration.addEventListener('updatefound', function() {
+          window.addEventListener("load", function () {
+            navigator.serviceWorker
+              .register("/sw.js", { scope: "/" })
+              .then(function (registration) {
+                console.log("✅ ServiceWorker registered:", registration.scope);
+                registration.addEventListener("updatefound", function () {
                   const newWorker = registration.installing;
                   if (!newWorker) return;
-                  newWorker.addEventListener('statechange', function() {
-                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                      const key = 'fc_sw_notified_once';
+                  newWorker.addEventListener("statechange", function () {
+                    if (
+                      newWorker.state === "installed" &&
+                      navigator.serviceWorker.controller
+                    ) {
+                      const key = "fc_sw_notified_once";
                       if (!sessionStorage.getItem(key)) {
-                        console.log('🆕 Nova versão disponível. Será aplicada no próximo arranque.');
-                        sessionStorage.setItem(key, '1');
+                        console.log(
+                          "🆕 Nova versão disponível. Será aplicada no próximo arranque.",
+                        );
+                        sessionStorage.setItem(key, "1");
                       }
                     }
                   });
                 });
               })
-              .catch(function(err) {
-                console.error('❌ ServiceWorker registration failed:', err);
+              .catch(function (err) {
+                console.error("❌ ServiceWorker registration failed:", err);
               });
           });
         }
 
         // Handle service worker messages
-        navigator.serviceWorker.addEventListener('message', event => {
-          if (event.data && event.data.type === 'UPDATE_AVAILABLE') {
-            console.log('📱 Update available message received');
+        navigator.serviceWorker.addEventListener("message", (event) => {
+          if (event.data && event.data.type === "UPDATE_AVAILABLE") {
+            console.log("📱 Update available message received");
           }
         });
       }
@@ -86,21 +110,24 @@
       // Enhanced PWA capabilities logging
       function checkPWACapabilities() {
         const capabilities = {
-          serviceWorker: 'serviceWorker' in navigator,
-          installPrompt: 'BeforeInstallPromptEvent' in window,
-          notifications: 'Notification' in window,
-          camera: 'mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices,
-          geolocation: 'geolocation' in navigator,
-          storage: 'localStorage' in window,
-          standalone: window.matchMedia('(display-mode: standalone)').matches,
-          webAppManifest: document.querySelector('link[rel="manifest"]') !== null,
+          serviceWorker: "serviceWorker" in navigator,
+          installPrompt: "BeforeInstallPromptEvent" in window,
+          notifications: "Notification" in window,
+          camera:
+            "mediaDevices" in navigator &&
+            "getUserMedia" in navigator.mediaDevices,
+          geolocation: "geolocation" in navigator,
+          storage: "localStorage" in window,
+          standalone: window.matchMedia("(display-mode: standalone)").matches,
+          webAppManifest:
+            document.querySelector('link[rel="manifest"]') !== null,
           isSecureContext: window.isSecureContext,
           platform: navigator.platform,
           userAgent: navigator.userAgent,
-          isOnline: navigator.onLine
+          isOnline: navigator.onLine,
         };
 
-        console.log('🔍 PWA Capabilities Check:', capabilities);
+        console.log("🔍 PWA Capabilities Check:", capabilities);
 
         // Store capabilities for debugging
         window.pwaCapabilities = capabilities;
@@ -114,9 +141,9 @@
       // Enhanced manifest check with retry
       async function checkManifest() {
         try {
-          const response = await fetch('/manifest.json', {
-            method: 'GET',
-            cache: 'no-cache'
+          const response = await fetch("/manifest.json", {
+            method: "GET",
+            cache: "no-cache",
           });
 
           if (!response.ok) {
@@ -124,18 +151,17 @@
           }
 
           const manifest = await response.json();
-          console.log('✅ Manifest loaded successfully:', {
+          console.log("✅ Manifest loaded successfully:", {
             name: manifest.name,
             startUrl: manifest.start_url,
             display: manifest.display,
-            icons: manifest.icons?.length || 0
+            icons: manifest.icons?.length || 0,
           });
 
           // Store manifest for debugging
           window.pwaManifest = manifest;
-
         } catch (error) {
-          console.error('❌ Manifest failed to load:', error);
+          console.error("❌ Manifest failed to load:", error);
 
           // Retry after 2 seconds
           setTimeout(checkManifest, 2000);
@@ -145,29 +171,29 @@
       checkManifest();
 
       // Listen for online/offline changes
-      window.addEventListener('online', () => {
-        console.log('🌐 App is now ONLINE');
+      window.addEventListener("online", () => {
+        console.log("🌐 App is now ONLINE");
       });
 
-      window.addEventListener('offline', () => {
-        console.log('📴 App is now OFFLINE');
+      window.addEventListener("offline", () => {
+        console.log("📴 App is now OFFLINE");
       });
 
       // Enhanced beforeinstallprompt logging
-      window.addEventListener('beforeinstallprompt', (e) => {
-        console.log('🎯 beforeinstallprompt event fired');
-        console.log('Platforms:', e.platforms);
+      window.addEventListener("beforeinstallprompt", (e) => {
+        console.log("🎯 beforeinstallprompt event fired");
+        console.log("Platforms:", e.platforms);
 
         // Store the event for debugging
         window.pwaInstallPrompt = e;
       });
 
       // Listen for app installed
-      window.addEventListener('appinstalled', () => {
-        console.log('🎉 PWA was installed successfully!');
+      window.addEventListener("appinstalled", () => {
+        console.log("🎉 PWA was installed successfully!");
       });
 
-      console.log('🚀 PWA initialization complete');
+      console.log("🚀 PWA initialization complete");
     </script>
   </body>
 </html>

@@ -8,8 +8,23 @@ import cookieParser from "cookie-parser";
 import { isDbConfigured, query } from "./db";
 import { Sentry, initSentryNode } from "./sentry";
 
-export function createServer() {
+export async function createServer() {
   const app = express();
+  const loaded = {
+    production: false,
+    iot: false,
+    maintenance: false,
+    employees: false,
+    factories: false,
+    cameras: false,
+    vision: false,
+    agents: false,
+    cameraOps: false,
+    materials: false,
+  };
+
+  // serverless-http with basePath handles path stripping for Netlify Functions
+  // No additional normalization needed here
 
   // Initialize Sentry (Node)
   initSentryNode();
@@ -72,8 +87,8 @@ export function createServer() {
   app.use(express.urlencoded({ extended: true, limit: "10mb" }));
   app.use(cookieParser());
 
-  // API routes
-  app.get("/api/ping", (_req, res) => {
+  // API routes - DEFINE EARLY so they match before routers
+  app.get(["/api/ping", "/ping"], (_req, res) => {
     const ping = process.env.PING_MESSAGE ?? "ping";
     res.json({ message: ping });
   });
@@ -88,7 +103,7 @@ export function createServer() {
   });
 
   // DB status endpoint
-  app.get("/api/db-status", async (_req, res) => {
+  app.get(["/api/db-status", "/db-status"], async (_req, res) => {
     if (!isDbConfigured())
       return res.json({ configured: false, connected: false });
     try {
@@ -101,154 +116,358 @@ export function createServer() {
     }
   });
 
-  // Production API (Neon) - dynamic and optional
-  if (isDbConfigured()) {
+  // Health check endpoint - EARLY in middleware chain
+  app.get(["/api/health", "/health"], async (_req, res) => {
+    console.log("🏥 Health check endpoint hit");
     try {
-      import("./routes/production")
-        .then(({ productionRouter }) => {
-          app.use("/api", productionRouter);
-        })
-        .catch((e) =>
-          console.warn("Production API not loaded:", (e as any)?.message),
-        );
-
-      import("./routes/iot")
-        .then(({ iotRouter }) => {
-          app.use("/api", iotRouter);
-        })
-        .catch((e) => console.warn("IoT API not loaded:", (e as any)?.message));
-
-      import("./routes/maintenance")
-        .then(({ maintenanceRouter }) => {
-          app.use("/api", maintenanceRouter);
-        })
-        .catch((e) =>
-          console.warn("Maintenance API not loaded:", (e as any)?.message),
-        );
-
-      import("./routes/employees")
-        .then(({ employeesRouter }) => {
-          app.use("/api", employeesRouter);
-        })
-        .catch((e) =>
-          console.warn("Employees API not loaded:", (e as any)?.message),
-        );
-
-      import("./routes/factories")
-        .then(({ factoriesRouter }) => {
-          app.use("/api", factoriesRouter);
-        })
-        .catch((e) =>
-          console.warn("Factories API not loaded:", (e as any)?.message),
-        );
-
-      import("./routes/cameras")
-        .then(({ camerasRouter }) => {
-          app.use("/api", camerasRouter);
-        })
-        .catch((e) =>
-          console.warn("Cameras API not loaded:", (e as any)?.message),
-        );
-
-      import("./routes/vision")
-        .then(({ visionRouter }) => {
-          app.use("/api", visionRouter);
-        })
-        .catch((e) =>
-          console.warn("Vision API not loaded:", (e as any)?.message),
-        );
-
-      import("./routes/agents")
-        .then(({ agentsRouter }) => {
-          app.use("/api", agentsRouter);
-        })
-        .catch((e) =>
-          console.warn("Agents API not loaded:", (e as any)?.message),
-        );
-
-      import("./routes/camera_ops")
-        .then(({ cameraOpsRouter }) => {
-          app.use("/api", cameraOpsRouter);
-        })
-        .catch((e) =>
-          console.warn("Camera Ops API not loaded:", (e as any)?.message),
-        );
-
-      import("./routes/materials")
-        .then((module) => {
-          app.use("/api/materials", module.default);
-        })
-        .catch((e) =>
-          console.warn("Materials API not loaded:", (e as any)?.message),
-        );
-    } catch (e) {
-      console.warn("APIs not loaded:", (e as any)?.message);
+      let db = { configured: isDbConfigured(), connected: false } as any;
+      if (db.configured) {
+        try {
+          await query("SELECT 1");
+          db.connected = true;
+        } catch (e: any) {
+          db.connected = false;
+          db.error = e.message;
+        }
+      }
+      res.json({
+        status: "ok",
+        timestamp: new Date().toISOString(),
+        version: "4.1.0",
+        routers: loaded,
+        db,
+      });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
     }
-  } else {
-    console.warn("DATABASE_URL não definido. API de produção desativada.");
-    import("./routes/iot")
-      .then(({ iotRouter }) => {
-        app.use("/api", iotRouter);
-      })
-      .catch((e) => console.warn("IoT API not loaded:", (e as any)?.message));
-    import("./routes/maintenance")
-      .then(({ maintenanceRouter }) => {
-        app.use("/api", maintenanceRouter);
-      })
-      .catch((e) =>
-        console.warn("Maintenance API not loaded:", (e as any)?.message),
-      );
-    import("./routes/employees")
-      .then(({ employeesRouter }) => {
-        app.use("/api", employeesRouter);
-      })
-      .catch((e) =>
-        console.warn("Employees API not loaded:", (e as any)?.message),
-      );
-    import("./routes/factories")
-      .then(({ factoriesRouter }) => {
-        app.use("/api", factoriesRouter);
-      })
-      .catch((e) =>
-        console.warn("Factories API not loaded:", (e as any)?.message),
-      );
-    import("./routes/cameras")
-      .then(({ camerasRouter }) => {
-        app.use("/api", camerasRouter);
-      })
-      .catch((e) =>
-        console.warn("Cameras API not loaded:", (e as any)?.message),
-      );
-    import("./routes/vision")
-      .then(({ visionRouter }) => {
-        app.use("/api", visionRouter);
-      })
-      .catch((e) =>
-        console.warn("Vision API not loaded:", (e as any)?.message),
-      );
-    import("./routes/agents")
-      .then(({ agentsRouter }) => {
-        app.use("/api", agentsRouter);
-      })
-      .catch((e) =>
-        console.warn("Agents API not loaded:", (e as any)?.message),
-      );
-    import("./routes/camera_ops")
-      .then(({ cameraOpsRouter }) => {
-        app.use("/api", cameraOpsRouter);
-      })
-      .catch((e) =>
-        console.warn("Camera Ops API not loaded:", (e as any)?.message),
-      );
+  });
+
+  // Root responders
+  app.get("/", (_req, res) => {
+    res.json({ ok: true, service: "factory-control", ts: Date.now() });
+  });
+
+  app.get("/api", (_req, res) => {
+    res.json({ ok: true, service: "factory-control", ts: Date.now() });
+  });
+
+  // Production API (Neon)
+  // Netlify redirects: /api/* → /.netlify/functions/api/:splat
+  // serverless-http strips /.netlify/functions/api, leaving requests as /equipment instead of /api/equipment
+  // Solution: mount at specific paths (/equipment, /maintenance) AND at /api to handle both cases
+  try {
+    console.log("Loading production routes...");
+    const { productionRouter } = await import("./routes/production");
+    app.use("/equipment", productionRouter);
+    app.use("/api/equipment", productionRouter);
+    app.use("/api", productionRouter);
+    loaded.production = true;
+    console.log(
+      "✅ Production routes mounted at /equipment, /api/equipment, and /api",
+    );
+  } catch (e) {
+    console.error("Production API not loaded:", e);
   }
 
-  // Health check
-  app.get("/api/health", (_req, res) => {
-    res.json({
-      status: "ok",
-      timestamp: new Date().toISOString(),
-      version: "4.0.0",
-    });
+  try {
+    const { iotRouter } = await import("./routes/iot");
+    app.use("/iot", iotRouter);
+    app.use("/api/iot", iotRouter);
+    app.use("/api", iotRouter);
+    loaded.iot = true;
+    console.log("✅ IoT routes mounted at /iot, /api/iot, and /api");
+  } catch (e) {
+    console.warn("IoT API not loaded:", (e as any)?.message);
+  }
+
+  try {
+    const { maintenanceRouter } = await import("./routes/maintenance");
+    app.use("/maintenance", maintenanceRouter);
+    app.use("/api/maintenance", maintenanceRouter);
+    app.use("/api", maintenanceRouter);
+    loaded.maintenance = true;
+    console.log(
+      "✅ Maintenance routes mounted at /maintenance, /api/maintenance, and /api",
+    );
+  } catch (e) {
+    console.warn("Maintenance API not loaded:", (e as any)?.message);
+  }
+
+  try {
+    const { employeesRouter } = await import("./routes/employees");
+    app.use("/employees", employeesRouter);
+    app.use("/api/employees", employeesRouter);
+    app.use("/api", employeesRouter);
+    loaded.employees = true;
+    console.log(
+      "✅ Employees routes mounted at /employees, /api/employees, and /api",
+    );
+  } catch (e) {
+    console.warn("Employees API not loaded:", (e as any)?.message);
+  }
+
+  try {
+    const { factoriesRouter } = await import("./routes/factories");
+    app.use("/factories", factoriesRouter);
+    app.use("/api/factories", factoriesRouter);
+    app.use("/api", factoriesRouter);
+    loaded.factories = true;
+    console.log(
+      "✅ Factories routes mounted at /factories, /api/factories, and /api",
+    );
+  } catch (e) {
+    console.warn("Factories API not loaded:", (e as any)?.message);
+  }
+
+  try {
+    const { camerasRouter } = await import("./routes/cameras");
+    app.use("/cameras", camerasRouter);
+    app.use("/api/cameras", camerasRouter);
+    app.use("/api", camerasRouter);
+    loaded.cameras = true;
+    console.log(
+      "✅ Cameras routes mounted at /cameras, /api/cameras, and /api",
+    );
+  } catch (e) {
+    console.warn("Cameras API not loaded:", (e as any)?.message);
+  }
+
+  try {
+    const { visionRouter } = await import("./routes/vision");
+    app.use("/vision", visionRouter);
+    app.use("/api/vision", visionRouter);
+    app.use("/api", visionRouter);
+    loaded.vision = true;
+    console.log("✅ Vision routes mounted at /vision, /api/vision, and /api");
+  } catch (e) {
+    console.warn("Vision API not loaded:", (e as any)?.message);
+  }
+
+  try {
+    const { agentsRouter } = await import("./routes/agents");
+    app.use("/agents", agentsRouter);
+    app.use("/api/agents", agentsRouter);
+    app.use("/api", agentsRouter);
+    loaded.agents = true;
+    console.log("✅ Agents routes mounted at /agents, /api/agents, and /api");
+  } catch (e) {
+    console.warn("Agents API not loaded:", (e as any)?.message);
+  }
+
+  try {
+    const { cameraOpsRouter } = await import("./routes/camera_ops");
+    app.use("/camera-ops", cameraOpsRouter);
+    app.use("/api/camera-ops", cameraOpsRouter);
+    app.use("/api", cameraOpsRouter);
+    loaded.cameraOps = true;
+    console.log(
+      "✅ Camera Ops routes mounted at /camera-ops, /api/camera-ops, and /api",
+    );
+  } catch (e) {
+    console.warn("Camera Ops API not loaded:", (e as any)?.message);
+  }
+
+  try {
+    const module = await import("./routes/materials");
+    app.use("/materials", module.default);
+    app.use("/api/materials", module.default);
+    app.use("/api", module.default);
+    loaded.materials = true;
+    console.log(
+      "✅ Materials routes mounted at /materials, /api/materials, and /api",
+    );
+  } catch (e) {
+    console.warn("Materials API not loaded:", (e as any)?.message);
+  }
+
+  // Robust Equipment endpoints (direct) to avoid any router/basePath issues
+  app.get(["/api/equipment", "/equipment"], async (_req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await query(`CREATE TABLE IF NOT EXISTS machines (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT,
+        status TEXT,
+        max_length_mm INTEGER,
+        max_width_mm INTEGER,
+        max_height_mm INTEGER,
+        cutting_precision NUMERIC,
+        current_operator TEXT,
+        last_maintenance TIMESTAMPTZ,
+        operating_hours INTEGER,
+        specifications TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+      const { rows } = await query(`SELECT
+        id, name, type as equipment_type, '' as manufacturer, '' as model,
+        '' as serial_number, created_at as installation_date, '' as location,
+        status, '' as notes, created_at
+        FROM machines ORDER BY name`);
+      return res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          equipment_type: r.equipment_type || "",
+          manufacturer: r.manufacturer || "",
+          model: r.model || "",
+          serial_number: r.serial_number || "",
+          installation_date: r.installation_date,
+          location: r.location || "",
+          status: r.status,
+          notes: r.notes || "",
+          created_at: r.created_at,
+        })),
+      );
+    } catch (e: any) {
+      console.error("[DIRECT] GET /equipment error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Direct machines list (read-only) to avoid 404 if router mount fails
+  app.get(["/api/machines", "/machines"], async (_req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await query(`CREATE TABLE IF NOT EXISTS machines (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        type TEXT,
+        status TEXT,
+        max_length_mm INTEGER,
+        max_width_mm INTEGER,
+        max_height_mm INTEGER,
+        cutting_precision NUMERIC,
+        current_operator TEXT,
+        last_maintenance TIMESTAMPTZ,
+        operating_hours INTEGER,
+        specifications TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+      const { rows } = await query(`SELECT id, name, type, status,
+        max_length_mm, max_width_mm, max_height_mm, cutting_precision,
+        current_operator, last_maintenance, operating_hours, specifications
+        FROM machines ORDER BY name`);
+      return res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          type: r.type,
+          status: r.status,
+          maxDimensions: {
+            length: r.max_length_mm,
+            width: r.max_width_mm,
+            height: r.max_height_mm,
+          },
+          cuttingPrecision: Number(r.cutting_precision) || 0,
+          currentOperator: r.current_operator,
+          lastMaintenance: r.last_maintenance,
+          operatingHours: r.operating_hours,
+          specifications: r.specifications || "",
+        })),
+      );
+    } catch (e: any) {
+      console.error("[DIRECT] GET /machines error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Direct IoT alerts (read-only) to avoid 404 if router mount fails
+  app.get(["/api/iot/alerts", "/iot/alerts"], async (req, res) => {
+    const status = req.query.status as string | undefined;
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await query(`CREATE SCHEMA IF NOT EXISTS iot`);
+      await query(`CREATE TABLE IF NOT EXISTS iot.alerts (
+        id TEXT PRIMARY KEY,
+        machine_id TEXT,
+        rule_id TEXT,
+        sensor_id TEXT,
+        metric TEXT,
+        value DOUBLE PRECISION,
+        status TEXT DEFAULT 'active',
+        priority TEXT DEFAULT 'medium',
+        message TEXT,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+      const { rows } = await query(
+        `SELECT * FROM iot.alerts ${status ? `WHERE status = $1` : ""} ORDER BY created_at DESC`,
+        status ? [status] : (undefined as any),
+      );
+      return res.json(rows);
+    } catch (e: any) {
+      console.error("[DIRECT] GET /iot/alerts error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Alias for legacy clients requesting /api/users -> returns employees
+  app.get(["/api/users", "/users"], async (_req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await query(`CREATE TABLE IF NOT EXISTS employees (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        position TEXT,
+        department TEXT,
+        shift TEXT,
+        status TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+      const { rows } = await query(
+        `SELECT id, name, position, department, shift, status, created_at FROM employees ORDER BY created_at DESC`,
+      );
+      return res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          full_name: r.name,
+          position: r.position || "",
+          department: r.department || "",
+          shift: r.shift || "",
+          status: r.status || "",
+          created_at: r.created_at,
+        })),
+      );
+    } catch (e: any) {
+      console.error("[DIRECT] GET /users error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Debug: list registered routes
+  app.get(["/api/_routes", "/_routes"], (_req, res) => {
+    try {
+      const routes: Array<{ method: string; path: string }> = [];
+      (app as any)._router?.stack?.forEach((layer: any) => {
+        if (layer.route && layer.route.path) {
+          const methods = Object.keys(layer.route.methods)
+            .filter((m) => layer.route.methods[m])
+            .map((m) => m.toUpperCase());
+          methods.forEach((method) =>
+            routes.push({ method, path: layer.route.path }),
+          );
+        } else if (layer.name === "router" && layer.handle?.stack) {
+          layer.handle.stack.forEach((s: any) => {
+            if (s.route && s.route.path) {
+              const methods = Object.keys(s.route.methods)
+                .filter((m) => s.route.methods[m])
+                .map((m) => m.toUpperCase());
+              methods.forEach((method) =>
+                routes.push({ method, path: s.route.path }),
+              );
+            }
+          });
+        }
+      });
+      res.json({ routes });
+    } catch (e: any) {
+      res.status(500).json({ error: e.message });
+    }
+  });
+
+  // Catch-all for undefined API routes - return JSON 404 instead of HTML
+  app.use("/api/*", (_req, res) => {
+    res.status(404).json({ error: "API endpoint not found" });
   });
 
   // Sentry Express error/request handlers (must be after routes, before our error handler)

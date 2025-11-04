@@ -51,13 +51,13 @@ type Alert = {
 
 class IotService {
   async listSensors(): Promise<Sensor[]> {
-    const r = await apiFetch("api/sensors");
+    const r = await apiFetch("sensors");
     if (!r.ok) throw new Error("Falha ao listar sensores");
     return r.json();
   }
 
   async createSensor(data: Partial<Sensor>): Promise<string> {
-    const r = await apiFetch("api/sensors", {
+    const r = await apiFetch("sensors", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -68,7 +68,7 @@ class IotService {
   }
 
   async bindSensor(data: Partial<SensorBinding>): Promise<string> {
-    const r = await apiFetch("api/sensors/bind", {
+    const r = await apiFetch("sensors/bind", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -79,13 +79,13 @@ class IotService {
   }
 
   async listRules(): Promise<SensorRule[]> {
-    const r = await apiFetch("api/rules");
+    const r = await apiFetch("rules");
     if (!r.ok) throw new Error("Falha ao listar regras");
     return r.json();
   }
 
   async createRule(data: Partial<SensorRule>): Promise<string> {
-    const r = await apiFetch("api/rules", {
+    const r = await apiFetch("rules", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
@@ -101,7 +101,7 @@ class IotService {
     value: number;
     timestamp?: string;
   }): Promise<{ ok: boolean; alertsCreated: number }> {
-    const r = await apiFetch("api/sensors/ingest", {
+    const r = await apiFetch("sensors/ingest", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(params),
@@ -113,13 +113,13 @@ class IotService {
   async listAlerts(
     status?: "active" | "acknowledged" | "resolved",
   ): Promise<Alert[]> {
-    const r = await apiFetch(`api/alerts${status ? `?status=${status}` : ""}`);
+    const r = await apiFetch(`alerts${status ? `?status=${status}` : ""}`);
     if (!r.ok) throw new Error("Falha ao listar alertas");
     return r.json();
   }
 
   async ackAlert(id: string): Promise<void> {
-    const r = await apiFetch(`api/alerts/${id}/ack`, { method: "POST" });
+    const r = await apiFetch(`alerts/${id}/ack`, { method: "POST" });
     if (!r.ok) throw new Error("Falha ao confirmar alerta");
   }
 }

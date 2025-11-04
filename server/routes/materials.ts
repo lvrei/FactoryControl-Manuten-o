@@ -1,13 +1,16 @@
 import { Router } from "express";
-import { query } from "../db";
+import { query, isDbConfigured } from "../db";
 
 const router = Router();
 
 // Get all materials
 router.get("/", async (req, res) => {
   try {
+    if (!isDbConfigured()) {
+      return res.json([]);
+    }
     const result = await query(`
-      SELECT m.*, e.name as equipment_name 
+      SELECT m.*, e.name as equipment_name
       FROM materials m
       LEFT JOIN equipments e ON m.equipment_id = e.id
       ORDER BY m.name
@@ -23,17 +26,20 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await query(`
+    const result = await query(
+      `
       SELECT m.*, e.name as equipment_name 
       FROM materials m
       LEFT JOIN equipments e ON m.equipment_id = e.id
       WHERE m.id = $1
-    `, [id]);
-    
+    `,
+      [id],
+    );
+
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Material not found" });
     }
-    
+
     res.json(result.rows[0]);
   } catch (error) {
     console.error("Error fetching material:", error);
@@ -55,29 +61,32 @@ router.post("/", async (req, res) => {
       supplier,
       equipment_id,
       is_general_stock,
-      notes
+      notes,
     } = req.body;
 
-    const result = await query(`
+    const result = await query(
+      `
       INSERT INTO materials (
         name, code, category, unit, min_stock, current_stock,
         cost_per_unit, supplier, equipment_id, is_general_stock, notes
       )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING *
-    `, [
-      name,
-      code,
-      category,
-      unit,
-      min_stock || 0,
-      current_stock || 0,
-      cost_per_unit || 0,
-      supplier,
-      equipment_id,
-      is_general_stock !== false,
-      notes
-    ]);
+    `,
+      [
+        name,
+        code,
+        category,
+        unit,
+        min_stock || 0,
+        current_stock || 0,
+        cost_per_unit || 0,
+        supplier,
+        equipment_id,
+        is_general_stock !== false,
+        notes,
+      ],
+    );
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
@@ -101,10 +110,11 @@ router.put("/:id", async (req, res) => {
       supplier,
       equipment_id,
       is_general_stock,
-      notes
+      notes,
     } = req.body;
 
-    const result = await query(`
+    const result = await query(
+      `
       UPDATE materials
       SET name = $1, code = $2, category = $3, unit = $4, min_stock = $5,
           current_stock = $6, cost_per_unit = $7, supplier = $8,
@@ -112,20 +122,22 @@ router.put("/:id", async (req, res) => {
           updated_at = CURRENT_TIMESTAMP
       WHERE id = $12
       RETURNING *
-    `, [
-      name,
-      code,
-      category,
-      unit,
-      min_stock,
-      current_stock,
-      cost_per_unit,
-      supplier,
-      equipment_id,
-      is_general_stock,
-      notes,
-      id
-    ]);
+    `,
+      [
+        name,
+        code,
+        category,
+        unit,
+        min_stock,
+        current_stock,
+        cost_per_unit,
+        supplier,
+        equipment_id,
+        is_general_stock,
+        notes,
+        id,
+      ],
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Material not found" });
@@ -142,7 +154,10 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await query("DELETE FROM materials WHERE id = $1 RETURNING *", [id]);
+    const result = await query(
+      "DELETE FROM materials WHERE id = $1 RETURNING *",
+      [id],
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Material not found" });
@@ -161,23 +176,30 @@ router.patch("/:id/stock", async (req, res) => {
     const { id } = req.params;
     const { quantity, operation } = req.body; // operation: 'add' or 'subtract'
 
-    const currentResult = await query("SELECT current_stock FROM materials WHERE id = $1", [id]);
-    
+    const currentResult = await query(
+      "SELECT current_stock FROM materials WHERE id = $1",
+      [id],
+    );
+
     if (currentResult.rows.length === 0) {
       return res.status(404).json({ error: "Material not found" });
     }
 
     const currentStock = currentResult.rows[0].current_stock;
-    const newStock = operation === 'subtract' 
-      ? Math.max(0, currentStock - quantity)
-      : currentStock + quantity;
+    const newStock =
+      operation === "subtract"
+        ? Math.max(0, currentStock - quantity)
+        : currentStock + quantity;
 
-    const result = await query(`
+    const result = await query(
+      `
       UPDATE materials
       SET current_stock = $1, updated_at = CURRENT_TIMESTAMP
       WHERE id = $2
       RETURNING *
-    `, [newStock, id]);
+    `,
+      [newStock, id],
+    );
 
     res.json(result.rows[0]);
   } catch (error) {

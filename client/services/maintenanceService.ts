@@ -9,12 +9,12 @@ import { apiFetch } from "@/config/api";
 class MaintenanceService {
   // DB-backed Scheduled Maintenances (plans)
   async getMaintenancePlans(): Promise<any[]> {
-    const r = await apiFetch("api/maintenance/plans");
+    const r = await apiFetch("maintenance/plans");
     if (!r.ok) throw new Error("Falha ao listar manutenções programadas");
     return r.json();
   }
   async createMaintenancePlan(plan: any): Promise<string> {
-    const r = await apiFetch("api/maintenance/plans", {
+    const r = await apiFetch("maintenance/plans", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(plan),
@@ -24,7 +24,7 @@ class MaintenanceService {
     return j.id;
   }
   async updateMaintenancePlan(id: string, patch: any): Promise<void> {
-    const r = await apiFetch(`api/maintenance/plans/${id}`, {
+    const r = await apiFetch(`maintenance/plans/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(patch),
@@ -32,7 +32,7 @@ class MaintenanceService {
     if (!r.ok) throw new Error("Falha ao atualizar manutenção");
   }
   async deleteMaintenancePlan(id: string): Promise<void> {
-    const r = await apiFetch(`api/maintenance/plans/${id}`, { method: "DELETE" });
+    const r = await apiFetch(`maintenance/plans/${id}`, { method: "DELETE" });
     if (!r.ok) throw new Error("Falha ao apagar manutenção");
   }
 
@@ -44,7 +44,7 @@ class MaintenanceService {
     >,
   ): Promise<MaintenanceRequest> {
     const priority = this.calculatePriority(requestData.urgencyLevel);
-    const resp = await apiFetch("api/maintenance/requests", {
+    const resp = await apiFetch("maintenance/requests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -68,7 +68,7 @@ class MaintenanceService {
         requestData.urgencyLevel === "high",
     };
     try {
-      await apiFetch("api/maintenance/alerts", {
+      await apiFetch("maintenance/alerts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -84,7 +84,7 @@ class MaintenanceService {
     } catch {}
     if (requestData.urgencyLevel === "critical") {
       try {
-        await apiFetch("api/maintenance/downtime", {
+        await apiFetch("maintenance/downtime", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -107,7 +107,7 @@ class MaintenanceService {
   }
 
   async getMaintenanceRequests(): Promise<MaintenanceRequest[]> {
-    const r = await apiFetch("api/maintenance/requests");
+    const r = await apiFetch("maintenance/requests");
     if (!r.ok) throw new Error("Falha ao listar solicitações de manutenção");
     return r.json();
   }
@@ -124,7 +124,7 @@ class MaintenanceService {
     status: MaintenanceRequest["status"],
     technicianNotes?: string,
   ): Promise<void> {
-    const r = await apiFetch(`api/maintenance/requests/${id}/status`, {
+    const r = await apiFetch(`maintenance/requests/${id}/status`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status, technicianNotes }),
@@ -143,7 +143,7 @@ class MaintenanceService {
   async createMaintenanceAlert(
     alertData: Omit<MaintenanceAlert, "id" | "createdAt" | "status">,
   ): Promise<MaintenanceAlert> {
-    const r = await apiFetch("api/maintenance/alerts", {
+    const r = await apiFetch("maintenance/alerts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(alertData),
@@ -159,13 +159,13 @@ class MaintenanceService {
   }
 
   async getMaintenanceAlerts(): Promise<MaintenanceAlert[]> {
-    const r = await apiFetch("api/maintenance/alerts");
+    const r = await apiFetch("maintenance/alerts");
     if (!r.ok) throw new Error("Falha ao listar alertas");
     return r.json();
   }
 
   async acknowledgeAlert(id: string, acknowledgedBy: string): Promise<void> {
-    const r = await apiFetch(`api/maintenance/alerts/${id}/ack`, {
+    const r = await apiFetch(`maintenance/alerts/${id}/ack`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ acknowledgedBy }),
@@ -174,7 +174,7 @@ class MaintenanceService {
   }
 
   async resolveAlert(id: string, resolvedBy: string): Promise<void> {
-    const r = await apiFetch(`api/maintenance/alerts/${id}/resolve`, {
+    const r = await apiFetch(`maintenance/alerts/${id}/resolve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ resolvedBy }),
@@ -186,7 +186,7 @@ class MaintenanceService {
   async createMachineDowntime(
     downtimeData: Omit<MachineDowntime, "id" | "startTime" | "status">,
   ): Promise<MachineDowntime> {
-    const r = await apiFetch("api/maintenance/downtime", {
+    const r = await apiFetch("maintenance/downtime", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(downtimeData),
@@ -202,7 +202,7 @@ class MaintenanceService {
   }
 
   async endMachineDowntime(id: string, resolvedBy?: string): Promise<void> {
-    const r = await apiFetch(`api/maintenance/downtime/${id}/end`, {
+    const r = await apiFetch(`maintenance/downtime/${id}/end`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ resolvedBy }),
@@ -211,7 +211,7 @@ class MaintenanceService {
   }
 
   async getMachineDowntime(): Promise<MachineDowntime[]> {
-    const r = await apiFetch("api/maintenance/downtime");
+    const r = await apiFetch("maintenance/downtime");
     if (!r.ok) throw new Error("Falha ao listar paragens");
     return r.json();
   }

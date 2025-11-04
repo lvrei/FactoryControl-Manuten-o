@@ -7,12 +7,12 @@ export type FactoryRecord = {
 
 class FactoriesService {
   async list(): Promise<FactoryRecord[]> {
-    const r = await apiFetch("api/factories");
+    const r = await apiFetch("factories");
     if (!r.ok) throw new Error("Falha ao listar fábricas");
     return r.json();
   }
   async create(data: { id?: string; name: string }): Promise<FactoryRecord> {
-    const r = await apiFetch("api/factories", {
+    const r = await apiFetch("factories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

@@ -241,8 +241,8 @@ class ProductionService {
       if (filters?.customer) params.set("customer", filters.customer);
       if ((filters as any)?.createdBy)
         params.set("createdBy", (filters as any).createdBy);
-      const resp = await fetch(
-        `/api/orders${params.toString() ? `?${params.toString()}` : ""}`,
+      const resp = await apiFetch(
+        `orders${params.toString() ? `?${params.toString()}` : ""}`,
       );
       if (!resp.ok) throw new Error("API orders falhou");
       let orders: ProductionOrder[] = await resp.json();
@@ -284,7 +284,7 @@ class ProductionService {
       }
       return orders;
     } catch (error) {
-      console.warn("⚠️ Falha API /api/orders, usando localStorage");
+      console.warn("⚠️ Falha API /orders, usando localStorage");
       this.notifyOnce(
         "api_fallback",
         "Ligação ao servidor indisponível. A trabalhar em modo offline (local).",
@@ -299,7 +299,7 @@ class ProductionService {
     order: Omit<ProductionOrder, "id" | "createdAt" | "updatedAt">,
   ): Promise<ProductionOrder> {
     try {
-      const resp = await apiFetch("api/orders", {
+      const resp = await apiFetch("orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(order),
@@ -338,7 +338,7 @@ class ProductionService {
     updates: Partial<ProductionOrder>,
   ): Promise<ProductionOrder> {
     try {
-      const resp = await apiFetch(`api/orders/${id}`, {
+      const resp = await apiFetch(`orders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -373,7 +373,7 @@ class ProductionService {
 
   async deleteProductionOrder(id: string): Promise<void> {
     try {
-      const resp = await apiFetch(`api/orders/${id}`, { method: "DELETE" });
+      const resp = await apiFetch(`orders/${id}`, { method: "DELETE" });
       if (!resp.ok) throw new Error("API delete order falhou");
     } catch (error) {
       console.warn("⚠️ Falha API delete order, usando localStorage");
@@ -395,7 +395,7 @@ class ProductionService {
   async getMachines(): Promise<Machine[]> {
     try {
       // Tentar via API (Neon)
-      const resp = await apiFetch("api/machines");
+      const resp = await apiFetch("machines");
       if (resp.ok) {
         const list = await resp.json();
         return list as Machine[];
@@ -403,7 +403,7 @@ class ProductionService {
       throw new Error("API machines falhou");
     } catch (error) {
       console.warn(
-        "⚠️ Falha API /api/machines, usando localStorage:",
+        "⚠️ Falha API /machines, usando localStorage:",
         (error as any)?.message,
       );
       this.ensureInitialized();
@@ -429,7 +429,7 @@ class ProductionService {
     >,
   ): Promise<Machine> {
     try {
-      const resp = await apiFetch("api/machines", {
+      const resp = await apiFetch("machines", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(machine),
@@ -480,7 +480,7 @@ class ProductionService {
     updates: Partial<Machine>,
   ): Promise<Machine> {
     try {
-      const resp = await apiFetch(`api/machines/${machineId}`, {
+      const resp = await apiFetch(`machines/${machineId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updates),
@@ -520,7 +520,7 @@ class ProductionService {
   // Excluir máquina
   async deleteMachine(machineId: string): Promise<void> {
     try {
-      const resp = await apiFetch(`api/machines/${machineId}`, {
+      const resp = await apiFetch(`machines/${machineId}`, {
         method: "DELETE",
       });
       if (!resp.ok) throw new Error("API deleteMachine falhou");
@@ -577,11 +577,11 @@ class ProductionService {
   // Tipos de Espuma (DB com fallback local)
   async getFoamTypes(): Promise<FoamType[]> {
     try {
-      const r = await apiFetch("api/foam-types");
+      const r = await apiFetch("foam-types");
       if (!r.ok) throw new Error("API foam-types falhou");
       return r.json();
     } catch (error) {
-      console.warn("⚠️ Falha API /api/foam-types, usando localStorage");
+      console.warn("⚠️ Falha API /foam-types, usando localStorage");
       this.ensureInitialized();
       const data = this.getStoredData();
       const foamTypes = data?.foamTypes || this.mockFoamTypes;
@@ -600,7 +600,7 @@ class ProductionService {
 
   async createFoamType(data: Omit<FoamType, "id">): Promise<string> {
     try {
-      const r = await apiFetch("api/foam-types", {
+      const r = await apiFetch("foam-types", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -622,7 +622,7 @@ class ProductionService {
 
   async updateFoamType(id: string, patch: Partial<FoamType>): Promise<void> {
     try {
-      const r = await apiFetch(`api/foam-types/${id}`, {
+      const r = await apiFetch(`foam-types/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(patch),
@@ -641,7 +641,7 @@ class ProductionService {
 
   async deleteFoamType(id: string): Promise<void> {
     try {
-      const r = await apiFetch(`api/foam-types/${id}`, { method: "DELETE" });
+      const r = await apiFetch(`foam-types/${id}`, { method: "DELETE" });
       if (!r.ok) throw new Error("API apagar foam-type falhou");
     } catch (error) {
       console.warn("⚠️ Falha API delete foam-type, salvando local");
@@ -657,11 +657,11 @@ class ProductionService {
   // Fichas Técnicas (DB com fallback local)
   async getProductSheets(): Promise<ProductSheet[]> {
     try {
-      const r = await apiFetch("api/product-sheets");
+      const r = await apiFetch("product-sheets");
       if (!r.ok) throw new Error("API product-sheets falhou");
       return r.json();
     } catch (error) {
-      console.warn("⚠️ Falha API /api/product-sheets, usando localStorage");
+      console.warn("⚠️ Falha API /product-sheets, usando localStorage");
       this.ensureInitialized();
       const store = this.getStoredData() || {};
       const foams: FoamType[] = store.foamTypes || this.mockFoamTypes;
@@ -694,7 +694,7 @@ class ProductionService {
         documents: data.documents,
         photos: data.photos,
       };
-      const r = await apiFetch("api/product-sheets", {
+      const r = await apiFetch("product-sheets", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -735,7 +735,7 @@ class ProductionService {
         documents: data.documents,
         photos: data.photos,
       };
-      const r = await apiFetch(`api/product-sheets/${id}`, {
+      const r = await apiFetch(`product-sheets/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -766,7 +766,7 @@ class ProductionService {
 
   async deleteProductSheet(id: string): Promise<void> {
     try {
-      const r = await apiFetch(`api/product-sheets/${id}`, { method: "DELETE" });
+      const r = await apiFetch(`product-sheets/${id}`, { method: "DELETE" });
       if (!r.ok) throw new Error("API apagar product-sheet falhou");
     } catch (error) {
       console.warn("⚠️ Falha API delete product-sheet, salvando local");
@@ -795,13 +795,13 @@ class ProductionService {
         params.set("startDate", filters.dateRange.start);
         params.set("endDate", filters.dateRange.end);
       }
-      const r = await fetch(
-        `/api/foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
+      const r = await apiFetch(
+        `foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
       );
       if (!r.ok) throw new Error("API foam-blocks falhou");
       return r.json();
     } catch (error) {
-      console.warn("⚠️ Falha API /api/foam-blocks, usando localStorage");
+      console.warn("⚠️ Falha API /foam-blocks, usando localStorage");
       this.ensureInitialized();
       const store = this.getStoredData() || {};
       const blocks: any[] = store.foamBlocks || [];
@@ -879,7 +879,7 @@ class ProductionService {
         consumedBy: data.consumedBy,
         photos: data.photos,
       };
-      const r = await apiFetch("api/foam-blocks", {
+      const r = await apiFetch("foam-blocks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -935,7 +935,7 @@ class ProductionService {
       const payload: any = { ...patch };
       if (patch.foamType) payload.foamTypeId = patch.foamType.id;
       delete payload.foamType;
-      const r = await apiFetch(`api/foam-blocks/${id}`, {
+      const r = await apiFetch(`foam-blocks/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -962,7 +962,7 @@ class ProductionService {
 
   async deleteFoamBlock(id: string): Promise<void> {
     try {
-      const r = await apiFetch(`api/foam-blocks/${id}`, { method: "DELETE" });
+      const r = await apiFetch(`foam-blocks/${id}`, { method: "DELETE" });
       if (!r.ok) throw new Error("API apagar foam-block falhou");
     } catch (error) {
       console.warn("⚠️ Falha API delete foam-block, salvando local");
@@ -977,11 +977,11 @@ class ProductionService {
 
   async getStockSummary(): Promise<any> {
     try {
-      const r = await apiFetch("api/stock/summary");
+      const r = await apiFetch("stock/summary");
       if (!r.ok) throw new Error("API stock/summary falhou");
       return r.json();
     } catch (error) {
-      console.warn("⚠️ Falha API /api/stock/summary, calculando local");
+      console.warn("⚠️ Falha API /stock/summary, calculando local");
       const blocks = await this.getFoamBlocks();
       const totalBlocks = blocks.length;
       const totalVolume = blocks.reduce((s, b) => s + (b.volume || 0), 0);
@@ -1745,8 +1745,8 @@ if (typeof (productionService as any).getFoamBlocks !== "function") {
         params.set("startDate", filters.dateRange.start);
         params.set("endDate", filters.dateRange.end);
       }
-      const r = await fetch(
-        `/api/foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
+      const r = await apiFetch(
+        `foam-blocks${params.toString() ? `?${params.toString()}` : ""}`,
       );
       if (!r.ok) throw new Error("API foam-blocks falhou");
       return r.json();
@@ -1815,7 +1815,7 @@ if (typeof (productionService as any).getFoamBlocks !== "function") {
 if (typeof (productionService as any).getStockSummary !== "function") {
   (productionService as any).getStockSummary = async () => {
     try {
-      const r = await apiFetch("api/stock/summary");
+      const r = await apiFetch("stock/summary");
       if (!r.ok) throw new Error("API stock/summary falhou");
       return r.json();
     } catch (error) {

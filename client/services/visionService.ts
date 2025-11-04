@@ -19,22 +19,22 @@ export type UptimeResult = {
 
 class VisionService {
   async getStatusByMachine(machineId: string): Promise<VisionStatus> {
-    const resp = await fetch(
-      `/api/vision/status?machineId=${encodeURIComponent(machineId)}`,
+    const resp = await apiFetch(
+      `vision/status?machineId=${encodeURIComponent(machineId)}`,
     );
     if (!resp.ok) throw new Error("Falha ao obter status");
     return resp.json();
   }
   async getStatusByCamera(cameraId: string): Promise<VisionStatus> {
-    const resp = await fetch(
-      `/api/vision/status?cameraId=${encodeURIComponent(cameraId)}`,
+    const resp = await apiFetch(
+      `vision/status?cameraId=${encodeURIComponent(cameraId)}`,
     );
     if (!resp.ok) throw new Error("Falha ao obter status");
     return resp.json();
   }
   async getStatusByROI(roiId: string): Promise<VisionStatus> {
-    const resp = await fetch(
-      `/api/vision/status?roiId=${encodeURIComponent(roiId)}`,
+    const resp = await apiFetch(
+      `vision/status?roiId=${encodeURIComponent(roiId)}`,
     );
     if (!resp.ok) throw new Error("Falha ao obter status");
     return resp.json();
@@ -47,7 +47,7 @@ class VisionService {
     const q = new URLSearchParams({ machineId });
     if (from) q.set("from", from);
     if (to) q.set("to", to);
-    const resp = await apiFetch(`api/vision/uptime?${q.toString()}`);
+    const resp = await apiFetch(`vision/uptime?${q.toString()}`);
     if (!resp.ok) throw new Error("Falha ao obter uptime");
     return resp.json();
   }
@@ -59,7 +59,7 @@ class VisionService {
     const q = new URLSearchParams({ cameraId });
     if (from) q.set("from", from);
     if (to) q.set("to", to);
-    const resp = await apiFetch(`api/vision/uptime?${q.toString()}`);
+    const resp = await apiFetch(`vision/uptime?${q.toString()}`);
     if (!resp.ok) throw new Error("Falha ao obter uptime");
     return resp.json();
   }
@@ -72,7 +72,7 @@ class VisionService {
     createdAt?: string;
     id?: string;
   }): Promise<any> {
-    const resp = await apiFetch("api/vision/mock-event", {
+    const resp = await apiFetch("vision/mock-event", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),

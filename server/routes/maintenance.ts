@@ -79,6 +79,22 @@ async function ensureTables(): Promise<boolean> {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
+      // Planned maintenance table used by /maintenance/planned endpoints
+      await query(`CREATE TABLE IF NOT EXISTS planned_maintenance (
+        id TEXT PRIMARY KEY DEFAULT concat('mplan-', floor(extract(epoch from now())*1000)::text),
+        equipment_id TEXT,
+        maintenance_type TEXT,
+        description TEXT,
+        scheduled_date TIMESTAMPTZ NOT NULL,
+        assigned_to TEXT,
+        status TEXT NOT NULL DEFAULT 'scheduled',
+        priority TEXT NOT NULL DEFAULT 'medium',
+        estimated_duration NUMERIC,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ
+      )`);
+
       await query(`CREATE TABLE IF NOT EXISTS machine_downtime (
         id TEXT PRIMARY KEY,
         machine_id TEXT REFERENCES machines(id) ON DELETE SET NULL,
@@ -502,22 +518,33 @@ maintenanceRouter.delete("/maintenance/plans/:id", async (req, res) => {
 // Maintenance Records (from new schema)
 maintenanceRouter.get("/maintenance/records", async (_req, res) => {
   try {
+    // If legacy tables don't exist in production, return empty list instead of 500
+    const exists = await query<{ exists: boolean }>(
+      `SELECT EXISTS (
+         SELECT FROM information_schema.tables WHERE table_schema='public' AND table_name='maintenance_records'
+       ) AS exists`,
+    );
+    if (!exists.rows[0]?.exists) return res.json([]);
+
     const { rows } = await query(
       `SELECT mr.*, e.name as equipment_name
        FROM maintenance_records mr
        LEFT JOIN equipments e ON mr.equipment_id = e.id
-       ORDER BY mr.performed_at DESC`
+       ORDER BY mr.performed_at DESC`,
     );
     return res.json(rows);
   } catch (e: any) {
     console.error("GET /maintenance/records error", e);
-    return res.status(500).json({ error: e.message });
+    return res.json([]);
   }
 });
 
 // Planned Maintenance CRUD
 maintenanceRouter.get("/maintenance/planned", async (_req, res) => {
   try {
+    if (!isDbConfigured()) {
+      return res.json([]);
+    }
     const { rows } = await query(
       `SELECT pm.*,
               e.name as equipment_name,
@@ -525,7 +552,7 @@ maintenanceRouter.get("/maintenance/planned", async (_req, res) => {
        FROM planned_maintenance pm
        LEFT JOIN equipments e ON pm.equipment_id = e.id
        LEFT JOIN users u ON pm.assigned_to = u.id
-       ORDER BY pm.scheduled_date ASC`
+       ORDER BY pm.scheduled_date ASC`,
     );
     return res.json(rows);
   } catch (e: any) {
@@ -545,7 +572,7 @@ maintenanceRouter.get("/maintenance/planned/:id", async (req, res) => {
        LEFT JOIN equipments e ON pm.equipment_id = e.id
        LEFT JOIN users u ON pm.assigned_to = u.id
        WHERE pm.id = $1`,
-      [id]
+      [id],
     );
 
     if (rows.length === 0) {
@@ -570,7 +597,7 @@ maintenanceRouter.post("/maintenance/planned", async (req, res) => {
       status = "scheduled",
       priority = "medium",
       estimated_duration,
-      notes
+      notes,
     } = req.body;
 
     const { rows } = await query(
@@ -589,8 +616,8 @@ maintenanceRouter.post("/maintenance/planned", async (req, res) => {
         status,
         priority,
         estimated_duration,
-        notes
-      ]
+        notes,
+      ],
     );
 
     return res.status(201).json(rows[0]);
@@ -612,7 +639,7 @@ maintenanceRouter.put("/maintenance/planned/:id", async (req, res) => {
       status,
       priority,
       estimated_duration,
-      notes
+      notes,
     } = req.body;
 
     const { rows } = await query(
@@ -639,8 +666,8 @@ maintenanceRouter.put("/maintenance/planned/:id", async (req, res) => {
         priority,
         estimated_duration,
         notes,
-        id
-      ]
+        id,
+      ],
     );
 
     if (rows.length === 0) {
@@ -659,7 +686,7 @@ maintenanceRouter.delete("/maintenance/planned/:id", async (req, res) => {
     const { id } = req.params;
     const { rows } = await query(
       "DELETE FROM planned_maintenance WHERE id = $1 RETURNING *",
-      [id]
+      [id],
     );
 
     if (rows.length === 0) {
