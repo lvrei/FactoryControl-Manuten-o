@@ -16,9 +16,13 @@ async function ensureCamerasTable() {
   );
   const hasMachines = !!machinesExists.rows[0]?.exists;
 
+  const fkConstraint = hasMachines
+    ? " REFERENCES machines(id) ON DELETE CASCADE"
+    : "";
+
   await query(`CREATE TABLE IF NOT EXISTS cameras (
     id TEXT PRIMARY KEY,
-    machine_id TEXT ${hasMachines ? "REFERENCES machines(id) ON DELETE CASCADE" : ""},
+    machine_id TEXT${fkConstraint},
     name TEXT NOT NULL,
     url TEXT NOT NULL,
     protocol TEXT DEFAULT 'rtsp',
@@ -168,7 +172,7 @@ camerasRouter.post("/", async (req, res) => {
   }
 });
 
-camerasRouter.patch("/cameras/:id", async (req, res) => {
+camerasRouter.patch("/:id", async (req, res) => {
   try {
     await ensureCamerasTable();
     const id = req.params.id;
