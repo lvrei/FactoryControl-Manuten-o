@@ -34,7 +34,7 @@ async function getCameraById(id: string) {
 }
 
 // GET /cameras/:id/status -> { reachable, protocol, latencyMs?, message? }
-cameraOpsRouter.get("/cameras/:id/status", async (req, res) => {
+cameraOpsRouter.get("/:id/status", async (req, res) => {
   try {
     const id = req.params.id;
     const cam = await getCameraById(id);
@@ -126,7 +126,7 @@ cameraOpsRouter.get("/cameras/:id/status", async (req, res) => {
 });
 
 // GET /cameras/:id/snapshot - proxy a single JPEG frame if available, or grab from RTSP via ffmpeg
-cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
+cameraOpsRouter.get("/:id/snapshot", async (req, res) => {
   console.log(`[Snapshot] Request received for camera: ${req.params.id}`);
 
   try {
@@ -227,7 +227,7 @@ cameraOpsRouter.get("/cameras/:id/snapshot", async (req, res) => {
 });
 
 // GET /cameras/:id/mjpeg - transcode RTSP to multipart MJPEG for browser playback
-cameraOpsRouter.get("/cameras/:id/mjpeg", async (req, res) => {
+cameraOpsRouter.get("/:id/mjpeg", async (req, res) => {
   try {
     const id = req.params.id;
     const cam = await getCameraById(id);
