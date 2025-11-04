@@ -58,7 +58,7 @@ async function ensureCamerasTable() {
   }
 }
 
-camerasRouter.get("/cameras", async (_req, res) => {
+camerasRouter.get("/", async (_req, res) => {
   try {
     if (!isDbConfigured()) {
       return res.json([]);
@@ -220,7 +220,7 @@ camerasRouter.patch("/cameras/:id", async (req, res) => {
   }
 });
 
-camerasRouter.delete("/cameras/:id", async (req, res) => {
+camerasRouter.delete("/:id", async (req, res) => {
   try {
     await ensureCamerasTable();
     const id = req.params.id;
