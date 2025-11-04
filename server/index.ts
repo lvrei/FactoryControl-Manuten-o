@@ -517,6 +517,16 @@ export async function createServer() {
       )`);
 
       await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
+      );
+      await query(
+        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`,
+      );
+
+      await query(
         `UPDATE employees SET
          name = COALESCE($2, name),
          position = COALESCE($3, position),
