@@ -32,8 +32,17 @@ async function ragSearch(question: string, machineId?: string, limit = 8) {
       );
       for (const r of rows) {
         const text = `${r.title} ${r.description || ""} ${r.machine_name || ""}`;
-        const s = score(text, tokens) + (machineId && r.machine_id === machineId ? 2 : 0);
-        if (s > 0) sources.push({ type: "maintenance_alert", id: r.id, score: s, text, meta: r });
+        const s =
+          score(text, tokens) +
+          (machineId && r.machine_id === machineId ? 2 : 0);
+        if (s > 0)
+          sources.push({
+            type: "maintenance_alert",
+            id: r.id,
+            score: s,
+            text,
+            meta: r,
+          });
       }
     } catch {}
 
@@ -45,8 +54,17 @@ async function ragSearch(question: string, machineId?: string, limit = 8) {
       );
       for (const r of rows) {
         const text = `${r.title} ${r.description || ""} ${r.category || ""}`;
-        const s = score(text, tokens) + (machineId && r.machine_id === machineId ? 2 : 0);
-        if (s > 0) sources.push({ type: "maintenance_request", id: r.id, score: s, text, meta: r });
+        const s =
+          score(text, tokens) +
+          (machineId && r.machine_id === machineId ? 2 : 0);
+        if (s > 0)
+          sources.push({
+            type: "maintenance_request",
+            id: r.id,
+            score: s,
+            text,
+            meta: r,
+          });
       }
     } catch {}
 
@@ -58,8 +76,11 @@ async function ragSearch(question: string, machineId?: string, limit = 8) {
       );
       for (const r of rows) {
         const text = `${r.reason || ""} ${r.description || ""}`;
-        const s = score(text, tokens) + (machineId && r.machine_id === machineId ? 2 : 0);
-        if (s > 0) sources.push({ type: "downtime", id: r.id, score: s, text, meta: r });
+        const s =
+          score(text, tokens) +
+          (machineId && r.machine_id === machineId ? 2 : 0);
+        if (s > 0)
+          sources.push({ type: "downtime", id: r.id, score: s, text, meta: r });
       }
     } catch {}
 
@@ -71,14 +92,26 @@ async function ragSearch(question: string, machineId?: string, limit = 8) {
       for (const r of rows) {
         const text = `${r.order_number} ${r.customer || ""} ${r.status || ""} ${r.notes || ""}`;
         const s = score(text, tokens);
-        if (s > 0) sources.push({ type: "production_order", id: r.id, score: s, text, meta: r });
+        if (s > 0)
+          sources.push({
+            type: "production_order",
+            id: r.id,
+            score: s,
+            text,
+            meta: r,
+          });
       }
     } catch {}
   }
 
   // Fallback: no DB -> heuristic canned answers
   if (!isDbConfigured()) {
-    sources.push({ type: "info", id: "no-db", score: 1, text: "Base de dados não configurada. Resultados limitados." });
+    sources.push({
+      type: "info",
+      id: "no-db",
+      score: 1,
+      text: "Base de dados não configurada. Resultados limitados.",
+    });
   }
 
   // Rank and slice
@@ -86,13 +119,21 @@ async function ragSearch(question: string, machineId?: string, limit = 8) {
   const top = sources.slice(0, limit);
 
   const answer = top.length
-    ? `Encontrei ${top.length} referência(s) relevante(s).` + (machineId ? ` Foco na máquina ${machineId}.` : "")
+    ? `Encontrei ${top.length} referência(s) relevante(s).` +
+      (machineId ? ` Foco na máquina ${machineId}.` : "")
     : `Não encontrei referências diretas. Tente ser mais específico (ex.: máquina, período, categoria).`;
 
   return { answer, sources: top };
 }
 
-function triage(event: { type: string; machineId?: string; metric?: string; value?: number; severity?: string; message?: string; }): { priority: string; actions: string[]; rationale: string } {
+function triage(event: {
+  type: string;
+  machineId?: string;
+  metric?: string;
+  value?: number;
+  severity?: string;
+  message?: string;
+}): { priority: string; actions: string[]; rationale: string } {
   const actions: string[] = [];
   let priority = "medium";
   const sev = (event.severity || "").toLowerCase();
@@ -102,11 +143,23 @@ function triage(event: { type: string; machineId?: string; metric?: string; valu
 
   if (event.type === "downtime") {
     priority = priority === "low" ? "medium" : priority;
-    actions.push("Abrir ocorrência de downtime", "Notificar manutenção", "Registar início e motivo");
+    actions.push(
+      "Abrir ocorrência de downtime",
+      "Notificar manutenção",
+      "Registar início e motivo",
+    );
   } else if (event.type === "alert") {
-    actions.push("Confirmar leitura do alerta", "Verificar sensor/limiares", "Relacionar com manutenções pendentes");
+    actions.push(
+      "Confirmar leitura do alerta",
+      "Verificar sensor/limiares",
+      "Relacionar com manutenções pendentes",
+    );
   } else if (event.type === "maintenance_request") {
-    actions.push("Classificar prioridade", "Agendar técnico", "Anexar fotos/documentos");
+    actions.push(
+      "Classificar prioridade",
+      "Agendar técnico",
+      "Anexar fotos/documentos",
+    );
   } else {
     actions.push("Registar evento", "Avaliar impacto na produção");
   }
@@ -121,12 +174,16 @@ function triage(event: { type: string; machineId?: string; metric?: string; valu
 }
 
 // POST /agents/ask { question, machineId?, limit? }
-agentsRouter.post("/agents/ask", async (req, res) => {
+agentsRouter.post("/ask", async (req, res) => {
   try {
     const { question, machineId, limit } = req.body || {};
     if (!question || String(question).trim().length < 3)
       return res.status(400).json({ error: "Questão é obrigatória" });
-    const result = await ragSearch(String(question), machineId ? String(machineId) : undefined, Math.max(1, Math.min(20, Number(limit) || 8)));
+    const result = await ragSearch(
+      String(question),
+      machineId ? String(machineId) : undefined,
+      Math.max(1, Math.min(20, Number(limit) || 8)),
+    );
     res.json(result);
   } catch (e: any) {
     console.error("POST /agents/ask error", e);
@@ -135,10 +192,11 @@ agentsRouter.post("/agents/ask", async (req, res) => {
 });
 
 // POST /agents/triage { type, machineId?, metric?, value?, severity?, message? }
-agentsRouter.post("/agents/triage", async (req, res) => {
+agentsRouter.post("/triage", async (req, res) => {
   try {
     const ev = req.body || {};
-    if (!ev.type) return res.status(400).json({ error: "Tipo do evento é obrigatório" });
+    if (!ev.type)
+      return res.status(400).json({ error: "Tipo do evento é obrigatório" });
     const result = triage(ev);
     res.json(result);
   } catch (e: any) {

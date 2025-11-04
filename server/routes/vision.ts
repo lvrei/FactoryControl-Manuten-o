@@ -70,7 +70,7 @@ function computeUptime(
 }
 
 // GET /vision/status?machineId=...&cameraId=...&roiId=...
-visionRouter.get("/vision/status", async (req, res) => {
+visionRouter.get("/status", async (req, res) => {
   try {
     await ensureVisionTables();
     const { machineId, cameraId, roiId } = req.query as {
@@ -137,7 +137,7 @@ visionRouter.get("/vision/status", async (req, res) => {
 });
 
 // GET /vision/uptime?machineId=...&cameraId=...&from=iso&to=iso
-visionRouter.get("/vision/uptime", async (req, res) => {
+visionRouter.get("/uptime", async (req, res) => {
   try {
     await ensureVisionTables();
     const { machineId, cameraId, from, to } = req.query as any;
@@ -200,7 +200,7 @@ visionRouter.get("/vision/uptime", async (req, res) => {
 });
 
 // POST /vision/mock-event { machineId, cameraId?, roiId?, status, confidence?, createdAt? }
-visionRouter.post("/vision/mock-event", async (req, res) => {
+visionRouter.post("/mock-event", async (req, res) => {
   try {
     await ensureVisionTables();
     const d = req.body || {};
