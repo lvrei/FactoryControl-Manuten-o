@@ -17,12 +17,12 @@ async function ensureCamerasTable() {
   const hasMachines = !!machinesExists.rows[0]?.exists;
 
   const fkConstraint = hasMachines
-    ? "REFERENCES machines(id) ON DELETE CASCADE"
+    ? " REFERENCES machines(id) ON DELETE CASCADE"
     : "";
 
   await query(`CREATE TABLE IF NOT EXISTS cameras (
     id TEXT PRIMARY KEY,
-    machine_id TEXT ${fkConstraint},
+    machine_id TEXT${fkConstraint},
     name TEXT NOT NULL,
     url TEXT NOT NULL,
     protocol TEXT DEFAULT 'rtsp',
@@ -31,7 +31,7 @@ async function ensureCamerasTable() {
     schedule JSONB DEFAULT '{}'::jsonb,
     enabled BOOLEAN DEFAULT true,
     created_at TIMESTAMPTZ DEFAULT now()
-  )`.replace(/machine_id TEXT ,/, "machine_id TEXT,").replace(/machine_id TEXT REFERENCES/, "machine_id TEXT REFERENCES"));
+  )`);
 
   await query(
     `CREATE INDEX IF NOT EXISTS idx_cameras_machine ON cameras(machine_id)`,
