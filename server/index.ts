@@ -254,7 +254,9 @@ export async function createServer() {
     app.use("/api", module.default);
     app.use("/api/materials", module.default);
     loaded.materials = true;
-    console.log("✅ Materials routes mounted at /, /materials, /api, and /api/materials");
+    console.log(
+      "✅ Materials routes mounted at /, /materials, /api, and /api/materials",
+    );
   } catch (e) {
     console.warn("Materials API not loaded:", (e as any)?.message);
   }
