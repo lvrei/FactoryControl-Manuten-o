@@ -59,7 +59,7 @@ function genId() {
   return `emp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-employeesRouter.get("/employees", async (_req, res) => {
+employeesRouter.get("/", async (_req, res) => {
   try {
     if (!isDbConfigured()) {
       return res.json([]);
@@ -103,7 +103,7 @@ employeesRouter.get("/employees", async (_req, res) => {
   }
 });
 
-employeesRouter.post("/employees", async (req, res) => {
+employeesRouter.post("/", async (req, res) => {
   const d = req.body || {};
   const id = d.id || genId();
   try {

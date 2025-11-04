@@ -41,7 +41,7 @@ function toId(name: string) {
     : `fac-${Date.now().toString(36)}-${suffix}`;
 }
 
-factoriesRouter.get("/factories", async (_req, res) => {
+factoriesRouter.get("/", async (_req, res) => {
   try {
     await ensureFactoriesTable();
     const { rows } = await query(
@@ -56,7 +56,7 @@ factoriesRouter.get("/factories", async (_req, res) => {
   }
 });
 
-factoriesRouter.post("/factories", async (req, res) => {
+factoriesRouter.post("/", async (req, res) => {
   const body = req.body || {};
   const name = (body.name || "").trim();
   let id = (body.id || "").trim();

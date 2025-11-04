@@ -121,7 +121,7 @@ function triage(event: { type: string; machineId?: string; metric?: string; valu
 }
 
 // POST /agents/ask { question, machineId?, limit? }
-agentsRouter.post("/agents/ask", async (req, res) => {
+agentsRouter.post("/ask", async (req, res) => {
   try {
     const { question, machineId, limit } = req.body || {};
     if (!question || String(question).trim().length < 3)
@@ -135,7 +135,7 @@ agentsRouter.post("/agents/ask", async (req, res) => {
 });
 
 // POST /agents/triage { type, machineId?, metric?, value?, severity?, message? }
-agentsRouter.post("/agents/triage", async (req, res) => {
+agentsRouter.post("/triage", async (req, res) => {
   try {
     const ev = req.body || {};
     if (!ev.type) return res.status(400).json({ error: "Tipo do evento é obrigatório" });
