@@ -440,6 +440,132 @@ export async function createServer() {
     }
   });
 
+  // POST alias for creating users
+  app.post(["/api/users", "/users"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) return res.status(400).json({ error: "Database not configured" });
+
+      const d = req.body || {};
+      const id = d.id || `emp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+      await query(`CREATE TABLE IF NOT EXISTS employees (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        position TEXT,
+        department TEXT,
+        shift TEXT,
+        status TEXT,
+        email TEXT,
+        username TEXT,
+        role TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      await query(
+        `INSERT INTO employees (id, name, position, department, shift, status, email, username, role, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          id,
+          d.full_name || d.name || "",
+          d.position || "",
+          d.department || "",
+          d.shift || "",
+          d.status || "active",
+          d.email || null,
+          d.username || null,
+          d.role || "operator",
+        ],
+      );
+
+      return res.json({ id });
+    } catch (e: any) {
+      console.error("[DIRECT] POST /users error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // PUT alias for updating users
+  app.put(["/api/users/:id", "/users/:id"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) return res.status(400).json({ error: "Database not configured" });
+
+      const id = req.params.id;
+      const d = req.body || {};
+
+      await query(`CREATE TABLE IF NOT EXISTS employees (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        position TEXT,
+        department TEXT,
+        shift TEXT,
+        status TEXT,
+        email TEXT,
+        username TEXT,
+        role TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      await query(
+        `UPDATE employees SET
+         name = COALESCE($2, name),
+         position = COALESCE($3, position),
+         department = COALESCE($4, department),
+         shift = COALESCE($5, shift),
+         status = COALESCE($6, status),
+         email = COALESCE($7, email),
+         username = COALESCE($8, username),
+         role = COALESCE($9, role)
+         WHERE id = $1`,
+        [
+          id,
+          d.full_name || d.name,
+          d.position,
+          d.department,
+          d.shift,
+          d.status,
+          d.email,
+          d.username,
+          d.role,
+        ],
+      );
+
+      return res.json({ ok: true });
+    } catch (e: any) {
+      console.error("[DIRECT] PUT /users/:id error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // DELETE alias for deleting users
+  app.delete(["/api/users/:id", "/users/:id"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) return res.status(400).json({ error: "Database not configured" });
+
+      const id = req.params.id;
+
+      await query(`CREATE TABLE IF NOT EXISTS employees (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        position TEXT,
+        department TEXT,
+        shift TEXT,
+        status TEXT,
+        email TEXT,
+        username TEXT,
+        role TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      await query(`DELETE FROM employees WHERE id = $1`, [id]);
+
+      return res.json({ ok: true });
+    } catch (e: any) {
+      console.error("[DIRECT] DELETE /users/:id error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Debug: list registered routes
   app.get(["/api/_routes", "/_routes"], (_req, res) => {
     try {
