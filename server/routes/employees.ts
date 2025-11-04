@@ -153,7 +153,7 @@ employeesRouter.post("/", async (req, res) => {
   }
 });
 
-employeesRouter.patch("/employees/:id", async (req, res) => {
+employeesRouter.patch("/:id", async (req, res) => {
   const id = req.params.id;
   const d = req.body || {};
   try {
@@ -203,7 +203,7 @@ employeesRouter.patch("/employees/:id", async (req, res) => {
   }
 });
 
-employeesRouter.delete("/employees/:id", async (req, res) => {
+employeesRouter.delete("/:id", async (req, res) => {
   const id = req.params.id;
   try {
     await ensureEmployeesTables();
