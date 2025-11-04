@@ -7,54 +7,65 @@ export const camerasRouter = express.Router();
 async function ensureCamerasTable() {
   if (!isDbConfigured()) return false;
 
-  // Check if public.machines exists to decide FK creation
-  const machinesExists = await query<{ exists: boolean }>(
-    `SELECT EXISTS (
-       SELECT 1 FROM information_schema.tables
-       WHERE table_schema = 'public' AND table_name = 'machines'
-     ) AS exists`,
-  );
-  const hasMachines = !!machinesExists.rows[0]?.exists;
+  try {
+    // Create cameras table without FK first
+    await query(`CREATE TABLE IF NOT EXISTS cameras (
+      id TEXT PRIMARY KEY,
+      machine_id TEXT,
+      name TEXT NOT NULL,
+      url TEXT NOT NULL,
+      protocol TEXT DEFAULT 'rtsp',
+      rois JSONB DEFAULT '[]'::jsonb,
+      thresholds JSONB DEFAULT '{}'::jsonb,
+      schedule JSONB DEFAULT '{}'::jsonb,
+      enabled BOOLEAN DEFAULT true,
+      created_at TIMESTAMPTZ DEFAULT now()
+    )`);
 
-  await query(`CREATE TABLE IF NOT EXISTS cameras (
-    id TEXT PRIMARY KEY,
-    machine_id TEXT ${hasMachines ? "REFERENCES machines(id) ON DELETE CASCADE" : ""},
-    name TEXT NOT NULL,
-    url TEXT NOT NULL,
-    protocol TEXT DEFAULT 'rtsp',
-    rois JSONB DEFAULT '[]'::jsonb,
-    thresholds JSONB DEFAULT '{}'::jsonb,
-    schedule JSONB DEFAULT '{}'::jsonb,
-    enabled BOOLEAN DEFAULT true,
-    created_at TIMESTAMPTZ DEFAULT now()
-  )`);
+    await query(
+      `CREATE INDEX IF NOT EXISTS idx_cameras_machine ON cameras(machine_id)`,
+    );
+    await query(
+      `CREATE INDEX IF NOT EXISTS idx_cameras_created_at ON cameras(created_at)`,
+    );
 
-  await query(
-    `CREATE INDEX IF NOT EXISTS idx_cameras_machine ON cameras(machine_id)`,
-  );
-  await query(
-    `CREATE INDEX IF NOT EXISTS idx_cameras_created_at ON cameras(created_at)`,
-  );
-
-  // If machines table appears later, try to attach FK safely
-  if (hasMachines) {
-    const existingConstraint = async (name: string) => {
-      const { rows } = await query<{ exists: boolean }>(
+    // Try to add FK constraint to machines if table exists, but don't fail if it doesn't
+    try {
+      const { rows } = await query<any>(
         `SELECT EXISTS (
-          SELECT 1 FROM information_schema.table_constraints
-          WHERE table_name = 'cameras' AND constraint_name = $1
-        ) AS exists`,
-        [name],
+           SELECT 1 FROM information_schema.tables
+           WHERE table_schema = 'public' AND table_name = 'machines'
+         ) AS exists`,
       );
-      return !!rows[0]?.exists;
-    };
-    if (!(await existingConstraint("cameras_machine_fk"))) {
-      try {
-        await query(
-          `ALTER TABLE cameras ADD CONSTRAINT cameras_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`,
+      const hasMachines = !!rows[0]?.exists;
+
+      if (hasMachines) {
+        const constraintCheck = await query<any>(
+          `SELECT EXISTS (
+            SELECT 1 FROM information_schema.table_constraints
+            WHERE table_name = 'cameras' AND constraint_name = 'cameras_machine_fk'
+          ) AS exists`,
         );
-      } catch {}
+        const hasConstraint = !!constraintCheck.rows[0]?.exists;
+
+        if (!hasConstraint) {
+          try {
+            await query(
+              `ALTER TABLE cameras ADD CONSTRAINT cameras_machine_fk FOREIGN KEY (machine_id) REFERENCES public.machines(id) ON DELETE CASCADE`,
+            );
+          } catch (e) {
+            console.warn("Could not add FK constraint to machines:", (e as any)?.message);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Could not check/add machines FK:", (e as any)?.message);
     }
+
+    return true;
+  } catch (e) {
+    console.error("ensureCamerasTable error:", (e as any)?.message);
+    throw e;
   }
 }
 
