@@ -45,7 +45,7 @@ import { apiFetch } from "@/config/api";
 import QRCodeGenerator from "@/components/equipment/QRCodeGenerator";
 
 interface Equipment {
-  id: number;
+  id: string;
   name: string;
   equipment_type: string;
   manufacturer: string;
