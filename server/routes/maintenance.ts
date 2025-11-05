@@ -97,7 +97,9 @@ async function ensureTables(): Promise<boolean> {
       )`);
 
       // Add completed_date column if it doesn't exist (for migrations)
-      await query(`ALTER TABLE IF EXISTS planned_maintenance ADD COLUMN IF NOT EXISTS completed_date TIMESTAMPTZ`);
+      await query(
+        `ALTER TABLE IF EXISTS planned_maintenance ADD COLUMN IF NOT EXISTS completed_date TIMESTAMPTZ`,
+      );
 
       // Maintenance records table - for completed/performed maintenance history
       await query(`CREATE TABLE IF NOT EXISTS maintenance_records (

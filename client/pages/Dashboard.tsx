@@ -102,8 +102,7 @@ export default function Dashboard() {
             pending: planned.filter((p: any) => p.status === "pending").length,
             overdue: planned.filter(
               (p: any) =>
-                p.status === "scheduled" &&
-                new Date(p.scheduled_date) < now,
+                p.status === "scheduled" && new Date(p.scheduled_date) < now,
             ).length,
           },
         }));
@@ -366,7 +365,9 @@ export default function Dashboard() {
                   </div>
                   <Badge variant="outline" className="ml-2">
                     {maintenance.completed_date
-                      ? new Date(maintenance.completed_date).toLocaleDateString()
+                      ? new Date(
+                          maintenance.completed_date,
+                        ).toLocaleDateString()
                       : new Date(maintenance.created_at).toLocaleDateString()}
                   </Badge>
                 </div>
