@@ -532,21 +532,27 @@ maintenanceRouter.delete("/plans/:id", async (req, res) => {
 // Maintenance Records (from new schema)
 maintenanceRouter.get("/records", async (_req, res) => {
   try {
-    // If legacy tables don't exist in production, return empty list instead of 500
-    const exists = await query<{ exists: boolean }>(
-      `SELECT EXISTS (
-         SELECT FROM information_schema.tables WHERE table_schema='public' AND table_name='maintenance_records'
-       ) AS exists`,
-    );
-    if (!exists.rows[0]?.exists) return res.json([]);
+    await ensureTables();
 
+    // Try maintenance_records table first
     const { rows } = await query(
-      `SELECT mr.*, e.name as equipment_name
-       FROM maintenance_records mr
-       LEFT JOIN equipments e ON mr.equipment_id = e.id
-       ORDER BY mr.performed_at DESC`,
+      `SELECT mr.* FROM maintenance_records mr ORDER BY mr.performed_at DESC`,
     );
-    return res.json(rows);
+
+    const result = rows.map((r: any) => ({
+      id: r.id,
+      equipment_id: r.equipment_id,
+      maintenance_type: r.maintenance_type,
+      description: r.description,
+      status: r.status,
+      performed_at: r.performed_at,
+      completed_date: r.completed_date,
+      technician: r.technician,
+      notes: r.notes,
+      created_at: r.created_at,
+    }));
+
+    return res.json(result);
   } catch (e: any) {
     console.error("GET /maintenance/records error", e);
     return res.json([]);
