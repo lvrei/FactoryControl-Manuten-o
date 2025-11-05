@@ -178,7 +178,7 @@ export default function Equipment() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Tem a certeza que deseja eliminar este equipamento?")) return;
 
     try {
