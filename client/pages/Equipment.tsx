@@ -45,7 +45,7 @@ import { apiFetch } from "@/config/api";
 import QRCodeGenerator from "@/components/equipment/QRCodeGenerator";
 
 interface Equipment {
-  id: number;
+  id: string;
   name: string;
   equipment_type: string;
   manufacturer: string;
@@ -100,7 +100,7 @@ export default function Equipment() {
   const loadEquipment = async () => {
     try {
       setLoading(true);
-      const response = await apiFetch("machines");
+      const response = await apiFetch("equipment");
       if (response.ok) {
         const data = await response.json();
         setEquipment(data);
@@ -126,8 +126,8 @@ export default function Equipment() {
 
     try {
       const path = editingEquipment
-        ? `machines/${editingEquipment.id}`
-        : "machines";
+        ? `equipment/${editingEquipment.id}`
+        : "equipment";
       const method = editingEquipment ? "PUT" : "POST";
 
       const response = await apiFetch(path, {
@@ -178,11 +178,11 @@ export default function Equipment() {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Tem a certeza que deseja eliminar este equipamento?")) return;
 
     try {
-      const response = await apiFetch(`machines/${id}`, {
+      const response = await apiFetch(`equipment/${id}`, {
         method: "DELETE",
       });
 

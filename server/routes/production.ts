@@ -962,7 +962,7 @@ productionRouter.patch("/machines/:id", async (req, res) => {
     const id = req.params.id;
     const m = req.body;
     await query(
-      `UPDATE machines SET 
+      `UPDATE machines SET
       name = COALESCE($2,name), type = COALESCE($3,type), status = COALESCE($4,status),
       max_length_mm = COALESCE($5,max_length_mm), max_width_mm = COALESCE($6,max_width_mm), max_height_mm = COALESCE($7,max_height_mm),
       cutting_precision = COALESCE($8,cutting_precision), current_operator = COALESCE($9,current_operator),
@@ -986,6 +986,39 @@ productionRouter.patch("/machines/:id", async (req, res) => {
     res.json({ ok: true });
   } catch (e: any) {
     console.error("PATCH /machines/:id error", e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+productionRouter.put("/machines/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const m = req.body;
+    await query(
+      `UPDATE machines SET
+      name = COALESCE($2,name), type = COALESCE($3,type), status = COALESCE($4,status),
+      max_length_mm = COALESCE($5,max_length_mm), max_width_mm = COALESCE($6,max_width_mm), max_height_mm = COALESCE($7,max_height_mm),
+      cutting_precision = COALESCE($8,cutting_precision), current_operator = COALESCE($9,current_operator),
+      last_maintenance = COALESCE($10,last_maintenance), operating_hours = COALESCE($11,operating_hours), specifications = COALESCE($12,specifications)
+      WHERE id = $1`,
+      [
+        id,
+        m.name,
+        m.type,
+        m.status,
+        m.maxDimensions?.length,
+        m.maxDimensions?.width,
+        m.maxDimensions?.height,
+        m.cuttingPrecision,
+        m.currentOperator || null,
+        m.lastMaintenance || null,
+        m.operatingHours,
+        m.specifications,
+      ],
+    );
+    res.json({ ok: true });
+  } catch (e: any) {
+    console.error("PUT /machines/:id error", e);
     res.status(500).json({ error: e.message });
   }
 });
@@ -1045,13 +1078,16 @@ productionRouter.post("/equipment", async (req, res) => {
     const data = req.body;
     const id = `equip-${Date.now()}`;
 
+    await ensureMachinesTable();
+
     await query(
-      `INSERT INTO machines (id, name, type, status, created_at) VALUES ($1, $2, $3, $4, NOW())`,
+      `INSERT INTO machines (id, name, type, status, specifications, created_at) VALUES ($1, $2, $3, $4, $5, NOW())`,
       [
         id,
         data.name,
         data.equipment_type || "generic",
         data.status || "active",
+        data.notes || "",
       ],
     );
 
@@ -1071,17 +1107,25 @@ productionRouter.put("/equipment/:id", async (req, res) => {
     const { id } = req.params;
     const data = req.body;
 
+    await ensureMachinesTable();
+
     await query(
-      `UPDATE machines SET name = $1, type = $2, status = $3 WHERE id = $4`,
+      `UPDATE machines SET
+       name = COALESCE($2, name),
+       type = COALESCE($3, type),
+       status = COALESCE($4, status),
+       specifications = COALESCE($5, specifications)
+       WHERE id = $1`,
       [
-        data.name,
-        data.equipment_type || "generic",
-        data.status || "active",
         id,
+        data.name,
+        data.equipment_type || data.type,
+        data.status,
+        data.notes,
       ],
     );
 
-    res.json({ success: true });
+    res.json({ ok: true });
   } catch (e: any) {
     console.error("PUT /equipment/:id error", e);
     res.status(500).json({ error: e.message });
@@ -1096,9 +1140,11 @@ productionRouter.delete("/equipment/:id", async (req, res) => {
     }
     const { id } = req.params;
 
+    await ensureMachinesTable();
+
     await query(`DELETE FROM machines WHERE id = $1`, [id]);
 
-    res.json({ success: true });
+    res.json({ ok: true });
   } catch (e: any) {
     console.error("DELETE /equipment/:id error", e);
     res.status(500).json({ error: e.message });

@@ -90,9 +90,29 @@ async function ensureTables(): Promise<boolean> {
         status TEXT NOT NULL DEFAULT 'scheduled',
         priority TEXT NOT NULL DEFAULT 'medium',
         estimated_duration NUMERIC,
+        completed_date TIMESTAMPTZ,
         notes TEXT,
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ
+      )`);
+
+      // Add completed_date column if it doesn't exist (for migrations)
+      await query(
+        `ALTER TABLE IF EXISTS planned_maintenance ADD COLUMN IF NOT EXISTS completed_date TIMESTAMPTZ`,
+      );
+
+      // Maintenance records table - for completed/performed maintenance history
+      await query(`CREATE TABLE IF NOT EXISTS maintenance_records (
+        id TEXT PRIMARY KEY,
+        equipment_id TEXT,
+        maintenance_type TEXT,
+        description TEXT,
+        status TEXT NOT NULL DEFAULT 'completed',
+        performed_at TIMESTAMPTZ NOT NULL,
+        completed_date TIMESTAMPTZ,
+        technician TEXT,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
       await query(`CREATE TABLE IF NOT EXISTS machine_downtime (
@@ -518,21 +538,27 @@ maintenanceRouter.delete("/plans/:id", async (req, res) => {
 // Maintenance Records (from new schema)
 maintenanceRouter.get("/records", async (_req, res) => {
   try {
-    // If legacy tables don't exist in production, return empty list instead of 500
-    const exists = await query<{ exists: boolean }>(
-      `SELECT EXISTS (
-         SELECT FROM information_schema.tables WHERE table_schema='public' AND table_name='maintenance_records'
-       ) AS exists`,
-    );
-    if (!exists.rows[0]?.exists) return res.json([]);
+    await ensureTables();
 
+    // Try maintenance_records table first
     const { rows } = await query(
-      `SELECT mr.*, e.name as equipment_name
-       FROM maintenance_records mr
-       LEFT JOIN equipments e ON mr.equipment_id = e.id
-       ORDER BY mr.performed_at DESC`,
+      `SELECT mr.* FROM maintenance_records mr ORDER BY mr.performed_at DESC`,
     );
-    return res.json(rows);
+
+    const result = rows.map((r: any) => ({
+      id: r.id,
+      equipment_id: r.equipment_id,
+      maintenance_type: r.maintenance_type,
+      description: r.description,
+      status: r.status,
+      performed_at: r.performed_at,
+      completed_date: r.completed_date,
+      technician: r.technician,
+      notes: r.notes,
+      created_at: r.created_at,
+    }));
+
+    return res.json(result);
   } catch (e: any) {
     console.error("GET /maintenance/records error", e);
     return res.json([]);
@@ -542,9 +568,8 @@ maintenanceRouter.get("/records", async (_req, res) => {
 // Planned Maintenance CRUD
 maintenanceRouter.get("/planned", async (_req, res) => {
   try {
-    if (!isDbConfigured()) {
-      return res.json([]);
-    }
+    await ensureTables();
+
     const { rows } = await query(
       `SELECT pm.*,
               e.name as equipment_name,
@@ -557,12 +582,14 @@ maintenanceRouter.get("/planned", async (_req, res) => {
     return res.json(rows);
   } catch (e: any) {
     console.error("GET /maintenance/planned error", e);
-    return res.status(500).json({ error: e.message });
+    return res.json([]);
   }
 });
 
 maintenanceRouter.get("/planned/:id", async (req, res) => {
   try {
+    await ensureTables();
+
     const { id } = req.params;
     const { rows } = await query(
       `SELECT pm.*,
@@ -588,6 +615,8 @@ maintenanceRouter.get("/planned/:id", async (req, res) => {
 
 maintenanceRouter.post("/planned", async (req, res) => {
   try {
+    await ensureTables();
+
     const {
       equipment_id,
       maintenance_type,
@@ -597,15 +626,16 @@ maintenanceRouter.post("/planned", async (req, res) => {
       status = "scheduled",
       priority = "medium",
       estimated_duration,
+      completed_date,
       notes,
     } = req.body;
 
     const { rows } = await query(
       `INSERT INTO planned_maintenance (
         equipment_id, maintenance_type, description, scheduled_date,
-        assigned_to, status, priority, estimated_duration, notes
+        assigned_to, status, priority, estimated_duration, completed_date, notes
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *`,
       [
         equipment_id,
@@ -616,6 +646,7 @@ maintenanceRouter.post("/planned", async (req, res) => {
         status,
         priority,
         estimated_duration,
+        completed_date || null,
         notes,
       ],
     );
@@ -629,6 +660,8 @@ maintenanceRouter.post("/planned", async (req, res) => {
 
 maintenanceRouter.put("/planned/:id", async (req, res) => {
   try {
+    await ensureTables();
+
     const { id } = req.params;
     const {
       equipment_id,
@@ -639,6 +672,7 @@ maintenanceRouter.put("/planned/:id", async (req, res) => {
       status,
       priority,
       estimated_duration,
+      completed_date,
       notes,
     } = req.body;
 
@@ -652,9 +686,10 @@ maintenanceRouter.put("/planned/:id", async (req, res) => {
            status = $6,
            priority = $7,
            estimated_duration = $8,
-           notes = $9,
+           completed_date = $9,
+           notes = $10,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $10
+       WHERE id = $11
        RETURNING *`,
       [
         equipment_id,
@@ -665,6 +700,7 @@ maintenanceRouter.put("/planned/:id", async (req, res) => {
         status,
         priority,
         estimated_duration,
+        completed_date || null,
         notes,
         id,
       ],
@@ -683,6 +719,8 @@ maintenanceRouter.put("/planned/:id", async (req, res) => {
 
 maintenanceRouter.delete("/planned/:id", async (req, res) => {
   try {
+    await ensureTables();
+
     const { id } = req.params;
     const { rows } = await query(
       "DELETE FROM planned_maintenance WHERE id = $1 RETURNING *",

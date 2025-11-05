@@ -80,49 +80,45 @@ export default function Dashboard() {
         setStats((prev) => ({ ...prev, equipments: equipmentStats }));
       }
 
-      // Load maintenance stats
-      const maintenanceRes = await apiFetch("maintenance/records");
-      if (maintenanceRes.ok) {
-        const records = await maintenanceRes.json();
+      // Load maintenance stats from planned maintenance
+      const plannedRes = await apiFetch("maintenance/planned");
+      if (plannedRes.ok) {
+        const planned = await plannedRes.json();
         const now = new Date();
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
+        // Calculate stats from planned maintenance
         setStats((prev) => ({
           ...prev,
           maintenance: {
-            scheduled: records.filter((r: any) => r.status === "scheduled")
+            scheduled: planned.filter((p: any) => p.status === "scheduled")
               .length,
-            completed_month: records.filter(
-              (r: any) =>
-                r.status === "completed" &&
-                new Date(r.performed_at) >= firstDayOfMonth,
+            completed_month: planned.filter(
+              (p: any) =>
+                p.status === "completed" &&
+                p.completed_date &&
+                new Date(p.completed_date) >= firstDayOfMonth,
             ).length,
-            pending: records.filter((r: any) => r.status === "pending").length,
-            overdue: records.filter(
-              (r: any) =>
-                r.status === "scheduled" &&
-                r.next_maintenance_date &&
-                new Date(r.next_maintenance_date) < now,
+            pending: planned.filter((p: any) => p.status === "pending").length,
+            overdue: planned.filter(
+              (p: any) =>
+                p.status === "scheduled" && new Date(p.scheduled_date) < now,
             ).length,
           },
         }));
 
-        // Recent maintenance (last 5)
-        const recent = records
-          .filter((r: any) => r.status === "completed")
+        // Recent maintenance (completed, last 5)
+        const recent = planned
+          .filter((p: any) => p.status === "completed")
           .sort(
             (a: any, b: any) =>
-              new Date(b.performed_at).getTime() -
-              new Date(a.performed_at).getTime(),
+              (b.completed_date ? new Date(b.completed_date).getTime() : 0) -
+              (a.completed_date ? new Date(a.completed_date).getTime() : 0),
           )
           .slice(0, 5);
         setRecentMaintenance(recent);
-      }
 
-      // Load planned maintenance
-      const plannedRes = await apiFetch("maintenance/planned");
-      if (plannedRes.ok) {
-        const planned = await plannedRes.json();
+        // Upcoming maintenance (scheduled, next 5)
         const upcoming = planned
           .filter((p: any) => p.status === "scheduled")
           .sort(
@@ -132,6 +128,13 @@ export default function Dashboard() {
           )
           .slice(0, 5);
         setUpcomingMaintenance(upcoming);
+      }
+
+      // Load maintenance records (historical completed maintenance)
+      const maintenanceRes = await apiFetch("maintenance/records");
+      if (maintenanceRes.ok) {
+        const records = await maintenanceRes.json();
+        // Keep records as fallback or use for additional historical data if needed
       }
 
       // Load material stats
@@ -361,7 +364,11 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <Badge variant="outline" className="ml-2">
-                    {new Date(maintenance.performed_at).toLocaleDateString()}
+                    {maintenance.completed_date
+                      ? new Date(
+                          maintenance.completed_date,
+                        ).toLocaleDateString()
+                      : new Date(maintenance.created_at).toLocaleDateString()}
                   </Badge>
                 </div>
               ))}
