@@ -90,10 +90,14 @@ async function ensureTables(): Promise<boolean> {
         status TEXT NOT NULL DEFAULT 'scheduled',
         priority TEXT NOT NULL DEFAULT 'medium',
         estimated_duration NUMERIC,
+        completed_date TIMESTAMPTZ,
         notes TEXT,
         created_at TIMESTAMPTZ DEFAULT now(),
         updated_at TIMESTAMPTZ
       )`);
+
+      // Add completed_date column if it doesn't exist (for migrations)
+      await query(`ALTER TABLE IF EXISTS planned_maintenance ADD COLUMN IF NOT EXISTS completed_date TIMESTAMPTZ`);
 
       // Maintenance records table - for completed/performed maintenance history
       await query(`CREATE TABLE IF NOT EXISTS maintenance_records (
