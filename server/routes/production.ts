@@ -1104,17 +1104,25 @@ productionRouter.put("/equipment/:id", async (req, res) => {
     const { id } = req.params;
     const data = req.body;
 
+    await ensureMachinesTable();
+
     await query(
-      `UPDATE machines SET name = $1, type = $2, status = $3 WHERE id = $4`,
+      `UPDATE machines SET
+       name = COALESCE($2, name),
+       type = COALESCE($3, type),
+       status = COALESCE($4, status),
+       specifications = COALESCE($5, specifications)
+       WHERE id = $1`,
       [
-        data.name,
-        data.equipment_type || "generic",
-        data.status || "active",
         id,
+        data.name,
+        data.equipment_type || data.type,
+        data.status,
+        data.notes,
       ],
     );
 
-    res.json({ success: true });
+    res.json({ ok: true });
   } catch (e: any) {
     console.error("PUT /equipment/:id error", e);
     res.status(500).json({ error: e.message });
