@@ -126,8 +126,8 @@ export default function Equipment() {
 
     try {
       const path = editingEquipment
-        ? `machines/${editingEquipment.id}`
-        : "machines";
+        ? `equipment/${editingEquipment.id}`
+        : "equipment";
       const method = editingEquipment ? "PUT" : "POST";
 
       const response = await apiFetch(path, {
