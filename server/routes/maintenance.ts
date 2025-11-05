@@ -652,6 +652,8 @@ maintenanceRouter.post("/planned", async (req, res) => {
 
 maintenanceRouter.put("/planned/:id", async (req, res) => {
   try {
+    await ensureTables();
+
     const { id } = req.params;
     const {
       equipment_id,
