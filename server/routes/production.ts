@@ -1140,9 +1140,11 @@ productionRouter.delete("/equipment/:id", async (req, res) => {
     }
     const { id } = req.params;
 
+    await ensureMachinesTable();
+
     await query(`DELETE FROM machines WHERE id = $1`, [id]);
 
-    res.json({ success: true });
+    res.json({ ok: true });
   } catch (e: any) {
     console.error("DELETE /equipment/:id error", e);
     res.status(500).json({ error: e.message });
