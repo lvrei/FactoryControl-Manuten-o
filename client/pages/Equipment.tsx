@@ -182,7 +182,7 @@ export default function Equipment() {
     if (!confirm("Tem a certeza que deseja eliminar este equipamento?")) return;
 
     try {
-      const response = await apiFetch(`machines/${id}`, {
+      const response = await apiFetch(`equipment/${id}`, {
         method: "DELETE",
       });
 
