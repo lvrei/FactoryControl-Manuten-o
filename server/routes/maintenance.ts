@@ -607,6 +607,8 @@ maintenanceRouter.get("/planned/:id", async (req, res) => {
 
 maintenanceRouter.post("/planned", async (req, res) => {
   try {
+    await ensureTables();
+
     const {
       equipment_id,
       maintenance_type,
