@@ -624,15 +624,16 @@ maintenanceRouter.post("/planned", async (req, res) => {
       status = "scheduled",
       priority = "medium",
       estimated_duration,
+      completed_date,
       notes,
     } = req.body;
 
     const { rows } = await query(
       `INSERT INTO planned_maintenance (
         equipment_id, maintenance_type, description, scheduled_date,
-        assigned_to, status, priority, estimated_duration, notes
+        assigned_to, status, priority, estimated_duration, completed_date, notes
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *`,
       [
         equipment_id,
@@ -643,6 +644,7 @@ maintenanceRouter.post("/planned", async (req, res) => {
         status,
         priority,
         estimated_duration,
+        completed_date || null,
         notes,
       ],
     );
