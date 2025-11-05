@@ -189,7 +189,7 @@ export default function Dashboard() {
       <div>
         <h1 className="text-3xl font-bold">MaintenanceControl</h1>
         <p className="text-muted-foreground">
-          Dashboard de Gestão de Manutenç��o
+          Dashboard de Gestão de Manutenção
         </p>
       </div>
 
@@ -365,7 +365,9 @@ export default function Dashboard() {
                     </p>
                   </div>
                   <Badge variant="outline" className="ml-2">
-                    {new Date(maintenance.performed_at).toLocaleDateString()}
+                    {maintenance.completed_date
+                      ? new Date(maintenance.completed_date).toLocaleDateString()
+                      : new Date(maintenance.created_at).toLocaleDateString()}
                   </Badge>
                 </div>
               ))}
