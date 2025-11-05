@@ -670,6 +670,7 @@ maintenanceRouter.put("/planned/:id", async (req, res) => {
       status,
       priority,
       estimated_duration,
+      completed_date,
       notes,
     } = req.body;
 
@@ -683,9 +684,10 @@ maintenanceRouter.put("/planned/:id", async (req, res) => {
            status = $6,
            priority = $7,
            estimated_duration = $8,
-           notes = $9,
+           completed_date = $9,
+           notes = $10,
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $10
+       WHERE id = $11
        RETURNING *`,
       [
         equipment_id,
@@ -696,6 +698,7 @@ maintenanceRouter.put("/planned/:id", async (req, res) => {
         status,
         priority,
         estimated_duration,
+        completed_date || null,
         notes,
         id,
       ],
