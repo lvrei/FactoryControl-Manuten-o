@@ -100,7 +100,7 @@ export default function Equipment() {
   const loadEquipment = async () => {
     try {
       setLoading(true);
-      const response = await apiFetch("machines");
+      const response = await apiFetch("equipment");
       if (response.ok) {
         const data = await response.json();
         setEquipment(data);
