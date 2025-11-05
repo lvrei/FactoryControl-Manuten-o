@@ -1078,13 +1078,16 @@ productionRouter.post("/equipment", async (req, res) => {
     const data = req.body;
     const id = `equip-${Date.now()}`;
 
+    await ensureMachinesTable();
+
     await query(
-      `INSERT INTO machines (id, name, type, status, created_at) VALUES ($1, $2, $3, $4, NOW())`,
+      `INSERT INTO machines (id, name, type, status, specifications, created_at) VALUES ($1, $2, $3, $4, $5, NOW())`,
       [
         id,
         data.name,
         data.equipment_type || "generic",
         data.status || "active",
+        data.notes || "",
       ],
     );
 
