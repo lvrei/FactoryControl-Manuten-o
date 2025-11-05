@@ -708,6 +708,8 @@ maintenanceRouter.put("/planned/:id", async (req, res) => {
 
 maintenanceRouter.delete("/planned/:id", async (req, res) => {
   try {
+    await ensureTables();
+
     const { id } = req.params;
     const { rows } = await query(
       "DELETE FROM planned_maintenance WHERE id = $1 RETURNING *",
