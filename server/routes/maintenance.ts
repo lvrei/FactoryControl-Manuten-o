@@ -562,9 +562,8 @@ maintenanceRouter.get("/records", async (_req, res) => {
 // Planned Maintenance CRUD
 maintenanceRouter.get("/planned", async (_req, res) => {
   try {
-    if (!isDbConfigured()) {
-      return res.json([]);
-    }
+    await ensureTables();
+
     const { rows } = await query(
       `SELECT pm.*,
               e.name as equipment_name,
@@ -577,7 +576,7 @@ maintenanceRouter.get("/planned", async (_req, res) => {
     return res.json(rows);
   } catch (e: any) {
     console.error("GET /maintenance/planned error", e);
-    return res.status(500).json({ error: e.message });
+    return res.json([]);
   }
 });
 
