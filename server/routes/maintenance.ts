@@ -95,6 +95,20 @@ async function ensureTables(): Promise<boolean> {
         updated_at TIMESTAMPTZ
       )`);
 
+      // Maintenance records table - for completed/performed maintenance history
+      await query(`CREATE TABLE IF NOT EXISTS maintenance_records (
+        id TEXT PRIMARY KEY,
+        equipment_id TEXT,
+        maintenance_type TEXT,
+        description TEXT,
+        status TEXT NOT NULL DEFAULT 'completed',
+        performed_at TIMESTAMPTZ NOT NULL,
+        completed_date TIMESTAMPTZ,
+        technician TEXT,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
       await query(`CREATE TABLE IF NOT EXISTS machine_downtime (
         id TEXT PRIMARY KEY,
         machine_id TEXT REFERENCES machines(id) ON DELETE SET NULL,
