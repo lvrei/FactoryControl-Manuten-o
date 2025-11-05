@@ -582,6 +582,8 @@ maintenanceRouter.get("/planned", async (_req, res) => {
 
 maintenanceRouter.get("/planned/:id", async (req, res) => {
   try {
+    await ensureTables();
+
     const { id } = req.params;
     const { rows } = await query(
       `SELECT pm.*,
