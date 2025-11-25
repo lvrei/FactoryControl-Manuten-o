@@ -128,8 +128,8 @@ export function MaterialsSelector({
                           {material.name}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Stock: {material.current_stock} {material.unit} | €
-                          {material.cost_per_unit.toFixed(2)}/{material.unit}
+                          Stock: {Number(material.current_stock)} {material.unit} | €
+                          {Number(material.cost_per_unit).toFixed(2)}/{material.unit}
                         </div>
                       </button>
                     ))}
