@@ -75,6 +75,7 @@ export function MaintenanceForm({
     if (editingMaintenance) {
       setFormData({
         ...editingMaintenance,
+        selectedParts: editingMaintenance.selectedParts || [],
         photos: editingMaintenance.photos || []
       });
     } else {
@@ -89,6 +90,7 @@ export function MaintenanceForm({
         description: '',
         technician: '',
         parts: '',
+        selectedParts: [],
         notes: '',
         photos: [],
         createdAt: new Date().toISOString().split('T')[0]
