@@ -278,7 +278,7 @@ export function MaterialsSelector({
             Total de Peças: {selectedParts.length}
           </div>
           <div className="font-semibold text-sm text-primary">
-            Custo Total: €{totalCost.toFixed(2)}
+            Custo Total: €{Number(totalCost).toFixed(2)}
           </div>
         </div>
       )}
