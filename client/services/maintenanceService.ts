@@ -34,6 +34,24 @@ class MaintenanceService {
 
     return j.id;
   }
+  async recordMaintenanceParts(
+    maintenanceId: string,
+    parts: Array<{
+      material_id?: string;
+      material_name: string;
+      quantity_used: number;
+      unit?: string;
+      cost_per_unit: number;
+    }>
+  ): Promise<void> {
+    const r = await apiFetch(`maintenance/${maintenanceId}/parts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(parts),
+    });
+    if (!r.ok) throw new Error("Falha ao registar peças utilizadas");
+  }
+
   async updateMaintenancePlan(id: string, patch: any): Promise<void> {
     const r = await apiFetch(`maintenance/plans/${id}`, {
       method: "PATCH",
