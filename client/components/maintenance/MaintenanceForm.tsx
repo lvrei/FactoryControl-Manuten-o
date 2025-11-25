@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { X, Plus, Calendar, DollarSign, Camera, Upload, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MaterialsSelector, SelectedPart } from "./MaterialsSelector";
 
 interface MaintenanceFormProps {
   isOpen: boolean;
