@@ -77,7 +77,7 @@ export function MaterialsSelector({
   };
 
   const totalCost = selectedParts.reduce(
-    (sum, part) => sum + part.quantity_used * part.cost_per_unit,
+    (sum, part) => sum + Number(part.quantity_used) * Number(part.cost_per_unit),
     0
   );
 
