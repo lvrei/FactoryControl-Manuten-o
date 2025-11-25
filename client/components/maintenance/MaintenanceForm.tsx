@@ -335,18 +335,10 @@ export function MaintenanceForm({
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-card-foreground mb-2">
-              Peças e Materiais
-            </label>
-            <textarea
-              value={formData.parts}
-              onChange={(e) => handleChange('parts', e.target.value)}
-              rows={2}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              placeholder="Liste as peças e materiais necessários..."
-            />
-          </div>
+          <MaterialsSelector
+            selectedParts={formData.selectedParts || []}
+            onPartsChange={(parts) => setFormData({ ...formData, selectedParts: parts })}
+          />
 
           <div>
             <label className="block text-sm font-medium text-card-foreground mb-2">
