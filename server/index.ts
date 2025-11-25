@@ -596,6 +596,70 @@ export async function createServer() {
     }
   });
 
+  // Direct materials list
+  app.get(["/api/materials", "/materials"], async (_req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+
+      // Create materials table
+      await query(`CREATE TABLE IF NOT EXISTS materials (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        code TEXT,
+        category TEXT,
+        unit TEXT,
+        min_stock NUMERIC DEFAULT 0,
+        current_stock NUMERIC DEFAULT 0,
+        cost_per_unit NUMERIC DEFAULT 0,
+        supplier TEXT,
+        equipment_id TEXT,
+        is_general_stock BOOLEAN DEFAULT true,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      // Create maintenance_parts_used table
+      await query(`CREATE TABLE IF NOT EXISTS maintenance_parts_used (
+        id TEXT PRIMARY KEY,
+        maintenance_id TEXT,
+        material_id TEXT REFERENCES materials(id) ON DELETE SET NULL,
+        material_name TEXT,
+        quantity_used NUMERIC,
+        unit TEXT,
+        cost_per_unit NUMERIC,
+        total_cost NUMERIC,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      const { rows } = await query(`SELECT
+        id, name, code, category, unit, min_stock, current_stock,
+        cost_per_unit, supplier, equipment_id, is_general_stock, notes, created_at
+        FROM materials ORDER BY name`);
+
+      return res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          code: r.code,
+          category: r.category,
+          unit: r.unit,
+          min_stock: Number(r.min_stock || 0),
+          current_stock: Number(r.current_stock || 0),
+          cost_per_unit: Number(r.cost_per_unit || 0),
+          supplier: r.supplier,
+          equipment_id: r.equipment_id,
+          is_general_stock: r.is_general_stock,
+          notes: r.notes,
+          created_at: r.created_at,
+        })),
+      );
+    } catch (e: any) {
+      console.error("[DIRECT] GET /materials error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Debug: list registered routes
   app.get(["/api/_routes", "/_routes"], (_req, res) => {
     try {
