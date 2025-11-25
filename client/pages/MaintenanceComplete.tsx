@@ -33,6 +33,7 @@ import { ChecklistDL50 } from "@/components/maintenance/ChecklistDL50";
 import { Machine, MaintenanceRequest } from "@/types/production";
 import { productionService } from "@/services/productionService";
 import { maintenanceService } from "@/services/maintenanceService";
+import { equipmentScheduleService } from "@/services/equipmentScheduleService";
 
 // Dados limpos - apenas máquinas reais de corte de espuma
 const mockMachines: MaintenanceData[] = [];
