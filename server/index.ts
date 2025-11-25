@@ -660,6 +660,113 @@ export async function createServer() {
     }
   });
 
+  // POST endpoint for creating materials
+  app.post(["/api/materials", "/materials"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      const d = req.body || {};
+      const id = d.id || `mat-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+      await query(`CREATE TABLE IF NOT EXISTS materials (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        code TEXT,
+        category TEXT,
+        unit TEXT,
+        min_stock NUMERIC DEFAULT 0,
+        current_stock NUMERIC DEFAULT 0,
+        cost_per_unit NUMERIC DEFAULT 0,
+        supplier TEXT,
+        equipment_id TEXT,
+        is_general_stock BOOLEAN DEFAULT true,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      await query(
+        `INSERT INTO materials (id, name, code, category, unit, min_stock, current_stock, cost_per_unit, supplier, equipment_id, is_general_stock, notes, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, now())
+         ON CONFLICT (id) DO NOTHING`,
+        [
+          id,
+          d.name || "",
+          d.code || null,
+          d.category || null,
+          d.unit || null,
+          d.min_stock || 0,
+          d.current_stock || 0,
+          d.cost_per_unit || 0,
+          d.supplier || null,
+          d.equipment_id || null,
+          d.is_general_stock !== false,
+          d.notes || null,
+        ],
+      );
+
+      return res.json({ id });
+    } catch (e: any) {
+      console.error("[DIRECT] POST /materials error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // PATCH endpoint for updating material stock
+  app.patch(["/api/materials/:id/stock", "/materials/:id/stock"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      const { id } = req.params;
+      const { quantity, operation } = req.body;
+
+      await query(`CREATE TABLE IF NOT EXISTS materials (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        code TEXT,
+        category TEXT,
+        unit TEXT,
+        min_stock NUMERIC DEFAULT 0,
+        current_stock NUMERIC DEFAULT 0,
+        cost_per_unit NUMERIC DEFAULT 0,
+        supplier TEXT,
+        equipment_id TEXT,
+        is_general_stock BOOLEAN DEFAULT true,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      const currentResult = await query(
+        "SELECT current_stock FROM materials WHERE id = $1",
+        [id]
+      );
+
+      if (currentResult.rows.length === 0) {
+        return res.status(404).json({ error: "Material not found" });
+      }
+
+      const currentStock = Number(currentResult.rows[0].current_stock || 0);
+      const newStock = operation === "subtract"
+        ? Math.max(0, currentStock - quantity)
+        : currentStock + quantity;
+
+      await query(
+        `UPDATE materials
+         SET current_stock = $1, updated_at = now()
+         WHERE id = $2`,
+        [newStock, id]
+      );
+
+      return res.json({ ok: true, currentStock: currentStock, newStock: newStock });
+    } catch (e: any) {
+      console.error("[DIRECT] PATCH /materials/:id/stock error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Debug: list registered routes
   app.get(["/api/_routes", "/_routes"], (_req, res) => {
     try {
