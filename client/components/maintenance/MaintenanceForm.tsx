@@ -27,6 +27,7 @@ export interface MaintenanceData {
   description: string;
   technician: string;
   parts: string;
+  selectedParts?: SelectedPart[];
   notes: string;
   photos: File[];
   createdAt: string;
