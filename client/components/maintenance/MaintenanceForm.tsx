@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { X, Plus, Calendar, DollarSign, Camera, Upload, Trash2 } from "lucide-react";
+import {
+  X,
+  Plus,
+  Calendar,
+  DollarSign,
+  Camera,
+  Upload,
+  Trash2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MaterialsSelector, SelectedPart } from "./MaterialsSelector";
 
@@ -15,9 +23,9 @@ export interface MaintenanceData {
   id?: string;
   machineId: string;
   machineName?: string;
-  type: 'preventive' | 'corrective' | 'predictive';
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+  type: "preventive" | "corrective" | "predictive";
+  priority: "low" | "medium" | "high" | "critical";
+  status: "scheduled" | "in_progress" | "completed" | "cancelled";
   scheduledDate: string;
   completedDate?: string;
   estimatedCost: number;
@@ -34,40 +42,52 @@ export interface MaintenanceData {
 }
 
 const maintenanceTypes = [
-  { value: 'preventive', label: 'Preventiva', description: 'Manutenção programada' },
-  { value: 'corrective', label: 'Corretiva', description: 'Reparo de falhas' },
-  { value: 'predictive', label: 'Preditiva', description: 'Baseada em condições' }
+  {
+    value: "preventive",
+    label: "Preventiva",
+    description: "Manutenção programada",
+  },
+  { value: "corrective", label: "Corretiva", description: "Reparo de falhas" },
+  {
+    value: "predictive",
+    label: "Preditiva",
+    description: "Baseada em condições",
+  },
 ];
 
 const priorityTypes = [
-  { value: 'low', label: 'Baixa', color: 'text-success bg-success/10' },
-  { value: 'medium', label: 'Média', color: 'text-warning bg-warning/10' },
-  { value: 'high', label: 'Alta', color: 'text-info bg-info/10' },
-  { value: 'critical', label: 'Crítica', color: 'text-destructive bg-destructive/10' }
+  { value: "low", label: "Baixa", color: "text-success bg-success/10" },
+  { value: "medium", label: "Média", color: "text-warning bg-warning/10" },
+  { value: "high", label: "Alta", color: "text-info bg-info/10" },
+  {
+    value: "critical",
+    label: "Crítica",
+    color: "text-destructive bg-destructive/10",
+  },
 ];
 
-export function MaintenanceForm({ 
-  isOpen, 
-  onClose, 
-  onSave, 
-  machines, 
-  editingMaintenance 
+export function MaintenanceForm({
+  isOpen,
+  onClose,
+  onSave,
+  machines,
+  editingMaintenance,
 }: MaintenanceFormProps) {
   const [formData, setFormData] = useState<MaintenanceData>({
-    machineId: '',
-    type: 'preventive',
-    priority: 'medium',
-    status: 'scheduled',
-    scheduledDate: '',
+    machineId: "",
+    type: "preventive",
+    priority: "medium",
+    status: "scheduled",
+    scheduledDate: "",
     estimatedCost: 0,
     estimatedDuration: 2,
-    description: '',
-    technician: '',
-    parts: '',
+    description: "",
+    technician: "",
+    parts: "",
     selectedParts: [],
-    notes: '',
+    notes: "",
     photos: [],
-    createdAt: new Date().toISOString().split('T')[0]
+    createdAt: new Date().toISOString().split("T")[0],
   });
 
   // Update form data when editingMaintenance changes
@@ -76,24 +96,24 @@ export function MaintenanceForm({
       setFormData({
         ...editingMaintenance,
         selectedParts: editingMaintenance.selectedParts || [],
-        photos: editingMaintenance.photos || []
+        photos: editingMaintenance.photos || [],
       });
     } else {
       setFormData({
-        machineId: '',
-        type: 'preventive',
-        priority: 'medium',
-        status: 'scheduled',
-        scheduledDate: '',
+        machineId: "",
+        type: "preventive",
+        priority: "medium",
+        status: "scheduled",
+        scheduledDate: "",
         estimatedCost: 0,
         estimatedDuration: 2,
-        description: '',
-        technician: '',
-        parts: '',
+        description: "",
+        technician: "",
+        parts: "",
         selectedParts: [],
-        notes: '',
+        notes: "",
         photos: [],
-        createdAt: new Date().toISOString().split('T')[0]
+        createdAt: new Date().toISOString().split("T")[0],
       });
     }
   }, [editingMaintenance]);
@@ -104,31 +124,34 @@ export function MaintenanceForm({
     onClose();
   };
 
-  const handleChange = (field: keyof MaintenanceData, value: string | number) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (
+    field: keyof MaintenanceData,
+    value: string | number,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
-    const validFiles = files.filter(file => file.type.startsWith('image/'));
+    const validFiles = files.filter((file) => file.type.startsWith("image/"));
 
     if (validFiles.length !== files.length) {
-      alert('Apenas arquivos de imagem são permitidos');
+      alert("Apenas arquivos de imagem são permitidos");
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      photos: [...prev.photos, ...validFiles]
+      photos: [...prev.photos, ...validFiles],
     }));
 
     // Reset input
-    event.target.value = '';
+    event.target.value = "";
   };
 
   const removePhoto = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      photos: prev.photos.filter((_, i) => i !== index)
+      photos: prev.photos.filter((_, i) => i !== index),
     }));
   };
 
@@ -139,7 +162,7 @@ export function MaintenanceForm({
       <div className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-card rounded-lg shadow-lg">
         <div className="flex items-center justify-between border-b p-6">
           <h2 className="text-xl font-semibold text-card-foreground">
-            {editingMaintenance ? 'Editar Manutenção' : 'Nova Manutenção'}
+            {editingMaintenance ? "Editar Manutenção" : "Nova Manutenção"}
           </h2>
           <button
             onClick={onClose}
@@ -158,7 +181,7 @@ export function MaintenanceForm({
               <select
                 required
                 value={formData.machineId}
-                onChange={(e) => handleChange('machineId', e.target.value)}
+                onChange={(e) => handleChange("machineId", e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="">Selecionar máquina</option>
@@ -177,7 +200,7 @@ export function MaintenanceForm({
               <select
                 required
                 value={formData.type}
-                onChange={(e) => handleChange('type', e.target.value)}
+                onChange={(e) => handleChange("type", e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {maintenanceTypes.map((type) => (
@@ -195,7 +218,7 @@ export function MaintenanceForm({
               <select
                 required
                 value={formData.priority}
-                onChange={(e) => handleChange('priority', e.target.value)}
+                onChange={(e) => handleChange("priority", e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 {priorityTypes.map((priority) => (
@@ -214,7 +237,7 @@ export function MaintenanceForm({
                 type="datetime-local"
                 required
                 value={formData.scheduledDate}
-                onChange={(e) => handleChange('scheduledDate', e.target.value)}
+                onChange={(e) => handleChange("scheduledDate", e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -225,7 +248,7 @@ export function MaintenanceForm({
               </label>
               <select
                 value={formData.status}
-                onChange={(e) => handleChange('status', e.target.value)}
+                onChange={(e) => handleChange("status", e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               >
                 <option value="scheduled">Agendada</option>
@@ -244,7 +267,9 @@ export function MaintenanceForm({
                 min="0"
                 step="0.01"
                 value={formData.estimatedCost}
-                onChange={(e) => handleChange('estimatedCost', parseFloat(e.target.value))}
+                onChange={(e) =>
+                  handleChange("estimatedCost", parseFloat(e.target.value))
+                }
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -258,7 +283,9 @@ export function MaintenanceForm({
                 min="0.5"
                 step="0.5"
                 value={formData.estimatedDuration}
-                onChange={(e) => handleChange('estimatedDuration', parseFloat(e.target.value))}
+                onChange={(e) =>
+                  handleChange("estimatedDuration", parseFloat(e.target.value))
+                }
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               />
             </div>
@@ -270,13 +297,13 @@ export function MaintenanceForm({
               <input
                 type="text"
                 value={formData.technician}
-                onChange={(e) => handleChange('technician', e.target.value)}
+                onChange={(e) => handleChange("technician", e.target.value)}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="Nome do técnico"
               />
             </div>
 
-            {formData.status === 'completed' && (
+            {formData.status === "completed" && (
               <>
                 <div>
                   <label className="block text-sm font-medium text-card-foreground mb-2">
@@ -284,8 +311,10 @@ export function MaintenanceForm({
                   </label>
                   <input
                     type="datetime-local"
-                    value={formData.completedDate || ''}
-                    onChange={(e) => handleChange('completedDate', e.target.value)}
+                    value={formData.completedDate || ""}
+                    onChange={(e) =>
+                      handleChange("completedDate", e.target.value)
+                    }
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
@@ -299,7 +328,9 @@ export function MaintenanceForm({
                     min="0"
                     step="0.01"
                     value={formData.actualCost || 0}
-                    onChange={(e) => handleChange('actualCost', parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      handleChange("actualCost", parseFloat(e.target.value))
+                    }
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
@@ -313,7 +344,9 @@ export function MaintenanceForm({
                     min="0.5"
                     step="0.5"
                     value={formData.actualDuration || 0}
-                    onChange={(e) => handleChange('actualDuration', parseFloat(e.target.value))}
+                    onChange={(e) =>
+                      handleChange("actualDuration", parseFloat(e.target.value))
+                    }
                     className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   />
                 </div>
@@ -328,7 +361,7 @@ export function MaintenanceForm({
             <textarea
               required
               value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
+              onChange={(e) => handleChange("description", e.target.value)}
               rows={3}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="Descreva o serviço de manutenção a ser realizado..."
@@ -337,7 +370,9 @@ export function MaintenanceForm({
 
           <MaterialsSelector
             selectedParts={formData.selectedParts || []}
-            onPartsChange={(parts) => setFormData({ ...formData, selectedParts: parts })}
+            onPartsChange={(parts) =>
+              setFormData({ ...formData, selectedParts: parts })
+            }
           />
 
           <div>
@@ -406,7 +441,7 @@ export function MaintenanceForm({
             </label>
             <textarea
               value={formData.notes}
-              onChange={(e) => handleChange('notes', e.target.value)}
+              onChange={(e) => handleChange("notes", e.target.value)}
               rows={2}
               className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               placeholder="Observações adicionais..."
@@ -426,7 +461,7 @@ export function MaintenanceForm({
               className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 flex items-center gap-2"
             >
               <Plus className="h-4 w-4" />
-              {editingMaintenance ? 'Atualizar' : 'Criar'} Manutenção
+              {editingMaintenance ? "Atualizar" : "Criar"} Manutenção
             </button>
           </div>
         </form>

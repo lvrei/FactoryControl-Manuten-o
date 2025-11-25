@@ -77,8 +77,9 @@ export function MaterialsSelector({
   };
 
   const totalCost = selectedParts.reduce(
-    (sum, part) => sum + Number(part.quantity_used) * Number(part.cost_per_unit),
-    0
+    (sum, part) =>
+      sum + Number(part.quantity_used) * Number(part.cost_per_unit),
+    0,
   );
 
   return (
@@ -121,15 +122,17 @@ export function MaterialsSelector({
                           "w-full text-left p-2 rounded border transition-colors",
                           newPart.material_id === material.id
                             ? "bg-primary/10 border-primary"
-                            : "bg-card border-border hover:bg-muted"
+                            : "bg-card border-border hover:bg-muted",
                         )}
                       >
                         <div className="font-medium text-sm">
                           {material.name}
                         </div>
                         <div className="text-xs text-muted-foreground">
-                          Stock: {Number(material.current_stock)} {material.unit} | €
-                          {Number(material.cost_per_unit).toFixed(2)}/{material.unit}
+                          Stock: {Number(material.current_stock)}{" "}
+                          {material.unit} | €
+                          {Number(material.cost_per_unit).toFixed(2)}/
+                          {material.unit}
                         </div>
                       </button>
                     ))}
@@ -254,9 +257,12 @@ export function MaterialsSelector({
                   {part.material_name}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Quantidade: {Number(part.quantity_used)} {part.unit || "unidade"} | €
+                  Quantidade: {Number(part.quantity_used)}{" "}
+                  {part.unit || "unidade"} | €
                   {Number(part.cost_per_unit).toFixed(2)}/un | Total: €
-                  {(Number(part.quantity_used) * Number(part.cost_per_unit)).toFixed(2)}
+                  {(
+                    Number(part.quantity_used) * Number(part.cost_per_unit)
+                  ).toFixed(2)}
                 </div>
               </div>
               <button
