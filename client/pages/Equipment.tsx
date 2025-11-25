@@ -495,6 +495,16 @@ export default function Equipment() {
                 />
               </div>
             </div>
+
+            {editingEquipment && (
+              <div className="mt-6 border-t pt-6">
+                <MaintenanceScheduleManager
+                  equipmentId={editingEquipment.id}
+                  equipmentName={editingEquipment.name}
+                />
+              </div>
+            )}
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={resetForm}>
                 Cancelar
