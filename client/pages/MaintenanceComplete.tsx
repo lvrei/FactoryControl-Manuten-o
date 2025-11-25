@@ -246,6 +246,7 @@ export default function MaintenanceComplete() {
           description: maintenanceWithMachineName.description,
           technician: maintenanceWithMachineName.technician,
           parts: maintenanceWithMachineName.parts,
+          selectedParts: maintenanceWithMachineName.selectedParts || [],
           notes: maintenanceWithMachineName.notes,
         });
       }
@@ -401,7 +402,7 @@ export default function MaintenanceComplete() {
         "Operador",
         "Urgência",
         "Estado",
-        "Data Solicitação",
+        "Data Solicitaç��o",
         "Data Conclusão",
         "Tempo Resolução (h)",
         "Custo",
