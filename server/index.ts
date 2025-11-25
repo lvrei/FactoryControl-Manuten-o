@@ -767,6 +767,130 @@ export async function createServer() {
     }
   });
 
+  // POST endpoint for recording parts used in maintenance
+  app.post(["/api/maintenance/:maintenanceId/parts", "/maintenance/:maintenanceId/parts"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      const { maintenanceId } = req.params;
+      const parts = req.body || [];
+
+      await query(`CREATE TABLE IF NOT EXISTS maintenance_parts_used (
+        id TEXT PRIMARY KEY,
+        maintenance_id TEXT,
+        material_id TEXT REFERENCES materials(id) ON DELETE SET NULL,
+        material_name TEXT,
+        quantity_used NUMERIC,
+        unit TEXT,
+        cost_per_unit NUMERIC,
+        total_cost NUMERIC,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      await query(`CREATE TABLE IF NOT EXISTS materials (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        code TEXT,
+        category TEXT,
+        unit TEXT,
+        min_stock NUMERIC DEFAULT 0,
+        current_stock NUMERIC DEFAULT 0,
+        cost_per_unit NUMERIC DEFAULT 0,
+        supplier TEXT,
+        equipment_id TEXT,
+        is_general_stock BOOLEAN DEFAULT true,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      const results = [];
+
+      for (const part of parts) {
+        const partId = `mp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+        await query(
+          `INSERT INTO maintenance_parts_used (id, maintenance_id, material_id, material_name, quantity_used, unit, cost_per_unit, total_cost, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())`,
+          [
+            partId,
+            maintenanceId,
+            part.material_id || null,
+            part.material_name || part.name || "",
+            part.quantity_used || part.quantity || 0,
+            part.unit || null,
+            part.cost_per_unit || 0,
+            (part.quantity_used || part.quantity || 0) * (part.cost_per_unit || 0),
+          ]
+        );
+
+        // Deduct from stock if material_id is provided
+        if (part.material_id) {
+          await query(
+            `UPDATE materials
+             SET current_stock = GREATEST(0, current_stock - $1), updated_at = now()
+             WHERE id = $2`,
+            [part.quantity_used || part.quantity || 0, part.material_id]
+          );
+        }
+
+        results.push(partId);
+      }
+
+      return res.json({ ok: true, parts: results });
+    } catch (e: any) {
+      console.error("[DIRECT] POST /maintenance/:maintenanceId/parts error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // GET endpoint for parts used in a maintenance
+  app.get(["/api/maintenance/:maintenanceId/parts", "/maintenance/:maintenanceId/parts"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+
+      const { maintenanceId } = req.params;
+
+      await query(`CREATE TABLE IF NOT EXISTS maintenance_parts_used (
+        id TEXT PRIMARY KEY,
+        maintenance_id TEXT,
+        material_id TEXT REFERENCES materials(id) ON DELETE SET NULL,
+        material_name TEXT,
+        quantity_used NUMERIC,
+        unit TEXT,
+        cost_per_unit NUMERIC,
+        total_cost NUMERIC,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      const { rows } = await query(
+        `SELECT id, maintenance_id, material_id, material_name, quantity_used, unit, cost_per_unit, total_cost, created_at
+         FROM maintenance_parts_used
+         WHERE maintenance_id = $1
+         ORDER BY created_at DESC`,
+        [maintenanceId]
+      );
+
+      return res.json(
+        rows.map((r: any) => ({
+          id: r.id,
+          maintenance_id: r.maintenance_id,
+          material_id: r.material_id,
+          material_name: r.material_name,
+          quantity_used: Number(r.quantity_used || 0),
+          unit: r.unit,
+          cost_per_unit: Number(r.cost_per_unit || 0),
+          total_cost: Number(r.total_cost || 0),
+          created_at: r.created_at,
+        }))
+      );
+    } catch (e: any) {
+      console.error("[DIRECT] GET /maintenance/:maintenanceId/parts error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Debug: list registered routes
   app.get(["/api/_routes", "/_routes"], (_req, res) => {
     try {
