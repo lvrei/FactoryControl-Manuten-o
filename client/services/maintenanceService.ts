@@ -21,6 +21,17 @@ class MaintenanceService {
     });
     if (!r.ok) throw new Error("Falha ao criar manutenção");
     const j = await r.json();
+
+    // Record parts used if any are provided
+    if (plan.selectedParts && plan.selectedParts.length > 0) {
+      try {
+        await this.recordMaintenanceParts(j.id, plan.selectedParts);
+      } catch (e) {
+        console.warn("Falha ao registar peças utilizadas:", e);
+        // Continue anyway, as the maintenance was created successfully
+      }
+    }
+
     return j.id;
   }
   async updateMaintenancePlan(id: string, patch: any): Promise<void> {
