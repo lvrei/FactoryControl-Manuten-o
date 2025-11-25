@@ -254,9 +254,9 @@ export function MaterialsSelector({
                   {part.material_name}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  Quantidade: {part.quantity_used} {part.unit || "unidade"} | €
-                  {part.cost_per_unit.toFixed(2)}/un | Total: €
-                  {(part.quantity_used * part.cost_per_unit).toFixed(2)}
+                  Quantidade: {Number(part.quantity_used)} {part.unit || "unidade"} | €
+                  {Number(part.cost_per_unit).toFixed(2)}/un | Total: €
+                  {(Number(part.quantity_used) * Number(part.cost_per_unit)).toFixed(2)}
                 </div>
               </div>
               <button
