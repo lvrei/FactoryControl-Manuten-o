@@ -233,6 +233,32 @@ export default function MaintenanceComplete() {
           parts: maintenanceWithMachineName.parts,
           notes: maintenanceWithMachineName.notes,
         });
+
+        // If maintenance is completed, trigger reschedule for matching schedule
+        if (maintenanceWithMachineName.status === "completed" && editingMaintenance.machineId) {
+          try {
+            const schedules = await equipmentScheduleService.getSchedules(
+              editingMaintenance.machineId
+            );
+            // Find schedule that matches the maintenance type or description
+            const matchingSchedule = schedules.find(
+              (s) =>
+                s.maintenance_type.toLowerCase() ===
+                  maintenanceWithMachineName.type?.toLowerCase() ||
+                s.description?.toLowerCase() ===
+                  maintenanceWithMachineName.description?.toLowerCase() ||
+                maintenanceWithMachineName.description?.includes(s.maintenance_type)
+            );
+            if (matchingSchedule) {
+              await equipmentScheduleService.rescheduleAfterCompletion(
+                matchingSchedule.id
+              );
+            }
+          } catch (scheduleError) {
+            console.error("Erro ao reagendar manutenção automática:", scheduleError);
+          }
+        }
+
         setEditingMaintenance(null);
       } else {
         await maintenanceService.createMaintenancePlan({
