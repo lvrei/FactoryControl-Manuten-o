@@ -117,7 +117,7 @@ export default function Planning() {
       setLoading(true);
       const [plansRes, equipRes, usersRes, schedulesRes] = await Promise.all([
         apiFetch("maintenance/planned"),
-        apiFetch("machines"),
+        apiFetch("equipment"),
         apiFetch("users"),
         equipmentScheduleService.getSchedules(),
       ]);
