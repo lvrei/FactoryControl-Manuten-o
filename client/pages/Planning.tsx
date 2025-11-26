@@ -45,7 +45,7 @@ import { equipmentScheduleService } from "@/services/equipmentScheduleService";
 
 interface PlannedMaintenance {
   id: number | string;
-  equipment_id: number;
+  equipment_id: number | string;
   equipment_name?: string;
   maintenance_type: string;
   description: string;
