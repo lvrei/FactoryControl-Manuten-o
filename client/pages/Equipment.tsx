@@ -276,16 +276,6 @@ export default function Equipment() {
         </Select>
       </div>
 
-      {/* Maintenance Schedules Panel */}
-      {editingEquipment && showForm && (
-        <div className="mt-6 p-6 bg-blue-50 border border-blue-200 rounded-lg">
-          <MaintenanceScheduleManager
-            equipmentId={editingEquipment.id}
-            equipmentName={editingEquipment.name}
-          />
-        </div>
-      )}
-
       {/* Equipment Grid */}
       {loading ? (
         <div className="text-center py-12">
