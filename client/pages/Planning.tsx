@@ -115,16 +115,44 @@ export default function Planning() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [plansRes, equipRes, usersRes] = await Promise.all([
+      const [plansRes, equipRes, usersRes, schedulesRes] = await Promise.all([
         apiFetch("maintenance/planned"),
         apiFetch("machines"),
         apiFetch("users"),
+        equipmentScheduleService.getSchedules(),
       ]);
+
+      let allPlans: PlannedMaintenance[] = [];
 
       if (plansRes.ok) {
         const plansData = await plansRes.json();
-        setPlans(plansData);
+        allPlans = [...plansData];
       }
+
+      // Convert equipment schedules to planned maintenance format
+      if (schedulesRes && schedulesRes.length > 0 && equipRes.ok) {
+        const equipData = await equipRes.json();
+        const equipMap = new Map(equipData.map((eq: Equipment) => [eq.id, eq]));
+
+        const schedulePlans = schedulesRes
+          .filter((schedule: any) => schedule.is_active && schedule.next_due_date)
+          .map((schedule: any, index: number) => ({
+            id: `sched-${schedule.id}`, // Use schedule ID as unique identifier
+            equipment_id: parseInt(schedule.equipment_id) || 0,
+            equipment_name: equipMap.get(parseInt(schedule.equipment_id))?.name || "Equipamento desconhecido",
+            maintenance_type: schedule.maintenance_type,
+            description: schedule.description || "Manutenção preventiva agendada",
+            scheduled_date: schedule.next_due_date,
+            status: "scheduled" as const,
+            priority: "medium" as const,
+            estimated_duration: 2,
+            notes: `Intervalo: ${schedule.interval_days} dias`,
+          }));
+
+        allPlans = [...allPlans, ...schedulePlans];
+      }
+
+      setPlans(allPlans);
 
       if (equipRes.ok) {
         const equipData = await equipRes.json();
