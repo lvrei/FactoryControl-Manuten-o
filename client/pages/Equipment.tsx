@@ -545,6 +545,29 @@ export default function Equipment() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Maintenance Schedules Modal */}
+      <Dialog open={showSchedulesModal} onOpenChange={setShowSchedulesModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Agendamentos de Manutenção</DialogTitle>
+            <DialogDescription>
+              Gerenciar manutenções preventivas para {selectedEquipmentForSchedules?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEquipmentForSchedules && (
+            <MaintenanceScheduleManager
+              equipmentId={selectedEquipmentForSchedules.id}
+              equipmentName={selectedEquipmentForSchedules.name}
+            />
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSchedulesModal(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
