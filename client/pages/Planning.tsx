@@ -136,18 +136,22 @@ export default function Planning() {
 
         const schedulePlans = schedulesRes
           .filter((schedule: any) => schedule.is_active && schedule.next_due_date)
-          .map((schedule: any, index: number) => ({
-            id: `sched-${schedule.id}`, // Use schedule ID as unique identifier
-            equipment_id: parseInt(schedule.equipment_id) || 0,
-            equipment_name: equipMap.get(parseInt(schedule.equipment_id))?.name || "Equipamento desconhecido",
-            maintenance_type: schedule.maintenance_type,
-            description: schedule.description || "Manutenção preventiva agendada",
-            scheduled_date: schedule.next_due_date,
-            status: "scheduled" as const,
-            priority: "medium" as const,
-            estimated_duration: 2,
-            notes: `Intervalo: ${schedule.interval_days} dias`,
-          }));
+          .map((schedule: any, index: number) => {
+            const equipmentId = String(schedule.equipment_id);
+            const equipment = equipMap.get(equipmentId);
+            return {
+              id: `sched-${schedule.id}`, // Use schedule ID as unique identifier
+              equipment_id: equipmentId,
+              equipment_name: equipment?.name || "Equipamento desconhecido",
+              maintenance_type: schedule.maintenance_type,
+              description: schedule.description || "Manutenção preventiva agendada",
+              scheduled_date: schedule.next_due_date,
+              status: "scheduled" as const,
+              priority: "medium" as const,
+              estimated_duration: 2,
+              notes: `Intervalo: ${schedule.interval_days} dias`,
+            };
+          });
 
         allPlans = [...allPlans, ...schedulePlans];
       }
