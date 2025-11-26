@@ -281,8 +281,12 @@ export function MaintenanceScheduleManager({
         </div>
       )}
 
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-md">
+      <Dialog open={showDialog} onOpenChange={(open) => {
+        if (!open) {
+          handleCloseDialog();
+        }
+      }}>
+        <DialogContent className="max-w-md" onClick={(e) => e.stopPropagation()}>
           <DialogHeader>
             <DialogTitle>
               {editingSchedule
@@ -297,6 +301,7 @@ export function MaintenanceScheduleManager({
           <form
             onSubmit={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               handleSave();
             }}
             className="space-y-4"
