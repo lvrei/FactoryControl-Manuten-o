@@ -340,7 +340,7 @@ export default function Equipment() {
                         <span className="text-sm">{eq.location}</span>
                       </div>
                     )}
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 pt-2 flex-wrap">
                       <Button
                         variant="outline"
                         size="sm"
@@ -349,6 +349,17 @@ export default function Equipment() {
                       >
                         <Edit className="h-3 w-3 mr-1" />
                         Editar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedEquipmentForSchedules(eq);
+                          setShowSchedulesModal(true);
+                        }}
+                        title="Gerenciar agendamentos de manutenção"
+                      >
+                        <Calendar className="h-3 w-3" />
                       </Button>
                       <Button
                         variant="outline"
