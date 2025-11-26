@@ -374,15 +374,23 @@ export default function Planning() {
             const priorityInfo = priorityConfig[plan.priority];
             const statusInfo = statusConfig[plan.status];
             const isOverdue = new Date(plan.scheduled_date) < new Date();
+            const isScheduledMaintenance = typeof plan.id === 'string' && plan.id.startsWith('sched-');
 
             return (
               <Card key={plan.id} className={isOverdue ? "border-red-500" : ""}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">
-                        {plan.maintenance_type}
-                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">
+                          {plan.maintenance_type}
+                        </CardTitle>
+                        {isScheduledMaintenance && (
+                          <Badge variant="secondary" className="text-xs">
+                            Preventiva
+                          </Badge>
+                        )}
+                      </div>
                       <CardDescription>{plan.equipment_name}</CardDescription>
                     </div>
                     {isOverdue && (
@@ -409,6 +417,19 @@ export default function Planning() {
                         <span className="text-sm">{plan.assigned_name}</span>
                       </div>
                     )}
+                    {plan.notes && !isScheduledMaintenance && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Notas:
+                        </span>
+                        <span className="text-sm">{plan.notes}</span>
+                      </div>
+                    )}
+                    {isScheduledMaintenance && plan.notes && (
+                      <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
+                        {plan.notes}
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <Badge className={priorityInfo.color}>
                         {priorityInfo.label}
@@ -417,24 +438,26 @@ export default function Planning() {
                         {statusInfo.label}
                       </Badge>
                     </div>
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleEdit(plan)}
-                      >
-                        <Edit className="h-3 w-3 mr-1" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(plan.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    {!isScheduledMaintenance && (
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleEdit(plan)}
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Editar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(plan.id as any)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
