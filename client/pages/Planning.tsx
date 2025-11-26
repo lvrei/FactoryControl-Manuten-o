@@ -41,6 +41,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/config/api";
+import { equipmentScheduleService } from "@/services/equipmentScheduleService";
 
 interface PlannedMaintenance {
   id: number;
