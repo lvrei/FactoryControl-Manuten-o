@@ -201,7 +201,7 @@ export default function Planning() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          equipment_id: parseInt(formData.equipment_id),
+          equipment_id: formData.equipment_id,
           assigned_to:
             formData.assigned_to && formData.assigned_to !== "unassigned"
               ? parseInt(formData.assigned_to)
