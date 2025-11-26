@@ -298,7 +298,13 @@ export function MaintenanceScheduleManager({
             </DialogDescription>
           </DialogHeader>
 
-          <form className="space-y-4">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSave();
+            }}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="maintenance_type">Tipo de Manutenção *</Label>
               <Input
@@ -354,16 +360,16 @@ export function MaintenanceScheduleManager({
                 rows={3}
               />
             </div>
-          </form>
 
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={handleCloseDialog}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave}>
-              {editingSchedule ? "Atualizar" : "Criar"}
-            </Button>
-          </DialogFooter>
+            <DialogFooter className="gap-2">
+              <Button type="button" variant="outline" onClick={handleCloseDialog}>
+                Cancelar
+              </Button>
+              <Button type="submit">
+                {editingSchedule ? "Atualizar" : "Criar"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
