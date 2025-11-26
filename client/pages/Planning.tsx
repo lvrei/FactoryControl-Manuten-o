@@ -44,7 +44,7 @@ import { apiFetch } from "@/config/api";
 import { equipmentScheduleService } from "@/services/equipmentScheduleService";
 
 interface PlannedMaintenance {
-  id: number;
+  id: number | string;
   equipment_id: number;
   equipment_name?: string;
   maintenance_type: string;
