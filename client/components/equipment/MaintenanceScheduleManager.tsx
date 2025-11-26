@@ -201,7 +201,14 @@ export function MaintenanceScheduleManager({
             Gerencie os ciclos de manutenção automática para {equipmentName}
           </p>
         </div>
-        <Button onClick={() => handleOpenDialog()} size="sm" className="gap-2">
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenDialog();
+          }}
+          size="sm"
+          className="gap-2"
+        >
           <Plus className="h-4 w-4" />
           Novo Agendamento
         </Button>
