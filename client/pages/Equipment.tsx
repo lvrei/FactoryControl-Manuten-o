@@ -80,6 +80,9 @@ export default function Equipment() {
   const [showQRCode, setShowQRCode] = useState(false);
   const [selectedEquipmentForQR, setSelectedEquipmentForQR] =
     useState<Equipment | null>(null);
+  const [showSchedulesModal, setShowSchedulesModal] = useState(false);
+  const [selectedEquipmentForSchedules, setSelectedEquipmentForSchedules] =
+    useState<Equipment | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
