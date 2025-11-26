@@ -152,11 +152,13 @@ export async function createServer() {
   });
 
   // Equipment Maintenance Schedules endpoints (MUST be before router mounts!)
-  app.get(["/api/equipment-schedules", "/equipment-schedules"], async (req, res) => {
-    try {
-      if (!isDbConfigured()) return res.json([]);
+  app.get(
+    ["/api/equipment-schedules", "/equipment-schedules"],
+    async (req, res) => {
+      try {
+        if (!isDbConfigured()) return res.json([]);
 
-      await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
+        await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
         id TEXT PRIMARY KEY,
         equipment_id TEXT NOT NULL,
         maintenance_type TEXT NOT NULL,
@@ -169,47 +171,52 @@ export async function createServer() {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )`);
 
-      const equipmentId = req.query.equipment_id as string;
-      let sql = `SELECT * FROM equipment_maintenance_schedules`;
-      const params: any[] = [];
+        const equipmentId = req.query.equipment_id as string;
+        let sql = `SELECT * FROM equipment_maintenance_schedules`;
+        const params: any[] = [];
 
-      if (equipmentId) {
-        sql += ` WHERE equipment_id = $1`;
-        params.push(equipmentId);
+        if (equipmentId) {
+          sql += ` WHERE equipment_id = $1`;
+          params.push(equipmentId);
+        }
+
+        sql += ` ORDER BY next_due_date ASC`;
+
+        const { rows } = await query(sql, params);
+        return res.json(
+          rows.map((r: any) => ({
+            id: r.id,
+            equipment_id: r.equipment_id,
+            maintenance_type: r.maintenance_type,
+            description: r.description,
+            interval_days: r.interval_days,
+            last_scheduled_date: r.last_scheduled_date,
+            next_due_date: r.next_due_date,
+            is_active: r.is_active,
+            created_at: r.created_at,
+            updated_at: r.updated_at,
+          })),
+        );
+      } catch (e: any) {
+        console.error("[DIRECT] GET /equipment-schedules error:", e);
+        return res.status(500).json({ error: e.message });
       }
+    },
+  );
 
-      sql += ` ORDER BY next_due_date ASC`;
+  app.post(
+    ["/api/equipment-schedules", "/equipment-schedules"],
+    async (req, res) => {
+      try {
+        if (!isDbConfigured())
+          return res.status(400).json({ error: "Database not configured" });
 
-      const { rows } = await query(sql, params);
-      return res.json(
-        rows.map((r: any) => ({
-          id: r.id,
-          equipment_id: r.equipment_id,
-          maintenance_type: r.maintenance_type,
-          description: r.description,
-          interval_days: r.interval_days,
-          last_scheduled_date: r.last_scheduled_date,
-          next_due_date: r.next_due_date,
-          is_active: r.is_active,
-          created_at: r.created_at,
-          updated_at: r.updated_at,
-        })),
-      );
-    } catch (e: any) {
-      console.error("[DIRECT] GET /equipment-schedules error:", e);
-      return res.status(500).json({ error: e.message });
-    }
-  });
+        const d = req.body || {};
+        const id =
+          d.id ||
+          `sched-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-  app.post(["/api/equipment-schedules", "/equipment-schedules"], async (req, res) => {
-    try {
-      if (!isDbConfigured())
-        return res.status(400).json({ error: "Database not configured" });
-
-      const d = req.body || {};
-      const id = d.id || `sched-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
-      await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
+        await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
         id TEXT PRIMARY KEY,
         equipment_id TEXT NOT NULL,
         maintenance_type TEXT NOT NULL,
@@ -222,41 +229,46 @@ export async function createServer() {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )`);
 
-      const now = new Date();
-      const nextDueDate = new Date(now.getTime() + d.interval_days * 24 * 60 * 60 * 1000);
+        const now = new Date();
+        const nextDueDate = new Date(
+          now.getTime() + d.interval_days * 24 * 60 * 60 * 1000,
+        );
 
-      await query(
-        `INSERT INTO equipment_maintenance_schedules (id, equipment_id, maintenance_type, description, interval_days, last_scheduled_date, next_due_date, is_active, created_at, updated_at)
+        await query(
+          `INSERT INTO equipment_maintenance_schedules (id, equipment_id, maintenance_type, description, interval_days, last_scheduled_date, next_due_date, is_active, created_at, updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
          ON CONFLICT (id) DO NOTHING`,
-        [
-          id,
-          d.equipment_id || "",
-          d.maintenance_type || "",
-          d.description || null,
-          d.interval_days || 0,
-          now.toISOString(),
-          nextDueDate.toISOString(),
-          d.is_active !== false,
-        ],
-      );
+          [
+            id,
+            d.equipment_id || "",
+            d.maintenance_type || "",
+            d.description || null,
+            d.interval_days || 0,
+            now.toISOString(),
+            nextDueDate.toISOString(),
+            d.is_active !== false,
+          ],
+        );
 
-      return res.json({ id });
-    } catch (e: any) {
-      console.error("[DIRECT] POST /equipment-schedules error:", e);
-      return res.status(500).json({ error: e.message });
-    }
-  });
+        return res.json({ id });
+      } catch (e: any) {
+        console.error("[DIRECT] POST /equipment-schedules error:", e);
+        return res.status(500).json({ error: e.message });
+      }
+    },
+  );
 
-  app.put(["/api/equipment-schedules/:id", "/equipment-schedules/:id"], async (req, res) => {
-    try {
-      if (!isDbConfigured())
-        return res.status(400).json({ error: "Database not configured" });
+  app.put(
+    ["/api/equipment-schedules/:id", "/equipment-schedules/:id"],
+    async (req, res) => {
+      try {
+        if (!isDbConfigured())
+          return res.status(400).json({ error: "Database not configured" });
 
-      const id = req.params.id;
-      const d = req.body || {};
+        const id = req.params.id;
+        const d = req.body || {};
 
-      await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
+        await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
         id TEXT PRIMARY KEY,
         equipment_id TEXT NOT NULL,
         maintenance_type TEXT NOT NULL,
@@ -269,100 +281,118 @@ export async function createServer() {
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )`);
 
-      await query(
-        `UPDATE equipment_maintenance_schedules SET
+        await query(
+          `UPDATE equipment_maintenance_schedules SET
          maintenance_type = COALESCE($2, maintenance_type),
          description = COALESCE($3, description),
          interval_days = COALESCE($4, interval_days),
          is_active = COALESCE($5, is_active),
          updated_at = NOW()
          WHERE id = $1`,
-        [id, d.maintenance_type, d.description, d.interval_days, d.is_active],
-      );
+          [id, d.maintenance_type, d.description, d.interval_days, d.is_active],
+        );
 
-      return res.json({ ok: true });
-    } catch (e: any) {
-      console.error("[DIRECT] PUT /equipment-schedules/:id error:", e);
-      return res.status(500).json({ error: e.message });
-    }
-  });
-
-  app.delete(["/api/equipment-schedules/:id", "/equipment-schedules/:id"], async (req, res) => {
-    try {
-      if (!isDbConfigured())
-        return res.status(400).json({ error: "Database not configured" });
-
-      const id = req.params.id;
-
-      await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
-        id TEXT PRIMARY KEY,
-        equipment_id TEXT NOT NULL,
-        maintenance_type TEXT NOT NULL,
-        description TEXT,
-        interval_days INTEGER NOT NULL,
-        last_scheduled_date TIMESTAMPTZ,
-        next_due_date TIMESTAMPTZ,
-        is_active BOOLEAN DEFAULT true,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
-      )`);
-
-      await query(`DELETE FROM equipment_maintenance_schedules WHERE id = $1`, [id]);
-      return res.json({ ok: true });
-    } catch (e: any) {
-      console.error("[DIRECT] DELETE /equipment-schedules/:id error:", e);
-      return res.status(500).json({ error: e.message });
-    }
-  });
-
-  app.post(["/api/equipment-schedules/:id/reschedule", "/equipment-schedules/:id/reschedule"], async (req, res) => {
-    try {
-      if (!isDbConfigured())
-        return res.status(400).json({ error: "Database not configured" });
-
-      const id = req.params.id;
-
-      await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
-        id TEXT PRIMARY KEY,
-        equipment_id TEXT NOT NULL,
-        maintenance_type TEXT NOT NULL,
-        description TEXT,
-        interval_days INTEGER NOT NULL,
-        last_scheduled_date TIMESTAMPTZ,
-        next_due_date TIMESTAMPTZ,
-        is_active BOOLEAN DEFAULT true,
-        created_at TIMESTAMPTZ DEFAULT NOW(),
-        updated_at TIMESTAMPTZ DEFAULT NOW()
-      )`);
-
-      const scheduleResult = await query(
-        `SELECT interval_days FROM equipment_maintenance_schedules WHERE id = $1`,
-        [id],
-      );
-
-      if (scheduleResult.rows.length === 0) {
-        return res.status(404).json({ error: "Schedule not found" });
+        return res.json({ ok: true });
+      } catch (e: any) {
+        console.error("[DIRECT] PUT /equipment-schedules/:id error:", e);
+        return res.status(500).json({ error: e.message });
       }
+    },
+  );
 
-      const schedule = scheduleResult.rows[0];
-      const now = new Date();
-      const nextDueDate = new Date(now.getTime() + schedule.interval_days * 24 * 60 * 60 * 1000);
+  app.delete(
+    ["/api/equipment-schedules/:id", "/equipment-schedules/:id"],
+    async (req, res) => {
+      try {
+        if (!isDbConfigured())
+          return res.status(400).json({ error: "Database not configured" });
 
-      await query(
-        `UPDATE equipment_maintenance_schedules SET
+        const id = req.params.id;
+
+        await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
+        id TEXT PRIMARY KEY,
+        equipment_id TEXT NOT NULL,
+        maintenance_type TEXT NOT NULL,
+        description TEXT,
+        interval_days INTEGER NOT NULL,
+        last_scheduled_date TIMESTAMPTZ,
+        next_due_date TIMESTAMPTZ,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+
+        await query(
+          `DELETE FROM equipment_maintenance_schedules WHERE id = $1`,
+          [id],
+        );
+        return res.json({ ok: true });
+      } catch (e: any) {
+        console.error("[DIRECT] DELETE /equipment-schedules/:id error:", e);
+        return res.status(500).json({ error: e.message });
+      }
+    },
+  );
+
+  app.post(
+    [
+      "/api/equipment-schedules/:id/reschedule",
+      "/equipment-schedules/:id/reschedule",
+    ],
+    async (req, res) => {
+      try {
+        if (!isDbConfigured())
+          return res.status(400).json({ error: "Database not configured" });
+
+        const id = req.params.id;
+
+        await query(`CREATE TABLE IF NOT EXISTS equipment_maintenance_schedules (
+        id TEXT PRIMARY KEY,
+        equipment_id TEXT NOT NULL,
+        maintenance_type TEXT NOT NULL,
+        description TEXT,
+        interval_days INTEGER NOT NULL,
+        last_scheduled_date TIMESTAMPTZ,
+        next_due_date TIMESTAMPTZ,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+
+        const scheduleResult = await query(
+          `SELECT interval_days FROM equipment_maintenance_schedules WHERE id = $1`,
+          [id],
+        );
+
+        if (scheduleResult.rows.length === 0) {
+          return res.status(404).json({ error: "Schedule not found" });
+        }
+
+        const schedule = scheduleResult.rows[0];
+        const now = new Date();
+        const nextDueDate = new Date(
+          now.getTime() + schedule.interval_days * 24 * 60 * 60 * 1000,
+        );
+
+        await query(
+          `UPDATE equipment_maintenance_schedules SET
          last_scheduled_date = NOW(),
          next_due_date = $2,
          updated_at = NOW()
          WHERE id = $1`,
-        [id, nextDueDate.toISOString()],
-      );
+          [id, nextDueDate.toISOString()],
+        );
 
-      return res.json({ ok: true, next_due_date: nextDueDate });
-    } catch (e: any) {
-      console.error("[DIRECT] POST /equipment-schedules/:id/reschedule error:", e);
-      return res.status(500).json({ error: e.message });
-    }
-  });
+        return res.json({ ok: true, next_due_date: nextDueDate });
+      } catch (e: any) {
+        console.error(
+          "[DIRECT] POST /equipment-schedules/:id/reschedule error:",
+          e,
+        );
+        return res.status(500).json({ error: e.message });
+      }
+    },
+  );
 
   // Production API (Neon)
   // Netlify redirects: /api/* → /.netlify/functions/api/:splat
@@ -545,7 +575,9 @@ export async function createServer() {
         return res.status(400).json({ error: "Database not configured" });
 
       const d = req.body || {};
-      const id = d.id || `eq-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      const id =
+        d.id ||
+        `eq-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
       await query(`CREATE TABLE IF NOT EXISTS machines (
         id TEXT PRIMARY KEY,
@@ -567,7 +599,12 @@ export async function createServer() {
         `INSERT INTO machines (id, name, type, status, created_at)
          VALUES ($1, $2, $3, $4, NOW())
          ON CONFLICT (id) DO NOTHING`,
-        [id, d.name || "", d.equipment_type || d.type || "", d.status || "active"],
+        [
+          id,
+          d.name || "",
+          d.equipment_type || d.type || "",
+          d.status || "active",
+        ],
       );
 
       return res.json({ id });
@@ -992,7 +1029,9 @@ export async function createServer() {
         return res.status(400).json({ error: "Database not configured" });
 
       const d = req.body || {};
-      const id = d.id || `mat-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      const id =
+        d.id ||
+        `mat-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
       await query(`CREATE TABLE IF NOT EXISTS materials (
         id TEXT PRIMARY KEY,
@@ -1039,15 +1078,17 @@ export async function createServer() {
   });
 
   // PATCH endpoint for updating material stock
-  app.patch(["/api/materials/:id/stock", "/materials/:id/stock"], async (req, res) => {
-    try {
-      if (!isDbConfigured())
-        return res.status(400).json({ error: "Database not configured" });
+  app.patch(
+    ["/api/materials/:id/stock", "/materials/:id/stock"],
+    async (req, res) => {
+      try {
+        if (!isDbConfigured())
+          return res.status(400).json({ error: "Database not configured" });
 
-      const { id } = req.params;
-      const { quantity, operation } = req.body;
+        const { id } = req.params;
+        const { quantity, operation } = req.body;
 
-      await query(`CREATE TABLE IF NOT EXISTS materials (
+        await query(`CREATE TABLE IF NOT EXISTS materials (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         code TEXT,
@@ -1064,120 +1105,55 @@ export async function createServer() {
         updated_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      const currentResult = await query(
-        "SELECT current_stock FROM materials WHERE id = $1",
-        [id]
-      );
-
-      if (currentResult.rows.length === 0) {
-        return res.status(404).json({ error: "Material not found" });
-      }
-
-      const currentStock = Number(currentResult.rows[0].current_stock || 0);
-      const newStock = operation === "subtract"
-        ? Math.max(0, currentStock - quantity)
-        : currentStock + quantity;
-
-      await query(
-        `UPDATE materials
-         SET current_stock = $1, updated_at = now()
-         WHERE id = $2`,
-        [newStock, id]
-      );
-
-      return res.json({ ok: true, currentStock: currentStock, newStock: newStock });
-    } catch (e: any) {
-      console.error("[DIRECT] PATCH /materials/:id/stock error:", e);
-      return res.status(500).json({ error: e.message });
-    }
-  });
-
-  // POST endpoint for recording parts used in maintenance
-  app.post(["/api/maintenance/:maintenanceId/parts", "/maintenance/:maintenanceId/parts"], async (req, res) => {
-    try {
-      if (!isDbConfigured())
-        return res.status(400).json({ error: "Database not configured" });
-
-      const { maintenanceId } = req.params;
-      const parts = req.body || [];
-
-      await query(`CREATE TABLE IF NOT EXISTS maintenance_parts_used (
-        id TEXT PRIMARY KEY,
-        maintenance_id TEXT,
-        material_id TEXT REFERENCES materials(id) ON DELETE SET NULL,
-        material_name TEXT,
-        quantity_used NUMERIC,
-        unit TEXT,
-        cost_per_unit NUMERIC,
-        total_cost NUMERIC,
-        created_at TIMESTAMPTZ DEFAULT now()
-      )`);
-
-      await query(`CREATE TABLE IF NOT EXISTS materials (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        code TEXT,
-        category TEXT,
-        unit TEXT,
-        min_stock NUMERIC DEFAULT 0,
-        current_stock NUMERIC DEFAULT 0,
-        cost_per_unit NUMERIC DEFAULT 0,
-        supplier TEXT,
-        equipment_id TEXT,
-        is_general_stock BOOLEAN DEFAULT true,
-        notes TEXT,
-        created_at TIMESTAMPTZ DEFAULT now(),
-        updated_at TIMESTAMPTZ DEFAULT now()
-      )`);
-
-      const results = [];
-
-      for (const part of parts) {
-        const partId = `mp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
-        await query(
-          `INSERT INTO maintenance_parts_used (id, maintenance_id, material_id, material_name, quantity_used, unit, cost_per_unit, total_cost, created_at)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())`,
-          [
-            partId,
-            maintenanceId,
-            part.material_id || null,
-            part.material_name || part.name || "",
-            part.quantity_used || part.quantity || 0,
-            part.unit || null,
-            part.cost_per_unit || 0,
-            (part.quantity_used || part.quantity || 0) * (part.cost_per_unit || 0),
-          ]
+        const currentResult = await query(
+          "SELECT current_stock FROM materials WHERE id = $1",
+          [id],
         );
 
-        // Deduct from stock if material_id is provided
-        if (part.material_id) {
-          await query(
-            `UPDATE materials
-             SET current_stock = GREATEST(0, current_stock - $1), updated_at = now()
-             WHERE id = $2`,
-            [part.quantity_used || part.quantity || 0, part.material_id]
-          );
+        if (currentResult.rows.length === 0) {
+          return res.status(404).json({ error: "Material not found" });
         }
 
-        results.push(partId);
+        const currentStock = Number(currentResult.rows[0].current_stock || 0);
+        const newStock =
+          operation === "subtract"
+            ? Math.max(0, currentStock - quantity)
+            : currentStock + quantity;
+
+        await query(
+          `UPDATE materials
+         SET current_stock = $1, updated_at = now()
+         WHERE id = $2`,
+          [newStock, id],
+        );
+
+        return res.json({
+          ok: true,
+          currentStock: currentStock,
+          newStock: newStock,
+        });
+      } catch (e: any) {
+        console.error("[DIRECT] PATCH /materials/:id/stock error:", e);
+        return res.status(500).json({ error: e.message });
       }
+    },
+  );
 
-      return res.json({ ok: true, parts: results });
-    } catch (e: any) {
-      console.error("[DIRECT] POST /maintenance/:maintenanceId/parts error:", e);
-      return res.status(500).json({ error: e.message });
-    }
-  });
+  // POST endpoint for recording parts used in maintenance
+  app.post(
+    [
+      "/api/maintenance/:maintenanceId/parts",
+      "/maintenance/:maintenanceId/parts",
+    ],
+    async (req, res) => {
+      try {
+        if (!isDbConfigured())
+          return res.status(400).json({ error: "Database not configured" });
 
-  // GET endpoint for parts used in a maintenance
-  app.get(["/api/maintenance/:maintenanceId/parts", "/maintenance/:maintenanceId/parts"], async (req, res) => {
-    try {
-      if (!isDbConfigured()) return res.json([]);
+        const { maintenanceId } = req.params;
+        const parts = req.body || [];
 
-      const { maintenanceId } = req.params;
-
-      await query(`CREATE TABLE IF NOT EXISTS maintenance_parts_used (
+        await query(`CREATE TABLE IF NOT EXISTS maintenance_parts_used (
         id TEXT PRIMARY KEY,
         maintenance_id TEXT,
         material_id TEXT REFERENCES materials(id) ON DELETE SET NULL,
@@ -1189,32 +1165,122 @@ export async function createServer() {
         created_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      const { rows } = await query(
-        `SELECT id, maintenance_id, material_id, material_name, quantity_used, unit, cost_per_unit, total_cost, created_at
+        await query(`CREATE TABLE IF NOT EXISTS materials (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        code TEXT,
+        category TEXT,
+        unit TEXT,
+        min_stock NUMERIC DEFAULT 0,
+        current_stock NUMERIC DEFAULT 0,
+        cost_per_unit NUMERIC DEFAULT 0,
+        supplier TEXT,
+        equipment_id TEXT,
+        is_general_stock BOOLEAN DEFAULT true,
+        notes TEXT,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+        const results = [];
+
+        for (const part of parts) {
+          const partId = `mp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+          await query(
+            `INSERT INTO maintenance_parts_used (id, maintenance_id, material_id, material_name, quantity_used, unit, cost_per_unit, total_cost, created_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now())`,
+            [
+              partId,
+              maintenanceId,
+              part.material_id || null,
+              part.material_name || part.name || "",
+              part.quantity_used || part.quantity || 0,
+              part.unit || null,
+              part.cost_per_unit || 0,
+              (part.quantity_used || part.quantity || 0) *
+                (part.cost_per_unit || 0),
+            ],
+          );
+
+          // Deduct from stock if material_id is provided
+          if (part.material_id) {
+            await query(
+              `UPDATE materials
+             SET current_stock = GREATEST(0, current_stock - $1), updated_at = now()
+             WHERE id = $2`,
+              [part.quantity_used || part.quantity || 0, part.material_id],
+            );
+          }
+
+          results.push(partId);
+        }
+
+        return res.json({ ok: true, parts: results });
+      } catch (e: any) {
+        console.error(
+          "[DIRECT] POST /maintenance/:maintenanceId/parts error:",
+          e,
+        );
+        return res.status(500).json({ error: e.message });
+      }
+    },
+  );
+
+  // GET endpoint for parts used in a maintenance
+  app.get(
+    [
+      "/api/maintenance/:maintenanceId/parts",
+      "/maintenance/:maintenanceId/parts",
+    ],
+    async (req, res) => {
+      try {
+        if (!isDbConfigured()) return res.json([]);
+
+        const { maintenanceId } = req.params;
+
+        await query(`CREATE TABLE IF NOT EXISTS maintenance_parts_used (
+        id TEXT PRIMARY KEY,
+        maintenance_id TEXT,
+        material_id TEXT REFERENCES materials(id) ON DELETE SET NULL,
+        material_name TEXT,
+        quantity_used NUMERIC,
+        unit TEXT,
+        cost_per_unit NUMERIC,
+        total_cost NUMERIC,
+        created_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+        const { rows } = await query(
+          `SELECT id, maintenance_id, material_id, material_name, quantity_used, unit, cost_per_unit, total_cost, created_at
          FROM maintenance_parts_used
          WHERE maintenance_id = $1
          ORDER BY created_at DESC`,
-        [maintenanceId]
-      );
+          [maintenanceId],
+        );
 
-      return res.json(
-        rows.map((r: any) => ({
-          id: r.id,
-          maintenance_id: r.maintenance_id,
-          material_id: r.material_id,
-          material_name: r.material_name,
-          quantity_used: Number(r.quantity_used || 0),
-          unit: r.unit,
-          cost_per_unit: Number(r.cost_per_unit || 0),
-          total_cost: Number(r.total_cost || 0),
-          created_at: r.created_at,
-        }))
-      );
-    } catch (e: any) {
-      console.error("[DIRECT] GET /maintenance/:maintenanceId/parts error:", e);
-      return res.status(500).json({ error: e.message });
-    }
-  });
+        return res.json(
+          rows.map((r: any) => ({
+            id: r.id,
+            maintenance_id: r.maintenance_id,
+            material_id: r.material_id,
+            material_name: r.material_name,
+            quantity_used: Number(r.quantity_used || 0),
+            unit: r.unit,
+            cost_per_unit: Number(r.cost_per_unit || 0),
+            total_cost: Number(r.total_cost || 0),
+            created_at: r.created_at,
+          })),
+        );
+      } catch (e: any) {
+        console.error(
+          "[DIRECT] GET /maintenance/:maintenanceId/parts error:",
+          e,
+        );
+        return res.status(500).json({ error: e.message });
+      }
+    },
+  );
 
   // Debug: list registered routes
   app.get(["/api/_routes", "/_routes"], (_req, res) => {

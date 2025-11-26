@@ -99,8 +99,7 @@ export function MaintenanceScheduleManager({
       toast({
         variant: "destructive",
         title: "Erro",
-        description:
-          "Tipo de manutenção e intervalo são obrigatórios",
+        description: "Tipo de manutenção e intervalo são obrigatórios",
       });
       return;
     }
@@ -147,8 +146,7 @@ export function MaintenanceScheduleManager({
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Tem a certeza que deseja eliminar este agendamento?"))
-      return;
+    if (!confirm("Tem a certeza que deseja eliminar este agendamento?")) return;
 
     try {
       await equipmentScheduleService.deleteSchedule(id);
@@ -203,11 +201,7 @@ export function MaintenanceScheduleManager({
             Gerencie os ciclos de manutenção automática para {equipmentName}
           </p>
         </div>
-        <Button
-          onClick={() => handleOpenDialog()}
-          size="sm"
-          className="gap-2"
-        >
+        <Button onClick={() => handleOpenDialog()} size="sm" className="gap-2">
           <Plus className="h-4 w-4" />
           Novo Agendamento
         </Button>
@@ -221,7 +215,9 @@ export function MaintenanceScheduleManager({
         <div className="text-center py-6 text-muted-foreground border border-dashed rounded">
           <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
           <p>Sem agendamentos de manutenção.</p>
-          <p className="text-sm">Clique em "Novo Agendamento" para adicionar.</p>
+          <p className="text-sm">
+            Clique em "Novo Agendamento" para adicionar.
+          </p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -244,8 +240,8 @@ export function MaintenanceScheduleManager({
                     )}
                     <div className="flex gap-4 mt-2 text-xs">
                       <span className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        A cada {schedule.interval_days} dias
+                        <Clock className="h-3 w-3" />A cada{" "}
+                        {schedule.interval_days} dias
                       </span>
                       {schedule.next_due_date && (
                         <span className="flex items-center gap-1">
@@ -322,9 +318,7 @@ export function MaintenanceScheduleManager({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="interval_days">
-                Intervalo (dias) *
-              </Label>
+              <Label htmlFor="interval_days">Intervalo (dias) *</Label>
               <Input
                 id="interval_days"
                 type="number"
@@ -340,8 +334,8 @@ export function MaintenanceScheduleManager({
                 placeholder="90"
               />
               <p className="text-xs text-muted-foreground">
-                A manutenção será agendada novamente a cada {formData.interval_days}{" "}
-                dias após conclusão.
+                A manutenção será agendada novamente a cada{" "}
+                {formData.interval_days} dias após conclusão.
               </p>
             </div>
 
@@ -362,7 +356,11 @@ export function MaintenanceScheduleManager({
             </div>
 
             <DialogFooter className="gap-2">
-              <Button type="button" variant="outline" onClick={handleCloseDialog}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCloseDialog}
+              >
                 Cancelar
               </Button>
               <Button type="submit">
