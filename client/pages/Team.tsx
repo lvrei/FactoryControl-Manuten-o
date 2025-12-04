@@ -197,7 +197,7 @@ export default function Team() {
     setShowAddEmployee(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Tem a certeza que deseja eliminar este funcionário?")) return;
 
     try {
