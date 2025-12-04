@@ -421,12 +421,12 @@ export async function createServer() {
       )`);
 
       const { rows } = await query(
-        `SELECT id, full_name, username, email, role, position, department, shift, status, created_at FROM users WHERE status = 'active' ORDER BY created_at DESC`,
+        `SELECT * FROM users ORDER BY created_at DESC LIMIT 1000`,
       );
       return res.json(
         rows.map((r: any) => ({
           id: r.id,
-          full_name: r.full_name,
+          full_name: r.full_name || r.name || "",
           username: r.username || "",
           email: r.email || "",
           role: r.role || "operator",
