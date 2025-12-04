@@ -1133,7 +1133,7 @@ export async function createServer() {
     }
   });
 
-  // DELETE alias for deleting users
+  // DELETE /api/users/:id - delete/deactivate a user
   app.delete(["/api/users/:id", "/users/:id"], async (req, res) => {
     try {
       if (!isDbConfigured())
@@ -1141,26 +1141,32 @@ export async function createServer() {
 
       const id = req.params.id;
 
-      await query(`CREATE TABLE IF NOT EXISTS employees (
+      await query(`CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        email TEXT,
+        role TEXT NOT NULL DEFAULT 'operator',
         position TEXT,
         department TEXT,
         shift TEXT,
-        status TEXT,
-        email TEXT,
-        username TEXT,
-        role TEXT,
-        created_at TIMESTAMPTZ DEFAULT now()
+        status TEXT DEFAULT 'active',
+        phone TEXT,
+        hire_date DATE,
+        skills JSONB DEFAULT '[]'::jsonb,
+        certifications JSONB DEFAULT '[]'::jsonb,
+        has_system_access BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`);
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
-      );
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`);
+      // Soft delete - mark as inactive
+      await query(`UPDATE users SET status = 'inactive', updated_at = NOW() WHERE id = $1`, [id]);
 
-      await query(`DELETE FROM employees WHERE id = $1`, [id]);
+      // Clear user cache
+      const { clearUserCache } = await import("../middleware/auth");
+      clearUserCache(undefined, id);
 
       return res.json({ ok: true });
     } catch (e: any) {
