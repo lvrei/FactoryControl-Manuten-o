@@ -14,18 +14,20 @@ interface FilePreviewViewerProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   fileId: string;
-  equipmentId: string;
+  entityId: string;
   fileName: string;
   mimeType: string;
+  entityType?: "equipment" | "material"; // Default: equipment
 }
 
 export function FilePreviewViewer({
   open,
   onOpenChange,
   fileId,
-  equipmentId,
+  entityId,
   fileName,
   mimeType,
+  entityType = "equipment",
 }: FilePreviewViewerProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
