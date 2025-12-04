@@ -370,6 +370,17 @@ export default function Equipment() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => {
+                          setSelectedEquipmentForFiles(eq);
+                          setShowFilesModal(true);
+                        }}
+                        title="Gerenciar ficheiros"
+                      >
+                        <Paperclip className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleGenerateQR(eq)}
                       >
                         <QrCode className="h-3 w-3" />
