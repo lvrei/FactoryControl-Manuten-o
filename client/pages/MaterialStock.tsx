@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Edit,
   Trash2,
+  Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/config/api";
+import { MaterialPhotosManager } from "@/components/material/MaterialPhotosManager";
 
 interface Material {
   id: number;
