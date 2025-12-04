@@ -245,6 +245,7 @@ export function EquipmentFilesManager({
   };
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
@@ -349,5 +350,17 @@ export function EquipmentFilesManager({
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    {previewFile && (
+      <FilePreviewViewer
+        open={showPreview}
+        onOpenChange={setShowPreview}
+        fileId={previewFile.id}
+        equipmentId={equipment_id}
+        fileName={previewFile.file_name}
+        mimeType={previewFile.mime_type}
+      />
+    )}
+    </>
   );
 }
