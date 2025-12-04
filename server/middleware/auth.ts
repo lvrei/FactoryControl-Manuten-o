@@ -1,12 +1,12 @@
-import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
-import { isDbConfigured, query } from '../db';
+import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from "express";
+import { isDbConfigured, query } from "../db";
 
 // Tipos para autenticação
 export interface AuthUser {
   id: string;
   username: string;
-  role: 'operator' | 'supervisor' | 'admin' | 'maintenance';
+  role: "operator" | "supervisor" | "admin" | "maintenance";
   name: string;
 }
 
@@ -15,28 +15,29 @@ export interface AuthRequest extends Request {
 }
 
 // Configurações JWT
-const JWT_SECRET = process.env.JWT_SECRET || 'factory_control_secret_dev_only';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'factory_control_refresh_secret_dev_only';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+const JWT_SECRET = process.env.JWT_SECRET || "factory_control_secret_dev_only";
+const JWT_REFRESH_SECRET =
+  process.env.JWT_REFRESH_SECRET || "factory_control_refresh_secret_dev_only";
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "15m";
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || "7d";
 
 // Utility functions
 export const generateTokens = (user: AuthUser) => {
   const accessToken = jwt.sign(
-    { 
-      id: user.id, 
-      username: user.username, 
+    {
+      id: user.id,
+      username: user.username,
       role: user.role,
-      name: user.name 
+      name: user.name,
     },
     JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
+    { expiresIn: JWT_EXPIRES_IN },
   );
 
   const refreshToken = jwt.sign(
     { id: user.id, username: user.username },
     JWT_REFRESH_SECRET,
-    { expiresIn: JWT_REFRESH_EXPIRES_IN }
+    { expiresIn: JWT_REFRESH_EXPIRES_IN },
   );
 
   return { accessToken, refreshToken };
@@ -49,14 +50,16 @@ export const verifyAccessToken = (token: string): AuthUser | null => {
       id: decoded.id,
       username: decoded.username,
       role: decoded.role,
-      name: decoded.name
+      name: decoded.name,
     };
   } catch (error) {
     return null;
   }
 };
 
-export const verifyRefreshToken = (token: string): { id: string; username: string } | null => {
+export const verifyRefreshToken = (
+  token: string,
+): { id: string; username: string } | null => {
   try {
     const decoded = jwt.verify(token, JWT_REFRESH_SECRET) as any;
     return { id: decoded.id, username: decoded.username };
@@ -66,28 +69,32 @@ export const verifyRefreshToken = (token: string): { id: string; username: strin
 };
 
 // Middleware de autenticação
-export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const authenticateToken = (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction,
+) => {
   // Tentar acessar token do cookie primeiro
   const cookieToken = req.cookies?.accessToken;
-  
+
   // Fallback para Authorization header
-  const authHeader = req.headers['authorization'];
-  const headerToken = authHeader && authHeader.split(' ')[1];
-  
+  const authHeader = req.headers["authorization"];
+  const headerToken = authHeader && authHeader.split(" ")[1];
+
   const token = cookieToken || headerToken;
 
   if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      message: 'Token de acesso não fornecido' 
+    return res.status(401).json({
+      success: false,
+      message: "Token de acesso não fornecido",
     });
   }
 
   const user = verifyAccessToken(token);
   if (!user) {
-    return res.status(403).json({ 
-      success: false, 
-      message: 'Token inválido ou expirado' 
+    return res.status(403).json({
+      success: false,
+      message: "Token inválido ou expirado",
     });
   }
 
@@ -99,16 +106,16 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
 export const requireRole = (roles: string[]) => {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({ 
-        success: false, 
-        message: 'Usuário não autenticado' 
+      return res.status(401).json({
+        success: false,
+        message: "Usuário não autenticado",
       });
     }
 
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        success: false, 
-        message: `Acesso negado. Roles necessárias: ${roles.join(', ')}` 
+      return res.status(403).json({
+        success: false,
+        message: `Acesso negado. Roles necessárias: ${roles.join(", ")}`,
       });
     }
 
@@ -151,12 +158,14 @@ async function ensureUsersTable() {
     )`);
     return true;
   } catch (e) {
-    console.error('Error creating users table:', e);
+    console.error("Error creating users table:", e);
     return false;
   }
 }
 
-export async function findUserByUsername(username: string): Promise<(AuthUser & { password: string }) | null> {
+export async function findUserByUsername(
+  username: string,
+): Promise<(AuthUser & { password: string }) | null> {
   if (!isDbConfigured()) return null;
 
   // Check cache
@@ -169,7 +178,7 @@ export async function findUserByUsername(username: string): Promise<(AuthUser & 
     await ensureUsersTable();
     const { rows } = await query(
       `SELECT id, username, password, full_name as name, role FROM users WHERE username = $1 AND status = 'active'`,
-      [username]
+      [username],
     );
 
     if (rows.length === 0) return null;
@@ -179,16 +188,19 @@ export async function findUserByUsername(username: string): Promise<(AuthUser & 
       id: user.id,
       username: user.username,
       password: user.password,
-      role: user.role || 'operator',
-      name: user.name || ''
+      role: user.role || "operator",
+      name: user.name || "",
     };
 
     // Cache for 3 hours
-    userCache.set(`username:${username}`, { data: result, expiry: Date.now() + 3 * 60 * 60 * 1000 });
+    userCache.set(`username:${username}`, {
+      data: result,
+      expiry: Date.now() + 3 * 60 * 60 * 1000,
+    });
 
     return result;
   } catch (error) {
-    console.error('Error finding user by username:', error);
+    console.error("Error finding user by username:", error);
     return null;
   }
 }
@@ -207,7 +219,7 @@ export async function findUserById(id: string): Promise<AuthUser | null> {
     await ensureUsersTable();
     const { rows } = await query(
       `SELECT id, username, password, full_name as name, role FROM users WHERE id = $1 AND status = 'active'`,
-      [id]
+      [id],
     );
 
     if (rows.length === 0) return null;
@@ -217,17 +229,20 @@ export async function findUserById(id: string): Promise<AuthUser | null> {
       id: user.id,
       username: user.username,
       password: user.password,
-      role: user.role || 'operator',
-      name: user.name || ''
+      role: user.role || "operator",
+      name: user.name || "",
     };
 
     // Cache for 3 hours
-    userCache.set(`id:${id}`, { data: result, expiry: Date.now() + 3 * 60 * 60 * 1000 });
+    userCache.set(`id:${id}`, {
+      data: result,
+      expiry: Date.now() + 3 * 60 * 60 * 1000,
+    });
 
     const { password, ...userWithoutPassword } = result;
     return userWithoutPassword;
   } catch (error) {
-    console.error('Error finding user by id:', error);
+    console.error("Error finding user by id:", error);
     return null;
   }
 }

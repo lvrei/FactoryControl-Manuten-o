@@ -53,7 +53,10 @@ interface Employee {
   created_at: string;
 }
 
-const roleConfig: Record<string, { label: string; color: string; description: string }> = {
+const roleConfig: Record<
+  string,
+  { label: string; color: string; description: string }
+> = {
   admin: {
     label: "Administrador",
     color: "bg-red-600",

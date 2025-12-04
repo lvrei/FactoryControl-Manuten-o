@@ -1162,7 +1162,10 @@ export async function createServer() {
       )`);
 
       // Soft delete - mark as inactive
-      await query(`UPDATE users SET status = 'inactive', updated_at = NOW() WHERE id = $1`, [id]);
+      await query(
+        `UPDATE users SET status = 'inactive', updated_at = NOW() WHERE id = $1`,
+        [id],
+      );
 
       // Clear user cache
       const { clearUserCache } = await import("../middleware/auth");
@@ -1531,11 +1534,14 @@ export async function createServer() {
 
       // Check if employees table exists
       const tableExists = await query(
-        `SELECT EXISTS(SELECT FROM information_schema.tables WHERE table_name = 'employees')`
+        `SELECT EXISTS(SELECT FROM information_schema.tables WHERE table_name = 'employees')`,
       );
 
       if (!tableExists.rows[0]?.exists) {
-        return res.json({ migrated: 0, message: "Employees table does not exist" });
+        return res.json({
+          migrated: 0,
+          message: "Employees table does not exist",
+        });
       }
 
       // Get employees without system access
@@ -1543,7 +1549,7 @@ export async function createServer() {
         `SELECT id, name, email, username, role, position, department, shift, status, created_at
          FROM employees
          WHERE has_system_access = false OR username IS NULL
-         LIMIT 100`
+         LIMIT 100`,
       );
 
       let migratedCount = 0;
@@ -1553,7 +1559,7 @@ export async function createServer() {
           // Skip if already in users table
           const existing = await query(
             `SELECT id FROM users WHERE username = $1`,
-            [emp.username || emp.id]
+            [emp.username || emp.id],
           );
 
           if (existing.rows.length > 0) {
@@ -1583,7 +1589,7 @@ export async function createServer() {
               false,
               emp.created_at || new Date().toISOString(),
               new Date().toISOString(),
-            ]
+            ],
           );
 
           migratedCount++;
@@ -1592,7 +1598,10 @@ export async function createServer() {
         }
       }
 
-      return res.json({ migrated: migratedCount, message: "Migration completed" });
+      return res.json({
+        migrated: migratedCount,
+        message: "Migration completed",
+      });
     } catch (e: any) {
       console.error("[DIRECT] POST /migrate-users error:", e);
       return res.status(500).json({ error: e.message });
