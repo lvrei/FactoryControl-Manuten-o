@@ -41,11 +41,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { apiFetch } from "@/config/api";
 
 interface Employee {
-  id: number;
+  id: string;
   username: string;
   full_name: string;
   email?: string;
   role: "admin" | "technician" | "operator";
+  position?: string;
+  department?: string;
+  shift?: string;
+  status?: string;
   created_at: string;
 }
 
