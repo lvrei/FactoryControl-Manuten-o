@@ -625,7 +625,10 @@ export async function createServer() {
       )`);
 
       // Soft delete - mark as inactive
-      await query(`UPDATE users SET status = 'inactive', updated_at = NOW() WHERE id = $1`, [id]);
+      await query(
+        `UPDATE users SET status = 'inactive', updated_at = NOW() WHERE id = $1`,
+        [id],
+      );
 
       // Clear user cache
       const { clearUserCache } = await import("../middleware/auth");
