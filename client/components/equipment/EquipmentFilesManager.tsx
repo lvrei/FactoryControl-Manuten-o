@@ -310,6 +310,17 @@ export function EquipmentFilesManager({
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={() => {
+                          setPreviewFile(file);
+                          setShowPreview(true);
+                        }}
+                        title="Pré-visualizar"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => handleDownload(file)}
                         title="Download"
                       >
