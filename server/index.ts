@@ -931,43 +931,44 @@ export async function createServer() {
     }
   });
 
-  // Alias for legacy clients requesting /api/users -> returns employees
+  // GET /api/users - fetch all users from users table
   app.get(["/api/users", "/users"], async (_req, res) => {
     try {
       if (!isDbConfigured()) return res.json([]);
-      await query(`CREATE TABLE IF NOT EXISTS employees (
+      await query(`CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        email TEXT,
+        role TEXT NOT NULL DEFAULT 'operator',
         position TEXT,
         department TEXT,
         shift TEXT,
-        status TEXT,
-        email TEXT,
-        username TEXT,
-        role TEXT,
-        created_at TIMESTAMPTZ DEFAULT now()
+        status TEXT DEFAULT 'active',
+        phone TEXT,
+        hire_date DATE,
+        skills JSONB DEFAULT '[]'::jsonb,
+        certifications JSONB DEFAULT '[]'::jsonb,
+        has_system_access BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`);
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
-      );
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`);
-
       const { rows } = await query(
-        `SELECT id, name, position, department, shift, status, email, username, role, created_at FROM employees ORDER BY created_at DESC`,
+        `SELECT id, full_name, username, email, role, position, department, shift, status, created_at FROM users WHERE status = 'active' ORDER BY created_at DESC`,
       );
       return res.json(
         rows.map((r: any) => ({
           id: r.id,
-          full_name: r.name,
+          full_name: r.full_name,
           username: r.username || "",
           email: r.email || "",
           role: r.role || "operator",
           position: r.position || "",
           department: r.department || "",
           shift: r.shift || "",
-          status: r.status || "",
+          status: r.status || "active",
           created_at: r.created_at,
         })),
       );
