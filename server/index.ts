@@ -687,6 +687,132 @@ export async function createServer() {
     }
   });
 
+  // Equipment Files endpoints
+  // Create equipment_files table
+  async function ensureEquipmentFilesTable() {
+    if (!isDbConfigured()) return;
+    await query(`CREATE TABLE IF NOT EXISTS equipment_files (
+      id TEXT PRIMARY KEY,
+      equipment_id TEXT NOT NULL,
+      file_name TEXT NOT NULL,
+      file_type TEXT NOT NULL,
+      file_size INTEGER,
+      file_data BYTEA,
+      mime_type TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      CONSTRAINT fk_equipment FOREIGN KEY(equipment_id) REFERENCES machines(id) ON DELETE CASCADE
+    )`);
+  }
+
+  // GET equipment files
+  app.get(["/api/equipment/:id/files", "/equipment/:id/files"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+      await ensureEquipmentFilesTable();
+
+      const equipmentId = req.params.id;
+      const { rows } = await query(
+        `SELECT id, equipment_id, file_name, file_type, file_size, mime_type, created_at
+         FROM equipment_files
+         WHERE equipment_id = $1
+         ORDER BY created_at DESC`,
+        [equipmentId]
+      );
+
+      return res.json(rows.map((r: any) => ({
+        id: r.id,
+        equipment_id: r.equipment_id,
+        file_name: r.file_name,
+        file_type: r.file_type,
+        file_size: r.file_size,
+        mime_type: r.mime_type,
+        created_at: r.created_at,
+      })));
+    } catch (e: any) {
+      console.error("[DIRECT] GET /equipment/:id/files error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // POST equipment file (upload)
+  app.post(["/api/equipment/:id/files", "/equipment/:id/files"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      await ensureEquipmentFilesTable();
+
+      const equipmentId = req.params.id;
+      const { fileName, fileType, fileData, mimeType } = req.body;
+
+      if (!fileName || !fileData) {
+        return res.status(400).json({ error: "fileName and fileData are required" });
+      }
+
+      const fileId = `file-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      const buffer = Buffer.from(fileData, 'base64');
+
+      await query(
+        `INSERT INTO equipment_files (id, equipment_id, file_name, file_type, file_size, file_data, mime_type)
+         VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+        [fileId, equipmentId, fileName, fileType || '', buffer.length, buffer, mimeType || 'application/octet-stream']
+      );
+
+      return res.json({ id: fileId, file_name: fileName });
+    } catch (e: any) {
+      console.error("[DIRECT] POST /equipment/:id/files error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // GET equipment file (download)
+  app.get(["/api/equipment/:equipment_id/files/:file_id/download", "/equipment/:equipment_id/files/:file_id/download"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      const { equipment_id, file_id } = req.params;
+
+      const { rows } = await query(
+        `SELECT file_name, file_data, mime_type FROM equipment_files WHERE id = $1 AND equipment_id = $2`,
+        [file_id, equipment_id]
+      );
+
+      if (rows.length === 0) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      const file = rows[0];
+      res.setHeader('Content-Type', file.mime_type || 'application/octet-stream');
+      res.setHeader('Content-Disposition', `attachment; filename="${file.file_name}"`);
+      res.setHeader('Content-Length', file.file_data.length);
+      res.send(file.file_data);
+    } catch (e: any) {
+      console.error("[DIRECT] GET /equipment/:id/files/:file_id/download error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // DELETE equipment file
+  app.delete(["/api/equipment/:equipment_id/files/:file_id", "/equipment/:equipment_id/files/:file_id"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      const { equipment_id, file_id } = req.params;
+
+      await query(
+        `DELETE FROM equipment_files WHERE id = $1 AND equipment_id = $2`,
+        [file_id, equipment_id]
+      );
+
+      return res.json({ ok: true });
+    } catch (e: any) {
+      console.error("[DIRECT] DELETE /equipment/:id/files/:file_id error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Direct machines list (read-only) to avoid 404 if router mount fails
   app.get(["/api/machines", "/machines"], async (_req, res) => {
     try {
