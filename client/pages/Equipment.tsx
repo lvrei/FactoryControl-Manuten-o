@@ -585,6 +585,16 @@ export default function Equipment() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Equipment Files Manager Modal */}
+      {selectedEquipmentForFiles && (
+        <EquipmentFilesManager
+          equipment_id={selectedEquipmentForFiles.id}
+          equipment_name={selectedEquipmentForFiles.name}
+          open={showFilesModal}
+          onOpenChange={setShowFilesModal}
+        />
+      )}
     </div>
   );
 }
