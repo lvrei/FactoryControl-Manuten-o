@@ -303,9 +303,10 @@ export function MaterialPhotosManager({
         open={showPreview}
         onOpenChange={setShowPreview}
         fileId={previewPhoto.id}
-        equipmentId={material_id.toString()}
+        entityId={material_id.toString()}
         fileName={previewPhoto.file_name}
         mimeType={previewPhoto.mime_type}
+        entityType="material"
       />
     )}
     </>
