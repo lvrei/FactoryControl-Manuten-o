@@ -356,9 +356,10 @@ export function EquipmentFilesManager({
         open={showPreview}
         onOpenChange={setShowPreview}
         fileId={previewFile.id}
-        equipmentId={equipment_id}
+        entityId={equipment_id}
         fileName={previewFile.file_name}
         mimeType={previewFile.mime_type}
+        entityType="equipment"
       />
     )}
     </>
