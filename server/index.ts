@@ -978,52 +978,81 @@ export async function createServer() {
     }
   });
 
-  // POST alias for creating users
+  // POST /api/users - create a new user
   app.post(["/api/users", "/users"], async (req, res) => {
     try {
       if (!isDbConfigured())
         return res.status(400).json({ error: "Database not configured" });
 
+      const { bcrypt } = await import("bcryptjs");
       const d = req.body || {};
       const id =
         d.id ||
-        `emp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+        `user-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-      await query(`CREATE TABLE IF NOT EXISTS employees (
+      // Validate required fields
+      if (!d.full_name || !d.username) {
+        return res.status(400).json({
+          error: "full_name and username are required",
+        });
+      }
+
+      // Validate password for new users
+      if (!d.password) {
+        return res.status(400).json({
+          error: "password is required",
+        });
+      }
+
+      await query(`CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        email TEXT,
+        role TEXT NOT NULL DEFAULT 'operator',
         position TEXT,
         department TEXT,
         shift TEXT,
-        status TEXT,
-        email TEXT,
-        username TEXT,
-        role TEXT,
-        created_at TIMESTAMPTZ DEFAULT now()
+        status TEXT DEFAULT 'active',
+        phone TEXT,
+        hire_date DATE,
+        skills JSONB DEFAULT '[]'::jsonb,
+        certifications JSONB DEFAULT '[]'::jsonb,
+        has_system_access BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`);
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
-      );
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`);
+      // Hash password
+      const hashedPassword = await bcrypt.hash(d.password, 10);
 
-      await query(
-        `INSERT INTO employees (id, name, position, department, shift, status, email, username, role, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, now())
-         ON CONFLICT (id) DO NOTHING`,
-        [
-          id,
-          d.full_name || d.name || "",
-          d.position || "",
-          d.department || "",
-          d.shift || "",
-          d.status || "active",
-          d.email || null,
-          d.username || null,
-          d.role || "operator",
-        ],
-      );
+      try {
+        await query(
+          `INSERT INTO users (id, full_name, username, email, password, role, position, department, shift, status, has_system_access, created_at, updated_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW(), NOW())`,
+          [
+            id,
+            d.full_name || "",
+            d.username || "",
+            d.email || null,
+            hashedPassword,
+            d.role || "operator",
+            d.position || null,
+            d.department || null,
+            d.shift || null,
+            d.status || "active",
+            true,
+          ],
+        );
+      } catch (dbError: any) {
+        if (dbError.code === "23505") {
+          return res.status(400).json({
+            error: "Username already exists",
+          });
+        }
+        throw dbError;
+      }
 
       return res.json({ id });
     } catch (e: any) {
