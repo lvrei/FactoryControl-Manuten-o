@@ -1499,6 +1499,106 @@ export async function createServer() {
     },
   );
 
+  // Migration endpoint: sync employees without credentials to users table as read-only employees
+  app.post(["/api/migrate-users", "/migrate-users"], async (_req, res) => {
+    try {
+      if (!isDbConfigured()) {
+        return res.json({ migrated: 0, message: "Database not configured" });
+      }
+
+      const { bcrypt } = await import("bcryptjs");
+
+      // Ensure users table exists
+      await query(`CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        email TEXT,
+        role TEXT NOT NULL DEFAULT 'operator',
+        position TEXT,
+        department TEXT,
+        shift TEXT,
+        status TEXT DEFAULT 'active',
+        phone TEXT,
+        hire_date DATE,
+        skills JSONB DEFAULT '[]'::jsonb,
+        certifications JSONB DEFAULT '[]'::jsonb,
+        has_system_access BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
+      )`);
+
+      // Check if employees table exists
+      const tableExists = await query(
+        `SELECT EXISTS(SELECT FROM information_schema.tables WHERE table_name = 'employees')`
+      );
+
+      if (!tableExists.rows[0]?.exists) {
+        return res.json({ migrated: 0, message: "Employees table does not exist" });
+      }
+
+      // Get employees without system access
+      const { rows: employees } = await query(
+        `SELECT id, name, email, username, role, position, department, shift, status, created_at
+         FROM employees
+         WHERE has_system_access = false OR username IS NULL
+         LIMIT 100`
+      );
+
+      let migratedCount = 0;
+
+      for (const emp of employees) {
+        try {
+          // Skip if already in users table
+          const existing = await query(
+            `SELECT id FROM users WHERE username = $1`,
+            [emp.username || emp.id]
+          );
+
+          if (existing.rows.length > 0) {
+            continue;
+          }
+
+          const username = emp.username || emp.id;
+          const fullName = emp.name || "Employee";
+          const defaultPassword = "ChangeMe123!";
+          const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+          await query(
+            `INSERT INTO users (id, full_name, username, email, password, role, position, department, shift, status, has_system_access, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+             ON CONFLICT (id) DO NOTHING`,
+            [
+              emp.id,
+              fullName,
+              username,
+              emp.email || null,
+              hashedPassword,
+              emp.role || "operator",
+              emp.position || null,
+              emp.department || null,
+              emp.shift || null,
+              emp.status || "active",
+              false,
+              emp.created_at || new Date().toISOString(),
+              new Date().toISOString(),
+            ]
+          );
+
+          migratedCount++;
+        } catch (e) {
+          console.error(`Error migrating employee ${emp.id}:`, e);
+        }
+      }
+
+      return res.json({ migrated: migratedCount, message: "Migration completed" });
+    } catch (e: any) {
+      console.error("[DIRECT] POST /migrate-users error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Debug: list registered routes
   app.get(["/api/_routes", "/_routes"], (_req, res) => {
     try {
