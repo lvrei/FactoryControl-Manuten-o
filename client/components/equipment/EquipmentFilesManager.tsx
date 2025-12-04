@@ -98,7 +98,8 @@ export function EquipmentFilesManager({
       toast({
         variant: "destructive",
         title: "Tipo de ficheiro não permitido",
-        description: "São permitidos: Imagens (JPG, PNG, GIF, WebP), PDF e Word",
+        description:
+          "São permitidos: Imagens (JPG, PNG, GIF, WebP), PDF e Word",
       });
       return;
     }
@@ -120,19 +121,16 @@ export function EquipmentFilesManager({
         const fileData = event.target?.result as string;
         const base64 = fileData.split(",")[1];
 
-        const response = await apiFetch(
-          `equipment/${equipment_id}/files`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fileName: file.name,
-              fileType: file.type.split("/")[1],
-              fileData: base64,
-              mimeType: file.type,
-            }),
-          }
-        );
+        const response = await apiFetch(`equipment/${equipment_id}/files`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileType: file.type.split("/")[1],
+            fileData: base64,
+            mimeType: file.type,
+          }),
+        });
 
         if (response.ok) {
           toast({
@@ -166,7 +164,7 @@ export function EquipmentFilesManager({
   const handleDownload = async (file: EquipmentFile) => {
     try {
       const response = await apiFetch(
-        `equipment/${equipment_id}/files/${file.id}/download`
+        `equipment/${equipment_id}/files/${file.id}/download`,
       );
 
       if (response.ok) {
@@ -204,7 +202,7 @@ export function EquipmentFilesManager({
         `equipment/${equipment_id}/files/${fileId}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (response.ok) {
@@ -246,122 +244,122 @@ export function EquipmentFilesManager({
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Ficheiros do Equipamento</DialogTitle>
-          <DialogDescription>{equipment_name}</DialogDescription>
-        </DialogHeader>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Ficheiros do Equipamento</DialogTitle>
+            <DialogDescription>{equipment_name}</DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Upload Section */}
-          <div className="border-2 border-dashed border-border rounded-lg p-6">
-            <Label htmlFor="file-upload" className="cursor-pointer">
-              <div className="flex flex-col items-center gap-2">
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  Clique para carregar ficheiro
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Fotos, PDF, Word (máx. 50MB)
-                </span>
-              </div>
-              <Input
-                id="file-upload"
-                type="file"
-                className="hidden"
-                onChange={handleFileUpload}
-                disabled={uploading}
-                accept="image/*,.pdf,.doc,.docx"
-              />
-            </Label>
+          <div className="space-y-4">
+            {/* Upload Section */}
+            <div className="border-2 border-dashed border-border rounded-lg p-6">
+              <Label htmlFor="file-upload" className="cursor-pointer">
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                  <span className="text-sm font-medium">
+                    Clique para carregar ficheiro
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Fotos, PDF, Word (máx. 50MB)
+                  </span>
+                </div>
+                <Input
+                  id="file-upload"
+                  type="file"
+                  className="hidden"
+                  onChange={handleFileUpload}
+                  disabled={uploading}
+                  accept="image/*,.pdf,.doc,.docx"
+                />
+              </Label>
+            </div>
+
+            {/* Files List */}
+            <div className="space-y-2">
+              <h3 className="font-medium">Ficheiros ({files.length})</h3>
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  A carregar...
+                </div>
+              ) : files.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhum ficheiro anexado
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {files.map((file) => (
+                    <div
+                      key={file.id}
+                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors"
+                    >
+                      <div className="text-muted-foreground">
+                        {getFileIcon(file.mime_type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">
+                          {file.file_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(file.file_size)} •{" "}
+                          {new Date(file.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setPreviewFile(file);
+                            setShowPreview(true);
+                          }}
+                          title="Pré-visualizar"
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownload(file)}
+                          title="Download"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(file.id, file.file_name)}
+                          title="Eliminar"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Files List */}
-          <div className="space-y-2">
-            <h3 className="font-medium">Ficheiros ({files.length})</h3>
-            {loading ? (
-              <div className="text-center py-8 text-muted-foreground">
-                A carregar...
-              </div>
-            ) : files.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Nenhum ficheiro anexado
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {files.map((file) => (
-                  <div
-                    key={file.id}
-                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-accent transition-colors"
-                  >
-                    <div className="text-muted-foreground">
-                      {getFileIcon(file.mime_type)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">
-                        {file.file_name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatFileSize(file.file_size)} •{" "}
-                        {new Date(file.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setPreviewFile(file);
-                          setShowPreview(true);
-                        }}
-                        title="Pré-visualizar"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(file)}
-                        title="Download"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(file.id, file.file_name)}
-                        title="Eliminar"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Fechar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    {previewFile && (
-      <FilePreviewViewer
-        open={showPreview}
-        onOpenChange={setShowPreview}
-        fileId={previewFile.id}
-        entityId={equipment_id}
-        fileName={previewFile.file_name}
-        mimeType={previewFile.mime_type}
-        entityType="equipment"
-      />
-    )}
+      {previewFile && (
+        <FilePreviewViewer
+          open={showPreview}
+          onOpenChange={setShowPreview}
+          fileId={previewFile.id}
+          entityId={equipment_id}
+          fileName={previewFile.file_name}
+          mimeType={previewFile.mime_type}
+          entityType="equipment"
+        />
+      )}
     </>
   );
 }

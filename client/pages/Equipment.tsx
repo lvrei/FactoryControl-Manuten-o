@@ -527,7 +527,6 @@ export default function Equipment() {
               </div>
             </div>
 
-
             <DialogFooter>
               <Button type="button" variant="outline" onClick={resetForm}>
                 Cancelar
@@ -569,7 +568,8 @@ export default function Equipment() {
           <DialogHeader>
             <DialogTitle>Agendamentos de Manutenção</DialogTitle>
             <DialogDescription>
-              Gerenciar manutenções preventivas para {selectedEquipmentForSchedules?.name}
+              Gerenciar manutenções preventivas para{" "}
+              {selectedEquipmentForSchedules?.name}
             </DialogDescription>
           </DialogHeader>
           {selectedEquipmentForSchedules && (
@@ -579,7 +579,10 @@ export default function Equipment() {
             />
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowSchedulesModal(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowSchedulesModal(false)}
+            >
               Fechar
             </Button>
           </DialogFooter>

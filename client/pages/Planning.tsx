@@ -141,7 +141,9 @@ export default function Planning() {
         const equipMap = new Map(equipData.map((eq: Equipment) => [eq.id, eq]));
 
         const schedulePlans = schedulesRes
-          .filter((schedule: any) => schedule.is_active && schedule.next_due_date)
+          .filter(
+            (schedule: any) => schedule.is_active && schedule.next_due_date,
+          )
           .map((schedule: any, index: number) => {
             const equipmentId = String(schedule.equipment_id);
             const equipment = equipMap.get(equipmentId);
@@ -150,7 +152,8 @@ export default function Planning() {
               equipment_id: equipmentId,
               equipment_name: equipment?.name || "Equipamento desconhecido",
               maintenance_type: schedule.maintenance_type,
-              description: schedule.description || "Manutenção preventiva agendada",
+              description:
+                schedule.description || "Manutenção preventiva agendada",
               scheduled_date: schedule.next_due_date,
               status: "scheduled" as const,
               priority: "medium" as const,
@@ -379,7 +382,8 @@ export default function Planning() {
             const priorityInfo = priorityConfig[plan.priority];
             const statusInfo = statusConfig[plan.status];
             const isOverdue = new Date(plan.scheduled_date) < new Date();
-            const isScheduledMaintenance = typeof plan.id === 'string' && plan.id.startsWith('sched-');
+            const isScheduledMaintenance =
+              typeof plan.id === "string" && plan.id.startsWith("sched-");
 
             return (
               <Card key={plan.id} className={isOverdue ? "border-red-500" : ""}>

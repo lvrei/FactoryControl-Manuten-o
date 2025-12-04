@@ -11,12 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Upload,
-  Trash2,
-  Eye,
-  Image as ImageIcon,
-} from "lucide-react";
+import { Upload, Trash2, Eye, Image as ImageIcon } from "lucide-react";
 import { apiFetch } from "@/config/api";
 import { FilePreviewViewer } from "@/components/equipment/FilePreviewViewer";
 
@@ -80,12 +75,7 @@ export function MaterialPhotosManager({
     if (!fileList || fileList.length === 0) return;
 
     const file = fileList[0];
-    const allowedTypes = [
-      "image/jpeg",
-      "image/png",
-      "image/gif",
-      "image/webp",
-    ];
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
     if (!allowedTypes.includes(file.type)) {
       toast({
@@ -113,18 +103,15 @@ export function MaterialPhotosManager({
         const fileData = event.target?.result as string;
         const base64 = fileData.split(",")[1];
 
-        const response = await apiFetch(
-          `materials/${material_id}/photos`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              fileName: file.name,
-              fileData: base64,
-              mimeType: file.type,
-            }),
-          }
-        );
+        const response = await apiFetch(`materials/${material_id}/photos`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fileName: file.name,
+            fileData: base64,
+            mimeType: file.type,
+          }),
+        });
 
         if (response.ok) {
           toast({
@@ -163,7 +150,7 @@ export function MaterialPhotosManager({
         `materials/${material_id}/photos/${photoId}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (response.ok) {
@@ -199,116 +186,118 @@ export function MaterialPhotosManager({
 
   return (
     <>
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Fotos do Material</DialogTitle>
-          <DialogDescription>{material_name}</DialogDescription>
-        </DialogHeader>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Fotos do Material</DialogTitle>
+            <DialogDescription>{material_name}</DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4">
-          {/* Upload Section */}
-          <div className="border-2 border-dashed border-border rounded-lg p-6">
-            <Label htmlFor="photo-upload" className="cursor-pointer">
-              <div className="flex flex-col items-center gap-2">
-                <Upload className="h-8 w-8 text-muted-foreground" />
-                <span className="text-sm font-medium">
-                  Clique para carregar foto
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  Imagens (JPG, PNG, GIF, WebP) - máx. 50MB
-                </span>
-              </div>
-              <Input
-                id="photo-upload"
-                type="file"
-                className="hidden"
-                onChange={handlePhotoUpload}
-                disabled={uploading}
-                accept="image/*"
-              />
-            </Label>
-          </div>
+          <div className="space-y-4">
+            {/* Upload Section */}
+            <div className="border-2 border-dashed border-border rounded-lg p-6">
+              <Label htmlFor="photo-upload" className="cursor-pointer">
+                <div className="flex flex-col items-center gap-2">
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                  <span className="text-sm font-medium">
+                    Clique para carregar foto
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    Imagens (JPG, PNG, GIF, WebP) - máx. 50MB
+                  </span>
+                </div>
+                <Input
+                  id="photo-upload"
+                  type="file"
+                  className="hidden"
+                  onChange={handlePhotoUpload}
+                  disabled={uploading}
+                  accept="image/*"
+                />
+              </Label>
+            </div>
 
-          {/* Photos List */}
-          <div className="space-y-2">
-            <h3 className="font-medium">Fotos ({photos.length})</h3>
-            {loading ? (
-              <div className="text-center py-8 text-muted-foreground">
-                A carregar...
-              </div>
-            ) : photos.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                Nenhuma foto anexada
-              </div>
-            ) : (
-              <div className="grid gap-3 md:grid-cols-2">
-                {photos.map((photo) => (
-                  <div
-                    key={photo.id}
-                    className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
-                  >
-                    <div className="aspect-square bg-muted flex items-center justify-center">
-                      <ImageIcon className="h-8 w-8 text-muted-foreground" />
-                    </div>
-                    <div className="p-3 space-y-2">
-                      <p className="text-sm font-medium truncate">
-                        {photo.file_name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {formatFileSize(photo.file_size)} •{" "}
-                        {new Date(photo.created_at).toLocaleDateString()}
-                      </p>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => {
-                            setPreviewPhoto(photo);
-                            setShowPreview(true);
-                          }}
-                          title="Pré-visualizar"
-                        >
-                          <Eye className="h-3 w-3 mr-1" />
-                          Ver
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(photo.id, photo.file_name)}
-                          title="Eliminar"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
+            {/* Photos List */}
+            <div className="space-y-2">
+              <h3 className="font-medium">Fotos ({photos.length})</h3>
+              {loading ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  A carregar...
+                </div>
+              ) : photos.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhuma foto anexada
+                </div>
+              ) : (
+                <div className="grid gap-3 md:grid-cols-2">
+                  {photos.map((photo) => (
+                    <div
+                      key={photo.id}
+                      className="border rounded-lg overflow-hidden hover:shadow-md transition-shadow"
+                    >
+                      <div className="aspect-square bg-muted flex items-center justify-center">
+                        <ImageIcon className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                      <div className="p-3 space-y-2">
+                        <p className="text-sm font-medium truncate">
+                          {photo.file_name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {formatFileSize(photo.file_size)} •{" "}
+                          {new Date(photo.created_at).toLocaleDateString()}
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => {
+                              setPreviewPhoto(photo);
+                              setShowPreview(true);
+                            }}
+                            title="Pré-visualizar"
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Ver
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() =>
+                              handleDelete(photo.id, photo.file_name)
+                            }
+                            title="Eliminar"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
-            Fechar
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-    {previewPhoto && (
-      <FilePreviewViewer
-        open={showPreview}
-        onOpenChange={setShowPreview}
-        fileId={previewPhoto.id}
-        entityId={material_id.toString()}
-        fileName={previewPhoto.file_name}
-        mimeType={previewPhoto.mime_type}
-        entityType="material"
-      />
-    )}
+      {previewPhoto && (
+        <FilePreviewViewer
+          open={showPreview}
+          onOpenChange={setShowPreview}
+          fileId={previewPhoto.id}
+          entityId={material_id.toString()}
+          fileName={previewPhoto.file_name}
+          mimeType={previewPhoto.mime_type}
+          entityType="material"
+        />
+      )}
     </>
   );
 }

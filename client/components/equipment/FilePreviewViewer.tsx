@@ -47,9 +47,10 @@ export function FilePreviewViewer({
       setFileContent(null);
       setFileBlob(null);
 
-      const endpoint = entityType === "material"
-        ? `materials/${entityId}/photos/${fileId}/download`
-        : `equipment/${entityId}/files/${fileId}/download`;
+      const endpoint =
+        entityType === "material"
+          ? `materials/${entityId}/photos/${fileId}/download`
+          : `equipment/${entityId}/files/${fileId}/download`;
 
       const response = await apiFetch(endpoint);
 
@@ -73,7 +74,9 @@ export function FilePreviewViewer({
         setFileContent(url);
       } else {
         // For other types (Word, etc), show a message
-        setError("Este tipo de ficheiro não pode ser pré-visualizado diretamente");
+        setError(
+          "Este tipo de ficheiro não pode ser pré-visualizado diretamente",
+        );
       }
     } catch (err) {
       console.error("Erro ao carregar pré-visualização:", err);
@@ -143,14 +146,14 @@ export function FilePreviewViewer({
             fileBlob &&
             !loading && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800">
-                <p className="font-medium mb-2">Tipo de ficheiro não suportado</p>
-                <p className="text-sm mb-4">
-                  Este tipo de ficheiro não pode ser pré-visualizado no navegador.
+                <p className="font-medium mb-2">
+                  Tipo de ficheiro não suportado
                 </p>
-                <Button
-                  onClick={handleDownload}
-                  className="gap-2"
-                >
+                <p className="text-sm mb-4">
+                  Este tipo de ficheiro não pode ser pré-visualizado no
+                  navegador.
+                </p>
+                <Button onClick={handleDownload} className="gap-2">
                   <Download className="h-4 w-4" />
                   Fazer Download
                 </Button>

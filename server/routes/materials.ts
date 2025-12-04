@@ -236,17 +236,19 @@ router.get("/:id/photos", async (req, res) => {
        FROM material_photos
        WHERE material_id = $1
        ORDER BY created_at DESC`,
-      [materialId]
+      [materialId],
     );
 
-    return res.json(result.rows.map((r: any) => ({
-      id: r.id,
-      material_id: r.material_id,
-      file_name: r.file_name,
-      file_size: r.file_size,
-      mime_type: r.mime_type,
-      created_at: r.created_at,
-    })));
+    return res.json(
+      result.rows.map((r: any) => ({
+        id: r.id,
+        material_id: r.material_id,
+        file_name: r.file_name,
+        file_size: r.file_size,
+        mime_type: r.mime_type,
+        created_at: r.created_at,
+      })),
+    );
   } catch (e: any) {
     console.error("GET materials/:id/photos error:", e);
     return res.status(500).json({ error: e.message });
@@ -265,16 +267,25 @@ router.post("/:id/photos", async (req, res) => {
     const { fileName, fileData, mimeType } = req.body;
 
     if (!fileName || !fileData) {
-      return res.status(400).json({ error: "fileName and fileData are required" });
+      return res
+        .status(400)
+        .json({ error: "fileName and fileData are required" });
     }
 
     const photoId = `photo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-    const buffer = Buffer.from(fileData, 'base64');
+    const buffer = Buffer.from(fileData, "base64");
 
     await query(
       `INSERT INTO material_photos (id, material_id, file_name, file_data, mime_type, file_size)
        VALUES ($1, $2, $3, $4, $5, $6)`,
-      [photoId, materialId, fileName, buffer, mimeType || 'image/jpeg', buffer.length]
+      [
+        photoId,
+        materialId,
+        fileName,
+        buffer,
+        mimeType || "image/jpeg",
+        buffer.length,
+      ],
     );
 
     return res.json({ id: photoId, file_name: fileName });
@@ -294,7 +305,7 @@ router.get("/:material_id/photos/:photo_id/download", async (req, res) => {
 
     const result = await query(
       `SELECT file_name, file_data, mime_type FROM material_photos WHERE id = $1 AND material_id = $2`,
-      [photo_id, material_id]
+      [photo_id, material_id],
     );
 
     if (result.rows.length === 0) {
@@ -302,12 +313,18 @@ router.get("/:material_id/photos/:photo_id/download", async (req, res) => {
     }
 
     const file = result.rows[0];
-    res.setHeader('Content-Type', file.mime_type || 'image/jpeg');
-    res.setHeader('Content-Disposition', `attachment; filename="${file.file_name}"`);
-    res.setHeader('Content-Length', file.file_data.length);
+    res.setHeader("Content-Type", file.mime_type || "image/jpeg");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${file.file_name}"`,
+    );
+    res.setHeader("Content-Length", file.file_data.length);
     res.send(file.file_data);
   } catch (e: any) {
-    console.error("GET materials/:material_id/photos/:photo_id/download error:", e);
+    console.error(
+      "GET materials/:material_id/photos/:photo_id/download error:",
+      e,
+    );
     return res.status(500).json({ error: e.message });
   }
 });
@@ -322,7 +339,7 @@ router.delete("/:material_id/photos/:photo_id", async (req, res) => {
 
     await query(
       `DELETE FROM material_photos WHERE id = $1 AND material_id = $2`,
-      [photo_id, material_id]
+      [photo_id, material_id],
     );
 
     return res.json({ ok: true });
