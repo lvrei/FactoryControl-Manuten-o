@@ -49,6 +49,8 @@ export function EquipmentFilesManager({
   const [files, setFiles] = useState<EquipmentFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [previewFile, setPreviewFile] = useState<EquipmentFile | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
