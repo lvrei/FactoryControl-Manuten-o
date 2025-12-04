@@ -38,7 +38,7 @@ export function FilePreviewViewer({
     if (open) {
       loadFilePreview();
     }
-  }, [open, fileId]);
+  }, [open, fileId, entityId, entityType]);
 
   const loadFilePreview = async () => {
     try {
