@@ -550,6 +550,16 @@ export default function MaterialStock() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Material Photos Manager Modal */}
+      {selectedMaterialForPhotos && (
+        <MaterialPhotosManager
+          material_id={selectedMaterialForPhotos.id}
+          material_name={selectedMaterialForPhotos.name}
+          open={showPhotosModal}
+          onOpenChange={setShowPhotosModal}
+        />
+      )}
     </div>
   );
 }
