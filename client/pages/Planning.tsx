@@ -123,15 +123,21 @@ export default function Planning() {
       ]);
 
       let allPlans: PlannedMaintenance[] = [];
+      let equipData: Equipment[] = [];
 
       if (plansRes.ok) {
         const plansData = await plansRes.json();
         allPlans = [...plansData];
       }
 
+      // Read equipment data once
+      if (equipRes.ok) {
+        equipData = await equipRes.json();
+        setEquipments(equipData);
+      }
+
       // Convert equipment schedules to planned maintenance format
-      if (schedulesRes && schedulesRes.length > 0 && equipRes.ok) {
-        const equipData = await equipRes.json();
+      if (schedulesRes && schedulesRes.length > 0 && equipData.length > 0) {
         const equipMap = new Map(equipData.map((eq: Equipment) => [eq.id, eq]));
 
         const schedulePlans = schedulesRes
@@ -157,11 +163,6 @@ export default function Planning() {
       }
 
       setPlans(allPlans);
-
-      if (equipRes.ok) {
-        const equipData = await equipRes.json();
-        setEquipments(equipData);
-      }
 
       if (usersRes.ok) {
         const usersData = await usersRes.json();
