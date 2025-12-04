@@ -18,8 +18,10 @@ import {
   FileText,
   File,
   Image,
+  Eye,
 } from "lucide-react";
 import { apiFetch } from "@/config/api";
+import { FilePreviewViewer } from "./FilePreviewViewer";
 
 interface EquipmentFile {
   id: string;
