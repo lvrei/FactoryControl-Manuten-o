@@ -47,9 +47,11 @@ export function FilePreviewViewer({
       setFileContent(null);
       setFileBlob(null);
 
-      const response = await apiFetch(
-        `equipment/${equipmentId}/files/${fileId}/download`
-      );
+      const endpoint = entityType === "material"
+        ? `materials/${entityId}/photos/${fileId}/download`
+        : `equipment/${entityId}/files/${fileId}/download`;
+
+      const response = await apiFetch(endpoint);
 
       if (!response.ok) {
         throw new Error("Erro ao carregar ficheiro");
