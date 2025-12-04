@@ -985,7 +985,6 @@ export async function createServer() {
       if (!isDbConfigured())
         return res.status(400).json({ error: "Database not configured" });
 
-      const { bcrypt } = await import("bcryptjs");
       const d = req.body || {};
       const id =
         d.id ||
