@@ -1508,8 +1508,6 @@ export async function createServer() {
         return res.json({ migrated: 0, message: "Database not configured" });
       }
 
-      const { bcrypt } = await import("bcryptjs");
-
       // Ensure users table exists
       await query(`CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
