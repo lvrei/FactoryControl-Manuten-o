@@ -1061,57 +1061,70 @@ export async function createServer() {
     }
   });
 
-  // PUT alias for updating users
+  // PUT /api/users/:id - update a user
   app.put(["/api/users/:id", "/users/:id"], async (req, res) => {
     try {
       if (!isDbConfigured())
         return res.status(400).json({ error: "Database not configured" });
 
+      const { bcrypt } = await import("bcryptjs");
       const id = req.params.id;
       const d = req.body || {};
 
-      await query(`CREATE TABLE IF NOT EXISTS employees (
+      await query(`CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        email TEXT,
+        role TEXT NOT NULL DEFAULT 'operator',
         position TEXT,
         department TEXT,
         shift TEXT,
-        status TEXT,
-        email TEXT,
-        username TEXT,
-        role TEXT,
-        created_at TIMESTAMPTZ DEFAULT now()
+        status TEXT DEFAULT 'active',
+        phone TEXT,
+        hire_date DATE,
+        skills JSONB DEFAULT '[]'::jsonb,
+        certifications JSONB DEFAULT '[]'::jsonb,
+        has_system_access BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMPTZ DEFAULT now(),
+        updated_at TIMESTAMPTZ DEFAULT now()
       )`);
 
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS email TEXT`);
-      await query(
-        `ALTER TABLE employees ADD COLUMN IF NOT EXISTS username TEXT`,
-      );
-      await query(`ALTER TABLE employees ADD COLUMN IF NOT EXISTS role TEXT`);
+      // Build update query - if password is provided, hash it
+      let hashedPassword = null;
+      if (d.password) {
+        hashedPassword = await bcrypt.hash(d.password, 10);
+      }
 
       await query(
-        `UPDATE employees SET
-         name = COALESCE($2, name),
-         position = COALESCE($3, position),
-         department = COALESCE($4, department),
-         shift = COALESCE($5, shift),
-         status = COALESCE($6, status),
-         email = COALESCE($7, email),
-         username = COALESCE($8, username),
-         role = COALESCE($9, role)
+        `UPDATE users SET
+         full_name = COALESCE($2, full_name),
+         email = COALESCE($3, email),
+         role = COALESCE($4, role),
+         position = COALESCE($5, position),
+         department = COALESCE($6, department),
+         shift = COALESCE($7, shift),
+         status = COALESCE($8, status),
+         password = COALESCE($9, password),
+         updated_at = NOW()
          WHERE id = $1`,
         [
           id,
-          d.full_name || d.name,
+          d.full_name,
+          d.email,
+          d.role,
           d.position,
           d.department,
           d.shift,
           d.status,
-          d.email,
-          d.username,
-          d.role,
+          hashedPassword,
         ],
       );
+
+      // Clear user cache
+      const { clearUserCache } = await import("../middleware/auth");
+      clearUserCache(undefined, id);
 
       return res.json({ ok: true });
     } catch (e: any) {
