@@ -94,7 +94,7 @@ export default function Team() {
     username: "",
     password: "",
     email: "",
-    role: "operator" as "admin" | "technician" | "operator",
+    role: "operator" as string,
     hasSystemAccess: false,
   });
 
