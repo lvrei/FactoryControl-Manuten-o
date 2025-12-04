@@ -86,6 +86,9 @@ export default function Equipment() {
   const [showSchedulesModal, setShowSchedulesModal] = useState(false);
   const [selectedEquipmentForSchedules, setSelectedEquipmentForSchedules] =
     useState<Equipment | null>(null);
+  const [showFilesModal, setShowFilesModal] = useState(false);
+  const [selectedEquipmentForFiles, setSelectedEquipmentForFiles] =
+    useState<Equipment | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
