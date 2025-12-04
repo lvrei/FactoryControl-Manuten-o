@@ -362,6 +362,17 @@ export default function MaterialStock() {
                     Editar
                   </Button>
                   <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedMaterialForPhotos(material);
+                      setShowPhotosModal(true);
+                    }}
+                    title="Gerenciar fotos"
+                  >
+                    <Image className="h-3 w-3" />
+                  </Button>
+                  <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDelete(material.id)}
