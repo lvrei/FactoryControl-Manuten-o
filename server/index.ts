@@ -4,6 +4,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
+import bcrypt from "bcryptjs";
 // Lazy loaded below to avoid ESM/CJS interop issues
 import { isDbConfigured, query } from "./db";
 import { Sentry, initSentryNode } from "./sentry";
