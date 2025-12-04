@@ -66,6 +66,9 @@ export default function MaterialStock() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [showPhotosModal, setShowPhotosModal] = useState(false);
+  const [selectedMaterialForPhotos, setSelectedMaterialForPhotos] =
+    useState<Material | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
