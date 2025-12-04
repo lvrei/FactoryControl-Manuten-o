@@ -13,6 +13,7 @@ import {
   Download,
   Printer,
   Calendar,
+  Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +46,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/config/api";
 import QRCodeGenerator from "@/components/equipment/QRCodeGenerator";
 import { MaintenanceScheduleManager } from "@/components/equipment/MaintenanceScheduleManager";
+import { EquipmentFilesManager } from "@/components/equipment/EquipmentFilesManager";
 
 interface Equipment {
   id: string;
