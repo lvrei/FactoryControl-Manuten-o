@@ -1838,6 +1838,8 @@ export async function createServer() {
         return res.status(400).json({ error: "conversation_id and sender_id are required" });
       }
 
+      console.log("[CHAT] POST /chat/message - sending", message_type || 'text', "message");
+
       const messageId = `msg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
       const buffer = file_data ? Buffer.from(file_data, "base64") : null;
 
@@ -1861,6 +1863,7 @@ export async function createServer() {
         UPDATE chat_conversations SET updated_at = NOW() WHERE id = $1
       `, [conversation_id]);
 
+      console.log("[CHAT] Message created:", messageId);
       return res.json({
         id: messageId,
         conversation_id,
@@ -1871,7 +1874,7 @@ export async function createServer() {
         created_at: new Date().toISOString()
       });
     } catch (e: any) {
-      console.error("[DIRECT] POST /chat/message error:", e);
+      console.error("[CHAT] POST /chat/message error:", e.message, e.stack);
       return res.status(500).json({ error: e.message });
     }
   });
