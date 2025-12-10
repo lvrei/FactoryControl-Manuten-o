@@ -1783,12 +1783,17 @@ export async function createServer() {
       await ensureChatTables();
 
       const { title, user_id, participant_ids } = req.body;
+      const userId = String(user_id || "");
+      const participantIdsList = Array.isArray(participant_ids)
+        ? participant_ids.map(id => String(id))
+        : [];
+
       console.log("[CHAT] POST /chat/conversation - creating conversation", {
-        user_id,
-        participant_ids: participant_ids?.length || 0
+        user_id: userId,
+        participant_ids: participantIdsList
       });
 
-      if (!user_id) {
+      if (!userId) {
         return res.status(400).json({ error: "user_id is required" });
       }
 
@@ -1797,28 +1802,26 @@ export async function createServer() {
       await query(`
         INSERT INTO chat_conversations (id, title, created_by, created_at, updated_at)
         VALUES ($1, $2, $3, NOW(), NOW())
-      `, [conversationId, title || 'Conversation', user_id]);
+      `, [conversationId, title || 'Conversation', userId]);
 
       // Add creator as participant
       const participantId1 = `part-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
       await query(`
         INSERT INTO chat_participants (id, conversation_id, user_id, joined_at)
         VALUES ($1, $2, $3, NOW())
-      `, [participantId1, conversationId, user_id]);
+      `, [participantId1, conversationId, userId]);
 
       // Add other participants
-      if (participant_ids && Array.isArray(participant_ids)) {
-        for (const participantUserId of participant_ids) {
-          if (participantUserId !== user_id) {
-            const participantId = `part-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-            try {
-              await query(`
-                INSERT INTO chat_participants (id, conversation_id, user_id, joined_at)
-                VALUES ($1, $2, $3, NOW())
-              `, [participantId, conversationId, participantUserId]);
-            } catch (e) {
-              console.warn(`[CHAT] Could not add participant ${participantUserId}:`, e);
-            }
+      for (const participantUserId of participantIdsList) {
+        if (participantUserId !== userId) {
+          const participantId = `part-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+          try {
+            await query(`
+              INSERT INTO chat_participants (id, conversation_id, user_id, joined_at)
+              VALUES ($1, $2, $3, NOW())
+            `, [participantId, conversationId, participantUserId]);
+          } catch (e) {
+            console.warn(`[CHAT] Could not add participant ${participantUserId}:`, e);
           }
         }
       }
@@ -1827,7 +1830,7 @@ export async function createServer() {
       return res.json({
         id: conversationId,
         title: title || 'Conversation',
-        created_by: user_id
+        created_by: userId
       });
     } catch (e: any) {
       console.error("[CHAT] POST /chat/conversation error:", e.message, e.stack);
