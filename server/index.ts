@@ -1993,6 +1993,76 @@ export async function createServer() {
     }
   });
 
+  // Cleanup: Merge duplicate conversations (same pair of participants)
+  app.post(["/api/chat/cleanup", "/chat/cleanup"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      await ensureChatTables();
+
+      console.log("[CHAT] Starting cleanup of duplicate conversations...");
+
+      // Find groups of conversations with the same pair of participants
+      const { rows: duplicateGroups } = await query(`
+        SELECT
+          ARRAY_AGG(DISTINCT CAST(p1.user_id AS TEXT) ORDER BY CAST(p1.user_id AS TEXT)) as participant_pair,
+          ARRAY_AGG(c.id) as conversation_ids,
+          COUNT(*) as count
+        FROM chat_conversations c
+        INNER JOIN chat_participants p1 ON CAST(c.id AS TEXT) = CAST(p1.conversation_id AS TEXT)
+        GROUP BY (
+          SELECT STRING_AGG(CAST(p2.user_id AS TEXT), ',' ORDER BY CAST(p2.user_id AS TEXT))
+          FROM chat_participants p2
+          WHERE CAST(p2.conversation_id AS TEXT) = CAST(c.id AS TEXT)
+        )
+        HAVING COUNT(*) > 1
+      `);
+
+      let mergedCount = 0;
+      for (const group of duplicateGroups) {
+        const convIds = group.conversation_ids;
+        if (convIds.length > 1) {
+          const keepConvId = convIds[0]; // Keep the first one
+          const mergeConvIds = convIds.slice(1); // Merge others into it
+
+          // Move all messages from other conversations to the first one
+          for (const mergeConvId of mergeConvIds) {
+            await query(`
+              UPDATE chat_messages
+              SET conversation_id = $1
+              WHERE CAST(conversation_id AS TEXT) = CAST($2 AS TEXT)
+            `, [keepConvId, mergeConvId]);
+
+            // Delete the duplicate conversation and its participants
+            await query(`
+              DELETE FROM chat_participants
+              WHERE CAST(conversation_id AS TEXT) = CAST($1 AS TEXT)
+            `, [mergeConvId]);
+
+            await query(`
+              DELETE FROM chat_conversations
+              WHERE CAST(id AS TEXT) = CAST($1 AS TEXT)
+            `, [mergeConvId]);
+
+            mergedCount++;
+            console.log(`[CHAT] Merged conversation ${mergeConvId} into ${keepConvId}`);
+          }
+        }
+      }
+
+      console.log(`[CHAT] Cleanup complete. Merged ${mergedCount} duplicate conversations.`);
+      return res.json({
+        success: true,
+        merged_count: mergedCount,
+        message: `Merged ${mergedCount} duplicate conversations`
+      });
+    } catch (e: any) {
+      console.error("[CHAT] POST /chat/cleanup error:", e.message, e.stack);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Debug: list registered routes
   app.get(["/api/_routes", "/_routes"], (_req, res) => {
     try {
