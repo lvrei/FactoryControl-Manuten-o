@@ -52,6 +52,10 @@ export function Layout({ children }: LayoutProps) {
     setUserSession(session);
   }, []);
 
+  if (!userSession?.id) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Top Navigation Bar - Mobile-First App Design */}
