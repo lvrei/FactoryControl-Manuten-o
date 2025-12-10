@@ -42,7 +42,9 @@ const navigation = [
 
 export function Layout({ children }: LayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
   const [userSession, setUserSession] = useState<LoginSession | null>(null);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
