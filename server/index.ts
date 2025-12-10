@@ -1695,12 +1695,12 @@ export async function createServer() {
           c.created_by,
           c.created_at,
           c.updated_at,
-          (SELECT COUNT(*) FROM chat_messages WHERE conversation_id = c.id) as message_count,
-          (SELECT message FROM chat_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
-          (SELECT created_at FROM chat_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_time
+          (SELECT COUNT(*) FROM chat_messages WHERE CAST(conversation_id AS TEXT) = CAST(c.id AS TEXT)) as message_count,
+          (SELECT message FROM chat_messages WHERE CAST(conversation_id AS TEXT) = CAST(c.id AS TEXT) ORDER BY created_at DESC LIMIT 1) as last_message,
+          (SELECT created_at FROM chat_messages WHERE CAST(conversation_id AS TEXT) = CAST(c.id AS TEXT) ORDER BY created_at DESC LIMIT 1) as last_message_time
         FROM chat_conversations c
-        INNER JOIN chat_participants p ON c.id = p.conversation_id
-        WHERE p.user_id = $1
+        INNER JOIN chat_participants p ON CAST(c.id AS TEXT) = CAST(p.conversation_id AS TEXT)
+        WHERE CAST(p.user_id AS TEXT) = $1
         ORDER BY c.updated_at DESC
       `, [userId]);
 
