@@ -285,12 +285,20 @@ export function ChatModal({
                 setView("list");
                 setSelectedConversationId(null);
                 setSelectedUserId(null);
+                setError(null);
               }}
               className="h-8 w-8 p-0"
             >
               <X className="h-4 w-4" />
             </Button>
           </DialogHeader>
+
+          {error && (
+            <Alert variant="destructive" className="mb-2">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
 
           <ScrollArea ref={scrollRef} className="flex-1 border rounded-lg p-4">
             {messagesLoading ? (
