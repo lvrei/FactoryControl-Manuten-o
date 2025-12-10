@@ -1731,7 +1731,7 @@ export async function createServer() {
 
       await ensureChatTables();
 
-      const conversationId = req.params.id;
+      const conversationId = String(req.params.id);
       console.log("[CHAT] GET /chat/conversation/:id - conversationId:", conversationId);
 
       const { rows } = await query(`
@@ -1747,8 +1747,8 @@ export async function createServer() {
           m.created_at,
           u.full_name as sender_name
         FROM chat_messages m
-        LEFT JOIN users u ON CAST(m.sender_id AS TEXT) = CAST(u.id AS TEXT)
-        WHERE CAST(m.conversation_id AS TEXT) = CAST($1 AS TEXT)
+        LEFT JOIN users u ON m.sender_id = u.id
+        WHERE m.conversation_id = $1
         ORDER BY m.created_at ASC
       `, [conversationId]);
 
