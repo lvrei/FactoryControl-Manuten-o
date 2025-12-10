@@ -1847,8 +1847,10 @@ export async function createServer() {
       await ensureChatTables();
 
       const { conversation_id, sender_id, message, message_type, file_name, file_type, file_size, file_data } = req.body;
+      const conversationId = String(conversation_id || "");
+      const senderId = String(sender_id || "");
 
-      if (!conversation_id || !sender_id) {
+      if (!conversationId || !senderId) {
         return res.status(400).json({ error: "conversation_id and sender_id are required" });
       }
 
@@ -1862,8 +1864,8 @@ export async function createServer() {
         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
       `, [
         messageId,
-        conversation_id,
-        sender_id,
+        conversationId,
+        senderId,
         message || null,
         message_type || 'text',
         buffer,
@@ -1875,13 +1877,13 @@ export async function createServer() {
       // Update conversation updated_at
       await query(`
         UPDATE chat_conversations SET updated_at = NOW() WHERE id = $1
-      `, [conversation_id]);
+      `, [conversationId]);
 
       console.log("[CHAT] Message created:", messageId);
       return res.json({
         id: messageId,
-        conversation_id,
-        sender_id,
+        conversation_id: conversationId,
+        sender_id: senderId,
         message,
         message_type: message_type || 'text',
         file_name,
