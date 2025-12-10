@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -10,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, Send, ImagePlus, X } from "lucide-react";
+import { Loader2, Send, ImagePlus, X, AlertCircle } from "lucide-react";
 import { ChatMessage, chatService } from "@/services/chatService";
 import { apiFetch } from "@/config/api";
 
