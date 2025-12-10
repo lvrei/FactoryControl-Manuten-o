@@ -1719,11 +1719,15 @@ export async function createServer() {
   // GET /api/chat/conversation/:id - get messages in a conversation
   app.get(["/api/chat/conversation/:id", "/chat/conversation/:id"], async (req, res) => {
     try {
-      if (!isDbConfigured()) return res.json({ messages: [] });
+      if (!isDbConfigured()) {
+        console.warn("[CHAT] Database not configured");
+        return res.json({ messages: [] });
+      }
 
       await ensureChatTables();
 
       const conversationId = req.params.id;
+      console.log("[CHAT] GET /chat/conversation/:id - conversationId:", conversationId);
 
       const { rows } = await query(`
         SELECT
@@ -1743,6 +1747,7 @@ export async function createServer() {
         ORDER BY m.created_at ASC
       `, [conversationId]);
 
+      console.log("[CHAT] Found", rows.length, "messages in conversation", conversationId);
       return res.json({
         conversation_id: conversationId,
         messages: rows.map((r: any) => ({
@@ -1759,7 +1764,7 @@ export async function createServer() {
         }))
       });
     } catch (e: any) {
-      console.error("[DIRECT] GET /chat/conversation/:id error:", e);
+      console.error("[CHAT] GET /chat/conversation/:id error:", e.message, e.stack);
       return res.status(500).json({ error: e.message });
     }
   });
