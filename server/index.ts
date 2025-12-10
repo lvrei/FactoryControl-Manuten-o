@@ -1943,12 +1943,12 @@ export async function createServer() {
           p.id,
           p.user_id,
           p.joined_at,
-          u.full_name,
-          u.username,
+          COALESCE(u.full_name, 'Anónimo') as full_name,
+          COALESCE(u.username, p.user_id) as username,
           u.email
         FROM chat_participants p
-        LEFT JOIN users u ON p.user_id = u.id
-        WHERE p.conversation_id = $1
+        LEFT JOIN users u ON CAST(p.user_id AS TEXT) = CAST(u.id AS TEXT)
+        WHERE CAST(p.conversation_id AS TEXT) = $1
         ORDER BY p.joined_at ASC
       `, [conversationId]);
 
