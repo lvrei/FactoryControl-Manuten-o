@@ -1611,15 +1611,6 @@ export async function createServer() {
   async function ensureChatTables() {
     if (!isDbConfigured()) return;
 
-    // Drop existing tables if they exist (to clear any schema issues)
-    try {
-      await query(`DROP TABLE IF EXISTS chat_messages CASCADE`);
-      await query(`DROP TABLE IF EXISTS chat_participants CASCADE`);
-      await query(`DROP TABLE IF EXISTS chat_conversations CASCADE`);
-    } catch (e) {
-      // Ignore errors if tables don't exist
-    }
-
     await query(`CREATE TABLE IF NOT EXISTS chat_conversations (
       id TEXT PRIMARY KEY,
       title TEXT,
