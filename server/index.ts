@@ -1745,10 +1745,10 @@ export async function createServer() {
           m.file_type,
           m.file_size,
           m.created_at,
-          u.full_name as sender_name
+          COALESCE(u.full_name, 'Anónimo') as sender_name
         FROM chat_messages m
-        LEFT JOIN users u ON m.sender_id = u.id
-        WHERE m.conversation_id = $1
+        LEFT JOIN users u ON CAST(m.sender_id AS TEXT) = CAST(u.id AS TEXT)
+        WHERE CAST(m.conversation_id AS TEXT) = $1
         ORDER BY m.created_at ASC
       `, [conversationId]);
 
