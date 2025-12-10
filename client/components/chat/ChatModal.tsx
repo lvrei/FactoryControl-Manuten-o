@@ -182,6 +182,7 @@ export function ChatModal({
 
     try {
       setSendingMessage(true);
+      setError(null);
       await chatService.sendMessage(
         selectedConversationId,
         currentUserId,
@@ -189,8 +190,9 @@ export function ChatModal({
       );
       setMessageInput("");
       await loadMessages(selectedConversationId);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error sending message:", err);
+      setError(err.message || "Erro ao enviar mensagem");
     } finally {
       setSendingMessage(false);
     }
