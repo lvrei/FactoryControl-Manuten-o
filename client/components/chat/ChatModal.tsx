@@ -132,6 +132,7 @@ export function ChatModal({
   const handleSelectUser = async (userId: string) => {
     try {
       setLoading(true);
+      setError(null);
       setSelectedUserId(userId);
 
       // Check if conversation exists
@@ -154,8 +155,9 @@ export function ChatModal({
       }
 
       setView("chat");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error selecting user:", err);
+      setError(err.message || "Erro ao abrir conversa");
     } finally {
       setLoading(false);
     }
