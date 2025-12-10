@@ -1772,6 +1772,10 @@ export async function createServer() {
       await ensureChatTables();
 
       const { title, user_id, participant_ids } = req.body;
+      console.log("[CHAT] POST /chat/conversation - creating conversation", {
+        user_id,
+        participant_ids: participant_ids?.length || 0
+      });
 
       if (!user_id) {
         return res.status(400).json({ error: "user_id is required" });
@@ -1802,19 +1806,20 @@ export async function createServer() {
                 VALUES ($1, $2, $3, NOW())
               `, [participantId, conversationId, participantUserId]);
             } catch (e) {
-              console.warn(`Could not add participant ${participantUserId}:`, e);
+              console.warn(`[CHAT] Could not add participant ${participantUserId}:`, e);
             }
           }
         }
       }
 
+      console.log("[CHAT] Conversation created:", conversationId);
       return res.json({
         id: conversationId,
         title: title || 'Conversation',
         created_by: user_id
       });
     } catch (e: any) {
-      console.error("[DIRECT] POST /chat/conversation error:", e);
+      console.error("[CHAT] POST /chat/conversation error:", e.message, e.stack);
       return res.status(500).json({ error: e.message });
     }
   });
