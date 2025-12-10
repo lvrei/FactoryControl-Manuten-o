@@ -1607,38 +1607,63 @@ export async function createServer() {
   });
 
   // Chat API endpoints
-  // Ensure chat tables exist
+  // Initialize chat tables (idempotent)
+  let chatTablesInitialized = false;
+
   async function ensureChatTables() {
-    if (!isDbConfigured()) return;
+    if (!isDbConfigured() || chatTablesInitialized) return;
 
-    await query(`CREATE TABLE IF NOT EXISTS chat_conversations (
-      id TEXT PRIMARY KEY,
-      title TEXT,
-      created_by TEXT NOT NULL,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
+    try {
+      // Try to drop old tables with bad constraints
+      await query(`DROP TABLE IF EXISTS chat_messages CASCADE`).catch(() => {});
+      await query(`DROP TABLE IF EXISTS chat_participants CASCADE`).catch(() => {});
+      await query(`DROP TABLE IF EXISTS chat_conversations CASCADE`).catch(() => {});
+    } catch (e) {
+      // Ignore errors during cleanup
+    }
 
-    await query(`CREATE TABLE IF NOT EXISTS chat_participants (
-      id TEXT PRIMARY KEY,
-      conversation_id TEXT NOT NULL,
-      user_id TEXT NOT NULL,
-      joined_at TIMESTAMPTZ DEFAULT NOW(),
-      UNIQUE(conversation_id, user_id)
-    )`);
+    try {
+      await query(`CREATE TABLE chat_conversations (
+        id TEXT PRIMARY KEY,
+        title TEXT,
+        created_by TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW(),
+        updated_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+    } catch (e: any) {
+      if (!e.message.includes('already exists')) throw e;
+    }
 
-    await query(`CREATE TABLE IF NOT EXISTS chat_messages (
-      id TEXT PRIMARY KEY,
-      conversation_id TEXT NOT NULL,
-      sender_id TEXT NOT NULL,
-      message TEXT,
-      message_type TEXT DEFAULT 'text',
-      file_data BYTEA,
-      file_name TEXT,
-      file_type TEXT,
-      file_size INTEGER,
-      created_at TIMESTAMPTZ DEFAULT NOW()
-    )`);
+    try {
+      await query(`CREATE TABLE chat_participants (
+        id TEXT PRIMARY KEY,
+        conversation_id TEXT NOT NULL,
+        user_id TEXT NOT NULL,
+        joined_at TIMESTAMPTZ DEFAULT NOW(),
+        UNIQUE(conversation_id, user_id)
+      )`);
+    } catch (e: any) {
+      if (!e.message.includes('already exists')) throw e;
+    }
+
+    try {
+      await query(`CREATE TABLE chat_messages (
+        id TEXT PRIMARY KEY,
+        conversation_id TEXT NOT NULL,
+        sender_id TEXT NOT NULL,
+        message TEXT,
+        message_type TEXT DEFAULT 'text',
+        file_data BYTEA,
+        file_name TEXT,
+        file_type TEXT,
+        file_size INTEGER,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )`);
+    } catch (e: any) {
+      if (!e.message.includes('already exists')) throw e;
+    }
+
+    chatTablesInitialized = true;
   }
 
   // GET /api/chat/conversations - get all conversations for the current user
