@@ -78,39 +78,52 @@ export function ChatModal({
   const loadUsersAndConversations = async () => {
     try {
       setUsersLoading(true);
+      setError(null);
 
       // Load all users
       const usersResponse = await apiFetch("users");
       if (usersResponse.ok) {
         const usersData: User[] = await usersResponse.json();
         setUsers(usersData.filter((u) => u.id !== currentUserId));
+      } else {
+        console.error("Failed to load users:", usersResponse.status, usersResponse.statusText);
       }
 
       // Load conversations
-      const convsResponse = await chatService.getConversations(currentUserId);
-      
-      // Transform conversations to include other user info
-      const transformedConvs: ConversationWithUser[] = [];
-      for (const conv of convsResponse) {
-        const participants = await chatService.getParticipants(conv.id);
-        const otherParticipant = participants.find((p) => p.user_id !== currentUserId);
-        
-        if (otherParticipant) {
-          transformedConvs.push({
-            id: conv.id,
-            title: conv.title,
-            other_user_id: otherParticipant.user_id,
-            other_user_name: otherParticipant.full_name || otherParticipant.username,
-            last_message: conv.last_message,
-            last_message_time: conv.last_message_time,
-            message_count: conv.message_count,
-          });
+      try {
+        const convsResponse = await chatService.getConversations(currentUserId);
+
+        // Transform conversations to include other user info
+        const transformedConvs: ConversationWithUser[] = [];
+        for (const conv of convsResponse) {
+          try {
+            const participants = await chatService.getParticipants(conv.id);
+            const otherParticipant = participants.find((p) => p.user_id !== currentUserId);
+
+            if (otherParticipant) {
+              transformedConvs.push({
+                id: conv.id,
+                title: conv.title,
+                other_user_id: otherParticipant.user_id,
+                other_user_name: otherParticipant.full_name || otherParticipant.username,
+                last_message: conv.last_message,
+                last_message_time: conv.last_message_time,
+                message_count: conv.message_count,
+              });
+            }
+          } catch (err) {
+            console.error(`Failed to load participants for conversation ${conv.id}:`, err);
+          }
         }
+
+        setConversations(transformedConvs);
+      } catch (err: any) {
+        console.error("Error loading conversations:", err);
+        setError(err.message || "Erro ao carregar conversas");
       }
-      
-      setConversations(transformedConvs);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error loading users/conversations:", err);
+      setError(err.message || "Erro ao carregar dados");
     } finally {
       setUsersLoading(false);
     }
