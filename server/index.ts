@@ -1611,13 +1611,21 @@ export async function createServer() {
   async function ensureChatTables() {
     if (!isDbConfigured()) return;
 
+    // Drop existing tables if they exist (to clear any schema issues)
+    try {
+      await query(`DROP TABLE IF EXISTS chat_messages CASCADE`);
+      await query(`DROP TABLE IF EXISTS chat_participants CASCADE`);
+      await query(`DROP TABLE IF EXISTS chat_conversations CASCADE`);
+    } catch (e) {
+      // Ignore errors if tables don't exist
+    }
+
     await query(`CREATE TABLE IF NOT EXISTS chat_conversations (
       id TEXT PRIMARY KEY,
       title TEXT,
       created_by TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW(),
-      CONSTRAINT fk_created_by FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE CASCADE
+      updated_at TIMESTAMPTZ DEFAULT NOW()
     )`);
 
     await query(`CREATE TABLE IF NOT EXISTS chat_participants (
@@ -1625,8 +1633,6 @@ export async function createServer() {
       conversation_id TEXT NOT NULL,
       user_id TEXT NOT NULL,
       joined_at TIMESTAMPTZ DEFAULT NOW(),
-      CONSTRAINT fk_conversation FOREIGN KEY(conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
-      CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
       UNIQUE(conversation_id, user_id)
     )`);
 
@@ -1640,9 +1646,7 @@ export async function createServer() {
       file_name TEXT,
       file_type TEXT,
       file_size INTEGER,
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      CONSTRAINT fk_conversation FOREIGN KEY(conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
-      CONSTRAINT fk_sender FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
+      created_at TIMESTAMPTZ DEFAULT NOW()
     )`);
   }
 
