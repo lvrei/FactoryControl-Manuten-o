@@ -248,6 +248,13 @@ export function Layout({ children }: LayoutProps) {
           ))}
         </div>
       </nav>
+
+      {/* Chat Modal */}
+      <ChatModal
+        open={chatModalOpen}
+        onOpenChange={setChatModalOpen}
+        currentUserId={userSession.id}
+      />
     </div>
   );
 }
