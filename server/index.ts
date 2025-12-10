@@ -1611,43 +1611,34 @@ export async function createServer() {
   let chatTablesInitialized = false;
 
   async function ensureChatTables() {
-    if (!isDbConfigured() || chatTablesInitialized) return;
+    if (!isDbConfigured()) return;
+
+    // Only try once per server instance
+    if (chatTablesInitialized) return;
 
     try {
-      // Try to drop old tables with bad constraints
-      await query(`DROP TABLE IF EXISTS chat_messages CASCADE`).catch(() => {});
-      await query(`DROP TABLE IF EXISTS chat_participants CASCADE`).catch(() => {});
-      await query(`DROP TABLE IF EXISTS chat_conversations CASCADE`).catch(() => {});
-    } catch (e) {
-      // Ignore errors during cleanup
-    }
+      console.log("[CHAT] Ensuring chat tables exist...");
 
-    try {
-      await query(`CREATE TABLE chat_conversations (
+      // Create tables if they don't exist
+      await query(`CREATE TABLE IF NOT EXISTS chat_conversations (
         id TEXT PRIMARY KEY,
         title TEXT,
         created_by TEXT NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )`);
-    } catch (e: any) {
-      if (!e.message.includes('already exists')) throw e;
-    }
+      console.log("[CHAT] chat_conversations table ready");
 
-    try {
-      await query(`CREATE TABLE chat_participants (
+      await query(`CREATE TABLE IF NOT EXISTS chat_participants (
         id TEXT PRIMARY KEY,
         conversation_id TEXT NOT NULL,
         user_id TEXT NOT NULL,
         joined_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE(conversation_id, user_id)
       )`);
-    } catch (e: any) {
-      if (!e.message.includes('already exists')) throw e;
-    }
+      console.log("[CHAT] chat_participants table ready");
 
-    try {
-      await query(`CREATE TABLE chat_messages (
+      await query(`CREATE TABLE IF NOT EXISTS chat_messages (
         id TEXT PRIMARY KEY,
         conversation_id TEXT NOT NULL,
         sender_id TEXT NOT NULL,
@@ -1659,11 +1650,14 @@ export async function createServer() {
         file_size INTEGER,
         created_at TIMESTAMPTZ DEFAULT NOW()
       )`);
-    } catch (e: any) {
-      if (!e.message.includes('already exists')) throw e;
-    }
+      console.log("[CHAT] chat_messages table ready");
 
-    chatTablesInitialized = true;
+      chatTablesInitialized = true;
+      console.log("[CHAT] All chat tables initialized successfully");
+    } catch (e: any) {
+      console.error("[CHAT] Error initializing tables:", e.message, e.stack);
+      throw e;
+    }
   }
 
   // GET /api/chat/conversations - get all conversations for the current user
