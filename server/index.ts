@@ -1920,6 +1920,7 @@ export async function createServer() {
       await ensureChatTables();
 
       const conversationId = req.params.id;
+      console.log("[CHAT] GET /chat/conversation/:id/participants - conversationId:", conversationId);
 
       const { rows } = await query(`
         SELECT
@@ -1935,6 +1936,7 @@ export async function createServer() {
         ORDER BY p.joined_at ASC
       `, [conversationId]);
 
+      console.log("[CHAT] Found", rows.length, "participants in conversation", conversationId);
       return res.json(rows.map((r: any) => ({
         id: r.id,
         user_id: r.user_id,
@@ -1944,7 +1946,7 @@ export async function createServer() {
         joined_at: r.joined_at
       })));
     } catch (e: any) {
-      console.error("[DIRECT] GET /chat/conversation/:id/participants error:", e);
+      console.error("[CHAT] GET /chat/conversation/:id/participants error:", e.message, e.stack);
       return res.status(500).json({ error: e.message });
     }
   });
