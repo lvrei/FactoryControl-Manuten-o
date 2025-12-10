@@ -1930,7 +1930,7 @@ export async function createServer() {
 
       await ensureChatTables();
 
-      const conversationId = req.params.id;
+      const conversationId = String(req.params.id);
       console.log("[CHAT] GET /chat/conversation/:id/participants - conversationId:", conversationId);
 
       const { rows } = await query(`
