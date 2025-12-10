@@ -1669,12 +1669,17 @@ export async function createServer() {
   // GET /api/chat/conversations - get all conversations for the current user
   app.get(["/api/chat/conversations", "/chat/conversations"], async (req, res) => {
     try {
-      if (!isDbConfigured()) return res.json([]);
+      if (!isDbConfigured()) {
+        console.warn("[CHAT] Database not configured");
+        return res.json([]);
+      }
 
+      console.log("[CHAT] GET /chat/conversations - userId:", req.query.user_id);
       await ensureChatTables();
 
       const userId = req.query.user_id as string;
       if (!userId) {
+        console.warn("[CHAT] user_id is required");
         return res.status(400).json({ error: "user_id is required" });
       }
 
@@ -1694,6 +1699,7 @@ export async function createServer() {
         ORDER BY c.updated_at DESC
       `, [userId]);
 
+      console.log("[CHAT] Found", rows.length, "conversations for user", userId);
       return res.json(rows.map((r: any) => ({
         id: r.id,
         title: r.title || 'Conversation',
@@ -1705,7 +1711,7 @@ export async function createServer() {
         last_message_time: r.last_message_time
       })));
     } catch (e: any) {
-      console.error("[DIRECT] GET /chat/conversations error:", e);
+      console.error("[CHAT] GET /chat/conversations error:", e.message, e.stack);
       return res.status(500).json({ error: e.message });
     }
   });
