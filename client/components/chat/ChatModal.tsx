@@ -282,16 +282,26 @@ export function ChatModal({
   };
 
   if (view === "chat" && selectedConversationId) {
-    const selectedUser = selectedUserId
-      ? users.find((u) => u.id === selectedUserId)?.full_name
-      : conversations.find((c) => c.id === selectedConversationId)?.other_user_name;
+    let selectedUserName = "Conversa";
+
+    if (selectedUserId) {
+      const user = users.find((u) => u.id === selectedUserId);
+      if (user && typeof user === "object" && "full_name" in user) {
+        selectedUserName = user.full_name || user.username || "Utilizador";
+      }
+    } else {
+      const conv = conversations.find((c) => c.id === selectedConversationId);
+      if (conv) {
+        selectedUserName = conv.other_user_name || "Conversa";
+      }
+    }
 
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="sm:max-w-[500px] flex flex-col h-[600px]">
           <DialogHeader className="flex flex-row items-center justify-between">
             <div>
-              <DialogTitle>{selectedUser || "Conversa"}</DialogTitle>
+              <DialogTitle>{String(selectedUserName)}</DialogTitle>
               <DialogDescription>Conversa privada</DialogDescription>
             </div>
             <Button
