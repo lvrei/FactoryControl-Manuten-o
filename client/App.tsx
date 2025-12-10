@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import Equipment from "./pages/Equipment";
 import MaintenanceComplete from "./pages/MaintenanceComplete";
 import Team from "./pages/Team";
+import Chat from "./pages/Chat";
 import Planning from "./pages/Planning";
 import AlertsSimple from "./pages/AlertsSimple";
 import SensorsPage from "./pages/Sensors";
