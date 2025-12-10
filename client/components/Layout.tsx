@@ -26,6 +26,8 @@ interface LayoutProps {
   children?: ReactNode;
 }
 
+import { ChatModal } from "@/components/chat/ChatModal";
+
 const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Equipamentos", href: "/equipment", icon: Activity },
