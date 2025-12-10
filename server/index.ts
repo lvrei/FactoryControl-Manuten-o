@@ -1896,7 +1896,7 @@ export async function createServer() {
       if (!isDbConfigured())
         return res.status(400).json({ error: "Database not configured" });
 
-      const messageId = req.params.id;
+      const messageId = String(req.params.id);
       console.log("[CHAT] GET /chat/message/:id/file - messageId:", messageId);
 
       const { rows } = await query(`
