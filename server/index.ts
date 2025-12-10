@@ -1886,6 +1886,7 @@ export async function createServer() {
         return res.status(400).json({ error: "Database not configured" });
 
       const messageId = req.params.id;
+      console.log("[CHAT] GET /chat/message/:id/file - messageId:", messageId);
 
       const { rows } = await query(`
         SELECT file_data, file_name, file_type FROM chat_messages WHERE id = $1
@@ -1906,7 +1907,7 @@ export async function createServer() {
       res.setHeader("Content-Length", file_data.length);
       res.send(file_data);
     } catch (e: any) {
-      console.error("[DIRECT] GET /chat/message/:id/file error:", e);
+      console.error("[CHAT] GET /chat/message/:id/file error:", e.message, e.stack);
       return res.status(500).json({ error: e.message });
     }
   });
