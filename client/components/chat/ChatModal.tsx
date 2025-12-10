@@ -283,7 +283,7 @@ export function ChatModal({
 
   if (view === "chat" && selectedConversationId) {
     const selectedUser = selectedUserId
-      ? users.find((u) => u.id === selectedUserId)
+      ? users.find((u) => u.id === selectedUserId)?.full_name
       : conversations.find((c) => c.id === selectedConversationId)?.other_user_name;
 
     return (
@@ -291,7 +291,7 @@ export function ChatModal({
         <DialogContent className="sm:max-w-[500px] flex flex-col h-[600px]">
           <DialogHeader className="flex flex-row items-center justify-between">
             <div>
-              <DialogTitle>{selectedUser}</DialogTitle>
+              <DialogTitle>{selectedUser || "Conversa"}</DialogTitle>
               <DialogDescription>Conversa privada</DialogDescription>
             </div>
             <Button
