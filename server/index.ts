@@ -1606,6 +1606,315 @@ export async function createServer() {
     }
   });
 
+  // Chat API endpoints
+  // Ensure chat tables exist
+  async function ensureChatTables() {
+    if (!isDbConfigured()) return;
+
+    await query(`CREATE TABLE IF NOT EXISTS chat_conversations (
+      id TEXT PRIMARY KEY,
+      title TEXT,
+      created_by TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW(),
+      CONSTRAINT fk_created_by FOREIGN KEY(created_by) REFERENCES users(id) ON DELETE CASCADE
+    )`);
+
+    await query(`CREATE TABLE IF NOT EXISTS chat_participants (
+      id TEXT PRIMARY KEY,
+      conversation_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      joined_at TIMESTAMPTZ DEFAULT NOW(),
+      CONSTRAINT fk_conversation FOREIGN KEY(conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
+      CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+      UNIQUE(conversation_id, user_id)
+    )`);
+
+    await query(`CREATE TABLE IF NOT EXISTS chat_messages (
+      id TEXT PRIMARY KEY,
+      conversation_id TEXT NOT NULL,
+      sender_id TEXT NOT NULL,
+      message TEXT,
+      message_type TEXT DEFAULT 'text',
+      file_data BYTEA,
+      file_name TEXT,
+      file_type TEXT,
+      file_size INTEGER,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      CONSTRAINT fk_conversation FOREIGN KEY(conversation_id) REFERENCES chat_conversations(id) ON DELETE CASCADE,
+      CONSTRAINT fk_sender FOREIGN KEY(sender_id) REFERENCES users(id) ON DELETE CASCADE
+    )`);
+  }
+
+  // GET /api/chat/conversations - get all conversations for the current user
+  app.get(["/api/chat/conversations", "/chat/conversations"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+
+      await ensureChatTables();
+
+      const userId = req.query.user_id as string;
+      if (!userId) {
+        return res.status(400).json({ error: "user_id is required" });
+      }
+
+      const { rows } = await query(`
+        SELECT DISTINCT
+          c.id,
+          c.title,
+          c.created_by,
+          c.created_at,
+          c.updated_at,
+          (SELECT COUNT(*) FROM chat_messages WHERE conversation_id = c.id) as message_count,
+          (SELECT message FROM chat_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message,
+          (SELECT created_at FROM chat_messages WHERE conversation_id = c.id ORDER BY created_at DESC LIMIT 1) as last_message_time
+        FROM chat_conversations c
+        INNER JOIN chat_participants p ON c.id = p.conversation_id
+        WHERE p.user_id = $1
+        ORDER BY c.updated_at DESC
+      `, [userId]);
+
+      return res.json(rows.map((r: any) => ({
+        id: r.id,
+        title: r.title || 'Conversation',
+        created_by: r.created_by,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+        message_count: Number(r.message_count || 0),
+        last_message: r.last_message,
+        last_message_time: r.last_message_time
+      })));
+    } catch (e: any) {
+      console.error("[DIRECT] GET /chat/conversations error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // GET /api/chat/conversation/:id - get messages in a conversation
+  app.get(["/api/chat/conversation/:id", "/chat/conversation/:id"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json({ messages: [] });
+
+      await ensureChatTables();
+
+      const conversationId = req.params.id;
+
+      const { rows } = await query(`
+        SELECT
+          m.id,
+          m.conversation_id,
+          m.sender_id,
+          m.message,
+          m.message_type,
+          m.file_name,
+          m.file_type,
+          m.file_size,
+          m.created_at,
+          u.full_name as sender_name
+        FROM chat_messages m
+        LEFT JOIN users u ON m.sender_id = u.id
+        WHERE m.conversation_id = $1
+        ORDER BY m.created_at ASC
+      `, [conversationId]);
+
+      return res.json({
+        conversation_id: conversationId,
+        messages: rows.map((r: any) => ({
+          id: r.id,
+          conversation_id: r.conversation_id,
+          sender_id: r.sender_id,
+          sender_name: r.sender_name,
+          message: r.message,
+          message_type: r.message_type,
+          file_name: r.file_name,
+          file_type: r.file_type,
+          file_size: r.file_size,
+          created_at: r.created_at
+        }))
+      });
+    } catch (e: any) {
+      console.error("[DIRECT] GET /chat/conversation/:id error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // POST /api/chat/conversation - create a new conversation
+  app.post(["/api/chat/conversation", "/chat/conversation"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      await ensureChatTables();
+
+      const { title, user_id, participant_ids } = req.body;
+
+      if (!user_id) {
+        return res.status(400).json({ error: "user_id is required" });
+      }
+
+      const conversationId = `conv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+      await query(`
+        INSERT INTO chat_conversations (id, title, created_by, created_at, updated_at)
+        VALUES ($1, $2, $3, NOW(), NOW())
+      `, [conversationId, title || 'Conversation', user_id]);
+
+      // Add creator as participant
+      const participantId1 = `part-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      await query(`
+        INSERT INTO chat_participants (id, conversation_id, user_id, joined_at)
+        VALUES ($1, $2, $3, NOW())
+      `, [participantId1, conversationId, user_id]);
+
+      // Add other participants
+      if (participant_ids && Array.isArray(participant_ids)) {
+        for (const participantUserId of participant_ids) {
+          if (participantUserId !== user_id) {
+            const participantId = `part-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+            try {
+              await query(`
+                INSERT INTO chat_participants (id, conversation_id, user_id, joined_at)
+                VALUES ($1, $2, $3, NOW())
+              `, [participantId, conversationId, participantUserId]);
+            } catch (e) {
+              console.warn(`Could not add participant ${participantUserId}:`, e);
+            }
+          }
+        }
+      }
+
+      return res.json({
+        id: conversationId,
+        title: title || 'Conversation',
+        created_by: user_id
+      });
+    } catch (e: any) {
+      console.error("[DIRECT] POST /chat/conversation error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // POST /api/chat/message - send a message
+  app.post(["/api/chat/message", "/chat/message"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      await ensureChatTables();
+
+      const { conversation_id, sender_id, message, message_type, file_name, file_type, file_size, file_data } = req.body;
+
+      if (!conversation_id || !sender_id) {
+        return res.status(400).json({ error: "conversation_id and sender_id are required" });
+      }
+
+      const messageId = `msg-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+      const buffer = file_data ? Buffer.from(file_data, "base64") : null;
+
+      await query(`
+        INSERT INTO chat_messages (id, conversation_id, sender_id, message, message_type, file_data, file_name, file_type, file_size, created_at)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+      `, [
+        messageId,
+        conversation_id,
+        sender_id,
+        message || null,
+        message_type || 'text',
+        buffer,
+        file_name || null,
+        file_type || null,
+        file_size || null
+      ]);
+
+      // Update conversation updated_at
+      await query(`
+        UPDATE chat_conversations SET updated_at = NOW() WHERE id = $1
+      `, [conversation_id]);
+
+      return res.json({
+        id: messageId,
+        conversation_id,
+        sender_id,
+        message,
+        message_type: message_type || 'text',
+        file_name,
+        created_at: new Date().toISOString()
+      });
+    } catch (e: any) {
+      console.error("[DIRECT] POST /chat/message error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // GET /api/chat/message/:id/file - download a message file
+  app.get(["/api/chat/message/:id/file", "/chat/message/:id/file"], async (req, res) => {
+    try {
+      if (!isDbConfigured())
+        return res.status(400).json({ error: "Database not configured" });
+
+      const messageId = req.params.id;
+
+      const { rows } = await query(`
+        SELECT file_data, file_name, file_type FROM chat_messages WHERE id = $1
+      `, [messageId]);
+
+      if (rows.length === 0) {
+        return res.status(404).json({ error: "Message not found" });
+      }
+
+      const { file_data, file_name, file_type } = rows[0];
+
+      if (!file_data) {
+        return res.status(404).json({ error: "File not found" });
+      }
+
+      res.setHeader("Content-Type", file_type || "application/octet-stream");
+      res.setHeader("Content-Disposition", `attachment; filename="${file_name || 'file'}"`);
+      res.setHeader("Content-Length", file_data.length);
+      res.send(file_data);
+    } catch (e: any) {
+      console.error("[DIRECT] GET /chat/message/:id/file error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
+  // GET /api/chat/conversation/:id/participants - get participants in a conversation
+  app.get(["/api/chat/conversation/:id/participants", "/chat/conversation/:id/participants"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) return res.json([]);
+
+      await ensureChatTables();
+
+      const conversationId = req.params.id;
+
+      const { rows } = await query(`
+        SELECT
+          p.id,
+          p.user_id,
+          p.joined_at,
+          u.full_name,
+          u.username,
+          u.email
+        FROM chat_participants p
+        LEFT JOIN users u ON p.user_id = u.id
+        WHERE p.conversation_id = $1
+        ORDER BY p.joined_at ASC
+      `, [conversationId]);
+
+      return res.json(rows.map((r: any) => ({
+        id: r.id,
+        user_id: r.user_id,
+        full_name: r.full_name,
+        username: r.username,
+        email: r.email,
+        joined_at: r.joined_at
+      })));
+    } catch (e: any) {
+      console.error("[DIRECT] GET /chat/conversation/:id/participants error:", e);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // Debug: list registered routes
   app.get(["/api/_routes", "/_routes"], (_req, res) => {
     try {
