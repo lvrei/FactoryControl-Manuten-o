@@ -1682,7 +1682,7 @@ export async function createServer() {
       console.log("[CHAT] GET /chat/conversations - userId:", req.query.user_id);
       await ensureChatTables();
 
-      const userId = req.query.user_id as string;
+      const userId = String(req.query.user_id || "");
       if (!userId) {
         console.warn("[CHAT] user_id is required");
         return res.status(400).json({ error: "user_id is required" });
