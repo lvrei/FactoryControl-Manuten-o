@@ -1774,7 +1774,7 @@ export async function createServer() {
     }
   });
 
-  // POST /api/chat/conversation - create a new conversation
+  // POST /api/chat/conversation - create or find existing conversation
   app.post(["/api/chat/conversation", "/chat/conversation"], async (req, res) => {
     try {
       if (!isDbConfigured())
@@ -1788,7 +1788,7 @@ export async function createServer() {
         ? participant_ids.map(id => String(id))
         : [];
 
-      console.log("[CHAT] POST /chat/conversation - creating conversation", {
+      console.log("[CHAT] POST /chat/conversation - finding or creating conversation", {
         user_id: userId,
         participant_ids: participantIdsList
       });
@@ -1797,6 +1797,32 @@ export async function createServer() {
         return res.status(400).json({ error: "user_id is required" });
       }
 
+      // For 1-on-1 conversations, check if one already exists with this pair of users
+      if (participantIdsList.length === 1) {
+        const otherUserId = participantIdsList[0];
+
+        // Find existing conversation between these two users
+        const { rows: existingConvs } = await query(`
+          SELECT c.id, c.title, c.created_by, c.created_at, c.updated_at
+          FROM chat_conversations c
+          INNER JOIN chat_participants p1 ON CAST(c.id AS TEXT) = CAST(p1.conversation_id AS TEXT)
+          INNER JOIN chat_participants p2 ON CAST(c.id AS TEXT) = CAST(p2.conversation_id AS TEXT)
+          WHERE (CAST(p1.user_id AS TEXT) = $1 AND CAST(p2.user_id AS TEXT) = $2)
+             OR (CAST(p1.user_id AS TEXT) = $2 AND CAST(p2.user_id AS TEXT) = $1)
+          LIMIT 1
+        `, [userId, otherUserId]);
+
+        if (existingConvs.length > 0) {
+          console.log("[CHAT] Found existing conversation:", existingConvs[0].id);
+          return res.json({
+            id: existingConvs[0].id,
+            title: existingConvs[0].title || 'Conversation',
+            created_by: existingConvs[0].created_by
+          });
+        }
+      }
+
+      // No existing conversation, create a new one
       const conversationId = `conv-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
       await query(`
