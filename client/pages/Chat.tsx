@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
+import { authService } from "@/services/authService";
 import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -10,7 +10,7 @@ import { NewConversationDialog } from "@/components/chat/NewConversationDialog";
 import { ChatMessage, chatService } from "@/services/chatService";
 
 export default function ChatPage() {
-  const { user } = useAuth();
+  const user = authService.getCurrentUser();
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
