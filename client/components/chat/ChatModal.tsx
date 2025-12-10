@@ -61,8 +61,24 @@ export function ChatModal({
   useEffect(() => {
     if (open && view === "list") {
       loadUsersAndConversations();
+
+      // Reload conversations periodically
+      const interval = setInterval(loadUsersAndConversations, 5000);
+      return () => clearInterval(interval);
     }
   }, [open, view]);
+
+  // Auto-refresh messages when viewing a conversation
+  useEffect(() => {
+    if (view === "chat" && selectedConversationId) {
+      // Reload messages periodically
+      const interval = setInterval(() => {
+        loadMessages(selectedConversationId);
+      }, 3000);
+
+      return () => clearInterval(interval);
+    }
+  }, [view, selectedConversationId]);
 
   useEffect(() => {
     // Auto-scroll to bottom when messages change
