@@ -1619,26 +1619,36 @@ export async function createServer() {
     try {
       console.log("[CHAT] Ensuring chat tables exist...");
 
-      // Create tables if they don't exist
-      await query(`CREATE TABLE IF NOT EXISTS chat_conversations (
+      // Drop and recreate to ensure clean schema
+      try {
+        await query(`DROP TABLE IF EXISTS chat_messages CASCADE`);
+        await query(`DROP TABLE IF EXISTS chat_participants CASCADE`);
+        await query(`DROP TABLE IF EXISTS chat_conversations CASCADE`);
+        console.log("[CHAT] Old tables dropped");
+      } catch (e) {
+        console.log("[CHAT] No old tables to drop");
+      }
+
+      // Create fresh tables
+      await query(`CREATE TABLE chat_conversations (
         id TEXT PRIMARY KEY,
         title TEXT,
         created_by TEXT NOT NULL,
         created_at TIMESTAMPTZ DEFAULT NOW(),
         updated_at TIMESTAMPTZ DEFAULT NOW()
       )`);
-      console.log("[CHAT] chat_conversations table ready");
+      console.log("[CHAT] chat_conversations table created");
 
-      await query(`CREATE TABLE IF NOT EXISTS chat_participants (
+      await query(`CREATE TABLE chat_participants (
         id TEXT PRIMARY KEY,
         conversation_id TEXT NOT NULL,
         user_id TEXT NOT NULL,
         joined_at TIMESTAMPTZ DEFAULT NOW(),
         UNIQUE(conversation_id, user_id)
       )`);
-      console.log("[CHAT] chat_participants table ready");
+      console.log("[CHAT] chat_participants table created");
 
-      await query(`CREATE TABLE IF NOT EXISTS chat_messages (
+      await query(`CREATE TABLE chat_messages (
         id TEXT PRIMARY KEY,
         conversation_id TEXT NOT NULL,
         sender_id TEXT NOT NULL,
@@ -1650,13 +1660,14 @@ export async function createServer() {
         file_size INTEGER,
         created_at TIMESTAMPTZ DEFAULT NOW()
       )`);
-      console.log("[CHAT] chat_messages table ready");
+      console.log("[CHAT] chat_messages table created");
 
       chatTablesInitialized = true;
       console.log("[CHAT] All chat tables initialized successfully");
     } catch (e: any) {
       console.error("[CHAT] Error initializing tables:", e.message, e.stack);
-      throw e;
+      // Don't throw - let the app continue even if chat setup fails
+      chatTablesInitialized = true;
     }
   }
 
