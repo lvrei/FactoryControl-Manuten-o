@@ -203,6 +203,7 @@ export function ChatModal({
 
     try {
       setSendingMessage(true);
+      setError(null);
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
@@ -217,15 +218,17 @@ export function ChatModal({
           );
           await loadMessages(selectedConversationId);
           if (fileInputRef.current) fileInputRef.current.value = "";
-        } catch (err) {
+        } catch (err: any) {
           console.error("Error sending photo:", err);
+          setError(err.message || "Erro ao enviar foto");
         } finally {
           setSendingMessage(false);
         }
       };
       reader.readAsDataURL(file);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error reading file:", err);
+      setError("Erro ao ler ficheiro");
       setSendingMessage(false);
     }
   };
