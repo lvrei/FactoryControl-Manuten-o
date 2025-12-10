@@ -152,16 +152,49 @@ export function ChatModal({
       setError(null);
       setSelectedUserId(userId);
 
-      // Check if conversation exists
-      const existingConv = conversations.find(
+      // First, reload conversations from server to ensure we have the latest list
+      let currentConversations = conversations;
+      try {
+        const convsResponse = await chatService.getConversations(currentUserId);
+        const transformedConvs: ConversationWithUser[] = [];
+        for (const conv of convsResponse) {
+          try {
+            const participants = await chatService.getParticipants(conv.id);
+            const otherParticipant = participants.find((p) => p.user_id !== currentUserId);
+
+            if (otherParticipant) {
+              transformedConvs.push({
+                id: conv.id,
+                title: conv.title,
+                other_user_id: otherParticipant.user_id,
+                other_user_name: otherParticipant.full_name || otherParticipant.username,
+                last_message: conv.last_message,
+                last_message_time: conv.last_message_time,
+                message_count: conv.message_count,
+              });
+            }
+          } catch (err) {
+            console.error(`Failed to load participants for conversation ${conv.id}:`, err);
+          }
+        }
+        currentConversations = transformedConvs;
+        setConversations(transformedConvs);
+      } catch (err) {
+        console.warn("Failed to reload conversations, using cached list");
+      }
+
+      // Check if conversation exists with this user
+      const existingConv = currentConversations.find(
         (c) => c.other_user_id === userId
       );
 
       if (existingConv) {
+        console.log("[CHAT] Using existing conversation:", existingConv.id);
         setSelectedConversationId(existingConv.id);
         await loadMessages(existingConv.id);
       } else {
-        // Create new conversation
+        // Create new conversation only if it truly doesn't exist
+        console.log("[CHAT] Creating new conversation with user:", userId);
         const conversationId = await chatService.createConversation(
           currentUserId,
           [userId],
@@ -169,6 +202,12 @@ export function ChatModal({
         );
         setSelectedConversationId(conversationId);
         setMessages([]);
+        // Reload conversations to include the new one
+        try {
+          await loadUsersAndConversations();
+        } catch (err) {
+          console.warn("Failed to reload conversations after creation");
+        }
       }
 
       setView("chat");
