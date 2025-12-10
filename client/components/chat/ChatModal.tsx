@@ -415,6 +415,13 @@ export function ChatModal({
           </DialogDescription>
         </DialogHeader>
 
+        {error && (
+          <Alert variant="destructive" className="mb-2">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+
         <ScrollArea className="h-[400px] border rounded-lg p-3">
           {usersLoading ? (
             <div className="flex items-center justify-center py-8">
