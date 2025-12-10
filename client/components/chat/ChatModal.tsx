@@ -166,10 +166,12 @@ export function ChatModal({
   const loadMessages = async (conversationId: string) => {
     try {
       setMessagesLoading(true);
+      setError(null);
       const data = await chatService.getMessages(conversationId);
       setMessages(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error loading messages:", err);
+      setError(err.message || "Erro ao carregar mensagens");
     } finally {
       setMessagesLoading(false);
     }
