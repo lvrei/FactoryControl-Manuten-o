@@ -31,7 +31,6 @@ const navigation = [
   { name: "Equipamentos", href: "/equipment", icon: Activity },
   { name: "Manutenção", href: "/maintenance", icon: Settings },
   { name: "Equipa", href: "/team", icon: Users },
-  { name: "Chat", href: "/chat", icon: MessageSquare },
   { name: "Planeamento", href: "/planning", icon: Calendar },
   { name: "Sensores", href: "/sensors", icon: Settings },
   { name: "Câmaras", href: "/cameras", icon: Video },
