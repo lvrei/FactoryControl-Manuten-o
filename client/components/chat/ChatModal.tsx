@@ -277,6 +277,12 @@ export function ChatModal({
       );
       setMessageInput("");
       await loadMessages(selectedConversationId);
+      // Refresh conversations list after sending message to update last_message
+      try {
+        await loadUsersAndConversations();
+      } catch (err) {
+        console.warn("Failed to refresh conversations after sending message");
+      }
     } catch (err: any) {
       console.error("Error sending message:", err);
       setError(err.message || "Erro ao enviar mensagem");
