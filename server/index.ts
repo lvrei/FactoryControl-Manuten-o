@@ -1801,14 +1801,25 @@ export async function createServer() {
       if (participantIdsList.length === 1) {
         const otherUserId = participantIdsList[0];
 
-        // Find existing conversation between these two users
+        // Find existing conversation between these two users (exactly 2 participants)
         const { rows: existingConvs } = await query(`
           SELECT c.id, c.title, c.created_by, c.created_at, c.updated_at
           FROM chat_conversations c
-          INNER JOIN chat_participants p1 ON CAST(c.id AS TEXT) = CAST(p1.conversation_id AS TEXT)
-          INNER JOIN chat_participants p2 ON CAST(c.id AS TEXT) = CAST(p2.conversation_id AS TEXT)
-          WHERE (CAST(p1.user_id AS TEXT) = $1 AND CAST(p2.user_id AS TEXT) = $2)
-             OR (CAST(p1.user_id AS TEXT) = $2 AND CAST(p2.user_id AS TEXT) = $1)
+          WHERE (
+            SELECT COUNT(DISTINCT CAST(user_id AS TEXT))
+            FROM chat_participants
+            WHERE CAST(conversation_id AS TEXT) = CAST(c.id AS TEXT)
+          ) = 2
+          AND EXISTS (
+            SELECT 1 FROM chat_participants
+            WHERE CAST(conversation_id AS TEXT) = CAST(c.id AS TEXT)
+            AND CAST(user_id AS TEXT) = $1
+          )
+          AND EXISTS (
+            SELECT 1 FROM chat_participants
+            WHERE CAST(conversation_id AS TEXT) = CAST(c.id AS TEXT)
+            AND CAST(user_id AS TEXT) = $2
+          )
           LIMIT 1
         `, [userId, otherUserId]);
 
