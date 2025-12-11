@@ -1823,6 +1823,8 @@ export async function createServer() {
           LIMIT 1
         `, [userId, otherUserId]);
 
+        console.log("[CHAT] Checked for existing 1-on-1 conversation between", userId, "and", otherUserId, "- Found:", existingConvs.length);
+
         if (existingConvs.length > 0) {
           console.log("[CHAT] Found existing conversation:", existingConvs[0].id);
           return res.json({
