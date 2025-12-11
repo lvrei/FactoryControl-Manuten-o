@@ -1774,6 +1774,99 @@ export async function createServer() {
     }
   });
 
+  // GET /api/chat/stream/:id - Server-Sent Events stream for real-time messages
+  app.get(["/api/chat/stream/:id", "/chat/stream/:id"], async (req, res) => {
+    try {
+      if (!isDbConfigured()) {
+        return res.status(400).json({ error: "Database not configured" });
+      }
+
+      await ensureChatTables();
+
+      const conversationId = String(req.params.id);
+      console.log("[CHAT] SSE stream started for conversation:", conversationId);
+
+      // Set SSE headers
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      res.setHeader("Access-Control-Allow-Origin", "*");
+
+      // Send initial connection message
+      res.write(":\n\n");
+
+      // Track last update timestamp
+      let lastCheckTime = new Date();
+
+      // Function to send updated messages
+      const sendMessages = async () => {
+        try {
+          const { rows } = await query(`
+            SELECT
+              m.id,
+              m.conversation_id,
+              m.sender_id,
+              m.message,
+              m.message_type,
+              m.file_name,
+              m.file_type,
+              m.file_size,
+              m.created_at,
+              COALESCE(u.full_name, 'Anónimo') as sender_name
+            FROM chat_messages m
+            LEFT JOIN users u ON CAST(m.sender_id AS TEXT) = CAST(u.id AS TEXT)
+            WHERE CAST(m.conversation_id AS TEXT) = $1
+            ORDER BY m.created_at ASC
+          `, [conversationId]);
+
+          const messages = rows.map((r: any) => ({
+            id: r.id,
+            conversation_id: r.conversation_id,
+            sender_id: r.sender_id,
+            sender_name: r.sender_name,
+            message: r.message,
+            message_type: r.message_type,
+            file_name: r.file_name,
+            file_type: r.file_type,
+            file_size: r.file_size,
+            created_at: r.created_at,
+          }));
+
+          if (messages.length > 0) {
+            const data = JSON.stringify({ messages });
+            res.write(`data: ${data}\n\n`);
+          }
+
+          lastCheckTime = new Date();
+        } catch (err) {
+          console.error("[CHAT] Error sending messages:", err);
+        }
+      };
+
+      // Send initial messages
+      await sendMessages();
+
+      // Check for new messages every 1 second
+      const interval = setInterval(sendMessages, 1000);
+
+      // Handle client disconnect
+      req.on("close", () => {
+        console.log("[CHAT] SSE client disconnected for conversation:", conversationId);
+        clearInterval(interval);
+        res.end();
+      });
+
+      req.on("error", () => {
+        console.log("[CHAT] SSE client error for conversation:", conversationId);
+        clearInterval(interval);
+        res.end();
+      });
+    } catch (e: any) {
+      console.error("[CHAT] GET /chat/stream/:id error:", e.message, e.stack);
+      return res.status(500).json({ error: e.message });
+    }
+  });
+
   // POST /api/chat/conversation - create or find existing conversation
   app.post(["/api/chat/conversation", "/chat/conversation"], async (req, res) => {
     try {
