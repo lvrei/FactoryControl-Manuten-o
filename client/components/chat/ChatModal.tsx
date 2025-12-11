@@ -549,7 +549,7 @@ export function ChatModal({
                       onClick={() => {
                         setSelectedConversationId(conv.id);
                         setSelectedUserId(conv.other_user_id);
-                        loadMessages(conv.id);
+                        setMessages([]); // Clear messages, SSE will load them
                         setView("chat");
                       }}
                       className="w-full text-left px-3 py-2 rounded-lg hover:bg-muted transition-colors"
