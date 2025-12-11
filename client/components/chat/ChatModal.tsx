@@ -61,7 +61,7 @@ export function ChatModal({
 
   useEffect(() => {
     if (open && view === "list") {
-      // Run cleanup once when modal opens
+      // Run cleanup and load conversations once when modal opens
       const runCleanup = async () => {
         try {
           const response = await apiFetch("chat/cleanup", { method: "POST" });
@@ -79,8 +79,8 @@ export function ChatModal({
 
       runCleanup();
 
-      // Reload conversations periodically
-      const interval = setInterval(loadUsersAndConversations, 5000);
+      // Reload conversations less frequently (every 30 seconds) or when returning from chat view
+      const interval = setInterval(loadUsersAndConversations, 30000);
       return () => clearInterval(interval);
     }
   }, [open, view]);
