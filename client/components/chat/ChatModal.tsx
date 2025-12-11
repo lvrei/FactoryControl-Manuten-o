@@ -221,7 +221,7 @@ export function ChatModal({
       if (existingConv) {
         console.log("[CHAT] Using existing conversation:", existingConv.id, "with user:", existingConv.other_user_id);
         setSelectedConversationId(existingConv.id);
-        await loadMessages(existingConv.id);
+        setMessages([]); // Clear messages, SSE will load them
       } else {
         // Create new conversation only if it truly doesn't exist
         console.log("[CHAT] Creating new conversation with user:", userId, "No existing conversation found.");
@@ -232,7 +232,7 @@ export function ChatModal({
         );
         console.log("[CHAT] New conversation created:", conversationId);
         setSelectedConversationId(conversationId);
-        setMessages([]);
+        setMessages([]); // Clear messages, SSE will load them
         // Reload conversations to include the new one
         try {
           await loadUsersAndConversations();
