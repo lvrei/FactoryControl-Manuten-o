@@ -79,9 +79,8 @@ export function ChatModal({
 
       runCleanup();
 
-      // Reload conversations less frequently (every 30 seconds) or when returning from chat view
-      const interval = setInterval(loadUsersAndConversations, 30000);
-      return () => clearInterval(interval);
+      // No polling when viewing conversation list - conversations update when messages are sent
+      return () => {};
     }
   }, [open, view]);
 
