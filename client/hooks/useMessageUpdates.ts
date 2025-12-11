@@ -45,7 +45,7 @@ export function useMessageUpdates({
           } else {
             // Initial load - replace entire list
             messagesRef.current = data.messages;
-            console.log("[CHAT] Loaded', data.messages.length, \"initial message(s)");
+            console.log("[CHAT] Loaded", data.messages.length, "initial message(s)");
           }
 
           onNewMessages(messagesRef.current);
