@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +14,7 @@ import {
 import { Loader2, Send, ImagePlus, X, AlertCircle } from "lucide-react";
 import { ChatMessage, chatService } from "@/services/chatService";
 import { apiFetch } from "@/config/api";
+import { useMessageUpdates } from "@/hooks/useMessageUpdates";
 
 interface User {
   id: string;
