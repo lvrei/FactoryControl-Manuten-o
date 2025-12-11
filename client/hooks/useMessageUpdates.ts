@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { ChatMessage } from "@/services/chatService";
 
 interface UseMessageUpdatesProps {
@@ -12,16 +12,19 @@ export function useMessageUpdates({
   onNewMessages,
   enabled,
 }: UseMessageUpdatesProps) {
+  const messagesRef = useRef<ChatMessage[]>([]);
+
   useEffect(() => {
     if (!enabled || !conversationId) {
       return;
     }
 
     let eventSource: EventSource | null = null;
+    let reconnectTimeout: NodeJS.Timeout | null = null;
 
     const connectStream = () => {
       console.log("[CHAT] Connecting SSE stream for conversation:", conversationId);
-      
+
       eventSource = new EventSource(
         `/api/chat/stream/${encodeURIComponent(conversationId)}`
       );
@@ -29,8 +32,17 @@ export function useMessageUpdates({
       eventSource.addEventListener("message", (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log("[CHAT] Received message update:", data);
-          onNewMessages(data.messages);
+          console.log("[CHAT] Received update with", data.messages.length, "message(s)");
+
+          if (data.is_new) {
+            // Append new messages to existing list
+            messagesRef.current = [...messagesRef.current, ...data.messages];
+          } else {
+            // Initial load - replace entire list
+            messagesRef.current = data.messages;
+          }
+
+          onNewMessages(messagesRef.current);
         } catch (err) {
           console.error("[CHAT] Failed to parse SSE message:", err);
         }
@@ -43,7 +55,7 @@ export function useMessageUpdates({
           eventSource = null;
         }
         // Attempt to reconnect after 3 seconds
-        setTimeout(connectStream, 3000);
+        reconnectTimeout = setTimeout(connectStream, 3000);
       });
 
       eventSource.onerror = () => {
@@ -52,7 +64,7 @@ export function useMessageUpdates({
           eventSource.close();
           eventSource = null;
         }
-        setTimeout(connectStream, 3000);
+        reconnectTimeout = setTimeout(connectStream, 3000);
       };
     };
 
@@ -63,6 +75,16 @@ export function useMessageUpdates({
         console.log("[CHAT] Closing SSE stream");
         eventSource.close();
       }
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+      }
     };
   }, [conversationId, enabled, onNewMessages]);
+
+  // Update the ref when the conversation changes
+  useEffect(() => {
+    if (!conversationId) {
+      messagesRef.current = [];
+    }
+  }, [conversationId]);
 }
