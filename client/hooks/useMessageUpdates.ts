@@ -87,10 +87,8 @@ export function useMessageUpdates({
     };
   }, [conversationId, enabled, onNewMessages]);
 
-  // Update the ref when the conversation changes
+  // Reset messages when conversation changes
   useEffect(() => {
-    if (!conversationId) {
-      messagesRef.current = [];
-    }
+    messagesRef.current = [];
   }, [conversationId]);
 }
