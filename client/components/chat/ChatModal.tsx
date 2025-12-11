@@ -200,22 +200,30 @@ export function ChatModal({
       }
 
       // Check if conversation exists with this user
+      console.log("[CHAT] Looking for existing conversation with user:", userId);
+      console.log("[CHAT] Current conversations:", currentConversations.map(c => ({
+        id: c.id,
+        other_user_id: c.other_user_id,
+        other_user_name: c.other_user_name
+      })));
+
       const existingConv = currentConversations.find(
         (c) => c.other_user_id === userId
       );
 
       if (existingConv) {
-        console.log("[CHAT] Using existing conversation:", existingConv.id);
+        console.log("[CHAT] Using existing conversation:", existingConv.id, "with user:", existingConv.other_user_id);
         setSelectedConversationId(existingConv.id);
         await loadMessages(existingConv.id);
       } else {
         // Create new conversation only if it truly doesn't exist
-        console.log("[CHAT] Creating new conversation with user:", userId);
+        console.log("[CHAT] Creating new conversation with user:", userId, "No existing conversation found.");
         const conversationId = await chatService.createConversation(
           currentUserId,
           [userId],
           ""
         );
+        console.log("[CHAT] New conversation created:", conversationId);
         setSelectedConversationId(conversationId);
         setMessages([]);
         // Reload conversations to include the new one
