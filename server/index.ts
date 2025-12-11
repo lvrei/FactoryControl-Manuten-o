@@ -1795,13 +1795,13 @@ export async function createServer() {
       // Send initial connection message
       res.write(":\n\n");
 
-      // Track last update timestamp
-      let lastCheckTime = new Date();
+      // Track the timestamp of the last message we sent to the client
+      let lastSentMessageTime: Date | null = null;
 
-      // Function to send updated messages
-      const sendMessages = async () => {
+      // Function to send only NEW messages
+      const sendNewMessages = async () => {
         try {
-          const { rows } = await query(`
+          let query_str = `
             SELECT
               m.id,
               m.conversation_id,
@@ -1816,8 +1816,19 @@ export async function createServer() {
             FROM chat_messages m
             LEFT JOIN users u ON CAST(m.sender_id AS TEXT) = CAST(u.id AS TEXT)
             WHERE CAST(m.conversation_id AS TEXT) = $1
-            ORDER BY m.created_at ASC
-          `, [conversationId]);
+          `;
+
+          const params: any[] = [conversationId];
+
+          // Only fetch messages created after the last one we sent
+          if (lastSentMessageTime) {
+            query_str += ` AND m.created_at > $2`;
+            params.push(lastSentMessageTime);
+          }
+
+          query_str += ` ORDER BY m.created_at ASC`;
+
+          const { rows } = await query(query_str, params);
 
           const messages = rows.map((r: any) => ({
             id: r.id,
@@ -1832,22 +1843,24 @@ export async function createServer() {
             created_at: r.created_at,
           }));
 
+          // Send only if there are new messages
           if (messages.length > 0) {
-            const data = JSON.stringify({ messages });
+            const data = JSON.stringify({ messages, is_new: true });
             res.write(`data: ${data}\n\n`);
+            // Update the timestamp of the last message we sent
+            lastSentMessageTime = new Date(messages[messages.length - 1].created_at);
+            console.log("[CHAT] Sent", messages.length, "new messages for conversation:", conversationId);
           }
-
-          lastCheckTime = new Date();
         } catch (err) {
           console.error("[CHAT] Error sending messages:", err);
         }
       };
 
-      // Send initial messages
-      await sendMessages();
+      // Send initial messages (all of them on first connection)
+      await sendNewMessages();
 
-      // Check for new messages every 1 second
-      const interval = setInterval(sendMessages, 1000);
+      // Check for new messages every 500ms
+      const interval = setInterval(sendNewMessages, 500);
 
       // Handle client disconnect
       req.on("close", () => {
