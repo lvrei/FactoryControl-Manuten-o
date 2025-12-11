@@ -311,6 +311,12 @@ export function ChatModal({
           );
           await loadMessages(selectedConversationId);
           if (fileInputRef.current) fileInputRef.current.value = "";
+          // Refresh conversations list after sending photo
+          try {
+            await loadUsersAndConversations();
+          } catch (err) {
+            console.warn("Failed to refresh conversations after sending photo");
+          }
         } catch (err: any) {
           console.error("Error sending photo:", err);
           setError(err.message || "Erro ao enviar foto");
