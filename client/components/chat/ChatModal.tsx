@@ -61,7 +61,7 @@ export function ChatModal({
 
   useEffect(() => {
     if (open && view === "list") {
-      // Run cleanup and load conversations once when modal opens
+      // Run cleanup and load conversations once when modal opens or returns to list
       const runCleanup = async () => {
         try {
           const response = await apiFetch("chat/cleanup", { method: "POST" });
@@ -79,8 +79,9 @@ export function ChatModal({
 
       runCleanup();
 
-      // No polling when viewing conversation list - conversations update when messages are sent
-      return () => {};
+      // Update conversation list every 10 seconds when viewing list (for last_message preview)
+      const interval = setInterval(loadUsersAndConversations, 10000);
+      return () => clearInterval(interval);
     }
   }, [open, view]);
 
