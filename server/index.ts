@@ -1801,7 +1801,7 @@ export async function createServer() {
       // Function to send only NEW messages
       const sendNewMessages = async () => {
         try {
-          let query_str = `
+          let queryStr = `
             SELECT
               m.id,
               m.conversation_id,
@@ -1822,13 +1822,13 @@ export async function createServer() {
 
           // Only fetch messages created after the last one we sent
           if (lastSentMessageTime) {
-            query_str += ` AND m.created_at > $2`;
+            queryStr += ` AND m.created_at > $2`;
             params.push(lastSentMessageTime);
           }
 
-          query_str += ` ORDER BY m.created_at ASC`;
+          queryStr += ` ORDER BY m.created_at ASC`;
 
-          const { rows } = await query(query_str, params);
+          const { rows } = await query(queryStr, params);
 
           const messages = rows.map((r: any) => ({
             id: r.id,
