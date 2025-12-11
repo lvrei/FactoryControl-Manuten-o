@@ -85,17 +85,17 @@ export function ChatModal({
     }
   }, [open, view]);
 
-  // Auto-refresh messages when viewing a conversation
-  useEffect(() => {
-    if (view === "chat" && selectedConversationId) {
-      // Reload messages periodically
-      const interval = setInterval(() => {
-        loadMessages(selectedConversationId);
-      }, 3000);
+  // Handle new messages from SSE stream
+  const handleNewMessages = useCallback((newMessages: ChatMessage[]) => {
+    setMessages(newMessages);
+  }, []);
 
-      return () => clearInterval(interval);
-    }
-  }, [view, selectedConversationId]);
+  // Use SSE for real-time message updates
+  useMessageUpdates({
+    conversationId: view === "chat" ? selectedConversationId : null,
+    onNewMessages: handleNewMessages,
+    enabled: view === "chat" && selectedConversationId !== null,
+  });
 
   useEffect(() => {
     // Auto-scroll to bottom when messages change
