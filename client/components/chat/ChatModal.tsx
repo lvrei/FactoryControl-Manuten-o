@@ -125,15 +125,18 @@ export function ChatModal({
       // Load conversations
       try {
         const convsResponse = await chatService.getConversations(currentUserId);
+        console.log("[CHAT] Loaded", convsResponse.length, "conversations from server");
 
         // Transform conversations to include other user info
         const transformedConvs: ConversationWithUser[] = [];
         for (const conv of convsResponse) {
           try {
             const participants = await chatService.getParticipants(conv.id);
+            console.log(`[CHAT] Loaded ${participants.length} participants for conversation ${conv.id}`);
             const otherParticipant = participants.find((p) => p.user_id !== currentUserId);
 
             if (otherParticipant) {
+              console.log(`[CHAT] Adding conversation ${conv.id} with other user ${otherParticipant.user_id}`);
               transformedConvs.push({
                 id: conv.id,
                 title: conv.title,
@@ -143,12 +146,15 @@ export function ChatModal({
                 last_message_time: conv.last_message_time,
                 message_count: conv.message_count,
               });
+            } else {
+              console.warn(`[CHAT] No other participant found for conversation ${conv.id}`);
             }
           } catch (err) {
             console.error(`Failed to load participants for conversation ${conv.id}:`, err);
           }
         }
 
+        console.log("[CHAT] Transformed", transformedConvs.length, "conversations");
         setConversations(transformedConvs);
       } catch (err: any) {
         console.error("Error loading conversations:", err);
