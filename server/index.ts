@@ -2014,19 +2014,25 @@ export async function createServer() {
 
       console.log("[CHAT] Starting cleanup of duplicate conversations...");
 
-      // Find groups of conversations with the same pair of participants
+      // Find groups of conversations with the same pair of participants (1-on-1 conversations only)
       const { rows: duplicateGroups } = await query(`
-        SELECT
-          ARRAY_AGG(DISTINCT CAST(p1.user_id AS TEXT) ORDER BY CAST(p1.user_id AS TEXT)) as participant_pair,
-          ARRAY_AGG(c.id) as conversation_ids,
-          COUNT(*) as count
-        FROM chat_conversations c
-        INNER JOIN chat_participants p1 ON CAST(c.id AS TEXT) = CAST(p1.conversation_id AS TEXT)
-        GROUP BY (
-          SELECT STRING_AGG(CAST(p2.user_id AS TEXT), ',' ORDER BY CAST(p2.user_id AS TEXT))
-          FROM chat_participants p2
-          WHERE CAST(p2.conversation_id AS TEXT) = CAST(c.id AS TEXT)
+        WITH conversation_participants AS (
+          SELECT
+            c.id as conversation_id,
+            STRING_AGG(DISTINCT CAST(p.user_id AS TEXT), ',' ORDER BY CAST(p.user_id AS TEXT)) as participant_list,
+            COUNT(DISTINCT CAST(p.user_id AS TEXT)) as participant_count
+          FROM chat_conversations c
+          INNER JOIN chat_participants p ON CAST(c.id AS TEXT) = CAST(p.conversation_id AS TEXT)
+          GROUP BY c.id
         )
+        SELECT
+          participant_list,
+          ARRAY_AGG(conversation_id ORDER BY conversation_id) as conversation_ids,
+          COUNT(*) as count,
+          participant_count
+        FROM conversation_participants
+        WHERE participant_count = 2
+        GROUP BY participant_list, participant_count
         HAVING COUNT(*) > 1
       `);
 
