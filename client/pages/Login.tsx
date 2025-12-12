@@ -137,9 +137,9 @@ export default function Login() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-6">
-          <p className="text-xs text-muted-foreground">
-            MaintenanceControl v1.0 - Sistema de Gestão de Manutenção
+        <div className="text-center mt-8">
+          <p className="text-xs text-slate-500">
+            MaintenanceControl v1.0
           </p>
         </div>
       </div>
