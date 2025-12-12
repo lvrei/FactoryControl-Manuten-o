@@ -64,10 +64,22 @@ export function Layout({ children }: LayoutProps) {
     setUserSession(session);
 
     // Detectar se está a correr como PWA standalone
-    const isStandaloneMode = window.matchMedia("(display-mode: standalone)").matches
-      || (window.navigator as any).standalone === true
-      || document.referrer.includes("android-app://");
-    setIsStandalone(isStandaloneMode);
+    const updateStandaloneMode = () => {
+      const isStandaloneMode = window.matchMedia("(display-mode: standalone)").matches
+        || (window.navigator as any).standalone === true
+        || document.referrer.includes("android-app://");
+      setIsStandalone(isStandaloneMode);
+    };
+
+    updateStandaloneMode();
+
+    // Listener para mudanças de display mode
+    const mediaQueryList = window.matchMedia("(display-mode: standalone)");
+    mediaQueryList.addEventListener("change", updateStandaloneMode);
+
+    return () => {
+      mediaQueryList.removeEventListener("change", updateStandaloneMode);
+    };
   }, []);
 
   // Selecionar navegação apropriada baseado no modo
