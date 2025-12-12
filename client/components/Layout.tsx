@@ -4,7 +4,6 @@ import {
   Factory,
   BarChart3,
   Settings,
-  Users,
   Package,
   AlertTriangle,
   Activity,
@@ -13,7 +12,6 @@ import {
   Menu,
   X,
   Warehouse,
-  Video,
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
