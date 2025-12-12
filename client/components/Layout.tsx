@@ -65,9 +65,10 @@ export function Layout({ children }: LayoutProps) {
 
     // Detectar se está a correr como PWA standalone
     const updateStandaloneMode = () => {
-      const isStandaloneMode = window.matchMedia("(display-mode: standalone)").matches
-        || (window.navigator as any).standalone === true
-        || document.referrer.includes("android-app://");
+      const isStandaloneMode =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as any).standalone === true ||
+        document.referrer.includes("android-app://");
       setIsStandalone(isStandaloneMode);
     };
 
