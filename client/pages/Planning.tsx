@@ -391,7 +391,7 @@ export default function Planning() {
 
       {/* Upcoming Maintenance */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
           Próximas Manutenções
         </h2>
         {loading ? (
