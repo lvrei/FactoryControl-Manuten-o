@@ -269,7 +269,7 @@ export default function Dashboard() {
 
       {/* Performance Section */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-slate-800 backdrop-blur border border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-emerald-400" />
