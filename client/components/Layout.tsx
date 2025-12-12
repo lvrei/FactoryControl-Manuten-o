@@ -32,10 +32,7 @@ const navigation = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Equipamentos", href: "/equipment", icon: Activity },
   { name: "Manutenção", href: "/maintenance", icon: Settings },
-  { name: "Equipa", href: "/team", icon: Users },
   { name: "Planeamento", href: "/planning", icon: Calendar },
-  { name: "Sensores", href: "/sensors", icon: Settings },
-  { name: "Câmaras", href: "/cameras", icon: Video },
   { name: "Stock Material", href: "/material-stock", icon: Package },
   { name: "Alertas", href: "/alerts", icon: AlertTriangle },
 ];
