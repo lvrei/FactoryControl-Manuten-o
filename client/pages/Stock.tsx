@@ -357,8 +357,8 @@ export default function Stock() {
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
             activeTab === 'blocks'
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-sm"
+              : "text-slate-400 hover:text-slate-200"
           )}
         >
           Blocos ({foamBlocks.length})
@@ -368,8 +368,8 @@ export default function Stock() {
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
             activeTab === 'movements'
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-sm"
+              : "text-slate-400 hover:text-slate-200"
           )}
         >
           Movimentações
