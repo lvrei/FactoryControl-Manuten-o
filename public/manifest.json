@@ -1,16 +1,37 @@
 {
-  "name": "FactoryControl - Sistema de Gestão Industrial",
-  "short_name": "FactoryControl",
-  "description": "Sistema completo de gestão para indústria de corte de espuma",
+  "name": "MaintenanceControl - Gestão de Manutenção Industrial",
+  "short_name": "MainControl",
+  "description": "Aplicação profissional de gestão de manutenção para indústria",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "theme_color": "#2563eb",
-  "background_color": "#ffffff",
-  "categories": ["business", "productivity", "utilities"],
-  "lang": "pt-BR",
-  "dir": "ltr",
+  "theme_color": "#1e293b",
+  "background_color": "#0f172a",
   "scope": "/",
+  "categories": ["business", "productivity"],
+  "lang": "pt",
+  "dir": "ltr",
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTQwIiBoZWlnaHQ9IjcyMCIgdmlld0JveD0iMCAwIDU0MCA3MjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1NDAiIGhlaWdodD0iNzIwIiBmaWxsPSIjMGYxNzJhIi8+Cjwvc3ZnPg==",
+      "sizes": "540x720",
+      "type": "image/svg+xml",
+      "form_factor": "narrow"
+    }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "media",
+          "accept": ["image/*", "video/*", "application/pdf"]
+        }
+      ]
+    }
+  },
   
   "icons": [
     {
