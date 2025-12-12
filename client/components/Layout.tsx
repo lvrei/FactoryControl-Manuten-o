@@ -57,9 +57,13 @@ export function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 overflow-x-hidden relative">
+      {/* Decorative gradient blobs */}
+      <div className="absolute top-0 -right-40 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl opacity-40 pointer-events-none"></div>
+      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
+
       {/* Top Navigation Bar - Mobile-First App Design */}
-      <header className="sticky top-0 z-40 border-b border-slate-700 bg-slate-900/80 backdrop-blur-xl shadow-lg safe-area-top">
+      <header className="sticky top-0 z-40 border-b border-slate-700/50 bg-gradient-to-r from-slate-900/90 via-slate-800/80 to-slate-900/90 backdrop-blur-xl shadow-lg safe-area-top">
         <div className="flex h-14 md:h-16 items-center justify-between px-3 md:px-6 max-w-full">
           <div className="flex items-center gap-4">
             {/* Mobile menu button */}
