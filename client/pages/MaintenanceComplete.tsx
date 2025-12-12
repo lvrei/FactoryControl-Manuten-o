@@ -473,9 +473,9 @@ export default function MaintenanceComplete() {
         
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
-                <Wrench className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2 flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg">
+                <Wrench className="h-8 w-8 text-white" />
               </div>
               Gestão de Manutenção
             </h1>
