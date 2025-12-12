@@ -29,17 +29,6 @@ export default function Login() {
     }
   };
 
-  const quickLogin = (role: "admin" | "operator" | "supervisor") => {
-    const credentials = {
-      admin: { username: "admin", password: "admin123" },
-      operator: { username: "operador", password: "admin123" },
-      supervisor: { username: "supervisor", password: "admin123" },
-    };
-
-    const cred = credentials[role];
-    setUsername(cred.username);
-    setPassword(cred.password);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center p-4">
