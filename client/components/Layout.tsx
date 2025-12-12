@@ -71,14 +71,14 @@ export function Layout({ children }: LayoutProps) {
             </button>
 
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary via-blue-600 to-blue-700 shadow-lg shadow-primary/25 ring-2 ring-primary/20">
-                <Factory className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />
+              <div className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-lg bg-slate-800 border border-slate-700 shadow-lg">
+                <Factory className="h-5 w-5 md:h-6 md:w-6 text-indigo-400" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-base md:text-lg font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent whitespace-nowrap">
+                <h1 className="text-base md:text-lg font-bold text-slate-50 whitespace-nowrap">
                   MaintenanceControl
                 </h1>
-                <p className="text-[10px] md:text-xs font-medium text-muted-foreground/80">
+                <p className="text-[10px] md:text-xs font-medium text-slate-400">
                   Gestão de Manutenção
                 </p>
               </div>
@@ -97,20 +97,20 @@ export function Layout({ children }: LayoutProps) {
               )}
             </button>
 
-            <button className="relative rounded-xl p-2 text-muted-foreground hover:bg-gradient-to-br hover:from-muted hover:to-muted/50 hover:text-foreground transition-all duration-300 btn-mobile group">
+            <button className="relative rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all duration-300 btn-mobile group">
               <Bell className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
-              <span className="absolute top-0 right-0 h-2 w-2 md:h-3 md:w-3 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/50 animate-pulse"></span>
+              <span className="absolute top-0 right-0 h-2 w-2 md:h-3 md:w-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50 animate-pulse"></span>
             </button>
 
-            <div className="flex items-center gap-2 md:gap-3 rounded-xl bg-gradient-to-br from-muted/80 to-muted/40 p-1.5 md:p-2 border border-border/50 shadow-md">
-              <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center text-primary-foreground text-xs md:text-sm font-medium shadow-lg">
+            <div className="flex items-center gap-2 md:gap-3 rounded-lg bg-slate-800/50 p-1.5 md:p-2 border border-slate-700 shadow-md">
+              <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-indigo-700 flex items-center justify-center text-indigo-100 text-xs md:text-sm font-medium shadow-lg">
                 {userSession?.username?.charAt(0).toUpperCase() || "U"}
               </div>
               <div className="hidden sm:block text-sm">
-                <p className="font-medium text-foreground text-xs md:text-sm">
+                <p className="font-medium text-slate-200 text-xs md:text-sm">
                   {userSession?.username || "Utilizador"}
                 </p>
-                <p className="text-[10px] md:text-xs text-muted-foreground">
+                <p className="text-[10px] md:text-xs text-slate-400">
                   {userSession?.role || "Sem sessão"}
                 </p>
               </div>
@@ -138,11 +138,11 @@ export function Layout({ children }: LayoutProps) {
             className="fixed inset-0 bg-black/50"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="fixed left-0 top-0 bottom-0 w-64 bg-card mobile-modal">
-            <div className="flex items-center justify-between p-4 border-b">
-              <h2 className="text-lg font-semibold">Menu</h2>
+          <div className="fixed left-0 top-0 bottom-0 w-64 bg-slate-900 mobile-modal border-r border-slate-700">
+            <div className="flex items-center justify-between p-4 border-b border-slate-700">
+              <h2 className="text-lg font-semibold text-slate-200">Menu</h2>
               <button
-                className="rounded-lg p-2 text-muted-foreground hover:bg-muted btn-mobile"
+                className="rounded-lg p-2 text-slate-400 hover:bg-slate-800 btn-mobile"
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <X className="h-5 w-5" />
