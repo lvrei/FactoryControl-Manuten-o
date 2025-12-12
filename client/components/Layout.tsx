@@ -79,7 +79,7 @@ export function Layout({ children }: LayoutProps) {
                 <Factory className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div className="hidden sm:block">
-                <h1 className="text-base md:text-lg font-bold text-slate-50 whitespace-nowrap">
+                <h1 className="text-base md:text-lg font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent whitespace-nowrap">
                   MaintenanceControl
                 </h1>
                 <p className="text-[10px] md:text-xs font-medium text-slate-400">
