@@ -106,8 +106,8 @@ export function Layout({ children }: LayoutProps) {
               <span className="absolute top-0 right-0 h-2 w-2 md:h-3 md:w-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50 animate-pulse"></span>
             </button>
 
-            <div className="flex items-center gap-2 md:gap-3 rounded-lg bg-slate-800/50 p-1.5 md:p-2 border border-slate-700 shadow-md">
-              <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-indigo-700 flex items-center justify-center text-indigo-100 text-xs md:text-sm font-medium shadow-lg">
+            <div className="flex items-center gap-2 md:gap-3 rounded-lg bg-gradient-to-r from-slate-800/40 to-slate-800/20 p-1.5 md:p-2 border border-slate-700/30 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="h-7 w-7 md:h-8 md:w-8 rounded-full bg-gradient-to-br from-indigo-600 to-indigo-700 flex items-center justify-center text-white text-xs md:text-sm font-medium shadow-lg shadow-indigo-500/30">
                 {userSession?.username?.charAt(0).toUpperCase() || "U"}
               </div>
               <div className="hidden sm:block text-sm">
