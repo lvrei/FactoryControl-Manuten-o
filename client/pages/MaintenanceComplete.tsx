@@ -24,6 +24,7 @@ import {
   Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import {
   MaintenanceForm,
   MaintenanceData,
