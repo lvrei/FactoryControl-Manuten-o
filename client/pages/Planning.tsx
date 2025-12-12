@@ -349,7 +349,7 @@ export default function Planning() {
           placeholder="Procurar por equipamento, tipo ou descrição..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-gradient-to-r from-card/50 to-card/30 border-border/50"
+          className="pl-10 bg-gradient-to-r from-slate-800/60 to-slate-800/40 border-slate-700/30 text-slate-50 placeholder:text-slate-400"
         />
       </div>
 
