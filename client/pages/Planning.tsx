@@ -11,6 +11,8 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -71,16 +73,16 @@ interface User {
 }
 
 const priorityConfig = {
-  low: { label: "Baixa", color: "bg-blue-600" },
-  medium: { label: "Média", color: "bg-yellow-600" },
-  high: { label: "Alta", color: "bg-red-600" },
+  low: { label: "Baixa", color: "bg-blue-600 hover:bg-blue-700", bgGradient: "from-blue-500/10 to-cyan-500/10 border-blue-200/30" },
+  medium: { label: "Média", color: "bg-yellow-600 hover:bg-yellow-700", bgGradient: "from-yellow-500/10 to-amber-500/10 border-yellow-200/30" },
+  high: { label: "Alta", color: "bg-red-600 hover:bg-red-700", bgGradient: "from-red-500/10 to-rose-500/10 border-red-200/30" },
 };
 
 const statusConfig = {
-  scheduled: { label: "Agendada", color: "bg-blue-600" },
-  in_progress: { label: "Em Progresso", color: "bg-orange-600" },
-  completed: { label: "Concluída", color: "bg-green-600" },
-  cancelled: { label: "Cancelada", color: "bg-gray-600" },
+  scheduled: { label: "Agendada", color: "bg-blue-600 hover:bg-blue-700", icon: Calendar },
+  in_progress: { label: "Em Progresso", color: "bg-orange-600 hover:bg-orange-700", icon: Clock },
+  completed: { label: "Concluída", color: "bg-green-600 hover:bg-green-700", icon: CheckCircle },
+  cancelled: { label: "Cancelada", color: "bg-gray-600 hover:bg-gray-700", icon: AlertCircle },
 };
 
 export default function Planning() {
@@ -130,13 +132,11 @@ export default function Planning() {
         allPlans = [...plansData];
       }
 
-      // Read equipment data once
       if (equipRes.ok) {
         equipData = await equipRes.json();
         setEquipments(equipData);
       }
 
-      // Convert equipment schedules to planned maintenance format
       if (schedulesRes && schedulesRes.length > 0 && equipData.length > 0) {
         const equipMap = new Map(equipData.map((eq: Equipment) => [eq.id, eq]));
 
@@ -148,7 +148,7 @@ export default function Planning() {
             const equipmentId = String(schedule.equipment_id);
             const equipment = equipMap.get(equipmentId);
             return {
-              id: `sched-${schedule.id}`, // Use schedule ID as unique identifier
+              id: `sched-${schedule.id}`,
               equipment_id: equipmentId,
               equipment_name: equipment?.name || "Equipamento desconhecido",
               maintenance_type: schedule.maintenance_type,
@@ -314,172 +314,213 @@ export default function Planning() {
   const completedPlans = filteredPlans.filter((p) => p.status === "completed");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Calendar className="h-8 w-8" />
-            Planeamento de Manutenções
-          </h1>
-          <p className="text-muted-foreground">
-            Agendar e gerir manutenções preventivas
-          </p>
+      <div className="relative">
+        <div className="absolute -top-8 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl opacity-50"></div>
+        
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2 flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
+                <Calendar className="h-8 w-8 text-primary" />
+              </div>
+              Planeamento de Manutenções
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Agendar e gerir manutenções preventivas
+            </p>
+          </div>
+          <Button 
+            onClick={() => setShowForm(true)}
+            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 h-11 px-6 whitespace-nowrap"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Nova Manutenção
+          </Button>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nova Manutenção
-        </Button>
       </div>
 
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Procurar manutenções..."
+          placeholder="Procurar por equipamento, tipo ou descrição..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10"
+          className="pl-10 bg-gradient-to-r from-card/50 to-card/30 border-border/50"
         />
       </div>
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Agendadas</CardTitle>
+        <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-200/30 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-sm font-semibold">Agendadas</CardTitle>
+            <Calendar className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{upcomingPlans.length}</div>
-            <p className="text-xs text-muted-foreground">Manutenções futuras</p>
+            <div className="text-3xl font-bold text-foreground">{upcomingPlans.length}</div>
+            <p className="text-xs text-muted-foreground mt-2">Manutenções futuras</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Em Progresso</CardTitle>
+
+        <Card className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 backdrop-blur border border-orange-200/30 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-sm font-semibold">Em Progresso</CardTitle>
+            <Clock className="h-5 w-5 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{inProgressPlans.length}</div>
-            <p className="text-xs text-muted-foreground">A decorrer</p>
+            <div className="text-3xl font-bold text-foreground">{inProgressPlans.length}</div>
+            <p className="text-xs text-muted-foreground mt-2">A decorrer</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-medium">Concluídas</CardTitle>
+
+        <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur border border-green-200/30 shadow-lg">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0">
+            <CardTitle className="text-sm font-semibold">Concluídas</CardTitle>
+            <CheckCircle className="h-5 w-5 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{completedPlans.length}</div>
-            <p className="text-xs text-muted-foreground">Este mês</p>
+            <div className="text-3xl font-bold text-foreground">{completedPlans.length}</div>
+            <p className="text-xs text-muted-foreground mt-2">Concluídas</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Upcoming Maintenance */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Próximas Manutenções</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {upcomingPlans.map((plan) => {
-            const priorityInfo = priorityConfig[plan.priority];
-            const statusInfo = statusConfig[plan.status];
-            const isOverdue = new Date(plan.scheduled_date) < new Date();
-            const isScheduledMaintenance =
-              typeof plan.id === "string" && plan.id.startsWith("sched-");
+        <h2 className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          Próximas Manutenções
+        </h2>
+        {loading ? (
+          <div className="text-center py-12">
+            <Clock className="h-12 w-12 animate-spin mx-auto text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">A carregar manutenções...</p>
+          </div>
+        ) : upcomingPlans.length === 0 ? (
+          <div className="text-center py-12 rounded-lg bg-gradient-to-br from-card/50 to-card/30 backdrop-blur border border-border/50">
+            <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
+            <p className="text-muted-foreground">Nenhuma manutenção agendada</p>
+          </div>
+        ) : (
+          <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            {upcomingPlans.map((plan) => {
+              const priorityInfo = priorityConfig[plan.priority];
+              const statusInfo = statusConfig[plan.status];
+              const isOverdue = new Date(plan.scheduled_date) < new Date();
+              const isScheduledMaintenance =
+                typeof plan.id === "string" && plan.id.startsWith("sched-");
 
-            return (
-              <Card key={plan.id} className={isOverdue ? "border-red-500" : ""}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-lg">
-                          {plan.maintenance_type}
-                        </CardTitle>
-                        {isScheduledMaintenance && (
-                          <Badge variant="secondary" className="text-xs">
-                            Preventiva
-                          </Badge>
+              return (
+                <Card 
+                  key={plan.id} 
+                  className={`bg-gradient-to-br ${isOverdue ? 'from-red-500/10 to-rose-500/10 border-red-200/30' : priorityInfo.bgGradient} backdrop-blur border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <CardTitle className="text-base text-foreground">
+                            {plan.maintenance_type}
+                          </CardTitle>
+                          {isScheduledMaintenance && (
+                            <Badge variant="secondary" className="text-xs">
+                              Preventiva
+                            </Badge>
+                          )}
+                        </div>
+                        <CardDescription className="text-xs">
+                          {plan.equipment_name}
+                        </CardDescription>
+                      </div>
+                      {isOverdue && (
+                        <AlertTriangle className="h-5 w-5 text-red-600 flex-shrink-0" />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      <p className="text-sm text-foreground">{plan.description}</p>
+                      <div className="border-t border-border/50 pt-3 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-muted-foreground">
+                            Data:
+                          </span>
+                          <span className={`text-sm font-semibold ${isOverdue ? 'text-red-600' : 'text-foreground'}`}>
+                            {new Date(plan.scheduled_date).toLocaleDateString("pt-PT")}
+                          </span>
+                        </div>
+                        {plan.assigned_name && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">
+                              Técnico:
+                            </span>
+                            <span className="text-sm text-foreground">{plan.assigned_name}</span>
+                          </div>
+                        )}
+                        {plan.estimated_duration && (
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm text-muted-foreground">
+                              Duração:
+                            </span>
+                            <span className="text-sm text-foreground">{plan.estimated_duration}h</span>
+                          </div>
                         )}
                       </div>
-                      <CardDescription>{plan.equipment_name}</CardDescription>
+                      {plan.notes && !isScheduledMaintenance && (
+                        <p className="text-xs text-muted-foreground bg-background/50 p-2 rounded border border-border/50">
+                          {plan.notes}
+                        </p>
+                      )}
+                      {isScheduledMaintenance && plan.notes && (
+                        <div className="text-xs text-muted-foreground bg-blue-500/10 p-2 rounded border border-blue-200/50">
+                          {plan.notes}
+                        </div>
+                      )}
+                      <div className="flex gap-2 flex-wrap">
+                        <Badge className={priorityInfo.color}>
+                          {priorityInfo.label}
+                        </Badge>
+                        <Badge className={statusInfo.color}>
+                          {statusInfo.label}
+                        </Badge>
+                      </div>
+                      {!isScheduledMaintenance && (
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handleEdit(plan)}
+                          >
+                            <Edit className="h-3 w-3 mr-1" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(plan.id as any)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
-                    {isOverdue && (
-                      <AlertTriangle className="h-5 w-5 text-red-500" />
-                    )}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <p className="text-sm">{plan.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
-                        Data:
-                      </span>
-                      <span className="text-sm font-medium">
-                        {new Date(plan.scheduled_date).toLocaleDateString()}
-                      </span>
-                    </div>
-                    {plan.assigned_name && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Técnico:
-                        </span>
-                        <span className="text-sm">{plan.assigned_name}</span>
-                      </div>
-                    )}
-                    {plan.notes && !isScheduledMaintenance && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Notas:
-                        </span>
-                        <span className="text-sm">{plan.notes}</span>
-                      </div>
-                    )}
-                    {isScheduledMaintenance && plan.notes && (
-                      <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
-                        {plan.notes}
-                      </div>
-                    )}
-                    <div className="flex gap-2">
-                      <Badge className={priorityInfo.color}>
-                        {priorityInfo.label}
-                      </Badge>
-                      <Badge variant="outline" className={statusInfo.color}>
-                        {statusInfo.label}
-                      </Badge>
-                    </div>
-                    {!isScheduledMaintenance && (
-                      <div className="flex gap-2 pt-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="flex-1"
-                          onClick={() => handleEdit(plan)}
-                        >
-                          <Edit className="h-3 w-3 mr-1" />
-                          Editar
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(plan.id as any)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Add/Edit Plan Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-card/80 to-card/50 backdrop-blur border-border/50">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
               {editingPlan ? "Editar Manutenção" : "Nova Manutenção Planeada"}
             </DialogTitle>
             <DialogDescription>
@@ -498,7 +539,7 @@ export default function Planning() {
                     }
                   }}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background/50 border-border/50">
                     <SelectValue placeholder="Selecionar equipamento" />
                   </SelectTrigger>
                   <SelectContent>
@@ -514,7 +555,7 @@ export default function Planning() {
                 </Select>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="maintenance_type">Tipo de Manuten��ão *</Label>
+                <Label htmlFor="maintenance_type">Tipo de Manutenção *</Label>
                 <Input
                   id="maintenance_type"
                   required
@@ -526,6 +567,7 @@ export default function Planning() {
                     })
                   }
                   placeholder="Ex: Preventiva, Inspeção, Calibração"
+                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
@@ -539,6 +581,7 @@ export default function Planning() {
                   }
                   placeholder="Descreva a manutenção a ser realizada..."
                   rows={3}
+                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2">
@@ -551,6 +594,7 @@ export default function Planning() {
                   onChange={(e) =>
                     setFormData({ ...formData, scheduled_date: e.target.value })
                   }
+                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2">
@@ -561,7 +605,7 @@ export default function Planning() {
                     setFormData({ ...formData, assigned_to: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background/50 border-border/50">
                     <SelectValue placeholder="Não atribuído" />
                   </SelectTrigger>
                   <SelectContent>
@@ -582,7 +626,7 @@ export default function Planning() {
                     setFormData({ ...formData, priority: value })
                   }
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-background/50 border-border/50">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -608,6 +652,7 @@ export default function Planning() {
                       estimated_duration: parseFloat(e.target.value) || 0,
                     })
                   }
+                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
@@ -620,14 +665,15 @@ export default function Planning() {
                   }
                   placeholder="Observações adicionais..."
                   rows={2}
+                  className="bg-background/50 border-border/50"
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="border-t border-border/50 pt-4 mt-4">
               <Button type="button" variant="outline" onClick={resetForm}>
                 Cancelar
               </Button>
-              <Button type="submit">
+              <Button type="submit" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
                 {editingPlan ? "Atualizar" : "Criar"}
               </Button>
             </DialogFooter>
