@@ -139,10 +139,10 @@ export function Layout({ children }: LayoutProps) {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="fixed inset-0 bg-black/50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setIsMobileMenuOpen(false)}
           />
-          <div className="fixed left-0 top-0 bottom-0 w-64 bg-slate-900 mobile-modal border-r border-slate-700">
+          <div className="fixed left-0 top-0 bottom-0 w-64 bg-gradient-to-b from-slate-900 to-slate-950 mobile-modal border-r border-slate-700/50">
             <div className="flex items-center justify-between p-4 border-b border-slate-700">
               <h2 className="text-lg font-semibold text-slate-200">Menu</h2>
               <button
