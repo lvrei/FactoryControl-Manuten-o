@@ -58,33 +58,31 @@ interface StatCardProps {
 
 function StatCard({ title, value, subtitle, icon: Icon, trend, color }: StatCardProps) {
   const colorClasses = {
-    green: "from-green-500/10 to-emerald-500/10 border-green-200/30 text-green-600",
-    blue: "from-blue-500/10 to-cyan-500/10 border-blue-200/30 text-blue-600",
-    orange: "from-orange-500/10 to-amber-500/10 border-orange-200/30 text-orange-600",
-    red: "from-red-500/10 to-rose-500/10 border-red-200/30 text-red-600",
+    green: "bg-slate-800 border-slate-700 text-emerald-400",
+    blue: "bg-slate-800 border-slate-700 text-blue-400",
+    orange: "bg-slate-800 border-slate-700 text-orange-400",
+    red: "bg-slate-800 border-slate-700 text-red-400",
   };
 
   return (
-    <Card className={`bg-gradient-to-br ${colorClasses[color]} backdrop-blur border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}>
+    <Card className={`${colorClasses[color]} backdrop-blur border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-semibold text-foreground">
+        <CardTitle className="text-sm font-semibold text-slate-200">
           {title}
         </CardTitle>
-        <div className={`p-2 rounded-lg ${colorClasses[color].split(' ')[0]} bg-opacity-10`}>
-          <Icon className="h-5 w-5" />
-        </div>
+        <Icon className="h-5 w-5" />
       </CardHeader>
       <CardContent>
         <div className="flex items-baseline gap-2">
-          <div className="text-3xl font-bold text-foreground">{value}</div>
+          <div className="text-3xl font-bold text-slate-50">{value}</div>
           {trend !== undefined && (
-            <div className={`flex items-center gap-1 text-sm font-semibold ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
+            <div className={`flex items-center gap-1 text-sm font-semibold ${trend > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
               {trend > 0 ? <ArrowUpRight className="h-4 w-4" /> : <ArrowDownRight className="h-4 w-4" />}
               {Math.abs(trend)}%
             </div>
           )}
         </div>
-        <p className="text-xs text-muted-foreground mt-2">{subtitle}</p>
+        <p className="text-xs text-slate-400 mt-2">{subtitle}</p>
       </CardContent>
     </Card>
   );
@@ -222,14 +220,14 @@ export default function Dashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div className="relative">
-        <div className="absolute -top-8 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl opacity-50"></div>
-        
+        <div className="absolute -top-8 -right-20 w-40 h-40 bg-indigo-900/20 rounded-full blur-3xl opacity-30"></div>
+        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-indigo-900/20 rounded-full blur-3xl opacity-30"></div>
+
         <div className="relative z-10">
-          <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl md:text-5xl font-bold text-slate-50 mb-2">
             Dashboard
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-slate-400">
             Bem-vindo ao seu painel de controle de manutenção
           </p>
         </div>
@@ -271,70 +269,66 @@ export default function Dashboard() {
 
       {/* Performance Section */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-gradient-to-br from-card/50 to-card/30 backdrop-blur border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-slate-800 backdrop-blur border border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-green-500/20 to-emerald-500/20 rounded-lg">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              </div>
+              <CheckCircle className="h-5 w-5 text-emerald-400" />
               Manutenções Este Mês
             </CardTitle>
-            <CardDescription>
+            <CardDescription className="text-slate-400">
               {stats.maintenance.completed_month} manutenções realizadas
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-200/30">
-                <span className="text-sm font-medium">Concluídas</span>
-                <Badge className="bg-green-600 hover:bg-green-700">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                <span className="text-sm font-medium text-slate-200">Concluídas</span>
+                <Badge className="bg-emerald-700 hover:bg-emerald-600 text-emerald-100">
                   {stats.maintenance.completed_month}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-200/30">
-                <span className="text-sm font-medium">Agendadas</span>
-                <Badge className="bg-blue-600 hover:bg-blue-700">{stats.maintenance.scheduled}</Badge>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                <span className="text-sm font-medium text-slate-200">Agendadas</span>
+                <Badge className="bg-indigo-700 hover:bg-indigo-600 text-indigo-100">{stats.maintenance.scheduled}</Badge>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-200/30">
-                <span className="text-sm font-medium">Pendentes</span>
-                <Badge className="bg-orange-600 hover:bg-orange-700">{stats.maintenance.pending}</Badge>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                <span className="text-sm font-medium text-slate-200">Pendentes</span>
+                <Badge className="bg-orange-700 hover:bg-orange-600 text-orange-100">{stats.maintenance.pending}</Badge>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-card/50 to-card/30 backdrop-blur border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-slate-800 backdrop-blur border border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 rounded-lg">
-                <TrendingUp className="h-5 w-5 text-blue-600" />
-              </div>
+              <TrendingUp className="h-5 w-5 text-blue-400" />
               Estado dos Equipamentos
             </CardTitle>
-            <CardDescription>Distribuição atual da frota</CardDescription>
+            <CardDescription className="text-slate-400">Distribuição atual da frota</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-200/30">
-                <span className="text-sm font-medium">Ativos</span>
-                <Badge className="bg-green-600 hover:bg-green-700">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                <span className="text-sm font-medium text-slate-200">Ativos</span>
+                <Badge className="bg-emerald-700 hover:bg-emerald-600 text-emerald-100">
                   {stats.equipments.active}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-200/30">
-                <span className="text-sm font-medium">Em Manutenção</span>
-                <Badge className="bg-orange-600 hover:bg-orange-700">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                <span className="text-sm font-medium text-slate-200">Em Manutenção</span>
+                <Badge className="bg-orange-700 hover:bg-orange-600 text-orange-100">
                   {stats.equipments.maintenance}
                 </Badge>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-lg bg-gradient-to-r from-red-500/10 to-rose-500/10 border border-red-200/30">
-                <span className="text-sm font-medium">Inativos</span>
-                <Badge className="bg-red-600 hover:bg-red-700">{stats.equipments.inactive}</Badge>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-700/50 border border-slate-600">
+                <span className="text-sm font-medium text-slate-200">Inativos</span>
+                <Badge className="bg-red-700 hover:bg-red-600 text-red-100">{stats.equipments.inactive}</Badge>
               </div>
-              <div className="mt-4 pt-4 border-t border-border/50">
-                <p className="text-xs text-muted-foreground mb-2">Saúde Geral</p>
+              <div className="mt-4 pt-4 border-t border-slate-600">
+                <p className="text-xs text-slate-400 mb-2">Saúde Geral</p>
                 <Progress value={equipmentHealthPercentage} className="h-2" />
-                <p className="text-xs font-semibold mt-2 text-foreground">{equipmentHealthPercentage}% operacional</p>
+                <p className="text-xs font-semibold mt-2 text-slate-200">{equipmentHealthPercentage}% operacional</p>
               </div>
             </div>
           </CardContent>
@@ -343,37 +337,35 @@ export default function Dashboard() {
 
       {/* Recent and Upcoming Maintenance */}
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="bg-gradient-to-br from-card/50 to-card/30 backdrop-blur border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-slate-800 backdrop-blur border border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-lg">
-                <Wrench className="h-5 w-5 text-purple-600" />
-              </div>
+              <Wrench className="h-5 w-5 text-purple-400" />
               Manutenções Recentes
             </CardTitle>
-            <CardDescription>Últimas manutenções realizadas</CardDescription>
+            <CardDescription className="text-slate-400">Últimas manutenções realizadas</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {recentMaintenance.length === 0 && (
-                <p className="text-sm text-muted-foreground py-4 text-center">
+                <p className="text-sm text-slate-400 py-4 text-center">
                   Nenhuma manutenção recente
                 </p>
               )}
               {recentMaintenance.map((maintenance) => (
                 <div
                   key={maintenance.id}
-                  className="flex items-start justify-between p-3 rounded-lg bg-gradient-to-r from-slate-500/5 to-slate-500/5 border border-border/50 hover:bg-gradient-to-r hover:from-slate-500/10 hover:to-slate-500/10 transition-all duration-200"
+                  className="flex items-start justify-between p-3 rounded-lg bg-slate-700/30 border border-slate-600 hover:bg-slate-700/50 transition-all duration-200"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">
+                    <p className="text-sm font-semibold text-slate-50">
                       {maintenance.maintenance_type}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       {maintenance.description}
                     </p>
                   </div>
-                  <Badge variant="outline" className="ml-2 whitespace-nowrap">
+                  <Badge variant="outline" className="ml-2 whitespace-nowrap border-slate-600 bg-slate-700/50 text-slate-300">
                     {maintenance.completed_date
                       ? new Date(
                           maintenance.completed_date,
@@ -386,41 +378,39 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-card/50 to-card/30 backdrop-blur border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-slate-800 backdrop-blur border border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-lg">
-                <Calendar className="h-5 w-5 text-cyan-600" />
-              </div>
+              <Calendar className="h-5 w-5 text-cyan-400" />
               Próximas Manutenções
             </CardTitle>
-            <CardDescription>Manutenções agendadas</CardDescription>
+            <CardDescription className="text-slate-400">Manutenções agendadas</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {upcomingMaintenance.length === 0 && (
-                <p className="text-sm text-muted-foreground py-4 text-center">
+                <p className="text-sm text-slate-400 py-4 text-center">
                   Nenhuma manutenção agendada
                 </p>
               )}
               {upcomingMaintenance.map((maintenance) => (
                 <div
                   key={maintenance.id}
-                  className="flex items-start justify-between p-3 rounded-lg bg-gradient-to-r from-slate-500/5 to-slate-500/5 border border-border/50 hover:bg-gradient-to-r hover:from-slate-500/10 hover:to-slate-500/10 transition-all duration-200"
+                  className="flex items-start justify-between p-3 rounded-lg bg-slate-700/30 border border-slate-600 hover:bg-slate-700/50 transition-all duration-200"
                 >
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-foreground">
+                    <p className="text-sm font-semibold text-slate-50">
                       {maintenance.maintenance_type}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       {maintenance.description}
                     </p>
                   </div>
                   <Badge
                     className={`ml-2 whitespace-nowrap ${
                       maintenance.priority === "high"
-                        ? "bg-red-600 hover:bg-red-700"
-                        : "bg-blue-600 hover:bg-blue-700"
+                        ? "bg-red-700 hover:bg-red-600 text-red-100"
+                        : "bg-indigo-700 hover:bg-indigo-600 text-indigo-100"
                     }`}
                   >
                     {new Date(maintenance.scheduled_date).toLocaleDateString("pt-PT")}
