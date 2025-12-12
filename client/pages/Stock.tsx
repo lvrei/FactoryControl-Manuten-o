@@ -250,115 +250,95 @@ export default function Stock() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute -top-8 -right-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
-
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg">
-                <Package className="h-8 w-8 text-white" />
-              </div>
-              Gestão de Stock
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Controle de blocos de espuma nos armazéns BZM e Looper
-            </p>
-          </div>
-
-          <button
-            onClick={() => setShowAddBlock(true)}
-            className="px-6 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap h-11"
-          >
-            <Plus className="h-4 w-4" />
-            Registrar Novo Bloco
-          </button>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">Gestão de Stock de Blocos</h1>
+          <p className="text-muted-foreground">
+            Controle de blocos de espuma nos armazéns BZM e Looper
+          </p>
         </div>
+        
+        <button
+          onClick={() => setShowAddBlock(true)}
+          className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
+          Registrar Novo Bloco
+        </button>
       </div>
 
       {/* Stats Cards */}
       {stockSummary && (
         <div className="grid gap-4 md:grid-cols-5">
-          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-blue-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-500/40">
+          <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-400">Total de Blocos</p>
-                <p className="text-2xl md:text-3xl font-bold text-slate-50 mt-1">{stockSummary.totalBlocks}</p>
+                <p className="text-sm font-medium text-muted-foreground">Total de Blocos</p>
+                <p className="text-2xl font-bold text-card-foreground">{stockSummary.totalBlocks}</p>
               </div>
-              <div className="p-2 bg-blue-600/20 rounded-lg">
-                <Package className="h-6 w-6 text-blue-400" />
-              </div>
+              <Package className="h-6 w-6 text-muted-foreground" />
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-orange-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-orange-500/40">
+          <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-400">Volume Total</p>
-                <p className="text-2xl md:text-3xl font-bold text-slate-50 mt-1">{stockSummary.totalVolume.toFixed(1)}m³</p>
+                <p className="text-sm font-medium text-muted-foreground">Volume Total</p>
+                <p className="text-2xl font-bold text-card-foreground">{stockSummary.totalVolume.toFixed(1)}m³</p>
               </div>
-              <div className="p-2 bg-orange-600/20 rounded-lg">
-                <Archive className="h-6 w-6 text-orange-400" />
-              </div>
+              <Archive className="h-6 w-6 text-muted-foreground" />
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-blue-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-500/40">
+          <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-400">Armazém BZM</p>
-                <p className="text-2xl md:text-3xl font-bold text-blue-400 mt-1">
+                <p className="text-sm font-medium text-muted-foreground">Armazém BZM</p>
+                <p className="text-2xl font-bold text-blue-600">
                   {stockSummary.byWarehouse.find((w: any) => w.warehouse === 'BZM')?.blocks || 0}
                 </p>
               </div>
-              <div className="p-2 bg-blue-600/20 rounded-lg">
-                <Building2 className="h-6 w-6 text-blue-400" />
-              </div>
+              <Building2 className="h-6 w-6 text-blue-600" />
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
+          <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-400">Armazém Looper</p>
-                <p className="text-2xl md:text-3xl font-bold text-emerald-400 mt-1">
+                <p className="text-sm font-medium text-muted-foreground">Armazém Looper</p>
+                <p className="text-2xl font-bold text-green-600">
                   {stockSummary.byWarehouse.find((w: any) => w.warehouse === 'LOOPER')?.blocks || 0}
                 </p>
               </div>
-              <div className="p-2 bg-emerald-600/20 rounded-lg">
-                <Warehouse className="h-6 w-6 text-emerald-400" />
-              </div>
+              <Warehouse className="h-6 w-6 text-green-600" />
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
+          <div className="rounded-lg border bg-card p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-slate-400">Disponíveis</p>
-                <p className="text-2xl md:text-3xl font-bold text-emerald-400 mt-1">
+                <p className="text-sm font-medium text-muted-foreground">Disponíveis</p>
+                <p className="text-2xl font-bold text-success">
                   {stockSummary.byStatus.find((s: any) => s.status === 'available')?.blocks || 0}
                 </p>
               </div>
-              <div className="p-2 bg-emerald-600/20 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-emerald-400" />
-              </div>
+              <CheckCircle className="h-6 w-6 text-success" />
             </div>
           </div>
         </div>
       )}
 
       {/* Tabs */}
-      <div className="flex rounded-lg bg-gradient-to-r from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 p-1">
+      <div className="flex rounded-lg bg-muted p-1">
         <button
           onClick={() => setActiveTab('blocks')}
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
             activeTab === 'blocks'
-              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-sm"
-              : "text-slate-400 hover:text-slate-200"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
           Blocos ({foamBlocks.length})
@@ -368,8 +348,8 @@ export default function Stock() {
           className={cn(
             "px-4 py-2 text-sm font-medium rounded-md transition-colors",
             activeTab === 'movements'
-              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-sm"
-              : "text-slate-400 hover:text-slate-200"
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           )}
         >
           Movimentações

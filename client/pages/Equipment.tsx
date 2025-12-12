@@ -64,11 +64,11 @@ interface Equipment {
 }
 
 const statusConfig = {
-  active: { label: "Ativo", color: "bg-green-600 hover:bg-green-700", bgGradient: "from-green-500/10 to-emerald-500/10 border-green-200/30", icon: CheckCircle },
-  available: { label: "Disponível", color: "bg-green-600 hover:bg-green-700", bgGradient: "from-green-500/10 to-emerald-500/10 border-green-200/30", icon: CheckCircle },
-  maintenance: { label: "Manutenção", color: "bg-orange-600 hover:bg-orange-700", bgGradient: "from-orange-500/10 to-amber-500/10 border-orange-200/30", icon: Settings },
-  busy: { label: "Em Uso", color: "bg-blue-600 hover:bg-blue-700", bgGradient: "from-blue-500/10 to-cyan-500/10 border-blue-200/30", icon: Settings },
-  inactive: { label: "Inativo", color: "bg-gray-600 hover:bg-gray-700", bgGradient: "from-gray-500/10 to-slate-500/10 border-gray-200/30", icon: AlertTriangle },
+  active: { label: "Ativo", color: "bg-green-600", icon: CheckCircle },
+  available: { label: "Disponível", color: "bg-green-600", icon: CheckCircle },
+  maintenance: { label: "Manutenção", color: "bg-orange-600", icon: Settings },
+  busy: { label: "Em Uso", color: "bg-blue-600", icon: Settings },
+  inactive: { label: "Inativo", color: "bg-gray-600", icon: AlertTriangle },
 };
 
 export default function Equipment() {
@@ -242,96 +242,44 @@ export default function Equipment() {
     return matchesSearch && matchesStatus;
   });
 
-  const statusCounts = {
-    active: equipment.filter(e => e.status === "active").length,
-    maintenance: equipment.filter(e => e.status === "maintenance").length,
-    inactive: equipment.filter(e => e.status === "inactive").length,
-  };
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute -top-8 -right-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
-
-        <div className="relative z-10 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg">
-                <Activity className="h-8 w-8 text-white" />
-              </div>
-              Equipamentos
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Gestão de equipamentos e máquinas industriais
-            </p>
-          </div>
-          <Button 
-            onClick={() => setShowForm(true)}
-            className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-300 h-11 px-6"
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            Novo Equipamento
-          </Button>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <Activity className="h-8 w-8" />
+            Equipamentos
+          </h1>
+          <p className="text-muted-foreground">
+            Gestão de equipamentos e máquinas industriais
+          </p>
         </div>
-      </div>
-
-      {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold text-slate-200">Equipamentos Ativos</CardTitle>
-            <CheckCircle className="h-5 w-5 text-emerald-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-50">{statusCounts.active}</div>
-            <p className="text-xs text-slate-400 mt-2">Em operação</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-orange-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-orange-500/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold text-slate-200">Em Manutenção</CardTitle>
-            <Settings className="h-5 w-5 text-orange-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-50">{statusCounts.maintenance}</div>
-            <p className="text-xs text-slate-400 mt-2">Sob manutenção</p>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-600/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-slate-500/40">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold text-slate-200">Inativos</CardTitle>
-            <AlertTriangle className="h-5 w-5 text-slate-400" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold text-slate-50">{statusCounts.inactive}</div>
-            <p className="text-xs text-slate-400 mt-2">Fora de serviço</p>
-          </CardContent>
-        </Card>
+        <Button onClick={() => setShowForm(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Novo Equipamento
+        </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Procurar por nome, tipo ou número de série..."
+            placeholder="Procurar equipamentos..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-gradient-to-r from-slate-800/60 to-slate-800/40 border-slate-700/30 text-slate-50 placeholder:text-slate-400"
+            className="pl-10"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full md:w-[220px] bg-gradient-to-r from-slate-800/60 to-slate-800/40 border-slate-700/30 text-slate-50">
-            <SelectValue placeholder="Filtrar por estado" />
+          <SelectTrigger className="w-[200px]">
+            <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todos os Estados</SelectItem>
             <SelectItem value="active">Ativo</SelectItem>
-            <SelectItem value="maintenance">Em Manutenção</SelectItem>
+            <SelectItem value="maintenance">Manutenção</SelectItem>
             <SelectItem value="inactive">Inativo</SelectItem>
           </SelectContent>
         </Select>
@@ -339,36 +287,26 @@ export default function Equipment() {
 
       {/* Equipment Grid */}
       {loading ? (
-        <div className="text-center py-16">
-          <Clock className="h-12 w-12 animate-spin mx-auto text-muted-foreground mb-4" />
-          <p className="text-muted-foreground">A carregar equipamentos...</p>
-        </div>
-      ) : filteredEquipment.length === 0 ? (
-        <div className="text-center py-16">
-          <Activity className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-          <p className="text-muted-foreground">Nenhum equipamento encontrado</p>
+        <div className="text-center py-12">
+          <Clock className="h-12 w-12 animate-spin mx-auto text-muted-foreground" />
+          <p className="mt-4 text-muted-foreground">
+            A carregar equipamentos...
+          </p>
         </div>
       ) : (
-        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {filteredEquipment.map((eq) => {
             const statusInfo = statusConfig[eq.status] || statusConfig.inactive;
             const StatusIcon = statusInfo.icon;
             return (
-              <Card
-                key={eq.id}
-                className={`bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
-              >
+              <Card key={eq.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg text-foreground">{eq.name}</CardTitle>
-                      <CardDescription className="mt-1">
-                        ID: {eq.id}
-                      </CardDescription>
+                      <CardTitle className="text-lg">{eq.name}</CardTitle>
+                      <CardDescription>ID: {eq.id}</CardDescription>
                     </div>
-                    <div className="p-2 bg-background/50 rounded-lg">
-                      <Activity className="h-5 w-5 text-foreground/60" />
-                    </div>
+                    <Activity className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -383,22 +321,12 @@ export default function Equipment() {
                       </Badge>
                     </div>
                     {eq.equipment_type && (
-                      <div className="flex items-center justify-between border-t border-border/30 pt-2">
+                      <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">
                           Tipo:
                         </span>
-                        <span className="text-sm font-medium text-foreground">
+                        <span className="text-sm font-medium">
                           {eq.equipment_type}
-                        </span>
-                      </div>
-                    )}
-                    {eq.manufacturer && (
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-muted-foreground">
-                          Fabricante:
-                        </span>
-                        <span className="text-sm font-medium text-foreground">
-                          {eq.manufacturer}
                         </span>
                       </div>
                     )}
@@ -407,7 +335,7 @@ export default function Equipment() {
                         <span className="text-sm text-muted-foreground">
                           Série:
                         </span>
-                        <span className="text-xs font-mono text-foreground">{eq.serial_number}</span>
+                        <span className="text-sm">{eq.serial_number}</span>
                       </div>
                     )}
                     {eq.location && (
@@ -415,14 +343,14 @@ export default function Equipment() {
                         <span className="text-sm text-muted-foreground">
                           Localização:
                         </span>
-                        <span className="text-sm text-foreground">{eq.location}</span>
+                        <span className="text-sm">{eq.location}</span>
                       </div>
                     )}
-                    <div className="flex gap-2 pt-3 flex-wrap border-t border-border/30">
+                    <div className="flex gap-2 pt-2 flex-wrap">
                       <Button
                         variant="outline"
                         size="sm"
-                        className="flex-1 mt-2"
+                        className="flex-1"
                         onClick={() => handleEdit(eq)}
                       >
                         <Edit className="h-3 w-3 mr-1" />
@@ -431,40 +359,35 @@ export default function Equipment() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="mt-2"
                         onClick={() => {
                           setSelectedEquipmentForSchedules(eq);
                           setShowSchedulesModal(true);
                         }}
-                        title="Agendamentos de manutenção"
+                        title="Gerenciar agendamentos de manutenção"
                       >
                         <Calendar className="h-3 w-3" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="mt-2"
                         onClick={() => {
                           setSelectedEquipmentForFiles(eq);
                           setShowFilesModal(true);
                         }}
-                        title="Ficheiros"
+                        title="Gerenciar ficheiros"
                       >
                         <Paperclip className="h-3 w-3" />
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="mt-2"
                         onClick={() => handleGenerateQR(eq)}
-                        title="Gerar QR Code"
                       >
                         <QrCode className="h-3 w-3" />
                       </Button>
                       <Button
                         variant="destructive"
                         size="sm"
-                        className="mt-2"
                         onClick={() => handleDelete(eq.id)}
                       >
                         <Trash2 className="h-3 w-3" />
@@ -480,9 +403,9 @@ export default function Equipment() {
 
       {/* Add/Edit Equipment Dialog */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-card/80 to-card/50 backdrop-blur border-border/50">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
+            <DialogTitle>
               {editingEquipment ? "Editar Equipamento" : "Novo Equipamento"}
             </DialogTitle>
             <DialogDescription>
@@ -501,7 +424,6 @@ export default function Equipment() {
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Ex: Compressor Principal"
-                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2">
@@ -512,8 +434,7 @@ export default function Equipment() {
                   onChange={(e) =>
                     setFormData({ ...formData, equipment_type: e.target.value })
                   }
-                  placeholder="Ex: Compressor, Bomba, Motor"
-                  className="bg-background/50 border-border/50"
+                  placeholder="Ex: Compressor, Bomba, Motor, etc."
                 />
               </div>
               <div className="space-y-2">
@@ -525,7 +446,6 @@ export default function Equipment() {
                     setFormData({ ...formData, manufacturer: e.target.value })
                   }
                   placeholder="Ex: Atlas Copco"
-                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2">
@@ -537,7 +457,6 @@ export default function Equipment() {
                     setFormData({ ...formData, model: e.target.value })
                   }
                   placeholder="Ex: GA55"
-                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2">
@@ -549,7 +468,6 @@ export default function Equipment() {
                     setFormData({ ...formData, serial_number: e.target.value })
                   }
                   placeholder="Ex: SN123456789"
-                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2">
@@ -564,7 +482,6 @@ export default function Equipment() {
                       installation_date: e.target.value,
                     })
                   }
-                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2">
@@ -576,7 +493,6 @@ export default function Equipment() {
                     setFormData({ ...formData, location: e.target.value })
                   }
                   placeholder="Ex: Setor A - Linha 1"
-                  className="bg-background/50 border-border/50"
                 />
               </div>
               <div className="space-y-2">
@@ -587,7 +503,7 @@ export default function Equipment() {
                     setFormData({ ...formData, status: value })
                   }
                 >
-                  <SelectTrigger className="bg-background/50 border-border/50">
+                  <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -607,16 +523,15 @@ export default function Equipment() {
                   }
                   placeholder="Informações adicionais sobre o equipamento..."
                   rows={3}
-                  className="bg-background/50 border-border/50"
                 />
               </div>
             </div>
 
-            <DialogFooter className="border-t border-border/50 pt-4 mt-4">
+            <DialogFooter>
               <Button type="button" variant="outline" onClick={resetForm}>
                 Cancelar
               </Button>
-              <Button type="submit" className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70">
+              <Button type="submit">
                 {editingEquipment ? "Atualizar" : "Criar"}
               </Button>
             </DialogFooter>
@@ -626,7 +541,7 @@ export default function Equipment() {
 
       {/* QR Code Dialog */}
       <Dialog open={showQRCode} onOpenChange={setShowQRCode}>
-        <DialogContent className="max-w-md bg-gradient-to-br from-card/80 to-card/50 backdrop-blur border-border/50">
+        <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Etiqueta com QR Code</DialogTitle>
             <DialogDescription>
@@ -649,7 +564,7 @@ export default function Equipment() {
 
       {/* Maintenance Schedules Modal */}
       <Dialog open={showSchedulesModal} onOpenChange={setShowSchedulesModal}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-card/80 to-card/50 backdrop-blur border-border/50">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Agendamentos de Manutenção</DialogTitle>
             <DialogDescription>

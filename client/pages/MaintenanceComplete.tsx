@@ -24,7 +24,6 @@ import {
   Target,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import {
   MaintenanceForm,
   MaintenanceData,
@@ -36,6 +35,7 @@ import { productionService } from "@/services/productionService";
 import { maintenanceService } from "@/services/maintenanceService";
 import { equipmentScheduleService } from "@/services/equipmentScheduleService";
 
+// Dados limpos - apenas máquinas reais de corte de espuma
 const mockMachines: MaintenanceData[] = [];
 const mockMaintenances: MaintenanceData[] = [];
 
@@ -61,17 +61,17 @@ const statusConfig = {
 };
 
 const priorityConfig = {
-  low: { color: "bg-blue-600 hover:bg-blue-700", bgGradient: "from-blue-500/10 to-cyan-500/10 border-blue-200/30", label: "Baixa" },
-  medium: { color: "bg-yellow-600 hover:bg-yellow-700", bgGradient: "from-yellow-500/10 to-amber-500/10 border-yellow-200/30", label: "Média" },
-  high: { color: "bg-orange-600 hover:bg-orange-700", bgGradient: "from-orange-500/10 to-amber-500/10 border-orange-200/30", label: "Alta" },
-  critical: { color: "bg-red-600 hover:bg-red-700", bgGradient: "from-red-500/10 to-rose-500/10 border-red-200/30", label: "Crítica" },
+  low: { color: "text-success bg-success/10", label: "Baixa" },
+  medium: { color: "text-warning bg-warning/10", label: "Média" },
+  high: { color: "text-info bg-info/10", label: "Alta" },
+  critical: { color: "text-destructive bg-destructive/10", label: "Crítica" },
 };
 
 const maintenanceStatusConfig = {
-  scheduled: { color: "bg-blue-600 hover:bg-blue-700", label: "Agendada" },
-  in_progress: { color: "bg-orange-600 hover:bg-orange-700", label: "Em Andamento" },
-  completed: { color: "bg-green-600 hover:bg-green-700", label: "Concluída" },
-  cancelled: { color: "bg-gray-600 hover:bg-gray-700", label: "Cancelada" },
+  scheduled: { color: "text-info bg-info/10", label: "Agendada" },
+  in_progress: { color: "text-warning bg-warning/10", label: "Em Andamento" },
+  completed: { color: "text-success bg-success/10", label: "Concluída" },
+  cancelled: { color: "text-muted-foreground bg-muted", label: "Cancelada" },
 };
 
 const interventionStatusConfig = {
@@ -109,12 +109,15 @@ export default function MaintenanceComplete() {
     string | null
   >(null);
 
+  // Load data from localStorage and equipment from productionService
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Load machines from production service
         const equipmentData = await productionService.getMachines();
         setMachines(equipmentData);
 
+        // Load maintenances from DB (maintenance plans)
         try {
           const plans = await maintenanceService.getMaintenancePlans();
           const mapped = (plans || []).map((p: any) => ({
@@ -137,6 +140,7 @@ export default function MaintenanceComplete() {
             photos: [],
             createdAt: new Date().toISOString().split("T")[0],
           }));
+          // Mostrar apenas pendentes/ativas na aba Manutenções Programadas
           setMaintenances(
             mapped.filter(
               (m: any) => m.status !== "completed" && m.status !== "cancelled",
@@ -147,7 +151,9 @@ export default function MaintenanceComplete() {
           setMaintenances([]);
         }
 
+        // Load intervention history from maintenance service
         const interventions = await maintenanceService.getMaintenanceRequests();
+        // Adicionar manutenções programadas concluídas ao histórico
         const completedFromPlans = (
           await maintenanceService.getMaintenancePlans()
         )
@@ -199,6 +205,8 @@ export default function MaintenanceComplete() {
     loadData();
   }, []);
 
+  // Using DB for persistence of scheduled maintenances (plans)
+
   const handleSaveMaintenance = async (maintenanceData: MaintenanceData) => {
     const machine = machines.find((m) => m.id === maintenanceData.machineId);
     const maintenanceWithMachineName = {
@@ -226,11 +234,13 @@ export default function MaintenanceComplete() {
           notes: maintenanceWithMachineName.notes,
         });
 
+        // If maintenance is completed, trigger reschedule for matching schedule
         if (maintenanceWithMachineName.status === "completed" && editingMaintenance.machineId) {
           try {
             const schedules = await equipmentScheduleService.getSchedules(
               editingMaintenance.machineId
             );
+            // Find schedule that matches the maintenance type or description
             const matchingSchedule = schedules.find(
               (s) =>
                 s.maintenance_type.toLowerCase() ===
@@ -375,6 +385,7 @@ export default function MaintenanceComplete() {
     return matchesSearch && matchesStatus;
   });
 
+  // Calculate statistics
   const stats = {
     totalMachines: machines.length,
     scheduledMaintenances: maintenances.filter((m) => m.status === "scheduled")
@@ -405,7 +416,7 @@ export default function MaintenanceComplete() {
 
     return Math.round(
       totalTime / completedInterventions.length / (1000 * 60 * 60),
-    );
+    ); // hours
   }
 
   const exportToCSV = () => {
@@ -418,7 +429,7 @@ export default function MaintenanceComplete() {
         "Operador",
         "Urgência",
         "Estado",
-        "Data Solicitação",
+        "Data Solicitaç��o",
         "Data Conclusão",
         "Tempo Resolução (h)",
         "Custo",
@@ -465,136 +476,149 @@ export default function MaintenanceComplete() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div className="relative">
-        <div className="absolute -top-8 -right-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
-        
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg">
-                <Wrench className="h-8 w-8 text-white" />
-              </div>
-              Gestão de Manutenção
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Sistema completo de gestão de manutenção e histórico de intervenções
-            </p>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground">
+            Gestão de Manutenção
+          </h1>
+          <p className="text-muted-foreground">
+            Sistema completo de gestão de manutenção e histórico de intervenções
+          </p>
+        </div>
 
-          <div className="flex gap-2 flex-wrap">
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowMaintenanceForm(true)}
+            className="px-4 py-2 text-sm font-medium text-primary-foreground bg-primary rounded-lg hover:bg-primary/90 flex items-center gap-2"
+          >
+            <Wrench className="h-4 w-4" />
+            Nova Manutenção
+          </button>
+          <button
+            onClick={() => setShowChecklist(true)}
+            className="px-4 py-2 text-sm font-medium text-purple-50 bg-purple-600 rounded-lg hover:bg-purple-700 flex items-center gap-2"
+          >
+            <Camera className="h-4 w-4" />
+            Checklist DL50
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowReports(true)}
+            className="px-4 py-2 text-sm font-medium text-info-foreground bg-info rounded-lg hover:bg-info/90 flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Relatórios
+          </button>
+          {activeTab === "history" && (
             <button
-              onClick={() => setShowMaintenanceForm(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
+              onClick={exportToCSV}
+              className="px-4 py-2 text-sm font-medium text-success-foreground bg-success rounded-lg hover:bg-success/90 flex items-center gap-2"
             >
-              <Plus className="h-4 w-4" />
-              Nova Manutenção
+              <Download className="h-4 w-4" />
+              Exportar CSV
             </button>
-            <button
-              onClick={() => setShowChecklist(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-600/80 hover:from-purple-700 hover:to-purple-700/70 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-            >
-              <Camera className="h-4 w-4" />
-              Checklist
-            </button>
-            <button
-              type="button"
-              onClick={() => setShowReports(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-600/80 hover:from-blue-700 hover:to-blue-700/70 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2"
-            >
-              <FileText className="h-4 w-4" />
-              Relatórios
-            </button>
-          </div>
+          )}
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-blue-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-500/40">
+      {/* Enhanced Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-6">
+        <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-slate-400">Máquinas</p>
-              <p className="text-2xl md:text-3xl font-bold text-slate-50 mt-1">{stats.totalMachines}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Máquinas
+              </p>
+              <p className="text-2xl font-bold text-card-foreground">
+                {stats.totalMachines}
+              </p>
             </div>
-            <div className="p-2 bg-blue-600/20 rounded-lg">
-              <Factory className="h-5 w-5 text-blue-400" />
-            </div>
+            <Factory className="h-6 w-6 text-muted-foreground" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-cyan-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-cyan-500/40">
+        <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-slate-400">Agendadas</p>
-              <p className="text-2xl md:text-3xl font-bold text-cyan-400 mt-1">{stats.scheduledMaintenances}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Agendadas
+              </p>
+              <p className="text-2xl font-bold text-blue-600">
+                {stats.scheduledMaintenances}
+              </p>
             </div>
-            <div className="p-2 bg-cyan-600/20 rounded-lg">
-              <Calendar className="h-5 w-5 text-cyan-400" />
-            </div>
+            <Calendar className="h-6 w-6 text-blue-500" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-purple-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-purple-500/40">
+        <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-slate-400">Intervenções</p>
-              <p className="text-2xl md:text-3xl font-bold text-purple-400 mt-1">{stats.totalInterventions}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Total Intervenções
+              </p>
+              <p className="text-2xl font-bold text-purple-600">
+                {stats.totalInterventions}
+              </p>
             </div>
-            <div className="p-2 bg-purple-600/20 rounded-lg">
-              <Target className="h-5 w-5 text-purple-400" />
-            </div>
+            <Target className="h-6 w-6 text-purple-500" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
+        <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-slate-400">Concluídas</p>
-              <p className="text-2xl md:text-3xl font-bold text-emerald-400 mt-1">{stats.completedInterventions}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Concluídas
+              </p>
+              <p className="text-2xl font-bold text-green-600">
+                {stats.completedInterventions}
+              </p>
             </div>
-            <div className="p-2 bg-emerald-600/20 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-emerald-400" />
-            </div>
+            <CheckCircle className="h-6 w-6 text-green-500" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-orange-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-orange-500/40">
+        <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-slate-400">Custo Total</p>
-              <p className="text-lg md:text-2xl font-bold text-orange-400 mt-1">€{stats.totalCost.toFixed(0)}</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Custo Total
+              </p>
+              <p className="text-xl font-bold text-orange-600">
+                €{stats.totalCost.toFixed(2)}
+              </p>
             </div>
-            <div className="p-2 bg-orange-600/20 rounded-lg">
-              <Euro className="h-5 w-5 text-orange-400" />
-            </div>
+            <Euro className="h-6 w-6 text-orange-500" />
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-indigo-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-indigo-500/40">
+        <div className="rounded-lg border bg-card p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-slate-400">Tempo Médio</p>
-              <p className="text-2xl md:text-3xl font-bold text-indigo-400 mt-1">{stats.avgResolutionTime}h</p>
+              <p className="text-sm font-medium text-muted-foreground">
+                Tempo Médio
+              </p>
+              <p className="text-2xl font-bold text-indigo-600">
+                {stats.avgResolutionTime}h
+              </p>
             </div>
-            <div className="p-2 bg-indigo-600/20 rounded-lg">
-              <Timer className="h-5 w-5 text-indigo-400" />
-            </div>
+            <Timer className="h-6 w-6 text-indigo-500" />
           </div>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex rounded-lg bg-gradient-to-r from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 p-1 shadow-lg">
+      <div className="flex rounded-lg bg-muted p-1">
         <button
           onClick={() => setActiveTab("maintenance")}
           className={cn(
-            "flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300",
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
             activeTab === "maintenance"
-              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-md"
-              : "text-slate-400 hover:text-slate-200",
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
           Manutenções Programadas ({maintenances.length})
@@ -602,107 +626,129 @@ export default function MaintenanceComplete() {
         <button
           onClick={() => setActiveTab("history")}
           className={cn(
-            "flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300",
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
             activeTab === "history"
-              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-md"
-              : "text-slate-400 hover:text-slate-200",
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
-          Histórico ({interventionHistory.length})
+          Histórico de Intervenções ({interventionHistory.length})
         </button>
         <button
           onClick={() => setActiveTab("reports")}
           className={cn(
-            "flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300",
+            "px-4 py-2 text-sm font-medium rounded-md transition-colors",
             activeTab === "reports"
-              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-md"
-              : "text-slate-400 hover:text-slate-200",
+              ? "bg-background text-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground",
           )}
         >
-          Relatórios
+          Relatórios e Análises
         </button>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Procurar por máquina, tipo ou operador..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-slate-700/30 bg-gradient-to-r from-slate-800/60 to-slate-800/40 pl-10 pr-4 py-2.5 text-sm text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600/50 focus:border-transparent transition-all duration-300"
-          />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <h2 className="text-lg font-semibold text-foreground">
+            {activeTab === "maintenance" &&
+              `Manutenções Programadas (${filteredMaintenances.length})`}
+            {activeTab === "history" &&
+              `Histórico de Intervenções (${filteredInterventions.length})`}
+            {activeTab === "reports" && "Relatórios e Análises"}
+          </h2>
         </div>
 
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-slate-700/30 bg-gradient-to-r from-slate-800/60 to-slate-800/40 px-4 py-2.5 text-sm text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600/50 focus:border-transparent transition-all duration-300 min-w-[200px]"
-        >
-          <option value="all">Todos os estados</option>
-          {activeTab === "maintenance" && (
-            <>
-              <option value="scheduled">Agendadas</option>
-              <option value="overdue">Por Cumprir</option>
-              <option value="in_progress">Em Andamento</option>
-              <option value="completed">Concluídas</option>
-              <option value="cancelled">Canceladas</option>
-            </>
-          )}
-          {activeTab === "history" && (
-            <>
-              <option value="pending">Pendentes</option>
-              <option value="assigned">Atribuídas</option>
-              <option value="in_progress">Em Progresso</option>
-              <option value="completed">Concluídas</option>
-              <option value="cancelled">Canceladas</option>
-            </>
-          )}
-        </select>
+        <div className="flex gap-2">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Buscar..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-80 rounded-lg border border-input bg-background pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
 
-        {activeTab === "history" && (
-          <button
-            onClick={exportToCSV}
-            className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-green-600 to-green-600/80 hover:from-green-700 hover:to-green-700/70 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-2 whitespace-nowrap"
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
           >
-            <Download className="h-4 w-4" />
-            Exportar CSV
-          </button>
-        )}
+            <option value="all">Todos os estados</option>
+            {activeTab === "maintenance" && (
+              <>
+                <option value="scheduled">Agendadas</option>
+                <option value="overdue">Por Cumprir</option>
+                <option value="in_progress">Em Andamento</option>
+                <option value="completed">Concluídas</option>
+                <option value="cancelled">Canceladas</option>
+              </>
+            )}
+            {activeTab === "history" && (
+              <>
+                <option value="pending">Pendentes</option>
+                <option value="assigned">Atribuídas</option>
+                <option value="in_progress">Em Progresso</option>
+                <option value="completed">Concluídas</option>
+                <option value="cancelled">Canceladas</option>
+              </>
+            )}
+          </select>
+        </div>
       </div>
 
       {/* Content */}
       {loading ? (
-        <div className="flex items-center justify-center py-16">
+        <div className="flex items-center justify-center py-12">
           <div className="text-center">
-            <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4 animate-spin" />
-            <p className="text-muted-foreground">Carregando dados de manutenção...</p>
+            <Settings className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <p className="text-muted-foreground">
+              Carregando dados de manutenção...
+            </p>
           </div>
         </div>
       ) : (
         <>
-          {/* Maintenance Tab */}
+          {/* Maintenance Tab Content */}
           {activeTab === "maintenance" && (
-            <div className="bg-gradient-to-br from-card/50 to-card/30 backdrop-blur border border-border/50 rounded-lg shadow-lg overflow-hidden">
+            <div
+              className="rounded-lg border bg-card overflow-hidden"
+              aria-label="manutencoes-programadas-nao-concluidas"
+            >
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="border-b bg-gradient-to-r from-muted/50 to-muted/30">
+                  <thead className="border-b bg-muted/50">
                     <tr>
-                      <th className="text-left p-4 font-semibold text-muted-foreground">Máquina</th>
-                      <th className="text-left p-4 font-semibold text-muted-foreground">Tipo</th>
-                      <th className="text-left p-4 font-semibold text-muted-foreground">Prioridade</th>
-                      <th className="text-left p-4 font-semibold text-muted-foreground">Status</th>
-                      <th className="text-left p-4 font-semibold text-muted-foreground">Data Programada</th>
-                      <th className="text-left p-4 font-semibold text-muted-foreground">Custo</th>
-                      <th className="text-left p-4 font-semibold text-muted-foreground">Ações</th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">
+                        Máquina
+                      </th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">
+                        Tipo
+                      </th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">
+                        Prioridade
+                      </th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">
+                        Status
+                      </th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">
+                        Data Programada
+                      </th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">
+                        Custo
+                      </th>
+                      <th className="text-left p-4 font-medium text-muted-foreground">
+                        Ações
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredMaintenances.map((maintenance) => {
                       const priority = priorityConfig[maintenance.priority];
-                      const status = maintenanceStatusConfig[maintenance.status];
+                      const status =
+                        maintenanceStatusConfig[maintenance.status];
                       const isOverdue =
                         maintenance.status === "scheduled" &&
                         new Date(maintenance.scheduledDate) < new Date();
@@ -711,14 +757,17 @@ export default function MaintenanceComplete() {
                         <tr
                           key={maintenance.id}
                           className={cn(
-                            "border-b hover:bg-muted/20 transition-colors duration-200",
-                            isOverdue && "border-l-4 border-l-red-500 bg-red-500/5",
+                            "border-b hover:bg-muted/50",
+                            isOverdue &&
+                              "border-l-4 border-l-warning bg-warning/5",
                           )}
                         >
                           <td className="p-4">
                             <div>
-                              <p className="font-semibold text-foreground">{maintenance.machineName}</p>
-                              <p className="text-xs text-muted-foreground line-clamp-1 mt-1">
+                              <p className="font-medium text-card-foreground">
+                                {maintenance.machineName}
+                              </p>
+                              <p className="text-sm text-muted-foreground line-clamp-1">
                                 {maintenance.description}
                               </p>
                             </div>
@@ -733,44 +782,63 @@ export default function MaintenanceComplete() {
                             </span>
                           </td>
                           <td className="p-4">
-                            <Badge className={priority.color}>
+                            <span
+                              className={cn(
+                                "inline-flex rounded-full px-2 py-1 text-xs font-medium",
+                                priority.color,
+                              )}
+                            >
                               {priority.label}
-                            </Badge>
+                            </span>
                           </td>
                           <td className="p-4">
-                            <Badge className={status.color}>
+                            <span
+                              className={cn(
+                                "inline-flex rounded-full px-2 py-1 text-xs font-medium",
+                                status.color,
+                              )}
+                            >
                               {status.label}
-                            </Badge>
+                            </span>
                           </td>
                           <td className="p-4">
                             <div className="flex items-center gap-2">
-                              <span className={cn(
-                                "text-sm font-medium",
-                                isOverdue ? "text-red-600" : "text-muted-foreground",
-                              )}>
-                                {new Date(maintenance.scheduledDate).toLocaleDateString("pt-PT")}
+                              <span
+                                className={cn(
+                                  "text-sm",
+                                  isOverdue
+                                    ? "text-warning font-medium"
+                                    : "text-muted-foreground",
+                                )}
+                              >
+                                {new Date(
+                                  maintenance.scheduledDate,
+                                ).toLocaleDateString("pt-BR")}
                               </span>
                               {isOverdue && (
-                                <AlertTriangle className="h-4 w-4 text-red-600" />
+                                <AlertTriangle className="h-4 w-4 text-warning" />
                               )}
                             </div>
                           </td>
-                          <td className="p-4 text-sm text-muted-foreground font-medium">
-                            €{maintenance.estimatedCost.toLocaleString("pt-PT")}
+                          <td className="p-4 text-sm text-muted-foreground">
+                            € {maintenance.estimatedCost.toLocaleString()}
                           </td>
                           <td className="p-4">
                             <div className="flex gap-2">
                               <button
-                                onClick={() => handleEditMaintenance(maintenance)}
-                                className="p-2 text-muted-foreground hover:text-primary rounded-lg hover:bg-primary/10 transition-all duration-200"
-                                title="Editar"
+                                onClick={() =>
+                                  handleEditMaintenance(maintenance)
+                                }
+                                className="p-1 text-muted-foreground hover:text-foreground"
                               >
                                 <Edit className="h-4 w-4" />
                               </button>
                               <button
-                                onClick={() => handleDeleteMaintenance(maintenance)}
-                                className="p-2 text-muted-foreground hover:text-red-600 rounded-lg hover:bg-red-500/10 transition-all duration-200"
-                                title="Eliminar"
+                                onClick={() =>
+                                  handleDeleteMaintenance(maintenance)
+                                }
+                                className="p-1 text-muted-foreground hover:text-destructive"
+                                title="Excluir manutenção"
                               >
                                 <Trash2 className="h-4 w-4" />
                               </button>
@@ -784,169 +852,257 @@ export default function MaintenanceComplete() {
               </div>
 
               {filteredMaintenances.length === 0 && (
-                <div className="text-center py-12">
-                  <Wrench className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground">Nenhuma manutenção encontrada</p>
+                <div className="text-center py-8">
+                  <Wrench className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                  <p className="text-muted-foreground">
+                    Nenhuma manutenção encontrada
+                  </p>
                 </div>
               )}
             </div>
           )}
 
-          {/* History Tab */}
+          {/* History Tab Content */}
           {activeTab === "history" && (
             <div className="space-y-4">
-              {filteredInterventions.length === 0 ? (
-                <div className="text-center py-12 rounded-lg bg-gradient-to-br from-card/50 to-card/30 backdrop-blur border border-border/50">
-                  <FileText className="h-12 w-12 text-muted-foreground/50 mx-auto mb-3" />
-                  <p className="text-muted-foreground">Nenhuma intervenção encontrada</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredInterventions.map((intervention) => {
-                    const isExpanded = expandedIntervention === intervention.id;
-                    const requestDate = new Date(intervention.requestedAt);
-                    const completedDate = intervention.completedAt
-                      ? new Date(intervention.completedAt)
-                      : null;
-                    const duration = completedDate
-                      ? Math.round(
-                          (completedDate.getTime() - requestDate.getTime()) /
-                            (1000 * 60 * 60),
-                        )
-                      : null;
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h3 className="font-semibold text-blue-900 mb-2">
+                  📋 Histórico Completo de Intervenções
+                </h3>
+                <p className="text-sm text-blue-800">
+                  Registo completo de todas as intervenções de manutenção
+                  realizadas. Este histórico inclui solicitações de operadores,
+                  manutenções corretivas, preventivas e de emergência.
+                </p>
+              </div>
 
-                    const statusBg = 
-                      intervention.status === "completed" ? "from-green-500/10 to-emerald-500/10 border-green-200/30" :
-                      intervention.status === "in_progress" ? "from-orange-500/10 to-amber-500/10 border-orange-200/30" :
-                      intervention.status === "pending" ? "from-yellow-500/10 to-amber-500/10 border-yellow-200/30" :
-                      "from-slate-500/10 to-slate-500/10 border-slate-200/30";
+              <div className="rounded-lg border bg-card">
+                <div className="max-h-96 overflow-y-auto">
+                  {filteredInterventions.length === 0 ? (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                      <p className="text-muted-foreground">
+                        {searchTerm || statusFilter !== "all"
+                          ? "Nenhuma intervenção encontrada com os filtros aplicados"
+                          : "Nenhuma intervenção registada"}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredInterventions.map((intervention) => {
+                      const isExpanded =
+                        expandedIntervention === intervention.id;
+                      const requestDate = new Date(intervention.requestedAt);
+                      const completedDate = intervention.completedAt
+                        ? new Date(intervention.completedAt)
+                        : null;
+                      const duration = completedDate
+                        ? Math.round(
+                            (completedDate.getTime() - requestDate.getTime()) /
+                              (1000 * 60 * 60),
+                          )
+                        : null;
 
-                    return (
-                      <div
-                        key={intervention.id}
-                        className={`bg-gradient-to-br ${statusBg} backdrop-blur border rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden`}
-                      >
+                      const statusConfig =
+                        interventionStatusConfig[intervention.status];
+
+                      return (
                         <div
-                          className="p-4 cursor-pointer"
-                          onClick={() =>
-                            setExpandedIntervention(
-                              isExpanded ? null : intervention.id,
-                            )
-                          }
+                          key={intervention.id}
+                          className="border-b last:border-b-0"
                         >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <h4 className="font-semibold text-foreground">
-                                  {intervention.title}
-                                </h4>
-                                <Badge className={
-                                  intervention.urgencyLevel === "critical" ? "bg-red-600 hover:bg-red-700" :
-                                  intervention.urgencyLevel === "high" ? "bg-orange-600 hover:bg-orange-700" :
-                                  intervention.urgencyLevel === "medium" ? "bg-yellow-600 hover:bg-yellow-700" :
-                                  "bg-blue-600 hover:bg-blue-700"
-                                }>
-                                  {intervention.urgencyLevel === "critical" ? "Crítica" :
-                                   intervention.urgencyLevel === "high" ? "Alta" :
-                                   intervention.urgencyLevel === "medium" ? "Média" : "Baixa"}
-                                </Badge>
+                          <div
+                            className="p-4 hover:bg-muted/50 cursor-pointer"
+                            onClick={() =>
+                              setExpandedIntervention(
+                                isExpanded ? null : intervention.id,
+                              )
+                            }
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-2">
+                                  <h4 className="font-medium">
+                                    {intervention.title}
+                                  </h4>
+                                  <span
+                                    className={cn(
+                                      "px-2 py-1 rounded text-xs",
+                                      intervention.urgencyLevel === "critical"
+                                        ? "bg-red-100 text-red-800"
+                                        : intervention.urgencyLevel === "high"
+                                          ? "bg-orange-100 text-orange-800"
+                                          : intervention.urgencyLevel ===
+                                              "medium"
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-green-100 text-green-800",
+                                    )}
+                                  >
+                                    {intervention.urgencyLevel === "critical"
+                                      ? "Crítica"
+                                      : intervention.urgencyLevel === "high"
+                                        ? "Alta"
+                                        : intervention.urgencyLevel === "medium"
+                                          ? "Média"
+                                          : "Baixa"}
+                                  </span>
+                                  <span
+                                    className={cn(
+                                      "px-2 py-1 rounded text-xs",
+                                      statusConfig.color,
+                                    )}
+                                  >
+                                    {statusConfig.label}
+                                  </span>
+                                </div>
+
+                                <div className="grid gap-2 md:grid-cols-3 text-sm text-muted-foreground">
+                                  <div className="flex items-center gap-1">
+                                    <Factory className="h-3 w-3" />
+                                    {intervention.machineName}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <User className="h-3 w-3" />
+                                    {intervention.operatorName}
+                                  </div>
+                                  <div className="flex items-center gap-1">
+                                    <Calendar className="h-3 w-3" />
+                                    {requestDate.toLocaleDateString("pt-BR")}
+                                  </div>
+                                  {duration && (
+                                    <div className="flex items-center gap-1">
+                                      <Clock className="h-3 w-3" />
+                                      Duração: {duration}h
+                                    </div>
+                                  )}
+                                  {intervention.cost &&
+                                    intervention.cost > 0 && (
+                                      <div className="flex items-center gap-1">
+                                        <Euro className="h-3 w-3" />€
+                                        {intervention.cost.toFixed(2)}
+                                      </div>
+                                    )}
+                                  {intervention.assignedTo && (
+                                    <div className="flex items-center gap-1">
+                                      <Wrench className="h-3 w-3" />
+                                      {intervention.assignedTo}
+                                    </div>
+                                  )}
+                                </div>
                               </div>
 
-                              <div className="grid gap-2 md:grid-cols-3 text-sm text-muted-foreground">
-                                <div className="flex items-center gap-2">
-                                  <Factory className="h-4 w-4" />
-                                  {intervention.machineName}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <User className="h-4 w-4" />
-                                  {intervention.operatorName}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="h-4 w-4" />
-                                  {requestDate.toLocaleDateString("pt-PT")}
-                                </div>
-                                {duration && (
-                                  <div className="flex items-center gap-2">
-                                    <Clock className="h-4 w-4" />
-                                    {duration}h
-                                  </div>
-                                )}
-                                {intervention.cost && intervention.cost > 0 && (
-                                  <div className="flex items-center gap-2">
-                                    <Euro className="h-4 w-4" />
-                                    €{intervention.cost.toFixed(2)}
-                                  </div>
-                                )}
+                              <div className="ml-4">
+                                <Eye className="h-4 w-4" />
                               </div>
                             </div>
-
-                            <Eye className="h-4 w-4 text-muted-foreground ml-4" />
                           </div>
+
+                          {isExpanded && (
+                            <div className="px-4 pb-4 bg-muted/20">
+                              <div className="space-y-3 text-sm">
+                                <div>
+                                  <strong>Descrição:</strong>
+                                  <p className="mt-1">
+                                    {intervention.description}
+                                  </p>
+                                </div>
+
+                                {intervention.technicianNotes && (
+                                  <div>
+                                    <strong>
+                                      Notas do Técnico/Folha de Trabalho:
+                                    </strong>
+                                    <pre className="mt-1 whitespace-pre-wrap text-xs bg-white p-2 rounded border">
+                                      {intervention.technicianNotes}
+                                    </pre>
+                                  </div>
+                                )}
+
+                                {intervention.solution && (
+                                  <div>
+                                    <strong>Solução:</strong>
+                                    <p className="mt-1">
+                                      {intervention.solution}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {intervention.partsUsed &&
+                                  intervention.partsUsed.length > 0 && (
+                                    <div>
+                                      <strong>Peças Utilizadas:</strong>
+                                      <ul className="mt-1 list-disc list-inside">
+                                        {intervention.partsUsed.map(
+                                          (part, index) => (
+                                            <li key={index}>{part}</li>
+                                          ),
+                                        )}
+                                      </ul>
+                                    </div>
+                                  )}
+
+                                <div className="grid gap-2 md:grid-cols-2 pt-2 border-t">
+                                  <div>
+                                    <strong>Categoria:</strong>{" "}
+                                    {intervention.category}
+                                  </div>
+                                  <div>
+                                    <strong>Prioridade:</strong>{" "}
+                                    {intervention.priority}
+                                  </div>
+                                  <div>
+                                    <strong>Follow-up:</strong>{" "}
+                                    {intervention.followUpRequired
+                                      ? "Sim"
+                                      : "Não"}
+                                  </div>
+                                  {intervention.nextMaintenanceDate && (
+                                    <div>
+                                      <strong>Próxima Manutenção:</strong>{" "}
+                                      {new Date(
+                                        intervention.nextMaintenanceDate,
+                                      ).toLocaleDateString("pt-BR")}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
-
-                        {isExpanded && (
-                          <div className="px-4 pb-4 border-t border-border/50 pt-4 space-y-3">
-                            <div>
-                              <strong className="text-sm">Descrição:</strong>
-                              <p className="text-sm text-muted-foreground mt-1">
-                                {intervention.description}
-                              </p>
-                            </div>
-
-                            {intervention.technicianNotes && (
-                              <div>
-                                <strong className="text-sm">Notas do Técnico:</strong>
-                                <pre className="mt-1 text-xs bg-background/50 p-2 rounded border border-border/50 whitespace-pre-wrap">
-                                  {intervention.technicianNotes}
-                                </pre>
-                              </div>
-                            )}
-
-                            {intervention.solution && (
-                              <div>
-                                <strong className="text-sm">Solução:</strong>
-                                <p className="text-sm text-muted-foreground mt-1">
-                                  {intervention.solution}
-                                </p>
-                              </div>
-                            )}
-
-                            {intervention.partsUsed && intervention.partsUsed.length > 0 && (
-                              <div>
-                                <strong className="text-sm">Peças Utilizadas:</strong>
-                                <ul className="text-sm text-muted-foreground mt-1 list-disc list-inside space-y-1">
-                                  {intervention.partsUsed.map((part, index) => (
-                                    <li key={index}>{part}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
-              )}
+              </div>
             </div>
           )}
 
-          {/* Reports Tab */}
+          {/* Reports Tab Content */}
           {activeTab === "reports" && (
             <div className="space-y-6">
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h3 className="font-semibold text-green-900 mb-2">
+                  📊 Relatórios e Análises
+                </h3>
+                <p className="text-sm text-green-800">
+                  Gere relatórios detalhados com base no histórico completo de
+                  manutenção e intervenções.
+                </p>
+              </div>
+
               <div className="grid gap-6 md:grid-cols-2">
-                <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur border border-green-200/30 rounded-lg p-6 shadow-lg">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="bg-card border rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4">
                     Estatísticas Gerais
                   </h3>
                   <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Total de Intervenções:</span>
-                      <span className="font-bold text-foreground">{stats.totalInterventions}</span>
+                    <div className="flex justify-between">
+                      <span>Total de Intervenções:</span>
+                      <span className="font-bold">
+                        {stats.totalInterventions}
+                      </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Taxa de Conclusão:</span>
+                    <div className="flex justify-between">
+                      <span>Taxa de Conclusão:</span>
                       <span className="font-bold text-green-600">
                         {stats.totalInterventions > 0
                           ? Math.round(
@@ -958,36 +1114,46 @@ export default function MaintenanceComplete() {
                         %
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">Tempo Médio de Resolução:</span>
-                      <span className="font-bold text-foreground">{stats.avgResolutionTime}h</span>
+                    <div className="flex justify-between">
+                      <span>Tempo Médio de Resolução:</span>
+                      <span className="font-bold">
+                        {stats.avgResolutionTime}h
+                      </span>
                     </div>
-                    <div className="flex justify-between text-sm border-t border-border/50 pt-3">
-                      <span className="text-muted-foreground">Custo Total:</span>
-                      <span className="font-bold text-orange-600">€{stats.totalCost.toFixed(2)}</span>
+                    <div className="flex justify-between">
+                      <span>Custo Total:</span>
+                      <span className="font-bold text-orange-600">
+                        €{stats.totalCost.toFixed(2)}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-200/30 rounded-lg p-6 shadow-lg">
-                  <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <FileText className="h-5 w-5 text-blue-600" />
+                <div className="bg-card border rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4">
                     Ações de Relatório
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <button
                       onClick={exportToCSV}
-                      className="w-full px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-600/80 hover:from-blue-700 hover:to-blue-700/70 text-white rounded-lg flex items-center justify-center gap-2 font-medium transition-all duration-300"
+                      className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center justify-center gap-2"
                     >
                       <Download className="h-4 w-4" />
-                      Exportar Histórico (CSV)
+                      Exportar Histórico Completo (CSV)
                     </button>
                     <button
                       onClick={() => setShowReports(true)}
-                      className="w-full px-4 py-2 bg-gradient-to-r from-green-600 to-green-600/80 hover:from-green-700 hover:to-green-700/70 text-white rounded-lg flex items-center justify-center gap-2 font-medium transition-all duration-300"
+                      className="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 flex items-center justify-center gap-2"
                     >
                       <FileText className="h-4 w-4" />
                       Relatório Detalhado
+                    </button>
+                    <button
+                      onClick={() => setShowChecklist(true)}
+                      className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 flex items-center justify-center gap-2"
+                    >
+                      <Camera className="h-4 w-4" />
+                      Checklist de Manutenção
                     </button>
                   </div>
                 </div>
