@@ -513,88 +513,88 @@ export default function MaintenanceComplete() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-blue-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-500/40">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground">Máquinas</p>
-              <p className="text-2xl md:text-3xl font-bold text-foreground mt-1">{stats.totalMachines}</p>
+              <p className="text-xs md:text-sm font-medium text-slate-400">Máquinas</p>
+              <p className="text-2xl md:text-3xl font-bold text-slate-50 mt-1">{stats.totalMachines}</p>
             </div>
             <div className="p-2 bg-blue-600/20 rounded-lg">
-              <Factory className="h-5 w-5 text-blue-600" />
+              <Factory className="h-5 w-5 text-blue-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 backdrop-blur border border-cyan-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-cyan-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-cyan-500/40">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground">Agendadas</p>
-              <p className="text-2xl md:text-3xl font-bold text-cyan-600 mt-1">{stats.scheduledMaintenances}</p>
+              <p className="text-xs md:text-sm font-medium text-slate-400">Agendadas</p>
+              <p className="text-2xl md:text-3xl font-bold text-cyan-400 mt-1">{stats.scheduledMaintenances}</p>
             </div>
             <div className="p-2 bg-cyan-600/20 rounded-lg">
-              <Calendar className="h-5 w-5 text-cyan-600" />
+              <Calendar className="h-5 w-5 text-cyan-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-purple-500/10 to-pink-500/10 backdrop-blur border border-purple-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-purple-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-purple-500/40">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground">Intervenções</p>
-              <p className="text-2xl md:text-3xl font-bold text-purple-600 mt-1">{stats.totalInterventions}</p>
+              <p className="text-xs md:text-sm font-medium text-slate-400">Intervenções</p>
+              <p className="text-2xl md:text-3xl font-bold text-purple-400 mt-1">{stats.totalInterventions}</p>
             </div>
             <div className="p-2 bg-purple-600/20 rounded-lg">
-              <Target className="h-5 w-5 text-purple-600" />
+              <Target className="h-5 w-5 text-purple-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur border border-green-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground">Concluídas</p>
-              <p className="text-2xl md:text-3xl font-bold text-green-600 mt-1">{stats.completedInterventions}</p>
+              <p className="text-xs md:text-sm font-medium text-slate-400">Concluídas</p>
+              <p className="text-2xl md:text-3xl font-bold text-emerald-400 mt-1">{stats.completedInterventions}</p>
             </div>
-            <div className="p-2 bg-green-600/20 rounded-lg">
-              <CheckCircle className="h-5 w-5 text-green-600" />
+            <div className="p-2 bg-emerald-600/20 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-emerald-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 backdrop-blur border border-orange-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-orange-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-orange-500/40">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground">Custo Total</p>
-              <p className="text-lg md:text-2xl font-bold text-orange-600 mt-1">€{stats.totalCost.toFixed(0)}</p>
+              <p className="text-xs md:text-sm font-medium text-slate-400">Custo Total</p>
+              <p className="text-lg md:text-2xl font-bold text-orange-400 mt-1">€{stats.totalCost.toFixed(0)}</p>
             </div>
             <div className="p-2 bg-orange-600/20 rounded-lg">
-              <Euro className="h-5 w-5 text-orange-600" />
+              <Euro className="h-5 w-5 text-orange-400" />
             </div>
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-indigo-500/10 to-blue-500/10 backdrop-blur border border-indigo-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+        <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-indigo-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-indigo-500/40">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs md:text-sm font-medium text-muted-foreground">Tempo Médio</p>
-              <p className="text-2xl md:text-3xl font-bold text-indigo-600 mt-1">{stats.avgResolutionTime}h</p>
+              <p className="text-xs md:text-sm font-medium text-slate-400">Tempo Médio</p>
+              <p className="text-2xl md:text-3xl font-bold text-indigo-400 mt-1">{stats.avgResolutionTime}h</p>
             </div>
             <div className="p-2 bg-indigo-600/20 rounded-lg">
-              <Timer className="h-5 w-5 text-indigo-600" />
+              <Timer className="h-5 w-5 text-indigo-400" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex rounded-lg bg-gradient-to-r from-card/50 to-card/30 backdrop-blur border border-border/50 p-1 shadow-lg">
+      <div className="flex rounded-lg bg-gradient-to-r from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 p-1 shadow-lg">
         <button
           onClick={() => setActiveTab("maintenance")}
           className={cn(
             "flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300",
             activeTab === "maintenance"
-              ? "bg-gradient-to-r from-primary/20 to-primary/10 text-foreground shadow-md"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-md"
+              : "text-slate-400 hover:text-slate-200",
           )}
         >
           Manutenções Programadas ({maintenances.length})
@@ -604,8 +604,8 @@ export default function MaintenanceComplete() {
           className={cn(
             "flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300",
             activeTab === "history"
-              ? "bg-gradient-to-r from-primary/20 to-primary/10 text-foreground shadow-md"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-md"
+              : "text-slate-400 hover:text-slate-200",
           )}
         >
           Histórico ({interventionHistory.length})
@@ -615,8 +615,8 @@ export default function MaintenanceComplete() {
           className={cn(
             "flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-300",
             activeTab === "reports"
-              ? "bg-gradient-to-r from-primary/20 to-primary/10 text-foreground shadow-md"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-gradient-to-r from-indigo-600/30 to-indigo-600/10 text-slate-50 shadow-md"
+              : "text-slate-400 hover:text-slate-200",
           )}
         >
           Relatórios
@@ -632,14 +632,14 @@ export default function MaintenanceComplete() {
             placeholder="Procurar por máquina, tipo ou operador..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full rounded-lg border border-border/50 bg-gradient-to-r from-card/50 to-card/30 pl-10 pr-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all duration-300"
+            className="w-full rounded-lg border border-slate-700/30 bg-gradient-to-r from-slate-800/60 to-slate-800/40 pl-10 pr-4 py-2.5 text-sm text-slate-50 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-600/50 focus:border-transparent transition-all duration-300"
           />
         </div>
 
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-lg border border-border/50 bg-gradient-to-r from-card/50 to-card/30 px-4 py-2.5 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all duration-300 min-w-[200px]"
+          className="rounded-lg border border-slate-700/30 bg-gradient-to-r from-slate-800/60 to-slate-800/40 px-4 py-2.5 text-sm text-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-600/50 focus:border-transparent transition-all duration-300 min-w-[200px]"
         >
           <option value="all">Todos os estados</option>
           {activeTab === "maintenance" && (
