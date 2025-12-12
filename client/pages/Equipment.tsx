@@ -252,14 +252,14 @@ export default function Equipment() {
     <div className="space-y-8">
       {/* Header */}
       <div className="relative">
-        <div className="absolute -top-8 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl opacity-50"></div>
-        
+        <div className="absolute -top-8 -right-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
+
         <div className="relative z-10 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
-                <Activity className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2 flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg">
+                <Activity className="h-8 w-8 text-white" />
               </div>
               Equipamentos
             </h1>
@@ -279,36 +279,36 @@ export default function Equipment() {
 
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur border border-green-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Equipamentos Ativos</CardTitle>
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Equipamentos Ativos</CardTitle>
+            <CheckCircle className="h-5 w-5 text-emerald-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{statusCounts.active}</div>
-            <p className="text-xs text-muted-foreground mt-2">Em operação</p>
+            <div className="text-3xl font-bold text-slate-50">{statusCounts.active}</div>
+            <p className="text-xs text-slate-400 mt-2">Em operação</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 backdrop-blur border border-orange-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-orange-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-orange-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Em Manutenção</CardTitle>
-            <Settings className="h-5 w-5 text-orange-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Em Manutenção</CardTitle>
+            <Settings className="h-5 w-5 text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{statusCounts.maintenance}</div>
-            <p className="text-xs text-muted-foreground mt-2">Sob manutenção</p>
+            <div className="text-3xl font-bold text-slate-50">{statusCounts.maintenance}</div>
+            <p className="text-xs text-slate-400 mt-2">Sob manutenção</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-gray-500/10 to-slate-500/10 backdrop-blur border border-gray-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-600/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-slate-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Inativos</CardTitle>
-            <AlertTriangle className="h-5 w-5 text-gray-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Inativos</CardTitle>
+            <AlertTriangle className="h-5 w-5 text-slate-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{statusCounts.inactive}</div>
-            <p className="text-xs text-muted-foreground mt-2">Fora de serviço</p>
+            <div className="text-3xl font-bold text-slate-50">{statusCounts.inactive}</div>
+            <p className="text-xs text-slate-400 mt-2">Fora de serviço</p>
           </CardContent>
         </Card>
       </div>
@@ -321,11 +321,11 @@ export default function Equipment() {
             placeholder="Procurar por nome, tipo ou número de série..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 bg-gradient-to-r from-card/50 to-card/30 border-border/50"
+            className="pl-10 bg-gradient-to-r from-slate-800/60 to-slate-800/40 border-slate-700/30 text-slate-50 placeholder:text-slate-400"
           />
         </div>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-full md:w-[220px] bg-gradient-to-r from-card/50 to-card/30 border-border/50">
+          <SelectTrigger className="w-full md:w-[220px] bg-gradient-to-r from-slate-800/60 to-slate-800/40 border-slate-700/30 text-slate-50">
             <SelectValue placeholder="Filtrar por estado" />
           </SelectTrigger>
           <SelectContent>
@@ -354,9 +354,9 @@ export default function Equipment() {
             const statusInfo = statusConfig[eq.status] || statusConfig.inactive;
             const StatusIcon = statusInfo.icon;
             return (
-              <Card 
-                key={eq.id} 
-                className={`bg-gradient-to-br ${statusInfo.bgGradient} backdrop-blur border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+              <Card
+                key={eq.id}
+                className={`bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
