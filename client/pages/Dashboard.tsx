@@ -58,14 +58,14 @@ interface StatCardProps {
 
 function StatCard({ title, value, subtitle, icon: Icon, trend, color }: StatCardProps) {
   const colorClasses = {
-    green: "bg-slate-800 border-slate-700 text-emerald-400",
-    blue: "bg-slate-800 border-slate-700 text-blue-400",
-    orange: "bg-slate-800 border-slate-700 text-orange-400",
-    red: "bg-slate-800 border-slate-700 text-red-400",
+    green: "bg-gradient-to-br from-slate-800/60 to-slate-800/40 border-emerald-500/20 hover:border-emerald-500/40 text-emerald-400",
+    blue: "bg-gradient-to-br from-slate-800/60 to-slate-800/40 border-blue-500/20 hover:border-blue-500/40 text-blue-400",
+    orange: "bg-gradient-to-br from-slate-800/60 to-slate-800/40 border-orange-500/20 hover:border-orange-500/40 text-orange-400",
+    red: "bg-gradient-to-br from-slate-800/60 to-slate-800/40 border-red-500/20 hover:border-red-500/40 text-red-400",
   };
 
   return (
-    <Card className={`${colorClasses[color]} backdrop-blur border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}>
+    <Card className={`${colorClasses[color]} backdrop-blur-xl border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-semibold text-slate-200">
           {title}
