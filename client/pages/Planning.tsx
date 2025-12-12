@@ -317,8 +317,8 @@ export default function Planning() {
     <div className="space-y-8">
       {/* Header */}
       <div className="relative">
-        <div className="absolute -top-8 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -top-8 -right-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
         
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
