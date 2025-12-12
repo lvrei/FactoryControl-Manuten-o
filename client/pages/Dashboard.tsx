@@ -378,7 +378,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800 backdrop-blur border border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 shadow-lg hover:shadow-xl transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <Calendar className="h-5 w-5 text-cyan-400" />
