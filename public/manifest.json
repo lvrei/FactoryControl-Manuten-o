@@ -32,7 +32,7 @@
       ]
     }
   },
-  
+
   "icons": [
     {
       "src": "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgdmlld0JveD0iMCAwIDUxMiA1MTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iNjQiIGZpbGw9IiMyNTYzZWIiLz4KPHN2ZyB4PSIxMjgiIHk9IjEyOCIgd2lkdGg9IjI1NiIgaGVpZ2h0PSIyNTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTIgM2gxdjE4SDJ6bTMgMGgxdjE4SDV6bTQgMGgxdjE4SDl6bTQgMGgxdjE4aC0xem00IDBoMXYxOGgtMXptNCAwaDFWMWgtMXptMiAwaDFWMWgtMXoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPgo8L3N2Zz4KPC9zdmc+",
@@ -47,7 +47,7 @@
       "purpose": "any maskable"
     }
   ],
-  
+
   "shortcuts": [
     {
       "name": "Portal do Operador",
@@ -57,12 +57,12 @@
     },
     {
       "name": "Dashboard",
-      "short_name": "Dashboard", 
+      "short_name": "Dashboard",
       "description": "Dashboard principal do sistema",
       "url": "/"
     }
   ],
-  
+
   "related_applications": [],
   "prefer_related_applications": false
 }

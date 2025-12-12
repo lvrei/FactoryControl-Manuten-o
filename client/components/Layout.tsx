@@ -86,7 +86,9 @@ export function Layout({ children }: LayoutProps) {
               className="relative rounded-xl p-2 text-muted-foreground hover:bg-gradient-to-br hover:from-muted hover:to-muted/50 hover:text-foreground transition-all duration-300 btn-mobile group"
               title="Abrir chat"
             >
-              <MessageSquare className={`h-5 w-5 group-hover:scale-110 transition-transform duration-300 ${hasUnreadMessages ? 'animate-pulse text-primary' : ''}`} />
+              <MessageSquare
+                className={`h-5 w-5 group-hover:scale-110 transition-transform duration-300 ${hasUnreadMessages ? "animate-pulse text-primary" : ""}`}
+              />
               {hasUnreadMessages && (
                 <span className="absolute top-0 right-0 h-2 w-2 md:h-3 md:w-3 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/50 animate-pulse"></span>
               )}
@@ -220,7 +222,7 @@ export function Layout({ children }: LayoutProps) {
             }}
           />
           <small className="text-[10px] md:text-[11px]">
-            <span className="hidden sm:inline">Desenvolvido por:{" "}</span>
+            <span className="hidden sm:inline">Desenvolvido por: </span>
             <span className="font-medium text-foreground/80">Gil Rei</span>
             <span className="mx-1 md:mx-2">•</span>v{APP_VERSION}
           </small>
@@ -242,7 +244,12 @@ export function Layout({ children }: LayoutProps) {
               }
             >
               <item.icon className="h-5 w-5" />
-              <span className="text-[10px] leading-tight text-center">{item.name.replace('🆕 ', '').replace('🔄 ', '').replace('📊 ', '')}</span>
+              <span className="text-[10px] leading-tight text-center">
+                {item.name
+                  .replace("🆕 ", "")
+                  .replace("🔄 ", "")
+                  .replace("📊 ", "")}
+              </span>
             </NavLink>
           ))}
         </div>
