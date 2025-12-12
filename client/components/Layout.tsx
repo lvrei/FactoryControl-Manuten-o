@@ -4,6 +4,7 @@ import {
   Factory,
   BarChart3,
   Settings,
+  Users,
   Package,
   AlertTriangle,
   Activity,
@@ -12,6 +13,7 @@ import {
   Menu,
   X,
   Warehouse,
+  Video,
   MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -26,7 +28,21 @@ interface LayoutProps {
 
 import { ChatModal } from "@/components/chat/ChatModal";
 
-const navigation = [
+// Desktop navigation - com todos os separadores
+const navigationDesktop = [
+  { name: "Dashboard", href: "/", icon: BarChart3 },
+  { name: "Equipamentos", href: "/equipment", icon: Activity },
+  { name: "Manutenção", href: "/maintenance", icon: Settings },
+  { name: "Equipa", href: "/team", icon: Users },
+  { name: "Planeamento", href: "/planning", icon: Calendar },
+  { name: "Sensores", href: "/sensors", icon: Settings },
+  { name: "Câmaras", href: "/cameras", icon: Video },
+  { name: "Stock Material", href: "/material-stock", icon: Package },
+  { name: "Alertas", href: "/alerts", icon: AlertTriangle },
+];
+
+// Mobile/PWA navigation - sem Sensores, Câmaras, Equipa
+const navigationMobile = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Equipamentos", href: "/equipment", icon: Activity },
   { name: "Manutenção", href: "/maintenance", icon: Settings },
