@@ -414,9 +414,9 @@ export default function Planning() {
                 typeof plan.id === "string" && plan.id.startsWith("sched-");
 
               return (
-                <Card 
-                  key={plan.id} 
-                  className={`bg-gradient-to-br ${isOverdue ? 'from-red-500/10 to-rose-500/10 border-red-200/30' : priorityInfo.bgGradient} backdrop-blur border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                <Card
+                  key={plan.id}
+                  className={`bg-gradient-to-br ${isOverdue ? 'from-red-900/40 to-red-800/30 border-red-500/30 hover:border-red-500/50' : 'from-slate-800/60 to-slate-800/40 border-slate-700/30 hover:border-indigo-500/40'} backdrop-blur-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
                 >
                   <CardHeader>
                     <div className="flex items-start justify-between">
