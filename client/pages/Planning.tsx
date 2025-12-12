@@ -400,9 +400,9 @@ export default function Planning() {
             <p className="text-muted-foreground">A carregar manutenções...</p>
           </div>
         ) : upcomingPlans.length === 0 ? (
-          <div className="text-center py-12 rounded-lg bg-gradient-to-br from-card/50 to-card/30 backdrop-blur border border-border/50">
-            <Calendar className="h-12 w-12 mx-auto text-muted-foreground/50 mb-3" />
-            <p className="text-muted-foreground">Nenhuma manutenção agendada</p>
+          <div className="text-center py-12 rounded-lg bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30">
+            <Calendar className="h-12 w-12 mx-auto text-slate-500 mb-3" />
+            <p className="text-slate-400">Nenhuma manutenção agendada</p>
           </div>
         ) : (
           <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
