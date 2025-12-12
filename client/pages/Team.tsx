@@ -269,14 +269,14 @@ export default function Team() {
     <div className="space-y-8">
       {/* Header */}
       <div className="relative">
-        <div className="absolute -top-8 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl opacity-50"></div>
-        
+        <div className="absolute -top-8 -right-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
+
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
-                <Users className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2 flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg">
+                <Users className="h-8 w-8 text-white" />
               </div>
               Gestão de Equipa
             </h1>
@@ -296,47 +296,47 @@ export default function Team() {
 
       {/* Stats Overview */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-blue-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Total de Funcionários</CardTitle>
-            <Users className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Total de Funcionários</CardTitle>
+            <Users className="h-5 w-5 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{employees.length}</div>
-            <p className="text-xs text-muted-foreground mt-2">Utilizadores do sistema</p>
+            <div className="text-3xl font-bold text-slate-50">{employees.length}</div>
+            <p className="text-xs text-slate-400 mt-2">Utilizadores do sistema</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-red-500/10 to-rose-500/10 backdrop-blur border border-red-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-red-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-red-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Administradores</CardTitle>
-            <Shield className="h-5 w-5 text-red-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Administradores</CardTitle>
+            <Shield className="h-5 w-5 text-red-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{roleStats.admin}</div>
-            <p className="text-xs text-muted-foreground mt-2">Acesso total</p>
+            <div className="text-3xl font-bold text-slate-50">{roleStats.admin}</div>
+            <p className="text-xs text-slate-400 mt-2">Acesso total</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-cyan-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-cyan-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Técnicos</CardTitle>
-            <User className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Técnicos</CardTitle>
+            <User className="h-5 w-5 text-cyan-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{roleStats.technician}</div>
-            <p className="text-xs text-muted-foreground mt-2">Gestão manutenção</p>
+            <div className="text-3xl font-bold text-slate-50">{roleStats.technician}</div>
+            <p className="text-xs text-slate-400 mt-2">Gestão manutenção</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur border border-green-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Operadores</CardTitle>
-            <User className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Operadores</CardTitle>
+            <User className="h-5 w-5 text-emerald-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{roleStats.operator}</div>
-            <p className="text-xs text-muted-foreground mt-2">Acesso básico</p>
+            <div className="text-3xl font-bold text-slate-50">{roleStats.operator}</div>
+            <p className="text-xs text-slate-400 mt-2">Acesso básico</p>
           </CardContent>
         </Card>
       </div>
@@ -348,7 +348,7 @@ export default function Team() {
           placeholder="Procurar por nome ou username..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-10 bg-gradient-to-r from-card/50 to-card/30 border-border/50"
+          className="pl-10 bg-gradient-to-r from-slate-800/60 to-slate-800/40 border-slate-700/30 text-slate-50 placeholder:text-slate-400"
         />
       </div>
 
@@ -368,9 +368,9 @@ export default function Team() {
           {filteredEmployees.map((employee) => {
             const roleInfo = roleConfig[employee.role];
             return (
-              <Card 
+              <Card
                 key={employee.id}
-                className={`bg-gradient-to-br ${roleInfo.bgGradient} backdrop-blur border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
+                className={`bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105`}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
