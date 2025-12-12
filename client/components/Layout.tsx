@@ -56,12 +56,22 @@ export function Layout({ children }: LayoutProps) {
   const [chatModalOpen, setChatModalOpen] = useState(false);
   const [userSession, setUserSession] = useState<LoginSession | null>(null);
   const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const session = authService.getCurrentUser();
     setUserSession(session);
+
+    // Detectar se está a correr como PWA standalone
+    const isStandaloneMode = window.matchMedia("(display-mode: standalone)").matches
+      || (window.navigator as any).standalone === true
+      || document.referrer.includes("android-app://");
+    setIsStandalone(isStandaloneMode);
   }, []);
+
+  // Selecionar navegação apropriada baseado no modo
+  const navigation = isStandalone ? navigationMobile : navigationDesktop;
 
   if (!userSession?.id) {
     return null;
