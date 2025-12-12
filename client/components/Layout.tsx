@@ -57,9 +57,9 @@ export function Layout({ children }: LayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 overflow-x-hidden">
       {/* Top Navigation Bar - Mobile-First App Design */}
-      <header className="sticky top-0 z-40 border-b border-border/40 bg-gradient-to-r from-card/95 via-card/90 to-card/95 backdrop-blur-xl shadow-lg safe-area-top">
+      <header className="sticky top-0 z-40 border-b border-slate-700 bg-slate-900/80 backdrop-blur-xl shadow-lg safe-area-top">
         <div className="flex h-14 md:h-16 items-center justify-between px-3 md:px-6 max-w-full">
           <div className="flex items-center gap-4">
             {/* Mobile menu button */}
