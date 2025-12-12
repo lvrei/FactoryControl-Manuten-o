@@ -355,36 +355,36 @@ export default function Planning() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-blue-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Agendadas</CardTitle>
-            <Calendar className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Agendadas</CardTitle>
+            <Calendar className="h-5 w-5 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{upcomingPlans.length}</div>
-            <p className="text-xs text-muted-foreground mt-2">Manutenções futuras</p>
+            <div className="text-3xl font-bold text-slate-50">{upcomingPlans.length}</div>
+            <p className="text-xs text-slate-400 mt-2">Manutenções futuras</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 backdrop-blur border border-orange-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-orange-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-orange-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Em Progresso</CardTitle>
-            <Clock className="h-5 w-5 text-orange-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Em Progresso</CardTitle>
+            <Clock className="h-5 w-5 text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{inProgressPlans.length}</div>
-            <p className="text-xs text-muted-foreground mt-2">A decorrer</p>
+            <div className="text-3xl font-bold text-slate-50">{inProgressPlans.length}</div>
+            <p className="text-xs text-slate-400 mt-2">A decorrer</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur border border-green-200/30 shadow-lg">
+        <Card className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
-            <CardTitle className="text-sm font-semibold">Concluídas</CardTitle>
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <CardTitle className="text-sm font-semibold text-slate-200">Concluídas</CardTitle>
+            <CheckCircle className="h-5 w-5 text-emerald-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-foreground">{completedPlans.length}</div>
-            <p className="text-xs text-muted-foreground mt-2">Concluídas</p>
+            <div className="text-3xl font-bold text-slate-50">{completedPlans.length}</div>
+            <p className="text-xs text-slate-400 mt-2">Concluídas</p>
           </CardContent>
         </Card>
       </div>
