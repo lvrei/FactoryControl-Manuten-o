@@ -253,14 +253,14 @@ export default function Stock() {
     <div className="space-y-8">
       {/* Header */}
       <div className="relative">
-        <div className="absolute -top-8 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-50"></div>
-        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -top-8 -right-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
+        <div className="absolute -bottom-8 -left-20 w-40 h-40 bg-indigo-600/15 rounded-full blur-3xl opacity-50"></div>
 
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-foreground via-foreground to-foreground/70 bg-clip-text text-transparent mb-2 flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-primary/20 to-primary/10 rounded-lg">
-                <Package className="h-8 w-8 text-primary" />
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent mb-2 flex items-center gap-3">
+              <div className="p-3 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-lg">
+                <Package className="h-8 w-8 text-white" />
               </div>
               Gestão de Stock
             </h1>
@@ -282,68 +282,68 @@ export default function Stock() {
       {/* Stats Cards */}
       {stockSummary && (
         <div className="grid gap-4 md:grid-cols-5">
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-blue-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-500/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-muted-foreground">Total de Blocos</p>
-                <p className="text-2xl md:text-3xl font-bold text-foreground mt-1">{stockSummary.totalBlocks}</p>
+                <p className="text-sm font-semibold text-slate-400">Total de Blocos</p>
+                <p className="text-2xl md:text-3xl font-bold text-slate-50 mt-1">{stockSummary.totalBlocks}</p>
               </div>
               <div className="p-2 bg-blue-600/20 rounded-lg">
-                <Package className="h-6 w-6 text-blue-600" />
+                <Package className="h-6 w-6 text-blue-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 backdrop-blur border border-orange-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-orange-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-orange-500/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-muted-foreground">Volume Total</p>
-                <p className="text-2xl md:text-3xl font-bold text-foreground mt-1">{stockSummary.totalVolume.toFixed(1)}m³</p>
+                <p className="text-sm font-semibold text-slate-400">Volume Total</p>
+                <p className="text-2xl md:text-3xl font-bold text-slate-50 mt-1">{stockSummary.totalVolume.toFixed(1)}m³</p>
               </div>
               <div className="p-2 bg-orange-600/20 rounded-lg">
-                <Archive className="h-6 w-6 text-orange-600" />
+                <Archive className="h-6 w-6 text-orange-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur border border-blue-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-blue-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-blue-500/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-muted-foreground">Armazém BZM</p>
-                <p className="text-2xl md:text-3xl font-bold text-blue-600 mt-1">
+                <p className="text-sm font-semibold text-slate-400">Armazém BZM</p>
+                <p className="text-2xl md:text-3xl font-bold text-blue-400 mt-1">
                   {stockSummary.byWarehouse.find((w: any) => w.warehouse === 'BZM')?.blocks || 0}
                 </p>
               </div>
               <div className="p-2 bg-blue-600/20 rounded-lg">
-                <Building2 className="h-6 w-6 text-blue-600" />
+                <Building2 className="h-6 w-6 text-blue-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-green-500/10 to-emerald-500/10 backdrop-blur border border-green-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-muted-foreground">Armazém Looper</p>
-                <p className="text-2xl md:text-3xl font-bold text-green-600 mt-1">
+                <p className="text-sm font-semibold text-slate-400">Armazém Looper</p>
+                <p className="text-2xl md:text-3xl font-bold text-emerald-400 mt-1">
                   {stockSummary.byWarehouse.find((w: any) => w.warehouse === 'LOOPER')?.blocks || 0}
                 </p>
               </div>
-              <div className="p-2 bg-green-600/20 rounded-lg">
-                <Warehouse className="h-6 w-6 text-green-600" />
+              <div className="p-2 bg-emerald-600/20 rounded-lg">
+                <Warehouse className="h-6 w-6 text-emerald-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-emerald-500/10 to-green-500/10 backdrop-blur border border-emerald-200/30 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300">
+          <div className="bg-gradient-to-br from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-emerald-500/20 rounded-lg p-4 shadow-lg hover:shadow-xl transition-all duration-300 hover:border-emerald-500/40">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-semibold text-muted-foreground">Disponíveis</p>
-                <p className="text-2xl md:text-3xl font-bold text-green-600 mt-1">
+                <p className="text-sm font-semibold text-slate-400">Disponíveis</p>
+                <p className="text-2xl md:text-3xl font-bold text-emerald-400 mt-1">
                   {stockSummary.byStatus.find((s: any) => s.status === 'available')?.blocks || 0}
                 </p>
               </div>
-              <div className="p-2 bg-green-600/20 rounded-lg">
-                <CheckCircle className="h-6 w-6 text-green-600" />
+              <div className="p-2 bg-emerald-600/20 rounded-lg">
+                <CheckCircle className="h-6 w-6 text-emerald-400" />
               </div>
             </div>
           </div>
@@ -351,7 +351,7 @@ export default function Stock() {
       )}
 
       {/* Tabs */}
-      <div className="flex rounded-lg bg-muted p-1">
+      <div className="flex rounded-lg bg-gradient-to-r from-slate-800/60 to-slate-800/40 backdrop-blur-xl border border-slate-700/30 p-1">
         <button
           onClick={() => setActiveTab('blocks')}
           className={cn(
