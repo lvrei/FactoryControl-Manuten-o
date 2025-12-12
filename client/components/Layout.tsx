@@ -97,7 +97,11 @@ export function Layout({ children }: LayoutProps) {
               )}
             </button>
 
-            <button className="relative rounded-xl p-2 text-muted-foreground hover:bg-gradient-to-br hover:from-muted hover:to-muted/50 hover:text-foreground transition-all duration-300 btn-mobile group">
+            <button
+              onClick={() => navigate("/alerts")}
+              className="relative rounded-xl p-2 text-muted-foreground hover:bg-gradient-to-br hover:from-muted hover:to-muted/50 hover:text-foreground transition-all duration-300 btn-mobile group"
+              title="Ver alertas"
+            >
               <Bell className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
               <span className="absolute top-0 right-0 h-2 w-2 md:h-3 md:w-3 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/50 animate-pulse"></span>
             </button>
