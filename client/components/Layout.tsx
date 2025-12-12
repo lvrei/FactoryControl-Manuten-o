@@ -75,8 +75,8 @@ export function Layout({ children }: LayoutProps) {
             </button>
 
             <div className="flex items-center gap-2 md:gap-3">
-              <div className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-lg bg-slate-800 border border-slate-700 shadow-lg">
-                <Factory className="h-5 w-5 md:h-6 md:w-6 text-indigo-400" />
+              <div className="flex h-9 w-9 md:h-10 md:w-10 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-600 to-indigo-700 border border-indigo-500/30 shadow-lg shadow-indigo-500/20">
+                <Factory className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div className="hidden sm:block">
                 <h1 className="text-base md:text-lg font-bold text-slate-50 whitespace-nowrap">
