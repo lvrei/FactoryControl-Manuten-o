@@ -31,73 +31,35 @@ export default function Login() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+      {/* Background decorative elements */}
+      <div className="absolute top-0 -right-40 w-80 h-80 bg-primary/20 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+      <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-secondary/20 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+
+      <div className="w-full max-w-md relative z-10">
         {/* Logo and Title */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary">
-              <Settings className="h-7 w-7 text-primary-foreground" />
+        <div className="text-center mb-12">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 shadow-lg">
+              <Settings className="h-8 w-8 text-primary-foreground" />
             </div>
-            <h1 className="text-2xl font-bold text-foreground">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-white to-slate-200 bg-clip-text text-transparent">
               MaintenanceControl
             </h1>
           </div>
-          <p className="text-muted-foreground">Sistema de Gestão de Manutenção</p>
+          <p className="text-slate-400 text-sm">Sistema de Gestão de Manutenção</p>
         </div>
 
         {/* Login Form */}
-        <div className="rounded-lg border bg-card shadow-lg">
-          <div className="p-6">
-            <div className="text-center mb-6">
-              <h2 className="text-xl font-semibold text-card-foreground">
-                Iniciar Sessão
+        <div className="rounded-2xl border border-slate-700 bg-slate-800/50 backdrop-blur-xl shadow-2xl">
+          <div className="p-8">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-semibold text-white">
+                Bem-vindo
               </h2>
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-slate-400 mt-2">
                 Aceda ao sistema com as suas credenciais
               </p>
-            </div>
-
-            {/* Demo Credentials */}
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <h4 className="text-sm font-medium text-blue-900 mb-2">
-                🔐 Credenciais de Demonstração:
-              </h4>
-              <div className="space-y-1 text-xs text-blue-800">
-                <div className="flex justify-between items-center">
-                  <span>
-                    <strong>Admin:</strong> admin / admin123
-                  </span>
-                  <button
-                    onClick={() => quickLogin("admin")}
-                    className="px-2 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
-                  >
-                    Usar
-                  </button>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>
-                    <strong>Operador:</strong> operador / admin123
-                  </span>
-                  <button
-                    onClick={() => quickLogin("operator")}
-                    className="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
-                  >
-                    Usar
-                  </button>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span>
-                    <strong>Supervisor:</strong> supervisor / admin123
-                  </span>
-                  <button
-                    onClick={() => quickLogin("supervisor")}
-                    className="px-2 py-1 bg-purple-600 text-white rounded text-xs hover:bg-purple-700"
-                  >
-                    Usar
-                  </button>
-                </div>
-              </div>
             </div>
 
             {error && (
