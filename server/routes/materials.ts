@@ -208,4 +208,145 @@ router.patch("/:id/stock", async (req, res) => {
   }
 });
 
+// Material Photos endpoints
+// Create material_photos table
+async function ensureMaterialPhotosTable() {
+  if (!isDbConfigured()) return;
+  await query(`CREATE TABLE IF NOT EXISTS material_photos (
+    id TEXT PRIMARY KEY,
+    material_id INTEGER NOT NULL,
+    file_name TEXT NOT NULL,
+    file_data BYTEA,
+    mime_type TEXT,
+    file_size INTEGER,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    CONSTRAINT fk_material FOREIGN KEY(material_id) REFERENCES materials(id) ON DELETE CASCADE
+  )`);
+}
+
+// GET material photos
+router.get("/:id/photos", async (req, res) => {
+  try {
+    if (!isDbConfigured()) return res.json([]);
+    await ensureMaterialPhotosTable();
+
+    const materialId = req.params.id;
+    const result = await query(
+      `SELECT id, material_id, file_name, file_size, mime_type, created_at
+       FROM material_photos
+       WHERE material_id = $1
+       ORDER BY created_at DESC`,
+      [materialId],
+    );
+
+    return res.json(
+      result.rows.map((r: any) => ({
+        id: r.id,
+        material_id: r.material_id,
+        file_name: r.file_name,
+        file_size: r.file_size,
+        mime_type: r.mime_type,
+        created_at: r.created_at,
+      })),
+    );
+  } catch (e: any) {
+    console.error("GET materials/:id/photos error:", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// POST material photo (upload)
+router.post("/:id/photos", async (req, res) => {
+  try {
+    if (!isDbConfigured())
+      return res.status(400).json({ error: "Database not configured" });
+
+    await ensureMaterialPhotosTable();
+
+    const materialId = req.params.id;
+    const { fileName, fileData, mimeType } = req.body;
+
+    if (!fileName || !fileData) {
+      return res
+        .status(400)
+        .json({ error: "fileName and fileData are required" });
+    }
+
+    const photoId = `photo-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+    const buffer = Buffer.from(fileData, "base64");
+
+    await query(
+      `INSERT INTO material_photos (id, material_id, file_name, file_data, mime_type, file_size)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [
+        photoId,
+        materialId,
+        fileName,
+        buffer,
+        mimeType || "image/jpeg",
+        buffer.length,
+      ],
+    );
+
+    return res.json({ id: photoId, file_name: fileName });
+  } catch (e: any) {
+    console.error("POST materials/:id/photos error:", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// GET material photo (download)
+router.get("/:material_id/photos/:photo_id/download", async (req, res) => {
+  try {
+    if (!isDbConfigured())
+      return res.status(400).json({ error: "Database not configured" });
+
+    const { material_id, photo_id } = req.params;
+
+    const result = await query(
+      `SELECT file_name, file_data, mime_type FROM material_photos WHERE id = $1 AND material_id = $2`,
+      [photo_id, material_id],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Photo not found" });
+    }
+
+    const file = result.rows[0];
+    res.setHeader("Content-Type", file.mime_type || "image/jpeg");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${file.file_name}"`,
+    );
+    res.setHeader("Content-Length", file.file_data.length);
+    res.send(file.file_data);
+  } catch (e: any) {
+    console.error(
+      "GET materials/:material_id/photos/:photo_id/download error:",
+      e,
+    );
+    return res.status(500).json({ error: e.message });
+  }
+});
+
+// DELETE material photo
+router.delete("/:material_id/photos/:photo_id", async (req, res) => {
+  try {
+    if (!isDbConfigured())
+      return res.status(400).json({ error: "Database not configured" });
+
+    const { material_id, photo_id } = req.params;
+
+    await query(
+      `DELETE FROM material_photos WHERE id = $1 AND material_id = $2`,
+      [photo_id, material_id],
+    );
+
+    return res.json({ ok: true });
+  } catch (e: any) {
+    console.error("DELETE materials/:material_id/photos/:photo_id error:", e);
+    return res.status(500).json({ error: e.message });
+  }
+});
+
 export default router;

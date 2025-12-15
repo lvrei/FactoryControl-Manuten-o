@@ -12,6 +12,8 @@ import {
   QrCode,
   Download,
   Printer,
+  Calendar,
+  Paperclip,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,6 +45,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/config/api";
 import QRCodeGenerator from "@/components/equipment/QRCodeGenerator";
+import { MaintenanceScheduleManager } from "@/components/equipment/MaintenanceScheduleManager";
+import { EquipmentFilesManager } from "@/components/equipment/EquipmentFilesManager";
 
 interface Equipment {
   id: string;
@@ -78,6 +82,12 @@ export default function Equipment() {
   );
   const [showQRCode, setShowQRCode] = useState(false);
   const [selectedEquipmentForQR, setSelectedEquipmentForQR] =
+    useState<Equipment | null>(null);
+  const [showSchedulesModal, setShowSchedulesModal] = useState(false);
+  const [selectedEquipmentForSchedules, setSelectedEquipmentForSchedules] =
+    useState<Equipment | null>(null);
+  const [showFilesModal, setShowFilesModal] = useState(false);
+  const [selectedEquipmentForFiles, setSelectedEquipmentForFiles] =
     useState<Equipment | null>(null);
   const { toast } = useToast();
 
@@ -336,7 +346,7 @@ export default function Equipment() {
                         <span className="text-sm">{eq.location}</span>
                       </div>
                     )}
-                    <div className="flex gap-2 pt-2">
+                    <div className="flex gap-2 pt-2 flex-wrap">
                       <Button
                         variant="outline"
                         size="sm"
@@ -345,6 +355,28 @@ export default function Equipment() {
                       >
                         <Edit className="h-3 w-3 mr-1" />
                         Editar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedEquipmentForSchedules(eq);
+                          setShowSchedulesModal(true);
+                        }}
+                        title="Gerenciar agendamentos de manutenção"
+                      >
+                        <Calendar className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedEquipmentForFiles(eq);
+                          setShowFilesModal(true);
+                        }}
+                        title="Gerenciar ficheiros"
+                      >
+                        <Paperclip className="h-3 w-3" />
                       </Button>
                       <Button
                         variant="outline"
@@ -494,6 +526,7 @@ export default function Equipment() {
                 />
               </div>
             </div>
+
             <DialogFooter>
               <Button type="button" variant="outline" onClick={resetForm}>
                 Cancelar
@@ -528,6 +561,43 @@ export default function Equipment() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Maintenance Schedules Modal */}
+      <Dialog open={showSchedulesModal} onOpenChange={setShowSchedulesModal}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Agendamentos de Manutenção</DialogTitle>
+            <DialogDescription>
+              Gerenciar manutenções preventivas para{" "}
+              {selectedEquipmentForSchedules?.name}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedEquipmentForSchedules && (
+            <MaintenanceScheduleManager
+              equipmentId={selectedEquipmentForSchedules.id}
+              equipmentName={selectedEquipmentForSchedules.name}
+            />
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowSchedulesModal(false)}
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Equipment Files Manager Modal */}
+      {selectedEquipmentForFiles && (
+        <EquipmentFilesManager
+          equipment_id={selectedEquipmentForFiles.id}
+          equipment_name={selectedEquipmentForFiles.name}
+          open={showFilesModal}
+          onOpenChange={setShowFilesModal}
+        />
+      )}
     </div>
   );
 }

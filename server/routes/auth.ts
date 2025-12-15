@@ -33,7 +33,7 @@ router.post("/login", async (req, res) => {
     }
 
     // Encontrar usuário
-    const user = findUserByUsername(username);
+    const user = await findUserByUsername(username);
     if (!user) {
       return res.status(401).json({
         success: false,
@@ -82,7 +82,7 @@ router.post("/login", async (req, res) => {
 });
 
 // POST /api/auth/refresh
-router.post("/refresh", (req, res) => {
+router.post("/refresh", async (req, res) => {
   try {
     const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
 
@@ -102,7 +102,7 @@ router.post("/refresh", (req, res) => {
     }
 
     // Buscar usuário atualizado
-    const user = findUserById(decoded.id);
+    const user = await findUserById(decoded.id);
     if (!user) {
       return res.status(403).json({
         success: false,

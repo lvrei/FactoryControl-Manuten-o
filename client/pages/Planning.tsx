@@ -41,10 +41,11 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/config/api";
+import { equipmentScheduleService } from "@/services/equipmentScheduleService";
 
 interface PlannedMaintenance {
-  id: number;
-  equipment_id: number;
+  id: number | string;
+  equipment_id: number | string;
   equipment_name?: string;
   maintenance_type: string;
   description: string;
@@ -114,21 +115,57 @@ export default function Planning() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [plansRes, equipRes, usersRes] = await Promise.all([
+      const [plansRes, equipRes, usersRes, schedulesRes] = await Promise.all([
         apiFetch("maintenance/planned"),
-        apiFetch("machines"),
+        apiFetch("equipment"),
         apiFetch("users"),
+        equipmentScheduleService.getSchedules(),
       ]);
+
+      let allPlans: PlannedMaintenance[] = [];
+      let equipData: Equipment[] = [];
 
       if (plansRes.ok) {
         const plansData = await plansRes.json();
-        setPlans(plansData);
+        allPlans = [...plansData];
       }
 
+      // Read equipment data once
       if (equipRes.ok) {
-        const equipData = await equipRes.json();
+        equipData = await equipRes.json();
         setEquipments(equipData);
       }
+
+      // Convert equipment schedules to planned maintenance format
+      if (schedulesRes && schedulesRes.length > 0 && equipData.length > 0) {
+        const equipMap = new Map(equipData.map((eq: Equipment) => [eq.id, eq]));
+
+        const schedulePlans = schedulesRes
+          .filter(
+            (schedule: any) => schedule.is_active && schedule.next_due_date,
+          )
+          .map((schedule: any, index: number) => {
+            const equipmentId = String(schedule.equipment_id);
+            const equipment = equipMap.get(equipmentId);
+            return {
+              id: `sched-${schedule.id}`, // Use schedule ID as unique identifier
+              equipment_id: equipmentId,
+              equipment_name: equipment?.name || "Equipamento desconhecido",
+              maintenance_type: schedule.maintenance_type,
+              description:
+                schedule.description || "Manutenção preventiva agendada",
+              scheduled_date: schedule.next_due_date,
+              status: "scheduled" as const,
+              priority: "medium" as const,
+              estimated_duration: 2,
+              notes: `Intervalo: ${schedule.interval_days} dias`,
+            };
+          });
+
+        allPlans = [...allPlans, ...schedulePlans];
+      }
+
+      setPlans(allPlans);
 
       if (usersRes.ok) {
         const usersData = await usersRes.json();
@@ -168,7 +205,7 @@ export default function Planning() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          equipment_id: parseInt(formData.equipment_id),
+          equipment_id: formData.equipment_id,
           assigned_to:
             formData.assigned_to && formData.assigned_to !== "unassigned"
               ? parseInt(formData.assigned_to)
@@ -345,15 +382,24 @@ export default function Planning() {
             const priorityInfo = priorityConfig[plan.priority];
             const statusInfo = statusConfig[plan.status];
             const isOverdue = new Date(plan.scheduled_date) < new Date();
+            const isScheduledMaintenance =
+              typeof plan.id === "string" && plan.id.startsWith("sched-");
 
             return (
               <Card key={plan.id} className={isOverdue ? "border-red-500" : ""}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-lg">
-                        {plan.maintenance_type}
-                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <CardTitle className="text-lg">
+                          {plan.maintenance_type}
+                        </CardTitle>
+                        {isScheduledMaintenance && (
+                          <Badge variant="secondary" className="text-xs">
+                            Preventiva
+                          </Badge>
+                        )}
+                      </div>
                       <CardDescription>{plan.equipment_name}</CardDescription>
                     </div>
                     {isOverdue && (
@@ -380,6 +426,19 @@ export default function Planning() {
                         <span className="text-sm">{plan.assigned_name}</span>
                       </div>
                     )}
+                    {plan.notes && !isScheduledMaintenance && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-muted-foreground">
+                          Notas:
+                        </span>
+                        <span className="text-sm">{plan.notes}</span>
+                      </div>
+                    )}
+                    {isScheduledMaintenance && plan.notes && (
+                      <div className="text-xs text-muted-foreground bg-blue-50 p-2 rounded">
+                        {plan.notes}
+                      </div>
+                    )}
                     <div className="flex gap-2">
                       <Badge className={priorityInfo.color}>
                         {priorityInfo.label}
@@ -388,24 +447,26 @@ export default function Planning() {
                         {statusInfo.label}
                       </Badge>
                     </div>
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="flex-1"
-                        onClick={() => handleEdit(plan)}
-                      >
-                        <Edit className="h-3 w-3 mr-1" />
-                        Editar
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(plan.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
+                    {!isScheduledMaintenance && (
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="flex-1"
+                          onClick={() => handleEdit(plan)}
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Editar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(plan.id as any)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>

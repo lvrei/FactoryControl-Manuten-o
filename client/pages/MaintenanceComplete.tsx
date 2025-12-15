@@ -33,6 +33,7 @@ import { ChecklistDL50 } from "@/components/maintenance/ChecklistDL50";
 import { Machine, MaintenanceRequest } from "@/types/production";
 import { productionService } from "@/services/productionService";
 import { maintenanceService } from "@/services/maintenanceService";
+import { equipmentScheduleService } from "@/services/equipmentScheduleService";
 
 // Dados limpos - apenas máquinas reais de corte de espuma
 const mockMachines: MaintenanceData[] = [];
@@ -232,6 +233,32 @@ export default function MaintenanceComplete() {
           parts: maintenanceWithMachineName.parts,
           notes: maintenanceWithMachineName.notes,
         });
+
+        // If maintenance is completed, trigger reschedule for matching schedule
+        if (maintenanceWithMachineName.status === "completed" && editingMaintenance.machineId) {
+          try {
+            const schedules = await equipmentScheduleService.getSchedules(
+              editingMaintenance.machineId
+            );
+            // Find schedule that matches the maintenance type or description
+            const matchingSchedule = schedules.find(
+              (s) =>
+                s.maintenance_type.toLowerCase() ===
+                  maintenanceWithMachineName.type?.toLowerCase() ||
+                s.description?.toLowerCase() ===
+                  maintenanceWithMachineName.description?.toLowerCase() ||
+                maintenanceWithMachineName.description?.includes(s.maintenance_type)
+            );
+            if (matchingSchedule) {
+              await equipmentScheduleService.rescheduleAfterCompletion(
+                matchingSchedule.id
+              );
+            }
+          } catch (scheduleError) {
+            console.error("Erro ao reagendar manutenção automática:", scheduleError);
+          }
+        }
+
         setEditingMaintenance(null);
       } else {
         await maintenanceService.createMaintenancePlan({
@@ -246,6 +273,7 @@ export default function MaintenanceComplete() {
           description: maintenanceWithMachineName.description,
           technician: maintenanceWithMachineName.technician,
           parts: maintenanceWithMachineName.parts,
+          selectedParts: maintenanceWithMachineName.selectedParts || [],
           notes: maintenanceWithMachineName.notes,
         });
       }
@@ -401,7 +429,7 @@ export default function MaintenanceComplete() {
         "Operador",
         "Urgência",
         "Estado",
-        "Data Solicitação",
+        "Data Solicitaç��o",
         "Data Conclusão",
         "Tempo Resolução (h)",
         "Custo",

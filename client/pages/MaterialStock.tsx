@@ -6,6 +6,7 @@ import {
   AlertTriangle,
   Edit,
   Trash2,
+  Image,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +36,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiFetch } from "@/config/api";
+import { MaterialPhotosManager } from "@/components/material/MaterialPhotosManager";
 
 interface Material {
   id: number;
@@ -64,6 +66,9 @@ export default function MaterialStock() {
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingMaterial, setEditingMaterial] = useState<Material | null>(null);
+  const [showPhotosModal, setShowPhotosModal] = useState(false);
+  const [selectedMaterialForPhotos, setSelectedMaterialForPhotos] =
+    useState<Material | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -357,6 +362,17 @@ export default function MaterialStock() {
                     Editar
                   </Button>
                   <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedMaterialForPhotos(material);
+                      setShowPhotosModal(true);
+                    }}
+                    title="Gerenciar fotos"
+                  >
+                    <Image className="h-3 w-3" />
+                  </Button>
+                  <Button
                     variant="destructive"
                     size="sm"
                     onClick={() => handleDelete(material.id)}
@@ -534,6 +550,16 @@ export default function MaterialStock() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Material Photos Manager Modal */}
+      {selectedMaterialForPhotos && (
+        <MaterialPhotosManager
+          material_id={selectedMaterialForPhotos.id}
+          material_name={selectedMaterialForPhotos.name}
+          open={showPhotosModal}
+          onOpenChange={setShowPhotosModal}
+        />
+      )}
     </div>
   );
 }

@@ -41,15 +41,22 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { apiFetch } from "@/config/api";
 
 interface Employee {
-  id: number;
+  id: string;
   username: string;
   full_name: string;
   email?: string;
   role: "admin" | "technician" | "operator";
+  position?: string;
+  department?: string;
+  shift?: string;
+  status?: string;
   created_at: string;
 }
 
-const roleConfig = {
+const roleConfig: Record<
+  string,
+  { label: string; color: string; description: string }
+> = {
   admin: {
     label: "Administrador",
     color: "bg-red-600",
@@ -64,6 +71,16 @@ const roleConfig = {
     label: "Operador",
     color: "bg-green-600",
     description: "Ver informação e reportar",
+  },
+  supervisor: {
+    label: "Supervisor",
+    color: "bg-purple-600",
+    description: "Supervisão de operações",
+  },
+  maintenance: {
+    label: "Manutenção",
+    color: "bg-yellow-600",
+    description: "Gestão de manutenção",
   },
 };
 
@@ -80,7 +97,7 @@ export default function Team() {
     username: "",
     password: "",
     email: "",
-    role: "operator" as "admin" | "technician" | "operator",
+    role: "operator" as string,
     hasSystemAccess: false,
   });
 
@@ -183,7 +200,7 @@ export default function Team() {
     setShowAddEmployee(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("Tem a certeza que deseja eliminar este funcionário?")) return;
 
     try {

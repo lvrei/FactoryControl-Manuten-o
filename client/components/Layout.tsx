@@ -26,7 +26,10 @@ interface LayoutProps {
   children?: ReactNode;
 }
 
-const navigation = [
+import { ChatModal } from "@/components/chat/ChatModal";
+
+// Desktop navigation - com todos os separadores
+const navigationDesktop = [
   { name: "Dashboard", href: "/", icon: BarChart3 },
   { name: "Equipamentos", href: "/equipment", icon: Activity },
   { name: "Manutenção", href: "/maintenance", icon: Settings },
@@ -38,15 +41,54 @@ const navigation = [
   { name: "Alertas", href: "/alerts", icon: AlertTriangle },
 ];
 
+// Mobile/PWA navigation - sem Sensores, Câmaras, Equipa
+const navigationMobile = [
+  { name: "Dashboard", href: "/", icon: BarChart3 },
+  { name: "Equipamentos", href: "/equipment", icon: Activity },
+  { name: "Manutenção", href: "/maintenance", icon: Settings },
+  { name: "Planeamento", href: "/planning", icon: Calendar },
+  { name: "Stock Material", href: "/material-stock", icon: Package },
+  { name: "Alertas", href: "/alerts", icon: AlertTriangle },
+];
+
 export function Layout({ children }: LayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [chatModalOpen, setChatModalOpen] = useState(false);
   const [userSession, setUserSession] = useState<LoginSession | null>(null);
+  const [hasUnreadMessages, setHasUnreadMessages] = useState(false);
+  const [isStandalone, setIsStandalone] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const session = authService.getCurrentUser();
     setUserSession(session);
+
+    // Detectar se está a correr como PWA standalone
+    const updateStandaloneMode = () => {
+      const isStandaloneMode =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        (window.navigator as any).standalone === true ||
+        document.referrer.includes("android-app://");
+      setIsStandalone(isStandaloneMode);
+    };
+
+    updateStandaloneMode();
+
+    // Listener para mudanças de display mode
+    const mediaQueryList = window.matchMedia("(display-mode: standalone)");
+    mediaQueryList.addEventListener("change", updateStandaloneMode);
+
+    return () => {
+      mediaQueryList.removeEventListener("change", updateStandaloneMode);
+    };
   }, []);
+
+  // Selecionar navegação apropriada baseado no modo
+  const navigation = isStandalone ? navigationMobile : navigationDesktop;
+
+  if (!userSession?.id) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
@@ -78,7 +120,24 @@ export function Layout({ children }: LayoutProps) {
           </div>
 
           <div className="flex items-center gap-1 md:gap-3">
-            <button className="relative rounded-xl p-2 text-muted-foreground hover:bg-gradient-to-br hover:from-muted hover:to-muted/50 hover:text-foreground transition-all duration-300 btn-mobile group">
+            <button
+              onClick={() => setChatModalOpen(true)}
+              className="relative rounded-xl p-2 text-muted-foreground hover:bg-gradient-to-br hover:from-muted hover:to-muted/50 hover:text-foreground transition-all duration-300 btn-mobile group"
+              title="Abrir chat"
+            >
+              <MessageSquare
+                className={`h-5 w-5 group-hover:scale-110 transition-transform duration-300 ${hasUnreadMessages ? "animate-pulse text-primary" : ""}`}
+              />
+              {hasUnreadMessages && (
+                <span className="absolute top-0 right-0 h-2 w-2 md:h-3 md:w-3 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/50 animate-pulse"></span>
+              )}
+            </button>
+
+            <button
+              onClick={() => navigate("/alerts")}
+              className="relative rounded-xl p-2 text-muted-foreground hover:bg-gradient-to-br hover:from-muted hover:to-muted/50 hover:text-foreground transition-all duration-300 btn-mobile group"
+              title="Ver alertas"
+            >
               <Bell className="h-5 w-5 group-hover:scale-110 transition-transform duration-300" />
               <span className="absolute top-0 right-0 h-2 w-2 md:h-3 md:w-3 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/50 animate-pulse"></span>
             </button>
@@ -202,7 +261,7 @@ export function Layout({ children }: LayoutProps) {
             }}
           />
           <small className="text-[10px] md:text-[11px]">
-            <span className="hidden sm:inline">Desenvolvido por:{" "}</span>
+            <span className="hidden sm:inline">Desenvolvido por: </span>
             <span className="font-medium text-foreground/80">Gil Rei</span>
             <span className="mx-1 md:mx-2">•</span>v{APP_VERSION}
           </small>
@@ -224,11 +283,23 @@ export function Layout({ children }: LayoutProps) {
               }
             >
               <item.icon className="h-5 w-5" />
-              <span className="text-[10px] leading-tight text-center">{item.name.replace('🆕 ', '').replace('🔄 ', '').replace('📊 ', '')}</span>
+              <span className="text-[10px] leading-tight text-center">
+                {item.name
+                  .replace("🆕 ", "")
+                  .replace("🔄 ", "")
+                  .replace("📊 ", "")}
+              </span>
             </NavLink>
           ))}
         </div>
       </nav>
+
+      {/* Chat Modal */}
+      <ChatModal
+        open={chatModalOpen}
+        onOpenChange={setChatModalOpen}
+        currentUserId={userSession.id}
+      />
     </div>
   );
 }
